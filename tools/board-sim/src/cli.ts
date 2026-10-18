@@ -1,5 +1,6 @@
 // Usage: pnpm sim [--port 3180] [--host 0.0.0.0] [--replay <file>] [--speed 10]
 import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { parseRecording, replay } from "./replay.ts";
 import { createBoardSim } from "./sim.ts";
@@ -17,7 +18,9 @@ const sim = await createBoardSim({ port: Number(values.port), host: values.host 
 console.log(`board-sim (Board Manager ${"2.0.2"}) on http://${values.host}:${sim.port}`);
 
 if (values.replay) {
-  const entries = parseRecording(readFileSync(values.replay, "utf8"));
+  // pnpm runs this from tools/board-sim; resolve the path from where the command was typed.
+  const file = resolve(process.env.INIT_CWD ?? process.cwd(), values.replay);
+  const entries = parseRecording(readFileSync(file, "utf8"));
   console.log(`replaying ${entries.length} states from ${values.replay} at ${values.speed}x`);
   await replay(sim, entries, Number(values.speed));
   console.log("replay finished; still serving the last state");
