@@ -107,7 +107,9 @@ export function groupTable(
   const stats = new Map<string, DartStats[]>(players.map((p) => [p, []]));
   for (const result of results) {
     if (result.walkover) continue;
-    result.players.forEach((p, i) => stats.get(p)?.push(result.stats[i] as DartStats));
+    result.players.forEach((p, i) => {
+      stats.get(p)?.push(result.stats[i] as DartStats);
+    });
   }
   for (const row of table.values()) row.average = threeDartAverage(stats.get(row.playerId) ?? []);
 
