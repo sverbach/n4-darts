@@ -1,6 +1,10 @@
 // Types shared with the web app. Type-only: nothing here may pull in Node modules.
 
 import type { MatchState, Segment, X01Settings } from "@n4/engine";
+import type { TableRow } from "./tournament/groups.ts";
+import type { Placing, TournamentConfig } from "./tournament/types.ts";
+
+export type { Placing, TableRow, TournamentConfig };
 
 export interface MatchPlayer {
   id: string;
@@ -88,3 +92,33 @@ export type StationCommand =
 
 /** What can be chosen when setting up a match; the rules version is always the current one. */
 export type MatchSettingsInput = Partial<Omit<X01Settings, "rulesVersion">>;
+
+export interface TournamentEntrantView {
+  playerId: string;
+  name: string;
+  /** 0 = top seed. */
+  seed: number;
+  group: number;
+  withdrawn: boolean;
+  rating: number | null;
+}
+
+/** The active tournament as /admin shows it. */
+export interface TournamentAdminView {
+  tournament: {
+    id: string;
+    name: string;
+    status: "draft" | "running" | "finished";
+    config: TournamentConfig;
+    startedAt: string | null;
+    finishedAt: string | null;
+  } | null;
+  /** In seed order. */
+  entrants: TournamentEntrantView[];
+  /** Player ids per group. */
+  groups: string[][];
+  /** Whole tournament (draft) or what's left of it (running), in minutes. */
+  estimateMinutes: number | null;
+  /** Why it can't start yet; empty when it can. */
+  problems: string[];
+}

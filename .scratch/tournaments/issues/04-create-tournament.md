@@ -1,6 +1,6 @@
 # Create a tournament in /admin
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 01, 02, 03
 
@@ -13,3 +13,7 @@ Blocked by: 01, 02, 03
 ## Acceptance
 
 - Tests: draft create/update/start; only one running; editing regenerates fixtures; seed override and the stored unseeded order; duration estimate with and without history.
+
+## Comments
+
+**2026-10-18, done.** `tournaments.ts`: `createTournaments(db, stations)` with `view`, `create`, `update` (name, players, config sections, `seedOrder`), `discard`, `start`; routes `GET|POST|PATCH|DELETE /api/admin/tournament`, `POST /api/admin/tournament/start`. Seeds: by rating, unseeded at the end in a random order drawn once; players who stay keep their place, rated newcomers go in by rating, unseeded ones at a random spot among the unseeded. Groups by snake seeding on every change. `configProblems` (in `tournament/plan.ts`) blocks starting; the view shows them instead of an estimate. `estimate.ts`: leg length from two-player completed matches at the start score (checkout dart time minus leg start, from `timedEvents`; legs over 30 min ignored), defaults until 5 legs; ~75% of max legs per match + 1 min, divided by the stations. `tournament/plan.ts` also has `plan()`, the whole tournament from entrants and results (group fixtures, knockout once groups are done, champion, placings with non-advancers after the knockout by group position), used from ticket 05 on. Web: Tournament tab (now the default `/admin` page): create form, draft editor that saves every change and shows seeds (↑/↓), groups, problems and the estimate; Start / Discard. Editing after the start (before the first match is played) comes with ticket 05, where the fixtures exist.

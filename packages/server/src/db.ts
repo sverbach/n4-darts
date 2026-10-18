@@ -95,6 +95,8 @@ export interface Db {
   createTournament(tournament: TournamentRecord): void;
   saveTournament(tournament: TournamentRecord): void;
   getTournament(id: string): TournamentRecord | undefined;
+  /** Removes a tournament and its entrants (a discarded draft). */
+  deleteTournament(id: string): void;
   /** The draft or running tournament, if any; there's at most one. */
   activeTournament(): TournamentRecord | undefined;
   /** All tournaments, newest first. */
@@ -116,7 +118,8 @@ export interface Db {
   closedMatches(limit?: number): MatchRecord[];
   /** Removes a match and its log entirely, e.g. one that was set up but never started. */
   deleteMatch(id: string): void;
-  append(matchId: string, event: StoredEvent): void;
+  /** Appends to the match's log; `at` defaults to now (tests pass their own). */
+  append(matchId: string, event: StoredEvent, at?: string): void;
   events(matchId: string): StoredEvent[];
   close(): void;
 }
@@ -317,6 +320,7 @@ export function openDb(path: string): Db {
     "update tournaments set name = ?, status = ?, config = ?, started_at = ?, finished_at = ?, placings = ? where id = ?",
   );
   const selectTournament = db.prepare("select * from tournaments where id = ?");
+  const deleteTournamentStmt = db.prepare("delete from tournaments where id = ?");
   const selectActiveTournament = db.prepare(
     "select * from tournaments where status in ('draft', 'running') order by created_at desc limit 1",
   );
@@ -358,8 +362,9 @@ export function openDb(path: string): Db {
     "select * from matches where closed_at is not null order by closed_at desc, rowid desc limit ?",
   );
   const insertEvent = db.prepare(`
-    insert into match_events (match_id, seq, event)
-    values (?, (select coalesce(max(seq), 0) + 1 from match_events where match_id = ?), ?)
+    insert into match_events (match_id, seq, event, at)
+    values (?, (select coalesce(max(seq), 0) + 1 from match_events where match_id = ?), ?,
+      coalesce(?, strftime('%Y-%m-%dT%H:%M:%fZ')))
   `);
   const selectEvents = db.prepare("select event from match_events where match_id = ? order by seq");
 
@@ -526,6 +531,9 @@ export function openDb(path: string): Db {
       const row = selectTournament.get(id) as TournamentRow | undefined;
       return row && toTournament(row);
     },
+    deleteTournament(id) {
+      deleteTournamentStmt.run(id);
+    },
     activeTournament() {
       const row = selectActiveTournament.get() as TournamentRow | undefined;
       return row && toTournament(row);
@@ -587,8 +595,8 @@ export function openDb(path: string): Db {
     deleteMatch(id) {
       deleteMatchStmt.run(id);
     },
-    append(matchId, event) {
-      insertEvent.run(matchId, matchId, JSON.stringify(event));
+    append(matchId, event, at) {
+      insertEvent.run(matchId, matchId, JSON.stringify(event), at ?? null);
     },
     events(matchId) {
       return (selectEvents.all(matchId) as { event: string }[]).map((row) => JSON.parse(row.event));

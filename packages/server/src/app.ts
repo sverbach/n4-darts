@@ -13,6 +13,7 @@ import {
   type StationDirectory,
   type StationRegistry,
 } from "./stations.ts";
+import { createTournaments, registerTournaments } from "./tournaments.ts";
 
 export interface AppOptions {
   /** Directory with the built web app; served at `/` when it exists. */
@@ -35,6 +36,7 @@ export function buildApp(options: AppOptions = {}) {
   if (options.db) registerPlayers(app, options.db);
   registerMatches(app, stations, options.db);
   if (isRegistry(stations)) registerStationAdmin(app, stations);
+  if (options.db) registerTournaments(app, createTournaments(options.db, stations));
 
   app.get("/api/stations", async () => stations.list().map((s) => s.view()));
 

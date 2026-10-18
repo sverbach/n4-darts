@@ -3,8 +3,13 @@ import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { MatchesAdmin } from "./MatchesAdmin.tsx";
 import { PlayersAdmin } from "./PlayersAdmin.tsx";
 import { StationsAdmin } from "./StationsAdmin.tsx";
+import { TournamentAdmin } from "./TournamentAdmin.tsx";
 
 const sections = {
+  tournament: {
+    title: "Tournament",
+    blurb: "Tonight's tournament: set it up, start it, follow it.",
+  },
   players: { title: "Players", blurb: "Add, rename and archive players." },
   stations: { title: "Stations", blurb: "Boards and their Board Manager addresses." },
   matches: { title: "Matches", blurb: "Create matches, put them on a station, see results." },
@@ -71,7 +76,9 @@ export function AdminPage({ section }: { section: AdminSection }) {
           <section>
             <h1>{sections[section].title}</h1>
             <p className="hint">{sections[section].blurb}</p>
-            {section === "players" ? (
+            {section === "tournament" ? (
+              <TournamentAdmin />
+            ) : section === "players" ? (
               <PlayersAdmin />
             ) : section === "matches" ? (
               <MatchesAdmin />

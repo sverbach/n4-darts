@@ -9,7 +9,7 @@ export function App() {
   if (station) return <StationPage id={Number(station[1])} />;
   const admin = /^\/admin(?:\/(\w+))?\/?$/.exec(path);
   if (admin) {
-    const section = admin[1] ?? "players";
+    const section = admin[1] ?? "tournament";
     if (isAdminSection(section)) return <AdminPage section={section} />;
   }
 
