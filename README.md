@@ -65,7 +65,7 @@ Everything happens in `/admin` → **Tournament**, on the organiser's phone.
    - Fix a misdetected dart from **Matches → History**. A correction that would change a result a later match already depends on is refused, with that match named.
 4. **The end.** The champion and the final placings stay on the tab until you start the next tournament. **End tournament early** stops everything without a champion.
 
-**Try it locally:** run `pnpm dev:sim`, add a few players in `/admin`, create and start a tournament, then play the matches that appear on `/station/1` and `/station/2` by clicking the two fake boards (<http://localhost:3180/>, <http://localhost:3181/>). A start score of 40 with one leg makes a test evening quick: one click on D20 wins a match.
+**Try it locally:** run `pnpm dev:sim`, add a few players in `/admin`, create and start a tournament, then play the matches that appear on `/station/1` and `/station/2` by clicking the two fake boards (<http://localhost:3180/>, <http://localhost:3181/>). Set every phase to best of 1 for a quick test evening; typing darts on the fake board (`T20`, enter, three times) is faster than clicking.
 
 ## Development
 
