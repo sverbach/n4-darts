@@ -73,7 +73,12 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ dartId, segment }),
     }).catch(() => null);
-    if (!res?.ok) return setError("Correction failed");
+    if (!res) return setError("Server not reachable");
+    if (!res.ok) {
+      // E.g. a tournament result a later match already depends on.
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      return setError(body.error ?? "Correction failed");
+    }
     setError(null);
     setMatch(await res.json());
   };

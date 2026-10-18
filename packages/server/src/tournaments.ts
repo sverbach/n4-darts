@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { dartStats, defaultX01Settings, matchState, RULES_VERSION } from "@n4/engine";
 import type { FastifyInstance, FastifyReply } from "fastify";
 import type { TournamentAdminView } from "./api.ts";
-import type { Db, MatchRecord, TournamentRecord } from "./db.ts";
+import type { Db, MatchRecord, StoredEvent, TournamentRecord } from "./db.ts";
 import { estimateMinutes, legMinutes } from "./estimate.ts";
 import { ratingOf } from "./ratings.ts";
 import type { StationDirectory } from "./stations.ts";
@@ -108,11 +108,59 @@ export function createTournaments(db: Db, stations: StationDirectory) {
     return db.tournamentMatches(tournament.id).some((m) => !m.walkover && started(m));
   }
 
-  function results(tournament: TournamentRecord): Result[] {
+  /** Results of the tournament's decided matches; `instead` swaps in one match's log and record. */
+  function results(
+    tournament: TournamentRecord,
+    instead?: { match: MatchRecord; events: StoredEvent[] },
+  ): Result[] {
     return db.tournamentMatches(tournament.id).flatMap((m) => {
-      const result = resultOf(m, m.walkover ? [] : db.events(m.id));
+      const own = instead?.match.id === m.id ? instead : null;
+      const result = own
+        ? resultOf(own.match, own.events)
+        : resultOf(m, m.walkover ? [] : db.events(m.id));
       return result ? [result] : [];
     });
+  }
+
+  /**
+   * Why a correction to a tournament match can't be made, or null if it can. A finished match
+   * must keep a winner, and nothing that has started or been played may end up with other
+   * players; in a finished tournament the winner can't change at all.
+   */
+  function correctionProblem(match: MatchRecord, events: StoredEvent[]): string | null {
+    const tournament = match.tournamentId ? db.getTournament(match.tournamentId) : undefined;
+    if (!tournament || tournament.status === "draft" || !match.closedAt || match.abandoned)
+      return null;
+    const winnerIndex = matchState(match.settings, events).winner;
+    const winner = winnerIndex === null ? null : (match.playerIds[winnerIndex] ?? null);
+    if (winner === null) return "That would leave the match without a winner.";
+    if (tournament.status === "finished" && winner !== match.winner) {
+      return "The tournament is over; a correction can't change who won.";
+    }
+    const after = plan(
+      tournament.config,
+      db.entrants(tournament.id),
+      results(tournament, { match: { ...match, winner }, events }),
+    );
+    const planned = new Map(after.matches.map((m) => [m.slot, m]));
+    const name = (id: string) => db.getPlayer(id)?.name ?? "?";
+    for (const other of db.tournamentMatches(tournament.id)) {
+      if (other.id === match.id || other.abandoned || !started(other)) continue;
+      const wanted = other.slot ? planned.get(other.slot) : undefined;
+      if (wanted?.players && sameSet(wanted.players, other.playerIds)) continue;
+      const who = other.playerIds.map(name).join(" vs ");
+      const what = other.closedAt ? "has already been played" : "has already started";
+      return `It would change ${other.label ?? "a later match"} (${who}), which ${what}.`;
+    }
+    return null;
+  }
+
+  /** After a correction: rebuild whatever depends on the result. */
+  function corrected(match: MatchRecord) {
+    const tournament = match.tournamentId ? db.getTournament(match.tournamentId) : undefined;
+    if (tournament?.status !== "running") return;
+    sync();
+    changed();
   }
 
   const settingsFor = (config: TournamentConfig, phase: MatchPhase) => ({
@@ -546,6 +594,8 @@ export function createTournaments(db: Db, stations: StationDirectory) {
     endEarly,
     withdraw,
     addLate,
+    correctionProblem,
+    corrected,
     placed,
     avoids,
     subscribe(listener: () => void) {

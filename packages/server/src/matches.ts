@@ -9,6 +9,7 @@ import type { MatchDetail, MatchSettingsInput, MatchSummary } from "./api.ts";
 import type { Db, MatchRecord, StoredEvent } from "./db.ts";
 import { CommandError } from "./station.ts";
 import type { StationDirectory } from "./stations.ts";
+import type { Tournaments } from "./tournaments.ts";
 
 const isSegment = (value: unknown): value is Segment => {
   const { number, multiplier } = (value ?? {}) as Partial<Segment>;
@@ -17,7 +18,12 @@ const isSegment = (value: unknown): value is Segment => {
   return validNumber && [0, 1, 2, 3].includes(multiplier);
 };
 
-export function registerMatches(app: FastifyInstance, stations: StationDirectory, db?: Db) {
+export function registerMatches(
+  app: FastifyInstance,
+  stations: StationDirectory,
+  db?: Db,
+  tournaments?: Tournaments,
+) {
   app.post<{ Body: { station?: unknown; playerIds?: unknown; settings?: MatchSettingsInput } }>(
     "/api/admin/matches",
     async (request, reply) => {
@@ -102,17 +108,21 @@ export function registerMatches(app: FastifyInstance, stations: StationDirectory
         return reply.code(404).send({ error: "no such dart in this match" });
       }
 
+      const event: StoredEvent = {
+        type: "DartCorrected",
+        dartId: dartId as string,
+        segment,
+        source: "admin",
+      };
+      // A tournament result may already have decided later matches.
+      const problem = tournaments?.correctionProblem(match, [...events, event]);
+      if (problem) return reply.code(409).send({ error: problem });
+
       // A running match goes through its station, which keeps its own state and live viewers.
       const station = stationOf(match.id);
       if (station) {
         station.correct(dartId as string, segment, "admin");
       } else {
-        const event: StoredEvent = {
-          type: "DartCorrected",
-          dartId: dartId as string,
-          segment,
-          source: "admin",
-        };
         db.append(match.id, event);
         // The stored result follows the log, also after the match was closed; an abandoned
         // match never gets one.
@@ -122,6 +132,7 @@ export function registerMatches(app: FastifyInstance, stations: StationDirectory
         db.setWinner(match.id, winner === null ? null : (match.playerIds[winner] ?? null));
       }
       const updated = db.getMatch(match.id) as MatchRecord;
+      tournaments?.corrected(updated);
       return detail(updated, db.events(match.id));
     },
   );

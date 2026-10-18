@@ -37,10 +37,10 @@ export function buildApp(options: AppOptions = {}) {
   app.get("/api/health", async () => ({ ok: true }));
   registerAdmin(app, options.adminPin);
   if (options.db) registerPlayers(app, options.db);
-  registerMatches(app, stations, options.db);
+  const tournaments = options.db ? createTournaments(options.db, stations) : undefined;
+  registerMatches(app, stations, options.db, tournaments);
   if (isRegistry(stations)) registerStationAdmin(app, stations);
-  if (options.db) {
-    const tournaments = createTournaments(options.db, stations);
+  if (options.db && tournaments) {
     registerTournaments(app, tournaments);
     if (options.scheduler) {
       const scheduler = createScheduler(options.db, stations, tournaments, options.scheduler);
