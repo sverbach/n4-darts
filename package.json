@@ -15,7 +15,8 @@
     "format": "biome check --write .",
     "dev": "pnpm -r --parallel dev",
     "start": "node packages/server/dist/main.js",
-    "sim": "pnpm --filter @n4/board-sim sim"
+    "sim": "pnpm --filter @n4/board-sim sim",
+    "dev:sim": "STATIONS=1=http://localhost:3180,2=http://localhost:3181 pnpm -r --parallel run \"/^dev(:sim)?$/\""
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

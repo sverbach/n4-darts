@@ -3,7 +3,8 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
 import { WebSocketServer } from "ws";
-import { type BoardThrow, throwFor } from "./throws.ts";
+import { renderPage } from "./page.ts";
+import { type BoardThrow, throwAt, throwFor } from "./throws.ts";
 
 export interface BoardState {
   connected: boolean;
@@ -12,6 +13,14 @@ export interface BoardState {
   running: boolean;
   status: string;
   throws?: BoardThrow[];
+}
+
+/** What the control page at `/` sees, pushed over `/sim/events`. */
+export interface SimView {
+  online: boolean;
+  state: BoardState;
+  /** Clients connected to the Board Manager API's WebSocket, e.g. the n4-darts server. */
+  boardClients: number;
 }
 
 export interface BoardSimOptions {
@@ -37,6 +46,7 @@ export interface BoardSim {
   publish(state: BoardState): void;
   /** Offline: drops WebSocket clients and refuses all requests until back online. */
   setOnline(online: boolean): void;
+  readonly online: boolean;
   close(): Promise<void>;
 }
 
@@ -53,11 +63,25 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
   let online = true;
 
   const wss = new WebSocketServer({ noServer: true });
+  // The control page's own channel; it keeps working while the board is "offline".
+  const uiWss = new WebSocketServer({ noServer: true });
+
+  const simView = (): SimView => ({ online, state, boardClients: wss.clients.size });
+  function notifyUi() {
+    const message = JSON.stringify(simView());
+    for (const client of uiWss.clients) client.send(message);
+  }
+  wss.on("connection", (ws) => {
+    notifyUi();
+    ws.on("close", notifyUi);
+  });
+  uiWss.on("connection", (ws) => ws.send(JSON.stringify(simView())));
 
   function publish(next: BoardState) {
     state = next;
     const message = JSON.stringify({ type: "state", data: state });
     for (const client of wss.clients) client.send(message);
+    notifyUi();
   }
 
   function emit(event: string, changes: Partial<BoardState>, throws?: BoardThrow[]) {
@@ -69,6 +93,9 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
   }
 
   const toThrow = (dart: string | BoardThrow) => (typeof dart === "string" ? throwFor(dart) : dart);
+  /** A control request names a dart (`{"name":"T20"}`) or a spot on the board (`{"coords":…}`). */
+  const dartFrom = (body: { name?: string; coords?: { x: number; y: number } }) =>
+    body.coords ? throwAt(body.coords) : toThrow(String(body.name));
 
   const sim = {
     get url() {
@@ -79,6 +106,9 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
     },
     get state() {
       return state;
+    },
+    get online() {
+      return online;
     },
     throwDart(dart: string | BoardThrow) {
       const throws = state.throws ?? [];
@@ -113,9 +143,10 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
     setOnline(next: boolean) {
       online = next;
       if (!online) for (const client of wss.clients) client.terminate();
+      notifyUi();
     },
     async close() {
-      for (const client of wss.clients) client.terminate();
+      for (const client of [...wss.clients, ...uiWss.clients]) client.terminate();
       await new Promise<void>((resolve) => server.close(() => resolve()));
     },
   } satisfies BoardSim;
@@ -129,18 +160,27 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
     "PUT /api/stop": () => sim.stop(),
     "POST /api/reset": () => sim.reset(),
     // Control API for tests and manual play; not part of the real Board Manager.
-    "POST /sim/dart": (body) => sim.throwDart(JSON.parse(body).name),
+    "GET /sim/state": () => simView(),
+    "POST /sim/dart": (body) => sim.throwDart(dartFrom(JSON.parse(body))),
     "POST /sim/revise": (body) => {
-      const { index, name } = JSON.parse(body);
-      sim.reviseDart(index, name);
+      const parsed = JSON.parse(body);
+      sim.reviseDart(parsed.index, dartFrom(parsed));
     },
     "POST /sim/takeout": () => sim.takeout(),
+    // As if someone pressed reset / stop / start in Board Manager on the laptop.
+    "POST /sim/reset": () => sim.reset(),
+    "POST /sim/stop": () => sim.stop(),
+    "POST /sim/start": () => sim.start(),
     "POST /sim/offline": () => sim.setOnline(false),
     "POST /sim/online": () => sim.setOnline(true),
   };
 
   async function handle(req: IncomingMessage, res: ServerResponse) {
     const path = new URL(req.url ?? "/", "http://sim").pathname;
+    if (req.method === "GET" && path === "/") {
+      res.writeHead(200, { "content-type": "text/html; charset=utf-8" }).end(page);
+      return;
+    }
     if (!online && !path.startsWith("/sim/")) {
       res.writeHead(503).end();
       return;
@@ -168,6 +208,10 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
 
   const server = createServer((req, res) => void handle(req, res));
   server.on("upgrade", (req, socket, head) => {
+    if (req.url === "/sim/events") {
+      uiWss.handleUpgrade(req, socket, head, (ws) => uiWss.emit("connection", ws, req));
+      return;
+    }
     if (!online || req.url !== "/api/events") {
       socket.end(
         "HTTP/1.1 503 Service Unavailable\r\nConnection: close\r\nContent-Length: 0\r\n\r\n",
@@ -180,5 +224,6 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
   const host = options.host ?? "127.0.0.1";
   await new Promise<void>((resolve) => server.listen(options.port ?? 0, host, resolve));
   const port = (server.address() as AddressInfo).port;
+  const page = renderPage(port);
   return sim;
 }

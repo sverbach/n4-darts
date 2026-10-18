@@ -6,6 +6,7 @@ export default defineConfig({
   // Bundle workspace packages from their TypeScript sources (see vitest.config.ts).
   resolve: { conditions: ["source", ...defaultClientConditions] },
   server: {
-    proxy: { "/api": "http://localhost:3000" },
+    // Same PORT as the server, so `PORT=3100 pnpm dev` works when 3000 is taken.
+    proxy: { "/api": `http://localhost:${process.env.PORT ?? 3000}` },
   },
 });

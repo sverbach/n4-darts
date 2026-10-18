@@ -5,6 +5,7 @@ import {
   type BoardState,
   createBoardSim,
   parseRecording,
+  type SimView,
   throwFor,
 } from "./index.ts";
 
@@ -128,5 +129,72 @@ describe("simulated darts", () => {
 
   it("parses every state of the recording", () => {
     expect(parseRecording(recording).length).toBeGreaterThan(40);
+  });
+});
+
+describe("control page", () => {
+  const post = (path: string, body: unknown = {}) =>
+    fetch(`${sim.url}${path}`, { method: "POST", body: JSON.stringify(body) });
+
+  /** Connects like the control page and collects every view it's pushed. */
+  async function watch(board: BoardSim) {
+    const views: SimView[] = [];
+    const ws = new WebSocket(`${board.url.replace("http", "ws")}/sim/events`);
+    ws.addEventListener("message", (e) => views.push(JSON.parse(String(e.data))));
+    await vi.waitFor(() => expect(views.length).toBeGreaterThan(0));
+    return { views, ws, last: () => views.at(-1) as SimView };
+  }
+
+  it("is served at / with the port in the title", async () => {
+    sim = await createBoardSim();
+    const res = await fetch(`${sim.url}/`);
+
+    expect(res.headers.get("content-type")).toContain("text/html");
+    const html = await res.text();
+    expect(html).toContain(`<title>Board sim :${sim.port}</title>`);
+    expect(html).toContain('data-name="T20"');
+  });
+
+  it("throws and revises darts at clicked coordinates", async () => {
+    sim = await createBoardSim();
+
+    await post("/sim/dart", { coords: { x: 0.01, y: 0.6 } });
+    await post("/sim/dart", { name: "D16" });
+    await post("/sim/revise", { index: 0, coords: { x: 0, y: 0 } });
+
+    expect(sim.state.throws?.map((t) => t.segment.name)).toEqual(["Bull", "D16"]);
+    expect(sim.state.throws?.[0]?.coords).toEqual({ x: 0, y: 0 });
+  });
+
+  it("resets, stops and starts like the buttons on the laptop", async () => {
+    sim = await createBoardSim();
+    sim.throwDart("T20");
+
+    await post("/sim/reset");
+    expect(sim.state).toMatchObject({ event: "Manual reset", numThrows: 0 });
+    await post("/sim/stop");
+    expect(sim.state).toMatchObject({ event: "Stopped", running: false });
+    await post("/sim/start");
+    expect(sim.state).toMatchObject({ event: "Started", running: true });
+  });
+
+  it("pushes state, online status and connected clients to the page, also while offline", async () => {
+    sim = await createBoardSim();
+    const page = await watch(sim);
+    expect(page.last()).toMatchObject({ online: true, boardClients: 0 });
+
+    const { ws } = await listen(sim);
+    await vi.waitFor(() => expect(page.last().boardClients).toBe(1));
+
+    sim.throwDart("T20");
+    await vi.waitFor(() => expect(page.last().state.throws?.[0]?.segment.name).toBe("T20"));
+
+    await post("/sim/offline");
+    await vi.waitFor(() => expect(page.last()).toMatchObject({ online: false, boardClients: 0 }));
+    expect((await fetch(`${sim.url}/`)).ok).toBe(true);
+    expect(await (await fetch(`${sim.url}/sim/state`)).json()).toMatchObject({ online: false });
+
+    ws.close();
+    page.ws.close();
   });
 });

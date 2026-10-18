@@ -1,6 +1,6 @@
 # Board simulator UI
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 Make it easy to test the whole system end to end without a real board: a page served by the simulator itself where you click a dartboard to throw darts. Independent of the other tickets.
@@ -26,3 +26,9 @@ Served by `tools/board-sim` at `GET /` on the simulator's own port (e.g. `http:/
 - Test: `GET /` returns the page; the new `/sim/*` routes do what they say.
 - Manual: with `pnpm dev:sim`, play a leg on `/station/1` by clicking the board in the sim page, including a revise, an outside reset and taking the board offline and back.
 - typecheck, lint, test and build pass.
+
+## Comments
+
+**2026-10-18, done.** `page.ts` renders the page; the SVG board is generated from `ORDER` / `RINGS` in `throws.ts`, and `throwAt(coords)` turns a click back into a throw (same beds and names as `throwFor`). The page follows `/sim/events`, a separate WebSocket carrying `{ online, state, boardClients }` that keeps working while the board is offline. New routes: `GET /sim/state`, `POST /sim/reset|stop|start`; `/sim/dart` and `/sim/revise` accept `{ coords }` as well as `{ name }`. `pnpm sim --boards N`; root `pnpm dev:sim` runs two boards plus server and web with `STATIONS` set. The vite proxy now follows `PORT`, so `PORT=3100 pnpm dev:sim` works when 3000 is taken (e.g. by the Docker container).
+- Ring sizes are fitted to the real recording: Board Manager puts the outside of the double ring at about 0.99, not 1 (a real D20 sits at radius 0.949). A test checks every recorded real dart maps back to the segment the board reported. `throwFor("D…")` now lands at 0.966.
+- Checked in a browser against `pnpm dev:sim`: played visits on `/station/1` by clicking, revised a dart, outside reset mid-visit, offline and back; page fits a 390 px phone.

@@ -1,4 +1,4 @@
-// Usage: pnpm sim [--port 3180] [--host 0.0.0.0] [--replay <file>] [--speed 10]
+// Usage: pnpm sim [--port 3180] [--boards 2] [--host 0.0.0.0] [--replay <file>] [--speed 10]
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
@@ -10,14 +10,23 @@ const { values } = parseArgs({
   args: process.argv.slice(2).filter((arg) => arg !== "--"),
   options: {
     port: { type: "string", default: "3180" },
+    /** Several boards on consecutive ports, starting at --port. */
+    boards: { type: "string", default: "1" },
     host: { type: "string", default: "0.0.0.0" },
     replay: { type: "string" },
     speed: { type: "string", default: "1" },
   },
 });
 
-const sim = await createBoardSim({ port: Number(values.port), host: values.host });
-console.log(`board-sim (Board Manager ${"2.0.2"}) on http://${values.host}:${sim.port}`);
+const count = Number(values.boards);
+if (values.replay && count > 1) throw new Error("--replay drives a single board");
+const sims = [];
+for (let i = 0; i < count; i++) {
+  const sim = await createBoardSim({ port: Number(values.port) + i, host: values.host });
+  console.log(`board-sim (Board Manager 2.0.2) on http://localhost:${sim.port}/ (click to throw)`);
+  sims.push(sim);
+}
+const sim = sims[0] as (typeof sims)[number];
 
 if (values.replay) {
   // pnpm runs this from tools/board-sim; resolve the path from where the command was typed.

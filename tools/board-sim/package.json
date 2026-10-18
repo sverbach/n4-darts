@@ -12,6 +12,7 @@
   },
   "scripts": {
     "sim": "node --experimental-strip-types src/cli.ts",
+    "dev:sim": "node --experimental-strip-types src/cli.ts --boards 2",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

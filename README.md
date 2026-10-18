@@ -23,15 +23,19 @@ pnpm lint        # biome
 pnpm typecheck
 pnpm sim         # fake board on :3180 (station 1's default board)
 pnpm dev         # server on :3000 + web dev server (proxies /api to :3000)
+pnpm dev:sim     # the same plus two fake boards on :3180/:3181 wired to stations 1 and 2
 pnpm build && pnpm start   # production build, served on :3000
 ```
 
 ### Board simulator
 
-A fake Autodarts Board Manager (same API as the real one, see `docs/board-manager-api.md`):
+A fake Autodarts Board Manager (same API as the real one, see `docs/board-manager-api.md`). Each fake board serves a control page at its own address, e.g. <http://localhost:3180/>. Click the dartboard to throw, tap a listed dart and then the board to revise it, and use the buttons for takeout, bounce-out, an outside reset (as if pressed on the laptop), stop/start and offline.
+
+For a full session without a real board, run `pnpm dev:sim` and open `/station/1` and `/station/2` from the web dev server's URL, next to <http://localhost:3180/> and <http://localhost:3181/>.
 
 ```sh
-pnpm sim --port 3180                       # then throw darts by hand:
+pnpm sim --port 3180                       # one board; --boards 2 for 3180 and 3181
+curl -X POST localhost:3180/sim/dart -d '{"name":"T20"}'   # or by hand:
 curl -X POST localhost:3180/sim/dart -d '{"name":"T20"}'   # S20 SO20 D20 T20 25 BULL M17 BOUNCE
 curl -X POST localhost:3180/sim/takeout
 pnpm sim --replay prototypes/recordings/2026-10-18-board1.txt --speed 10

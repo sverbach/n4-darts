@@ -12,3 +12,7 @@ When someone presses reset on the laptop mid-visit, the board forgets darts that
 ## Acceptance
 
 - Both cases covered by tests and passing.
+
+## Comments
+
+**2026-10-18, note.** During the browser check for ticket 10: 1 dart, outside reset from the sim page, 2 more darts → one visit of three darts, awaiting takeout. So keep-and-continue seems to hold already; this ticket still needs the automated tests.
