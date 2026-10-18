@@ -719,3 +719,18 @@ button.danger {
 .estimate {
   font-weight: 600;
 }
+
+.station-notice {
+  padding: 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  font-weight: 600;
+}
+
+.match-label {
+  margin: 0;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.875rem;
+}

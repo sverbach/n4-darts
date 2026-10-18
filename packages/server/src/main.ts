@@ -17,7 +17,7 @@ mkdirSync(dataDir, { recursive: true });
 const db = openDb(join(dataDir, "n4-darts.db"));
 const stations = createStationRegistry(db, { seed });
 
-const app = buildApp({ webDir, stations, db, adminPin });
+const app = buildApp({ webDir, stations, db, adminPin, scheduler: {} });
 await app.listen({ host: "0.0.0.0", port });
 console.log(`n4-darts listening on http://0.0.0.0:${port}`);
 if (!adminPin) console.warn("ADMIN_PIN is not set: /admin is open to everyone on the network");

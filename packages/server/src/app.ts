@@ -5,6 +5,7 @@ import { registerAdmin } from "./admin.ts";
 import type { Db } from "./db.ts";
 import { registerMatches } from "./matches.ts";
 import { registerPlayers } from "./players.ts";
+import { createScheduler, type SchedulerOptions } from "./scheduler.ts";
 import { CommandError, type Station, type StationCommand } from "./station.ts";
 import { registerStationAdmin } from "./stationAdmin.ts";
 import {
@@ -21,6 +22,8 @@ export interface AppOptions {
   /** A fixed list (tests), or the registry, which also enables managing stations in /admin. */
   stations?: Station[] | StationDirectory | StationRegistry;
   db?: Db;
+  /** Runs the tournament scheduler (main does; tests that need it pass fast timings). */
+  scheduler?: SchedulerOptions;
   /** Shared PIN for /admin; without one /admin is open. */
   adminPin?: string | undefined;
 }
@@ -36,7 +39,14 @@ export function buildApp(options: AppOptions = {}) {
   if (options.db) registerPlayers(app, options.db);
   registerMatches(app, stations, options.db);
   if (isRegistry(stations)) registerStationAdmin(app, stations);
-  if (options.db) registerTournaments(app, createTournaments(options.db, stations));
+  if (options.db) {
+    const tournaments = createTournaments(options.db, stations);
+    registerTournaments(app, tournaments);
+    if (options.scheduler) {
+      const scheduler = createScheduler(options.db, stations, tournaments, options.scheduler);
+      app.addHook("onClose", async () => scheduler.stop());
+    }
+  }
 
   app.get("/api/stations", async () => stations.list().map((s) => s.view()));
 

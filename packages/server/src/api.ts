@@ -17,6 +17,8 @@ export interface MatchView {
   players: MatchPlayer[];
   settings: X01Settings;
   state: MatchState;
+  /** For tournament matches, e.g. "Group A · match 4". */
+  label: string | null;
 }
 
 /** A match as listed in /admin history. */
@@ -44,6 +46,8 @@ export interface StationView {
   id: number;
   name: string;
   boardOnline: boolean;
+  /** Shown while there's no match, e.g. "Paused for the tournament". */
+  notice: string | null;
   match: MatchView | null;
 }
 

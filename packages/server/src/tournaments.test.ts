@@ -118,14 +118,24 @@ describe("setting up a tournament", () => {
     expect((await call("POST", "/api/admin/tournament/start")).status).toBe(409);
   });
 
-  it("starts, after which the format is locked", async () => {
+  it("starts with the group matches queued; editable until the first match is played", async () => {
     const { call } = setup();
     await call("POST", "/api/admin/tournament", { playerIds: ids(4) });
 
     const res = await call("POST", "/api/admin/tournament/start");
     expect(res.body.tournament?.status).toBe("running");
     expect(res.body.tournament?.startedAt).not.toBeNull();
+    const tournamentId = res.body.tournament?.id as string;
+    expect(db.tournamentMatches(tournamentId)).toHaveLength(6);
+
+    // A fifth player before anything is played: their fixtures are added.
+    expect((await call("PATCH", "/api/admin/tournament", { playerIds: ids(5) })).status).toBe(200);
+    const matches = db.tournamentMatches(tournamentId);
+    expect(matches).toHaveLength(10);
+
+    db.append(matches[0]?.id as string, { type: "MatchStarted", playerCount: 2 });
     expect((await call("PATCH", "/api/admin/tournament", { name: "x" })).status).toBe(409);
+    expect((await call("DELETE", "/api/admin/tournament")).status).toBe(409);
   });
 
   it("discards a draft", async () => {

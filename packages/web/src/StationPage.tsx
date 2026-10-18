@@ -40,7 +40,10 @@ export function StationPage({ id }: { id: number }) {
       {!view ? (
         <p className="hint">Connecting…</p>
       ) : !view.match ? (
-        <QuickMatch send={run} />
+        <>
+          {view.notice && <p className="station-notice">{view.notice}</p>}
+          <QuickMatch send={run} />
+        </>
       ) : view.match.state.phase === "notStarted" ? (
         <Lineup match={view.match} send={run} />
       ) : (
@@ -97,6 +100,7 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
 
   return (
     <div className="lineup">
+      {match.label && <p className="match-label">{match.label}</p>}
       <h1>
         {match.players.length === 2 ? match.players.map((p) => p.name).join(" vs ") : "Next match"}
       </h1>
@@ -136,13 +140,16 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
           Start
         </button>
       </div>
-      <button
-        type="button"
-        className="ghost end-match"
-        onClick={() => send({ type: "abandonMatch" })}
-      >
-        Cancel
-      </button>
+      {/* A tournament match is held or sent back from /admin; here it would only come back. */}
+      {!match.label && (
+        <button
+          type="button"
+          className="ghost end-match"
+          onClick={() => send({ type: "abandonMatch" })}
+        >
+          Cancel
+        </button>
+      )}
     </div>
   );
 }
@@ -244,7 +251,10 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
         type="button"
         className="ghost end-match"
         onClick={() => {
-          if (confirm("End this match without a result?")) void send({ type: "abandonMatch" });
+          const question = match.label
+            ? "End this match? It goes back in the queue and is played again."
+            : "End this match without a result?";
+          if (confirm(question)) void send({ type: "abandonMatch" });
         }}
       >
         End match

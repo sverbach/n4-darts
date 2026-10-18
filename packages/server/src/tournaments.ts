@@ -2,17 +2,19 @@
 // it. Running it, matches and the scheduler, builds on this (.scratch/tournaments/spec.md).
 
 import { randomUUID } from "node:crypto";
+import { dartStats, defaultX01Settings, matchState, RULES_VERSION } from "@n4/engine";
 import type { FastifyInstance, FastifyReply } from "fastify";
 import type { TournamentAdminView } from "./api.ts";
-import type { Db, TournamentRecord } from "./db.ts";
+import type { Db, MatchRecord, TournamentRecord } from "./db.ts";
 import { estimateMinutes, legMinutes } from "./estimate.ts";
 import { ratingOf } from "./ratings.ts";
 import type { StationDirectory } from "./stations.ts";
 import { snakeGroups } from "./tournament/groups.ts";
-import { configProblems } from "./tournament/plan.ts";
+import { configProblems, type MatchPhase, type Plan, plan } from "./tournament/plan.ts";
 import {
   defaultTournamentConfig,
   type Entrant,
+  type Result,
   type TournamentConfig,
 } from "./tournament/types.ts";
 
@@ -54,9 +56,129 @@ function shuffle<T>(items: T[]): T[] {
   return out;
 }
 
+/** A decided tournament match as the pure logic sees it. */
+function resultOf(match: MatchRecord, events: ReturnType<Db["events"]>): Result | null {
+  if (!match.closedAt || match.abandoned || !match.winner || !match.slot) return null;
+  const [a, b] = match.playerIds as [string, string];
+  if (match.walkover) {
+    const legs = match.settings.legsToWin;
+    return {
+      slot: match.slot,
+      players: [a, b],
+      winner: match.winner,
+      legs: match.winner === a ? [legs, 0] : [0, legs],
+      walkover: true,
+      stats: [
+        { points: 0, darts: 0 },
+        { points: 0, darts: 0 },
+      ],
+    };
+  }
+  const state = matchState(match.settings, events);
+  const stats = dartStats(match.settings, events);
+  return {
+    slot: match.slot,
+    players: [a, b],
+    winner: match.winner,
+    legs: [state.players[0]?.legsWon ?? 0, state.players[1]?.legsWon ?? 0],
+    walkover: false,
+    stats: [stats[0] ?? { points: 0, darts: 0 }, stats[1] ?? { points: 0, darts: 0 }],
+  };
+}
+
+const sameSet = (a: string[], b: string[]) =>
+  a.length === b.length && a.every((x) => b.includes(x));
+
 export function createTournaments(db: Db, stations: StationDirectory) {
+  const listeners = new Set<() => void>();
+  /** Tells the scheduler that something changed. */
+  const changed = () => {
+    for (const listener of listeners) listener();
+  };
+
   function active(): TournamentRecord | undefined {
     return db.activeTournament();
+  }
+
+  const started = (match: MatchRecord) => match.closedAt !== null || db.events(match.id).length > 0;
+
+  /** Whether any match of the tournament has been played (or started); then the format locks. */
+  function anyPlayed(tournament: TournamentRecord) {
+    return db.tournamentMatches(tournament.id).some((m) => !m.walkover && started(m));
+  }
+
+  function results(tournament: TournamentRecord): Result[] {
+    return db.tournamentMatches(tournament.id).flatMap((m) => {
+      const result = resultOf(m, m.walkover ? [] : db.events(m.id));
+      return result ? [result] : [];
+    });
+  }
+
+  const settingsFor = (config: TournamentConfig, phase: MatchPhase) => ({
+    ...defaultX01Settings,
+    ...config.x01,
+    legsToWin: config.legs[phase],
+    rulesVersion: RULES_VERSION,
+  });
+
+  /**
+   * Brings the running tournament's matches in line with its plan: creates the matches that can
+   * be played (queued, no station), walkovers for withdrawn players, removes queued matches the
+   * plan no longer has, and finishes the tournament once there's a champion. Returns the plan.
+   */
+  function sync(): Plan | null {
+    const tournament = active();
+    if (tournament?.status !== "running") return null;
+    const entrants = db.entrants(tournament.id);
+    const withdrawn = new Set(entrants.filter((e) => e.withdrawn).map((e) => e.playerId));
+    const seedOf = (id: string) => entrants.find((e) => e.playerId === id)?.seed ?? 999;
+    let current = plan(tournament.config, entrants, results(tournament));
+    for (let pass = 0; pass < 100; pass++) {
+      let touched = false;
+      const planned = new Map(current.matches.map((m) => [m.slot, m]));
+      for (const match of db.tournamentMatches(tournament.id)) {
+        if (match.closedAt || started(match)) continue;
+        const wanted = match.slot ? planned.get(match.slot) : undefined;
+        if (wanted?.players && sameSet(wanted.players, match.playerIds)) continue;
+        for (const station of stations.list()) station.drop(match.id);
+        db.deleteMatch(match.id);
+        touched = true;
+      }
+      const existing = db.tournamentMatches(tournament.id);
+      for (const wanted of current.matches) {
+        if (!wanted.players) continue;
+        if (existing.some((m) => m.slot === wanted.slot && !m.abandoned)) continue;
+        const id = randomUUID();
+        db.createMatch({
+          id,
+          station: null,
+          settings: settingsFor(tournament.config, wanted.phase),
+          playerIds: wanted.players,
+          tournamentId: tournament.id,
+          slot: wanted.slot,
+          label: wanted.label,
+        });
+        const out = wanted.players.filter((p) => withdrawn.has(p));
+        if (out.length > 0) {
+          const [a, b] = wanted.players;
+          // Both withdrawn: it doesn't matter who goes on, they lose their next match anyway.
+          const winner = out.length === 2 ? (seedOf(a) < seedOf(b) ? a : b) : out[0] === a ? b : a;
+          db.closeAsWalkover(id, winner);
+        }
+        touched = true;
+      }
+      if (!touched) break;
+      current = plan(tournament.config, entrants, results(tournament));
+    }
+    if (current.champion && current.placings) {
+      db.saveTournament({
+        ...tournament,
+        status: "finished",
+        finishedAt: new Date().toISOString(),
+        placings: current.placings,
+      });
+    }
+    return current;
   }
 
   function checkPlayers(raw: unknown): string[] {
@@ -162,13 +284,12 @@ export function createTournaments(db: Db, stations: StationDirectory) {
     return view();
   }
 
+  /** The active tournament, if its players and format may still change. */
   function editable(): TournamentRecord {
     const tournament = active();
     if (!tournament) throw new TournamentError("no active tournament", 404);
-    if (tournament.status !== "draft") {
-      throw new TournamentError(
-        "the tournament has started; only withdrawals and late arrivals now",
-      );
+    if (tournament.status === "running" && anyPlayed(tournament)) {
+      throw new TournamentError("a match has been played; only withdrawals and late arrivals now");
     }
     return tournament;
   }
@@ -191,25 +312,47 @@ export function createTournaments(db: Db, stations: StationDirectory) {
         throw new TournamentError("the seed order has to contain exactly the entrants", 400);
       order = wanted as string[];
     }
+    if (tournament.status === "running") {
+      const problems = configProblems(config, order.length);
+      if (problems.length > 0) throw new TournamentError(problems.join(" "));
+    }
     db.saveTournament({ ...tournament, name, config });
     db.setEntrants(tournament.id, entrantsFor(order, config, previous));
+    sync();
+    changed();
     return view();
   }
 
   function discard() {
     const tournament = editable();
+    if (tournament.status !== "draft") throw new TournamentError("only a draft can be discarded");
     db.deleteTournament(tournament.id);
   }
 
   function start(): TournamentAdminView {
     const tournament = editable();
+    if (tournament.status !== "draft")
+      throw new TournamentError("the tournament is already running");
     const problems = configProblems(tournament.config, db.entrants(tournament.id).length);
     if (problems.length > 0) throw new TournamentError(problems.join(" "));
     db.saveTournament({ ...tournament, status: "running", startedAt: new Date().toISOString() });
+    sync();
+    changed();
     return view();
   }
 
-  return { view, create, update, discard, start };
+  return {
+    view,
+    create,
+    update,
+    discard,
+    start,
+    sync,
+    subscribe(listener: () => void) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+  };
 }
 
 export type Tournaments = ReturnType<typeof createTournaments>;

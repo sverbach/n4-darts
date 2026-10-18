@@ -38,6 +38,14 @@ export interface Station {
   correct(dartId: string, segment: Segment, source: "station" | "admin"): StationView;
   /** Puts a new match on the station, not yet started; throws if the station is busy. */
   assign(match: { playerIds: string[]; settings?: MatchSettingsInput | undefined }): StationView;
+  /** Puts an existing match (a tournament match from the queue) on the station; throws if busy. */
+  take(matchId: string): StationView;
+  /** Sends the station's match back to the queue, if it hasn't started; true if it did. */
+  release(): boolean;
+  /** Forgets the station's match without touching the database, if it's this one and hasn't started. */
+  drop(matchId: string): boolean;
+  /** A line for the station page while it has no match, e.g. "Paused for the tournament". */
+  setNotice(notice: string | null): void;
   subscribe(listener: (view: StationView) => void): () => void;
 }
 
@@ -52,6 +60,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
   let synced = false;
   /** Dart ids of the darts currently on the board, by the board's index (0–2). */
   let boardDarts: string[] = [];
+  let notice: string | null = null;
 
   const state = () => (match ? matchState(match.settings, events) : null);
 
@@ -61,6 +70,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
       id,
       name: db.getStationConfig(id)?.name ?? `Station ${id}`,
       boardOnline,
+      notice: match ? null : notice,
       match:
         match && current
           ? {
@@ -71,6 +81,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
               })),
               settings: match.settings,
               state: current,
+              label: match.label,
             }
           : null,
     };
@@ -132,6 +143,38 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
     append({ type: "DartCorrected", dartId, segment, source });
     notify();
     return view();
+  }
+
+  function take(matchId: string) {
+    if (match) throw new CommandError("station already has a match; close it first");
+    const next = db.getMatch(matchId);
+    if (!next || next.closedAt) throw new CommandError("no such open match");
+    db.setStation(matchId, id);
+    match = { ...next, station: id };
+    events = db.events(matchId);
+    notify();
+    return view();
+  }
+
+  function release() {
+    if (!match || state()?.phase !== "notStarted") return false;
+    db.setStation(match.id, null);
+    clearMatch();
+    notify();
+    return true;
+  }
+
+  function drop(matchId: string) {
+    if (match?.id !== matchId || state()?.phase !== "notStarted") return false;
+    clearMatch();
+    notify();
+    return true;
+  }
+
+  function setNotice(next: string | null) {
+    if (next === notice) return;
+    notice = next;
+    if (!match) notify();
   }
 
   function clearMatch() {
@@ -291,8 +334,10 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
         break;
       case "abandonMatch":
         if (!match) break;
-        if (state()?.phase === "notStarted") db.deleteMatch(match.id);
-        else db.closeMatch(match.id, { abandoned: true });
+        if (state()?.phase !== "notStarted") db.closeMatch(match.id, { abandoned: true });
+        // A tournament match goes back to the queue (an abandoned one is played again).
+        else if (match.tournamentId) db.setStation(match.id, null);
+        else db.deleteMatch(match.id);
         clearMatch();
         break;
     }
@@ -307,6 +352,10 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
     command,
     correct,
     assign,
+    take,
+    release,
+    drop,
+    setNotice,
     subscribe(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
