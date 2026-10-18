@@ -57,7 +57,7 @@ export interface BoardGateway {
   close(): void;
 }
 
-function toDart(index: number, t: BoardThrow): DetectedDart {
+export function toDetectedDart(index: number, t: BoardThrow): DetectedDart {
   const { number, multiplier } = t.segment;
   return {
     index,
@@ -103,7 +103,8 @@ export function diffSnapshots(
     }
     known.forEach((dart, i) => {
       const now = current[i];
-      if (now && !sameSegment(dart, now)) events.push({ type: "DartRevised", ...toDart(i, now) });
+      if (now && !sameSegment(dart, now))
+        events.push({ type: "DartRevised", ...toDetectedDart(i, now) });
     });
   } else if (current.length < known.length || known.some((d, i) => !sameDart(d, current[i] ?? d))) {
     if (known.length > 0) events.push({ type: "TakeoutFinished" });
@@ -111,7 +112,7 @@ export function diffSnapshots(
   }
 
   for (let i = known.length; i < current.length; i++) {
-    events.push({ type: "DartDetected", ...toDart(i, current[i] as BoardThrow) });
+    events.push({ type: "DartDetected", ...toDetectedDart(i, current[i] as BoardThrow) });
   }
   return events;
 }
@@ -191,7 +192,7 @@ export function createBoardGateway(options: BoardGatewayOptions): BoardGateway {
   }
 
   async function command(method: "PUT" | "POST", path: string) {
-    const res = await fetch(`${base}/api/${path}`, { method });
+    const res = await fetch(`${base}/api/${path}`, { method, signal: AbortSignal.timeout(3000) });
     if (!res.ok) throw new Error(`${method} /api/${path}: ${res.status}`);
   }
 
