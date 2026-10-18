@@ -1,6 +1,6 @@
 # Architecture (draft v0)
 
-Status: **draft for discussion**. Nothing here is decided until it's moved into an ADR.
+Status: **agreed high-level design** (2026-10-18). Decisions are listed under "Decisions so far"; the first build step is tracked in `.scratch/walking-skeleton/`.
 
 ## Goal
 
@@ -123,7 +123,7 @@ Station shows the current visit's darts; tapping one opens a segment picker → 
 
 ## Decisions so far
 
-Settled in discussion (2026-10-18); to be moved into ADRs once the first code lands.
+Settled in discussion (2026-10-18). The hard-to-reverse ones are recorded in `docs/adr/`; terms are defined in `GLOSSARY.md`.
 
 - **Laptops run nothing of ours**: only Board Manager and a kiosk browser. The server connects to the boards directly.
 - **Stack**: TypeScript end to end, one Docker image.
@@ -160,7 +160,7 @@ Settled in discussion (2026-10-18); to be moved into ADRs once the first code la
 
 ## Open questions
 
-See the current grilling round; answers get folded into "Decisions so far".
+None open. New questions get added here and folded into "Decisions so far" once answered.
 
 ## Suggested build order
 
