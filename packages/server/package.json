@@ -15,5 +15,12 @@
   },
   "devDependencies": {
     "@n4/board-sim": "workspace:*"
+  },
+  "exports": {
+    "./api": {
+      "source": "./src/api.ts",
+      "types": "./dist/api.d.ts",
+      "default": "./dist/api.js"
+    }
   }
 }

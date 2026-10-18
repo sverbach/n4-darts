@@ -3,39 +3,17 @@
 // always derived from that log (docs/adr/0002).
 
 import { randomUUID } from "node:crypto";
-import {
-  defaultX01Settings,
-  type MatchState,
-  matchState,
-  type PlayerIndex,
-  type Segment,
-  type X01Settings,
-} from "@n4/engine";
+import { defaultX01Settings, matchState } from "@n4/engine";
+import type { StationCommand, StationView } from "./api.ts";
 import {
   type BoardEvent,
   type BoardThrow,
   type DetectedDart,
   toDetectedDart,
 } from "./board/gateway.ts";
-import type { Db, MatchRecord, StoredEvent } from "./db.ts";
+import type { Db, StoredEvent } from "./db.ts";
 
-export interface StationView {
-  id: number;
-  boardOnline: boolean;
-  match: (Pick<MatchRecord, "id" | "players" | "settings"> & { state: MatchState }) | null;
-}
-
-export type StationCommand =
-  | {
-      type: "startMatch";
-      players: [string, string];
-      firstPlayer: PlayerIndex;
-      settings?: Partial<X01Settings>;
-    }
-  | { type: "correctDart"; dartId: string; segment: Segment }
-  | { type: "nextPlayer" }
-  | { type: "undo" }
-  | { type: "closeMatch" };
+export type { StationCommand, StationView };
 
 /** The part of the board gateway a station needs to send commands. */
 export interface BoardControl {

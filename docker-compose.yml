@@ -5,6 +5,9 @@ services:
     restart: unless-stopped
     ports:
       - "${N4_PORT:-3000}:3000"
+    environment:
+      # Station number = Board Manager address; comma-separate more stations.
+      STATIONS: "${N4_STATIONS:-1=http://192.168.1.139:3180}"
     volumes:
       - n4-data:/data
 

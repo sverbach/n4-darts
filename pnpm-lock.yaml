@@ -209,6 +209,9 @@ importers:
         specifier: 19.3.1
         version: 19.3.1(react@19.3.1)
     devDependencies:
+      '@n4/server':
+        specifier: workspace:*
+        version: link:../server
       '@types/react':
         specifier: 19.3.0
         version: 19.3.0

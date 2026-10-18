@@ -21,6 +21,7 @@ pnpm install
 pnpm test        # all tests, run against TypeScript sources
 pnpm lint        # biome
 pnpm typecheck
+pnpm sim         # fake board on :3180 (station 1's default board)
 pnpm dev         # server on :3000 + web dev server (proxies /api to :3000)
 pnpm build && pnpm start   # production build, served on :3000
 ```
@@ -43,3 +44,6 @@ docker compose up -d --build
 ```
 
 Serves on port 3000 (override with `N4_PORT=8080`). Data lives in the `n4-data` volume.
+Stations are set with `N4_STATIONS`, e.g. `N4_STATIONS=1=http://192.168.1.139:3180,2=http://192.168.1.140:3180`.
+
+Open `http://<server>:3000/station/1` on the station laptop (and on any phone that should control it).

@@ -1,18 +1,16 @@
-import { useEffect, useState } from "react";
+import { StationPage } from "./StationPage.tsx";
 
 export function App() {
-  const [health, setHealth] = useState<"checking" | "ok" | "down">("checking");
-
-  useEffect(() => {
-    fetch("/api/health")
-      .then((res) => setHealth(res.ok ? "ok" : "down"))
-      .catch(() => setHealth("down"));
-  }, []);
+  const station = /^\/station\/(\d+)\/?$/.exec(window.location.pathname);
+  if (station) return <StationPage id={Number(station[1])} />;
 
   return (
-    <main style={{ fontFamily: "system-ui, sans-serif", padding: 16 }}>
+    <main className="home">
       <h1>n4-darts</h1>
-      <p>Server: {health}</p>
+      <nav>
+        <a href="/station/1">Station 1</a>
+        <a href="/station/2">Station 2</a>
+      </nav>
     </main>
   );
 }
