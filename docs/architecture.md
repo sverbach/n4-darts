@@ -130,7 +130,7 @@ Settled in discussion (2026-10-18). The hard-to-reverse ones are recorded in `do
 - **Game**: X01 only for v1, default 301. Default single in / single out; in and out rules configurable (e.g. double out, bull in). Starting score and legs are settings.
 - **Tournament shape**: always a group phase (default round robin), then single or double elimination (default double).
 - **Visit boundary**: a visit ends when the player takes their darts out (`TakeoutFinished`), not at the 3rd dart, bust or checkout.
-- **Throwing order**: alternates every leg.
+- **Throwing order**: each match has a fixed player order; the leg starter moves one place along it every leg (with two players: alternates).
 - **Stray darts** (wrong player, idle station): ignored.
 - **No referee role**: players correct their own darts at the station; every correction is logged and the organiser can override.
 - **Players are persistent** across evenings: long-term stats build player profiles and feed seeding for future tournaments.
@@ -139,7 +139,9 @@ Settled in discussion (2026-10-18). The hard-to-reverse ones are recorded in `do
 - **KO seeding**: group winners spread across the bracket, runners-up crossed (A1 vs B2); byes go to the top seeds.
 - **Double elimination**: grand final with bracket reset by default, configurable.
 - **Legs per phase**: groups / winners / losers / final each have their own best-of setting.
-- **Leg 1 throw**: players decide and tap who starts (bull-off detection is a later feature).
+- **Leg 1 throw**: players set the order at the station before starting (reorder or shuffle); bull-off detection is a later feature.
+- **Matches with 2–8 players** outside tournaments (`/admin` and quick matches); tournament matches stay one against one. A leg ends at the first checkout; the setting is "first to N legs". No teams.
+- **Board reset mid-visit** (pressed on the laptop): the logged darts stand and the visit carries on with the next darts. No prompt; "undo" and "next player" are there if needed.
 - **Stations are URLs**: any number of devices may control `/station/n` at once; `/watch/n` is view-only.
 - **Manual "next player"** button ends a visit if takeout isn't detected, and resets the board.
 - **Scheduling**: a free board gets the next match whose players are both free, longest-rested first; the KO starts when the group phase is complete; the organiser can override.

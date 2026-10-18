@@ -42,11 +42,11 @@ The dart that brings a player's score to exactly zero under the out rule, winnin
 _Avoid_: Finish (as a noun for the winning dart)
 
 **Leg**:
-One game of X01 from the starting score down to zero. Who throws first alternates from leg to leg.
+One game of X01 from the starting score down to zero; the first checkout wins it. Who throws first moves one place along the match's player order from leg to leg.
 _Avoid_: Game
 
 **Match**:
-Two players playing legs until one reaches the number needed to win (best of N).
+Two to eight players, in a fixed throwing order, playing legs until one reaches the number needed to win (first to N legs; with two players often said as best of N). Tournament matches are always two players.
 _Avoid_: Game, fixture, pairing
 
 **Correction**:
