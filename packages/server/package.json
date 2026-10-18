@@ -1,0 +1,16 @@
+{
+  "name": "@n4/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "dev": "node --watch --conditions=source --experimental-strip-types src/main.ts"
+  },
+  "dependencies": {
+    "@fastify/static": "10.1.6",
+    "@n4/engine": "workspace:*",
+    "fastify": "5.12.7"
+  }
+}

@@ -1,0 +1,12 @@
+services:
+  n4-darts:
+    build: .
+    image: n4-darts
+    restart: unless-stopped
+    ports:
+      - "${N4_PORT:-3000}:3000"
+    volumes:
+      - n4-data:/data
+
+volumes:
+  n4-data:

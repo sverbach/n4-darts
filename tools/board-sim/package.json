@@ -1,0 +1,10 @@
+{
+  "name": "@n4/board-sim",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Fake Autodarts Board Manager for development and tests (ticket 03).",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}
