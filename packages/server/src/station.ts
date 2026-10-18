@@ -9,6 +9,7 @@ import {
   MIN_PLAYERS,
   matchState,
   RULES_VERSION,
+  type Segment,
 } from "@n4/engine";
 import type { MatchSettingsInput, StationCommand, StationView } from "./api.ts";
 import {
@@ -33,6 +34,8 @@ export interface Station {
   view(): StationView;
   handleBoardEvent(event: BoardEvent): void;
   command(command: StationCommand): Promise<StationView>;
+  /** Corrects a dart of the station's match; `admin` when the organiser does it from /admin. */
+  correct(dartId: string, segment: Segment, source: "station" | "admin"): StationView;
   /** Puts a new match on the station, not yet started; throws if the station is busy. */
   assign(match: { playerIds: string[]; settings?: MatchSettingsInput | undefined }): StationView;
   subscribe(listener: (view: StationView) => void): () => void;
@@ -126,6 +129,13 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
     };
     db.createMatch(match);
     events = [];
+    notify();
+    return view();
+  }
+
+  function correct(dartId: string, segment: Segment, source: "station" | "admin") {
+    if (!match) throw new CommandError("no match on this station");
+    append({ type: "DartCorrected", dartId, segment, source });
     notify();
     return view();
   }
@@ -249,14 +259,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
         append({ type: "MatchStarted", playerCount: match.playerIds.length });
         break;
       case "correctDart":
-        if (!match) throw new CommandError("no match on this station");
-        append({
-          type: "DartCorrected",
-          dartId: cmd.dartId,
-          segment: cmd.segment,
-          source: "station",
-        });
-        break;
+        return correct(cmd.dartId, cmd.segment, "station");
       case "nextPlayer":
         if (!match) throw new CommandError("no match on this station");
         append({ type: "VisitEndedManually" });
@@ -293,6 +296,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
     view,
     handleBoardEvent,
     command,
+    correct,
     assign,
     subscribe(listener) {
       listeners.add(listener);

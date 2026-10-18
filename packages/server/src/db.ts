@@ -41,6 +41,8 @@ export interface Db {
   setOrder(id: string, playerIds: string[]): void;
   setWinner(id: string, playerId: string | null): void;
   closeMatch(id: string, options?: { abandoned?: boolean }): void;
+  /** Closed matches (finished or abandoned), most recently closed first. */
+  closedMatches(limit?: number): MatchRecord[];
   /** Removes a match and its log entirely, e.g. one that was set up but never started. */
   deleteMatch(id: string): void;
   append(matchId: string, event: StoredEvent): void;
@@ -149,6 +151,9 @@ export function openDb(path: string): Db {
     "update matches set closed_at = strftime('%Y-%m-%dT%H:%M:%fZ'), abandoned = ? where id = ? and closed_at is null",
   );
   const deleteMatchStmt = db.prepare("delete from matches where id = ?");
+  const selectClosed = db.prepare(
+    "select * from matches where closed_at is not null order by closed_at desc, rowid desc limit ?",
+  );
   const insertEvent = db.prepare(`
     insert into match_events (match_id, seq, event)
     values (?, (select coalesce(max(seq), 0) + 1 from match_events where match_id = ?), ?)
@@ -231,6 +236,9 @@ export function openDb(path: string): Db {
     },
     closeMatch(id, options = {}) {
       closeStmt.run(options.abandoned ? 1 : 0, id);
+    },
+    closedMatches(limit = 200) {
+      return (selectClosed.all(limit) as unknown as MatchRow[]).map(toRecord);
     },
     deleteMatch(id) {
       deleteMatchStmt.run(id);

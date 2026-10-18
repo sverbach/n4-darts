@@ -23,7 +23,7 @@ export function buildApp(options: AppOptions = {}) {
   app.get("/api/health", async () => ({ ok: true }));
   registerAdmin(app, options.adminPin);
   if (options.db) registerPlayers(app, options.db);
-  registerMatches(app, stations);
+  registerMatches(app, stations, options.db);
 
   app.get("/api/stations", async () => [...stations.values()].map((s) => s.view()));
 

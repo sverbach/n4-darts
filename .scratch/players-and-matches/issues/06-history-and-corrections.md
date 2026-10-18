@@ -1,6 +1,6 @@
 # Match history and organiser corrections
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 05
 
@@ -12,3 +12,8 @@ Blocked by: 05
 ## Acceptance
 
 - Tests: correction in an earlier leg of a finished match flips the winner and the stored result; corrections on a running match update the station live.
+
+## Comments
+
+**2026-10-18, done.** `GET /api/admin/matches` (closed matches, newest first: players, winner, abandoned, legs won), `GET /api/admin/matches/:id` (adds the full `MatchState` and `originals`: the board's first detection for every corrected dart), `POST /api/admin/matches/:id/corrections` (`{ dartId, segment }`, appends `DartCorrected` with `source: "admin"`). A running match is corrected through its station (`Station.correct`), so the station's state and live viewers update; a closed match gets the event appended directly and its stored winner recomputed from the log. An abandoned match never gets a winner, whatever is corrected. Web: History on `/admin/matches`; detail view with every leg and visit, tap any dart to correct it, corrected darts show the original struck through; running matches open from "Details" on their station row and refresh every 3 s.
+- A correction can leave a closed match without a winner (shown as "No winner (corrected)"); correcting it back restores the result. Fine for now; worth revisiting with tournaments, where a result feeds the bracket.

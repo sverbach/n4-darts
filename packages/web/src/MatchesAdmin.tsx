@@ -2,6 +2,7 @@ import { MIN_PLAYERS } from "@n4/engine";
 import type { StationView } from "@n4/server/api";
 import { useCallback, useEffect, useState } from "react";
 import { request } from "./adminApi.ts";
+import { MatchDetailView, MatchHistory } from "./MatchHistory.tsx";
 import {
   defaultSetupSettings,
   legsLabel,
@@ -16,6 +17,7 @@ const REFRESH_MS = 3000;
 export function MatchesAdmin() {
   const [stations, setStations] = useState<StationView[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/stations").catch(() => null);
@@ -34,6 +36,8 @@ export function MatchesAdmin() {
     await load();
   };
 
+  if (openId) return <MatchDetailView id={openId} onBack={() => setOpenId(null)} />;
+
   return (
     <div className="matches-admin">
       {error && (
@@ -47,17 +51,25 @@ export function MatchesAdmin() {
       ) : (
         <ul className="station-list">
           {stations.map((s) => (
-            <StationRow key={s.id} station={s} onAbandon={() => abandon(s)} />
+            <StationRow
+              key={s.id}
+              station={s}
+              onAbandon={() => abandon(s)}
+              onOpen={() => s.match && setOpenId(s.match.id)}
+            />
           ))}
         </ul>
       )}
       <h2>New match</h2>
       {stations && <NewMatch stations={stations} onCreated={load} />}
+      <h2>History</h2>
+      <MatchHistory onOpen={setOpenId} />
     </div>
   );
 }
 
-function StationRow({ station, onAbandon }: { station: StationView; onAbandon(): void }) {
+function StationRow(props: { station: StationView; onAbandon(): void; onOpen(): void }) {
+  const { station, onAbandon, onOpen } = props;
   const { match } = station;
   return (
     <li className="station-row">
@@ -72,9 +84,16 @@ function StationRow({ station, onAbandon }: { station: StationView; onAbandon():
       ) : (
         <>
           <p className="station-row-match">{matchSummary(match)}</p>
-          <button type="button" className="ghost danger" onClick={onAbandon}>
-            {match.state.phase === "notStarted" ? "Cancel match" : "End match"}
-          </button>
+          <div className="station-row-actions">
+            {match.state.phase !== "notStarted" && (
+              <button type="button" className="ghost" onClick={onOpen}>
+                Details
+              </button>
+            )}
+            <button type="button" className="ghost danger" onClick={onAbandon}>
+              {match.state.phase === "notStarted" ? "Cancel match" : "End match"}
+            </button>
+          </div>
         </>
       )}
     </li>

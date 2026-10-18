@@ -15,6 +15,27 @@ export interface MatchView {
   state: MatchState;
 }
 
+/** A match as listed in /admin history. */
+export interface MatchSummary {
+  id: string;
+  station: number | null;
+  players: MatchPlayer[];
+  settings: X01Settings;
+  /** Player id; null while unfinished, when abandoned, or after a correction took the win away. */
+  winner: string | null;
+  abandoned: boolean;
+  closedAt: string | null;
+  /** Legs won per player, in throwing order. */
+  legsWon: number[];
+}
+
+/** A match with every leg and visit, for /admin. */
+export interface MatchDetail extends MatchSummary {
+  state: MatchState;
+  /** What the board first detected, for every dart that was corrected since. */
+  originals: Record<string, Segment>;
+}
+
 export interface StationView {
   id: number;
   boardOnline: boolean;
