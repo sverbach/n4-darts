@@ -30,10 +30,10 @@ pnpm build && pnpm start   # production build, served on :3000
 A fake Autodarts Board Manager (same API as the real one, see `docs/board-manager-api.md`):
 
 ```sh
-pnpm sim -- --port 3180                       # then throw darts by hand:
+pnpm sim --port 3180                       # then throw darts by hand:
 curl -X POST localhost:3180/sim/dart -d '{"name":"T20"}'   # S20 SO20 D20 T20 25 BULL M17 BOUNCE
 curl -X POST localhost:3180/sim/takeout
-pnpm sim -- --replay prototypes/recordings/2026-10-18-board1.txt --speed 10
+pnpm sim --replay prototypes/recordings/2026-10-18-board1.txt --speed 10
 ```
 
 ## Running on the server

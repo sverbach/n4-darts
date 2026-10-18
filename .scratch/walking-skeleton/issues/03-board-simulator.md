@@ -19,7 +19,7 @@ Usable both as a CLI (`pnpm sim --port 3180`) and in-process from tests.
 
 ## Comments
 
-**2026-10-18, done.** `createBoardSim()` in `tools/board-sim/src/sim.ts`, CLI `pnpm sim -- --port 3180 [--replay <file> --speed 10]`, control API `POST /sim/{dart,revise,takeout,offline,online}`. Verified with `prototypes/listen-board.ps1` against the CLI: same endpoints and message shapes as the real board. Notes:
+**2026-10-18, done.** `createBoardSim()` in `tools/board-sim/src/sim.ts`, CLI `pnpm sim --port 3180 [--replay <file> --speed 10]`, control API `POST /sim/{dart,revise,takeout,offline,online}`. Verified with `prototypes/listen-board.ps1` against the CLI: same endpoints and message shapes as the real board. Notes:
 - Simulated darts get ±0.01 coordinate scatter, like real throws; without it the gateway can't tell "same dart" from "takeout and a new dart in the same spot" after a reconnect.
 - Darts after the third are ignored until takeout, and stop/start clear the darts. Both are assumptions about the real board (not observed yet).
 - Bullseye naming (`bed: "Double"`, `name: "Bull"`) is a guess until ticket 07 captures the real values.

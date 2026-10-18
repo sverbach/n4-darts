@@ -6,6 +6,8 @@ import { parseRecording, replay } from "./replay.ts";
 import { createBoardSim } from "./sim.ts";
 
 const { values } = parseArgs({
+  // Tolerate `pnpm sim -- --port 3180`, where pnpm passes the separator through.
+  args: process.argv.slice(2).filter((arg) => arg !== "--"),
   options: {
     port: { type: "string", default: "3180" },
     host: { type: "string", default: "0.0.0.0" },
