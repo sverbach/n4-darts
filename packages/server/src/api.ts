@@ -16,6 +16,13 @@ export interface StationView {
   match: MatchView | null;
 }
 
+export interface Player {
+  id: string;
+  name: string;
+  /** Hidden from pickers; their history stays. */
+  archived: boolean;
+}
+
 export interface AdminSession {
   /** False when the server has no `ADMIN_PIN`: /admin is open. */
   pinRequired: boolean;

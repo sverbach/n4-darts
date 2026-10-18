@@ -1,7 +1,8 @@
-// Matches and their append-only event logs (docs/adr/0002).
+// Players, matches and the matches' append-only event logs (docs/adr/0002).
 
 import { DatabaseSync } from "node:sqlite";
 import type { MatchEvent, X01Settings } from "@n4/engine";
+import type { Player } from "./api.ts";
 
 export interface MatchRecord {
   id: string;
@@ -18,6 +19,14 @@ export interface MatchRecord {
 export type StoredEvent = MatchEvent & Record<string, unknown>;
 
 export interface Db {
+  /** Alphabetical; archived players only when asked for. */
+  players(options?: { includeArchived?: boolean }): Player[];
+  getPlayer(id: string): Player | undefined;
+  /** The player with this name, ignoring case, if any. */
+  playerNamed(name: string): Player | undefined;
+  addPlayer(player: Player): void;
+  updatePlayer(player: Player): void;
+  deletePlayer(id: string): void;
   createMatch(match: Omit<MatchRecord, "closedAt">): void;
   getMatch(id: string): MatchRecord | undefined;
   /** The station's current match, if any. */
@@ -36,6 +45,21 @@ interface MatchRow {
   closed_at: string | null;
 }
 
+interface PlayerRow {
+  id: string;
+  name: string;
+  archived: number;
+}
+
+const toPlayer = (row: PlayerRow): Player => ({
+  id: row.id,
+  name: row.name,
+  archived: row.archived === 1,
+});
+
+/** Names are unique ignoring case, including non-ASCII letters (SQLite's NOCASE is ASCII only). */
+const nameKey = (name: string) => name.toLocaleLowerCase("und");
+
 const toRecord = (row: MatchRow): MatchRecord => ({
   id: row.id,
   station: row.station,
@@ -49,6 +73,13 @@ export function openDb(path: string): Db {
   const db = new DatabaseSync(path);
   db.exec(`
     pragma journal_mode = wal;
+    create table if not exists players (
+      id text primary key,
+      name text not null,
+      name_key text not null unique,
+      archived integer not null default 0,
+      created_at text not null default (strftime('%Y-%m-%dT%H:%M:%fZ'))
+    );
     create table if not exists matches (
       id text primary key,
       station integer,
@@ -65,6 +96,17 @@ export function openDb(path: string): Db {
       primary key (match_id, seq)
     );
   `);
+
+  const selectPlayers = db.prepare("select * from players where archived = 0 or ?");
+  const selectPlayer = db.prepare("select * from players where id = ?");
+  const selectPlayerByKey = db.prepare("select * from players where name_key = ?");
+  const insertPlayer = db.prepare(
+    "insert into players (id, name, name_key, archived) values (?, ?, ?, ?)",
+  );
+  const updatePlayerStmt = db.prepare(
+    "update players set name = ?, name_key = ?, archived = ? where id = ?",
+  );
+  const deletePlayerStmt = db.prepare("delete from players where id = ?");
 
   const insertMatch = db.prepare(
     "insert into matches (id, station, settings, players) values (?, ?, ?, ?)",
@@ -83,6 +125,27 @@ export function openDb(path: string): Db {
   const selectEvents = db.prepare("select event from match_events where match_id = ? order by seq");
 
   return {
+    players(options = {}) {
+      const rows = selectPlayers.all(options.includeArchived ? 1 : 0) as unknown as PlayerRow[];
+      return rows.map(toPlayer).sort((a, b) => a.name.localeCompare(b.name));
+    },
+    getPlayer(id) {
+      const row = selectPlayer.get(id) as PlayerRow | undefined;
+      return row && toPlayer(row);
+    },
+    playerNamed(name) {
+      const row = selectPlayerByKey.get(nameKey(name)) as PlayerRow | undefined;
+      return row && toPlayer(row);
+    },
+    addPlayer(player) {
+      insertPlayer.run(player.id, player.name, nameKey(player.name), player.archived ? 1 : 0);
+    },
+    updatePlayer(player) {
+      updatePlayerStmt.run(player.name, nameKey(player.name), player.archived ? 1 : 0, player.id);
+    },
+    deletePlayer(id) {
+      deletePlayerStmt.run(id);
+    },
     createMatch(match) {
       insertMatch.run(
         match.id,

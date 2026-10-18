@@ -13,6 +13,7 @@ Fresh schema: drop the skeleton's `matches` / `match_events` tables (test data, 
 - Station scoreboard handles up to 8 players (remaining score, legs won, current player highlighted). Plain styling.
 - When a match is won, record the winner on the match; the station shows the result and offers to close it, freeing the station.
 - Abandon from the station: closes the match with `abandoned`, no winner.
+- `DELETE /api/admin/players/:id` refuses (409) a player who has matches: archive instead (left over from ticket 03).
 
 ## Acceptance
 

@@ -2,12 +2,15 @@ import { existsSync } from "node:fs";
 import fastifyStatic from "@fastify/static";
 import Fastify from "fastify";
 import { registerAdmin } from "./admin.ts";
+import type { Db } from "./db.ts";
+import { registerPlayers } from "./players.ts";
 import { CommandError, type Station, type StationCommand } from "./station.ts";
 
 export interface AppOptions {
   /** Directory with the built web app; served at `/` when it exists. */
   webDir?: string;
   stations?: Station[];
+  db?: Db;
   /** Shared PIN for /admin; without one /admin is open. */
   adminPin?: string | undefined;
 }
@@ -18,6 +21,7 @@ export function buildApp(options: AppOptions = {}) {
 
   app.get("/api/health", async () => ({ ok: true }));
   registerAdmin(app, options.adminPin);
+  if (options.db) registerPlayers(app, options.db);
 
   app.get("/api/stations", async () => [...stations.values()].map((s) => s.view()));
 
