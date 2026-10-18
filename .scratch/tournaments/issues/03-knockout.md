@@ -1,6 +1,6 @@
 # Knockout brackets (pure)
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 02
 
@@ -15,3 +15,7 @@ Pure bracket logic, tested on its own.
 ## Acceptance
 
 - Unit tests: brackets for 2–16 advancers (single and double), byes, same-group avoidance, a full double-elimination run with and without bracket reset, placings.
+
+## Comments
+
+**2026-10-18, done.** `tournament/knockout.ts`: `seedAdvancers(tables, advancePerGroup)` (winners, then runners-up, … by points, leg difference, average), `bracketOrder(size)` (1 8 4 5 2 7 3 6), and `knockout(advancers, elimination, bracketReset, results)` which defines every bracket slot from sources (a seed, the winner or loser of another slot) and resolves participants from the results: a player, a bye (nobody will come; the other side advances without a match) or pending. Slots: `w{round}.{n}`, `l{round}.{n}`, `gf`, and `gf2` appears only when the losers-bracket player wins the grand final with bracket reset on. Each slot has a phase (which legs setting), a label and a queue order. Same-group first-round meetings are swapped away within a rank; winners-bracket losers drop into the losers bracket reversed every other round (tested: no rematches in the first two losers rounds for 8 and 16). Placings by stage (`placingsFromStages`), so semi-final losers in single elimination share 3rd.
