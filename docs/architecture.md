@@ -1,4 +1,4 @@
-# Architecture (draft v0)
+# Architecture
 
 Status: **agreed high-level design** (2026-10-18). Decisions are listed under "Decisions so far"; the first build step is tracked in `.scratch/walking-skeleton/`.
 
