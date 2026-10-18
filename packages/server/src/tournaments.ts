@@ -371,6 +371,66 @@ export function createTournaments(db: Db, stations: StationDirectory) {
     changed();
   }
 
+  function entrantOf(tournament: TournamentRecord, playerId: string) {
+    const entrant = db.entrants(tournament.id).find((e) => e.playerId === playerId);
+    if (!entrant) throw new TournamentError("the player isn't in the tournament", 404);
+    return entrant;
+  }
+
+  /**
+   * The player loses every remaining match by walkover: a match they're playing is abandoned,
+   * the rest are taken off stations and out of the queue, and sync recreates them as walkovers.
+   * Results already played stand.
+   */
+  function withdraw(playerId: string) {
+    const tournament = running();
+    const entrant = entrantOf(tournament, playerId);
+    if (entrant.withdrawn) throw new TournamentError("the player has already withdrawn");
+    db.setEntrants(
+      tournament.id,
+      db
+        .entrants(tournament.id)
+        .map((e) => (e.playerId === playerId ? { ...e, withdrawn: true } : e)),
+    );
+    for (const match of db.tournamentMatches(tournament.id)) {
+      if (match.closedAt || !match.playerIds.includes(playerId)) continue;
+      const station = stationOf(match);
+      if (station && db.events(match.id).length > 0) {
+        void station.command({ type: "abandonMatch" });
+      } else {
+        station?.drop(match.id);
+        db.deleteMatch(match.id);
+      }
+    }
+    sync();
+    changed();
+  }
+
+  /** A player who arrives during the group phase joins the smallest group. */
+  function addLate(playerId: string) {
+    const tournament = running();
+    const [id] = checkPlayers([playerId]);
+    const entrants = db.entrants(tournament.id);
+    if (entrants.some((e) => e.playerId === id))
+      throw new TournamentError("the player is already in");
+    if (currentPlan(tournament).groupPhaseDone) {
+      throw new TournamentError("the knockout has started; no late arrivals now");
+    }
+    const groupCount = Math.max(1, ...entrants.map((e) => e.group + 1));
+    const sizes = Array.from(
+      { length: groupCount },
+      (_, g) => entrants.filter((e) => e.group === g).length,
+    );
+    const group = sizes.indexOf(Math.min(...sizes));
+    const seed = Math.max(-1, ...entrants.map((e) => e.seed)) + 1;
+    db.setEntrants(tournament.id, [
+      ...entrants,
+      { playerId: id as string, seed, group, withdrawn: false },
+    ]);
+    sync();
+    changed();
+  }
+
   /** Ends the tournament without a champion: open matches are abandoned. */
   function endEarly() {
     const tournament = running();
@@ -484,6 +544,8 @@ export function createTournaments(db: Db, stations: StationDirectory) {
     sendBack,
     playNow,
     endEarly,
+    withdraw,
+    addLate,
     placed,
     avoids,
     subscribe(listener: () => void) {
@@ -523,6 +585,20 @@ export function registerTournaments(app: FastifyInstance, tournaments: Tournamen
   );
   app.post("/api/admin/tournament/start", async (_request, reply) =>
     attempt(reply, () => tournaments.start()),
+  );
+  app.post<{ Body: { playerId?: unknown } }>(
+    "/api/admin/tournament/withdraw",
+    async (request, reply) =>
+      attempt(reply, () => {
+        tournaments.withdraw(String(request.body?.playerId ?? ""));
+        return tournaments.view();
+      }),
+  );
+  app.post<{ Body: { playerId?: unknown } }>("/api/admin/tournament/late", async (request, reply) =>
+    attempt(reply, () => {
+      tournaments.addLate(String(request.body?.playerId ?? ""));
+      return tournaments.view();
+    }),
   );
   app.post("/api/admin/tournament/end", async (_request, reply) =>
     attempt(reply, () => {

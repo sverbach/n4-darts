@@ -5,7 +5,8 @@ import type {
   TournamentProgress,
   TournamentStationView,
 } from "@n4/server/api";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { usePlayers } from "./MatchSetup.tsx";
 
 /** How often the running tournament refreshes. */
 const REFRESH_MS = 3000;
@@ -163,6 +164,10 @@ export function TournamentRun(props: {
           </details>
         </section>
       ))}
+
+      {live && (
+        <Roster view={view} send={send} base={base} groupPhase={progress.phase === "groups"} />
+      )}
 
       {live && (
         <button
@@ -332,5 +337,68 @@ function QueueRow(props: {
         </select>
       </div>
     </li>
+  );
+}
+
+/** Who's in: withdraw a player, or add one who arrives late (group phase only). */
+function Roster(props: {
+  view: TournamentAdminView;
+  send: Send;
+  base: string;
+  groupPhase: boolean;
+}) {
+  const { view, send, base, groupPhase } = props;
+  const { players } = usePlayers();
+  const [late, setLate] = useState("");
+  const inIt = new Set(view.entrants.map((e) => e.playerId));
+  const available = players?.filter((p) => !inIt.has(p.id)) ?? [];
+
+  return (
+    <section>
+      <h2>Players</h2>
+      <ul className="player-list">
+        {view.entrants.map((e) => (
+          <li key={e.playerId} className="player-row">
+            <span className={`player-row-name ${e.withdrawn ? "withdrawn" : ""}`}>{e.name}</span>
+            {e.withdrawn ? (
+              <span className="hint">Withdrawn</span>
+            ) : (
+              <button
+                type="button"
+                className="ghost danger"
+                onClick={() => {
+                  if (confirm(`Withdraw ${e.name}? Their remaining matches become walkovers.`)) {
+                    void send("POST", `${base}/withdraw`, { playerId: e.playerId });
+                  }
+                }}
+              >
+                Withdraw
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+      {groupPhase && available.length > 0 && (
+        <div className="inline-form">
+          <select aria-label="Late arrival" value={late} onChange={(e) => setLate(e.target.value)}>
+            <option value="">Late arrival…</option>
+            {available.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            disabled={!late}
+            onClick={async () => {
+              if (await send("POST", `${base}/late`, { playerId: late })) setLate("");
+            }}
+          >
+            Add
+          </button>
+        </div>
+      )}
+    </section>
   );
 }

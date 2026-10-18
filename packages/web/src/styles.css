@@ -939,3 +939,13 @@ button.danger {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+
+.player-row-name.withdrawn {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.inline-form select {
+  flex: 1;
+  min-width: 0;
+}
