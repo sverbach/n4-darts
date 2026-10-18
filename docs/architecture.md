@@ -150,6 +150,7 @@ Settled in discussion (2026-10-18); to be moved into ADRs once the first code la
 - **Withdrawals**: unplayed matches become walkovers (2 points, N–0 legs) and played results stand; walkovers don't count for long-term stats. Free roster edits until the first match is played.
 - **Station corrections**: darts of the current visit, plus "undo last visit". Older changes go through `/admin`.
 - **Later, not v1**: free play / quick match (data model allows a match without a tournament from day one), sound caller, bull-off detection.
+- **Frontend**: React + Vite. Visual language follows the user's Claude design system (link to be added).
 - **Board simulator**: a fake Board Manager (same API, replays recorded logs or is driven from a clickable board) is built alongside the gateway and used for automated tests.
 - **Repo layout**: pnpm workspace with `packages/engine`, `packages/server`, `packages/web`, `tools/board-sim`. Single domain context.
 - **Stations** are configured in `/admin` (name + Board Manager address) with a live connection indicator. Laptops get DHCP reservations.
