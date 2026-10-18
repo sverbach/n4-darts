@@ -119,16 +119,9 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
     if (!Number.isInteger(settings.legsToWin) || settings.legsToWin < 1) {
       throw new CommandError("legs to win must be a whole number of at least 1");
     }
-    match = {
-      id: randomUUID(),
-      station: id,
-      settings,
-      playerIds: [...input.playerIds],
-      winner: null,
-      abandoned: false,
-      closedAt: null,
-    };
-    db.createMatch(match);
+    const matchId = randomUUID();
+    db.createMatch({ id: matchId, station: id, settings, playerIds: [...input.playerIds] });
+    match = db.getMatch(matchId) ?? null;
     events = [];
     notify();
     return view();

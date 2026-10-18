@@ -3,6 +3,7 @@
 import { DatabaseSync } from "node:sqlite";
 import type { MatchEvent, X01Settings } from "@n4/engine";
 import type { Player } from "./api.ts";
+import type { Entrant, Placing, TournamentConfig } from "./tournament/types.ts";
 
 export interface MatchRecord {
   id: string;
@@ -17,6 +18,34 @@ export interface MatchRecord {
   abandoned: boolean;
   /** Set when the match is over or abandoned; the station is free again. */
   closedAt: string | null;
+  /** The tournament the match belongs to, and its place in it (e.g. a group fixture). */
+  tournamentId: string | null;
+  slot: string | null;
+  /** Shown at the station, e.g. "Group A · match 4". */
+  label: string | null;
+  /** Won without being played (the opponent withdrew); never counts for stats. */
+  walkover: boolean;
+  /** Held back by the organiser: the scheduler skips it. */
+  held: boolean;
+  /** Only goes to this station. */
+  pinnedStation: number | null;
+}
+
+export type NewMatch = Pick<MatchRecord, "id" | "station" | "settings" | "playerIds"> &
+  Partial<Pick<MatchRecord, "tournamentId" | "slot" | "label">>;
+
+export type TournamentStatus = "draft" | "running" | "finished";
+
+export interface TournamentRecord {
+  id: string;
+  name: string;
+  status: TournamentStatus;
+  config: TournamentConfig;
+  createdAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+  /** Set when the tournament is finished. */
+  placings: Placing[] | null;
 }
 
 /** A station as configured in /admin. */
@@ -49,7 +78,31 @@ export interface Db {
   deletePlayer(id: string): void;
   /** Whether the player is in any match, open or closed. */
   playerHasMatches(id: string): boolean;
-  createMatch(match: Pick<MatchRecord, "id" | "station" | "settings" | "playerIds">): void;
+  createMatch(match: NewMatch): void;
+  /** Puts a match on a station, or takes it off (back to the queue). */
+  setStation(id: string, station: number | null): void;
+  setHeld(id: string, held: boolean): void;
+  setPinnedStation(id: string, station: number | null): void;
+  /** Closes a match as won by walkover. */
+  closeAsWalkover(id: string, winner: string): void;
+  tournamentMatches(tournamentId: string): MatchRecord[];
+  /** Players in an open match that's on a station. */
+  busyPlayerIds(): Set<string>;
+  /** When each player's most recent match closed. */
+  lastClosedAt(): Map<string, string>;
+  isStationPaused(id: number): boolean;
+  setStationPaused(id: number, paused: boolean): void;
+  createTournament(tournament: TournamentRecord): void;
+  saveTournament(tournament: TournamentRecord): void;
+  getTournament(id: string): TournamentRecord | undefined;
+  /** The draft or running tournament, if any; there's at most one. */
+  activeTournament(): TournamentRecord | undefined;
+  /** All tournaments, newest first. */
+  tournaments(): TournamentRecord[];
+  entrants(tournamentId: string): Entrant[];
+  setEntrants(tournamentId: string, entrants: Entrant[]): void;
+  /** The match's events with when they were recorded. */
+  timedEvents(matchId: string): { at: string; event: StoredEvent }[];
   getMatch(id: string): MatchRecord | undefined;
   /** The station's current match, if any. */
   openMatchOn(station: number): MatchRecord | undefined;
@@ -72,7 +125,7 @@ export interface Db {
  * Bumped when the schema changes incompatibly. Version 0 is the walking skeleton's, whose test
  * matches only had player names: they're dropped, not migrated (players-and-matches spec).
  */
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 interface MatchRow {
   id: string;
@@ -81,7 +134,34 @@ interface MatchRow {
   winner: string | null;
   abandoned: number;
   closed_at: string | null;
+  tournament_id: string | null;
+  slot: string | null;
+  label: string | null;
+  walkover: number;
+  held: number;
+  pinned_station: number | null;
 }
+
+interface TournamentRow {
+  id: string;
+  name: string;
+  status: TournamentStatus;
+  config: string;
+  created_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  placings: string | null;
+}
+
+/** Columns added to `matches` in schema version 2 (tournaments). */
+const MATCH_COLUMNS_V2 = {
+  tournament_id: "text",
+  slot: "text",
+  label: "text",
+  walkover: "integer not null default 0",
+  held: "integer not null default 0",
+  pinned_station: "integer",
+};
 
 interface PlayerRow {
   id: string;
@@ -139,6 +219,27 @@ export function openDb(path: string): Db {
       primary key (match_id, position)
     );
     create index if not exists match_players_by_player on match_players(player_id);
+    create table if not exists tournaments (
+      id text primary key,
+      name text not null,
+      status text not null,
+      config text not null,
+      created_at text not null,
+      started_at text,
+      finished_at text,
+      placings text
+    );
+    create table if not exists tournament_players (
+      tournament_id text not null references tournaments(id) on delete cascade,
+      player_id text not null references players(id),
+      seed integer not null,
+      group_index integer not null,
+      withdrawn integer not null default 0,
+      primary key (tournament_id, player_id)
+    );
+    create table if not exists paused_stations (
+      id integer primary key
+    );
     create table if not exists match_events (
       match_id text not null references matches(id) on delete cascade,
       seq integer not null,
@@ -146,6 +247,15 @@ export function openDb(path: string): Db {
       event text not null,
       primary key (match_id, seq)
     );
+  `);
+  const matchColumns = new Set(
+    (db.prepare("pragma table_info(matches)").all() as { name: string }[]).map((c) => c.name),
+  );
+  for (const [name, type] of Object.entries(MATCH_COLUMNS_V2)) {
+    if (!matchColumns.has(name)) db.exec(`alter table matches add column ${name} ${type}`);
+  }
+  db.exec(`
+    create index if not exists matches_by_tournament on matches(tournament_id);
     pragma user_version = ${SCHEMA_VERSION};
   `);
 
@@ -177,7 +287,52 @@ export function openDb(path: string): Db {
   const deletePlayerStmt = db.prepare("delete from players where id = ?");
   const selectPlayerMatch = db.prepare("select 1 from match_players where player_id = ? limit 1");
 
-  const insertMatch = db.prepare("insert into matches (id, station, settings) values (?, ?, ?)");
+  const insertMatch = db.prepare(
+    "insert into matches (id, station, settings, tournament_id, slot, label) values (?, ?, ?, ?, ?, ?)",
+  );
+  const setStationStmt = db.prepare("update matches set station = ? where id = ?");
+  const setHeldStmt = db.prepare("update matches set held = ? where id = ?");
+  const setPinnedStmt = db.prepare("update matches set pinned_station = ? where id = ?");
+  const walkoverStmt = db.prepare(
+    "update matches set winner = ?, walkover = 1, closed_at = strftime('%Y-%m-%dT%H:%M:%fZ') where id = ? and closed_at is null",
+  );
+  const selectTournamentMatches = db.prepare(
+    "select * from matches where tournament_id = ? order by created_at, rowid",
+  );
+  const selectBusy = db.prepare(`
+    select distinct p.player_id from match_players p join matches m on m.id = p.match_id
+    where m.closed_at is null and m.station is not null
+  `);
+  const selectLastClosed = db.prepare(`
+    select p.player_id, max(m.closed_at) as closed_at from match_players p
+    join matches m on m.id = p.match_id where m.closed_at is not null group by p.player_id
+  `);
+  const selectPaused = db.prepare("select 1 from paused_stations where id = ?");
+  const insertPaused = db.prepare("insert or ignore into paused_stations (id) values (?)");
+  const deletePaused = db.prepare("delete from paused_stations where id = ?");
+  const insertTournament = db.prepare(
+    "insert into tournaments (id, name, status, config, created_at, started_at, finished_at, placings) values (?, ?, ?, ?, ?, ?, ?, ?)",
+  );
+  const updateTournament = db.prepare(
+    "update tournaments set name = ?, status = ?, config = ?, started_at = ?, finished_at = ?, placings = ? where id = ?",
+  );
+  const selectTournament = db.prepare("select * from tournaments where id = ?");
+  const selectActiveTournament = db.prepare(
+    "select * from tournaments where status in ('draft', 'running') order by created_at desc limit 1",
+  );
+  const selectTournaments = db.prepare(
+    "select * from tournaments order by created_at desc, rowid desc",
+  );
+  const selectEntrants = db.prepare(
+    "select * from tournament_players where tournament_id = ? order by seed",
+  );
+  const deleteEntrants = db.prepare("delete from tournament_players where tournament_id = ?");
+  const insertEntrant = db.prepare(
+    "insert into tournament_players (tournament_id, player_id, seed, group_index, withdrawn) values (?, ?, ?, ?, ?)",
+  );
+  const selectTimedEvents = db.prepare(
+    "select at, event from match_events where match_id = ? order by seq",
+  );
   const insertMatchPlayer = db.prepare(
     "insert into match_players (match_id, position, player_id) values (?, ?, ?)",
   );
@@ -196,7 +351,7 @@ export function openDb(path: string): Db {
   const deleteMatchStmt = db.prepare("delete from matches where id = ?");
   const selectCompletedOf = db.prepare(`
     select m.* from matches m join match_players p on p.match_id = m.id
-    where p.player_id = ? and m.closed_at is not null and m.abandoned = 0
+    where p.player_id = ? and m.closed_at is not null and m.abandoned = 0 and m.walkover = 0
     order by m.closed_at desc, m.rowid desc limit ?
   `);
   const selectClosed = db.prepare(
@@ -235,6 +390,23 @@ export function openDb(path: string): Db {
     winner: row.winner,
     abandoned: row.abandoned === 1,
     closedAt: row.closed_at,
+    tournamentId: row.tournament_id,
+    slot: row.slot,
+    label: row.label,
+    walkover: row.walkover === 1,
+    held: row.held === 1,
+    pinnedStation: row.pinned_station,
+  });
+
+  const toTournament = (row: TournamentRow): TournamentRecord => ({
+    id: row.id,
+    name: row.name,
+    status: row.status,
+    config: JSON.parse(row.config),
+    createdAt: row.created_at,
+    startedAt: row.started_at,
+    finishedAt: row.finished_at,
+    placings: row.placings ? JSON.parse(row.placings) : null,
   });
 
   return {
@@ -287,9 +459,107 @@ export function openDb(path: string): Db {
     },
     createMatch(match) {
       transaction(() => {
-        insertMatch.run(match.id, match.station, JSON.stringify(match.settings));
+        insertMatch.run(
+          match.id,
+          match.station,
+          JSON.stringify(match.settings),
+          match.tournamentId ?? null,
+          match.slot ?? null,
+          match.label ?? null,
+        );
         writeOrder(match.id, match.playerIds);
       });
+    },
+    setStation(id, station) {
+      setStationStmt.run(station, id);
+    },
+    setHeld(id, held) {
+      setHeldStmt.run(held ? 1 : 0, id);
+    },
+    setPinnedStation(id, station) {
+      setPinnedStmt.run(station, id);
+    },
+    closeAsWalkover(id, winner) {
+      walkoverStmt.run(winner, id);
+    },
+    tournamentMatches(tournamentId) {
+      return (selectTournamentMatches.all(tournamentId) as unknown as MatchRow[]).map(toRecord);
+    },
+    busyPlayerIds() {
+      return new Set((selectBusy.all() as { player_id: string }[]).map((r) => r.player_id));
+    },
+    lastClosedAt() {
+      const rows = selectLastClosed.all() as { player_id: string; closed_at: string }[];
+      return new Map(rows.map((r) => [r.player_id, r.closed_at]));
+    },
+    isStationPaused(id) {
+      return selectPaused.get(id) !== undefined;
+    },
+    setStationPaused(id, paused) {
+      if (paused) insertPaused.run(id);
+      else deletePaused.run(id);
+    },
+    createTournament(t) {
+      insertTournament.run(
+        t.id,
+        t.name,
+        t.status,
+        JSON.stringify(t.config),
+        t.createdAt,
+        t.startedAt,
+        t.finishedAt,
+        t.placings && JSON.stringify(t.placings),
+      );
+    },
+    saveTournament(t) {
+      updateTournament.run(
+        t.name,
+        t.status,
+        JSON.stringify(t.config),
+        t.startedAt,
+        t.finishedAt,
+        t.placings && JSON.stringify(t.placings),
+        t.id,
+      );
+    },
+    getTournament(id) {
+      const row = selectTournament.get(id) as TournamentRow | undefined;
+      return row && toTournament(row);
+    },
+    activeTournament() {
+      const row = selectActiveTournament.get() as TournamentRow | undefined;
+      return row && toTournament(row);
+    },
+    tournaments() {
+      return (selectTournaments.all() as unknown as TournamentRow[]).map(toTournament);
+    },
+    entrants(tournamentId) {
+      const rows = selectEntrants.all(tournamentId) as {
+        player_id: string;
+        seed: number;
+        group_index: number;
+        withdrawn: number;
+      }[];
+      return rows.map((r) => ({
+        playerId: r.player_id,
+        seed: r.seed,
+        group: r.group_index,
+        withdrawn: r.withdrawn === 1,
+      }));
+    },
+    setEntrants(tournamentId, entrants) {
+      transaction(() => {
+        deleteEntrants.run(tournamentId);
+        for (const e of entrants) {
+          insertEntrant.run(tournamentId, e.playerId, e.seed, e.group, e.withdrawn ? 1 : 0);
+        }
+      });
+    },
+    timedEvents(matchId) {
+      return (selectTimedEvents.all(matchId) as { at: string; event: string }[]).map((row) => ({
+        at: row.at,
+        event: JSON.parse(row.event),
+      }));
     },
     getMatch(id) {
       const row = selectMatch.get(id) as MatchRow | undefined;
