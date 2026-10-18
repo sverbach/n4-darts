@@ -13,4 +13,4 @@ Set up the pnpm workspace with `packages/engine`, `packages/server`, `packages/w
 
 ## Comments
 
-**2026-10-18, done.** pnpm 12 workspace, TypeScript 7 (strict), Vitest 5 projects run against sources via the `source` export condition, Biome 2 for lint/format, React 19 + Vite 8, Fastify 5 serving `/api/health` and the SPA. `pnpm install && pnpm test && pnpm build` verified on a clean clone. Docker image and compose file written but **not built yet** (no Docker on the dev laptop): verify with `docker compose up --build` on the server. SQLite is left to ticket 05; `DATA_DIR=/data` is already set in the image.
+**2026-10-18, done.** pnpm 12 workspace, TypeScript 7 (strict), Vitest 5 projects run against sources via the `source` export condition, Biome 2 for lint/format, React 19 + Vite 8, Fastify 5 serving `/api/health` and the SPA. `pnpm install && pnpm test && pnpm build` verified on a clean clone. Docker image built and verified on the server (`/api/health` OK). SQLite is left to ticket 05; `DATA_DIR=/data` is already set in the image.

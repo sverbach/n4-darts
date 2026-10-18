@@ -64,7 +64,7 @@ Pure, deterministic game rules. `state = fold(rules, events)`.
 ### Tournament Service
 
 - Players (a simple name list, persisted across evenings for stats).
-- Tournament = format + players + settings (e.g. 501 DO, best of 5).
+- Tournament = format + players + settings (e.g. 301 straight out, best of 5).
 - Generates matches per format: a group phase (round robin), then single or double elimination; advances winners.
 - **Scheduler / dispatcher**: keeps a queue of ready matches and assigns the next one to a free station. The organiser can override (swap, pin to a board, pause a station).
 
@@ -127,7 +127,7 @@ Settled in discussion (2026-10-18). The hard-to-reverse ones are recorded in `do
 
 - **Laptops run nothing of ours**: only Board Manager and a kiosk browser. The server connects to the boards directly.
 - **Stack**: TypeScript end to end, one Docker image.
-- **Game**: X01 only for v1. Default single in / single out; in and out rules configurable (e.g. double out, bull in). Starting score and legs are settings.
+- **Game**: X01 only for v1, default 301. Default single in / single out; in and out rules configurable (e.g. double out, bull in). Starting score and legs are settings.
 - **Tournament shape**: always a group phase (default round robin), then single or double elimination (default double).
 - **Visit boundary**: a visit ends when the player takes their darts out (`TakeoutFinished`), not at the 3rd dart, bust or checkout.
 - **Throwing order**: alternates every leg.
@@ -164,7 +164,7 @@ None open. New questions get added here and folded into "Decisions so far" once 
 
 ## Suggested build order
 
-1. **Gateway + engine spike**: server connects to one board and plays a 501 leg end to end on a bare `/station/1` page.
+1. **Gateway + engine spike**: server connects to one board and plays a 301 leg end to end on a bare `/station/1` page.
 2. Corrections + crash recovery (event log).
 3. Players + single match created from `/admin`, assigned to a station.
 4. Tournament formats + scheduler for two stations.
