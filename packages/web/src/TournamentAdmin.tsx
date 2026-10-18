@@ -2,6 +2,7 @@ import type { TournamentAdminView, TournamentConfig } from "@n4/server/api";
 import { useCallback, useEffect, useState } from "react";
 import { request } from "./adminApi.ts";
 import { PlayerPicker } from "./MatchSetup.tsx";
+import { TournamentRun } from "./TournamentRun.tsx";
 
 /** "about 45 min", "about 2 h 30". */
 export function formatMinutes(minutes: number) {
@@ -39,6 +40,9 @@ function useTournament() {
 
 export function TournamentAdmin() {
   const { view, error, send, load } = useTournament();
+  // After a finished tournament, "New tournament" switches to the create form.
+  const [creating, setCreating] = useState(false);
+  const finished = view?.tournament?.status === "finished";
   return (
     <div className="tournament-admin">
       {error && (
@@ -48,12 +52,18 @@ export function TournamentAdmin() {
       )}
       {!view ? (
         <p className="hint">Loading…</p>
-      ) : !view.tournament ? (
-        <CreateTournament send={send} />
+      ) : !view.tournament || (finished && creating) ? (
+        <CreateTournament
+          send={async (...args) => {
+            const ok = await send(...args);
+            if (ok) setCreating(false);
+            return ok;
+          }}
+        />
       ) : view.tournament.status === "draft" ? (
         <DraftEditor view={view} send={send} />
       ) : (
-        <RunningTournament view={view} send={send} reload={load} />
+        <TournamentRun view={view} send={send} reload={load} onNew={() => setCreating(true)} />
       )}
     </div>
   );
@@ -301,16 +311,6 @@ function DraftEditor({ view, send }: { view: TournamentAdminView; send: Send }) 
           Start tournament
         </button>
       </div>
-    </div>
-  );
-}
-
-function RunningTournament(props: { view: TournamentAdminView; send: Send; reload(): void }) {
-  const tournament = props.view.tournament as NonNullable<TournamentAdminView["tournament"]>;
-  return (
-    <div>
-      <h2>{tournament.name}</h2>
-      <p className="hint">{tournament.status === "running" ? "Running" : "Finished"}</p>
     </div>
   );
 }

@@ -5,6 +5,7 @@
 
 import type { Db, MatchRecord } from "./db.ts";
 import type { StationDirectory } from "./stations.ts";
+import type { Plan } from "./tournament/plan.ts";
 import type { Tournaments } from "./tournaments.ts";
 
 export const NO_MATCH_READY = "No tournament match ready (waiting for players)";
@@ -25,6 +26,25 @@ export interface QueuedMatch {
   order: number;
 }
 
+/** Queued matches (no station) of a tournament in the order the scheduler will hand them out. */
+export function queueOf(db: Db, tournamentId: string, plan: Plan | null): QueuedMatch[] {
+  const orderOf = new Map(plan?.matches.map((m) => [m.slot, m.order]));
+  const busy = db.busyPlayerIds();
+  const lastClosed = db.lastClosedAt();
+  // How long the less-rested player has rested: the later of their last matches.
+  const restedSince = (match: MatchRecord) =>
+    Math.max(...match.playerIds.map((p) => Date.parse(lastClosed.get(p) ?? "1970-01-01")));
+  return db
+    .tournamentMatches(tournamentId)
+    .filter((m) => !m.closedAt && m.station === null)
+    .map((match) => ({
+      match,
+      ready: !match.held && match.playerIds.every((p) => !busy.has(p)),
+      order: orderOf.get(match.slot ?? "") ?? Number.MAX_SAFE_INTEGER,
+    }))
+    .sort((a, b) => a.order - b.order || restedSince(a.match) - restedSince(b.match));
+}
+
 export function createScheduler(
   db: Db,
   stations: StationDirectory,
@@ -41,22 +61,7 @@ export function createScheduler(
   function queue(): QueuedMatch[] {
     const tournament = db.activeTournament();
     if (tournament?.status !== "running") return [];
-    const plan = tournaments.sync();
-    const orderOf = new Map(plan?.matches.map((m) => [m.slot, m.order]));
-    const busy = db.busyPlayerIds();
-    const lastClosed = db.lastClosedAt();
-    // How long the less-rested player has rested: the later of their last matches.
-    const restedSince = (match: MatchRecord) =>
-      Math.max(...match.playerIds.map((p) => Date.parse(lastClosed.get(p) ?? "1970-01-01")));
-    return db
-      .tournamentMatches(tournament.id)
-      .filter((m) => !m.closedAt && m.station === null)
-      .map((match) => ({
-        match,
-        ready: !match.held && match.playerIds.every((p) => !busy.has(p)),
-        order: orderOf.get(match.slot ?? "") ?? Number.MAX_SAFE_INTEGER,
-      }))
-      .sort((a, b) => a.order - b.order || restedSince(a.match) - restedSince(b.match));
+    return queueOf(db, tournament.id, tournaments.sync());
   }
 
   function run() {
@@ -86,7 +91,8 @@ export function createScheduler(
       if (view.match) continue;
       const fits = (q: QueuedMatch) =>
         !q.match.playerIds.some((p) => taken.has(p)) &&
-        (q.match.pinnedStation === null || q.match.pinnedStation === station.id);
+        (q.match.pinnedStation === null || q.match.pinnedStation === station.id) &&
+        !tournaments.avoids(q.match.id, station.id);
       const next =
         waiting.find((q) => fits(q) && q.match.pinnedStation === station.id) ?? waiting.find(fits);
       if (!next) {
@@ -97,6 +103,7 @@ export function createScheduler(
       for (const p of next.match.playerIds) taken.add(p);
       station.setNotice(null);
       station.take(next.match.id);
+      tournaments.placed(next.match.id, station.id);
     }
   }
 

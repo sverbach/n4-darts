@@ -734,3 +734,208 @@ button.danger {
   letter-spacing: 0.08em;
   font-size: 0.875rem;
 }
+
+/* Running tournament */
+
+.run-header h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.25rem;
+}
+
+.run-header p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.station-row-name {
+  font-weight: 600;
+}
+
+.queue-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.queue-row {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  opacity: 0.75;
+}
+
+.queue-row.ready {
+  border-color: var(--accent);
+  opacity: 1;
+}
+
+.queue-row-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.queue-badges {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.queue-players {
+  margin: 4px 0;
+  font-weight: 600;
+}
+
+.queue-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.queue-actions select {
+  flex: 1;
+  min-width: 0;
+}
+
+.bracket {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.bracket-round {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 8px;
+  min-width: 160px;
+}
+
+.bracket-round h3 {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.bracket-round.losers h3 {
+  color: var(--warn);
+}
+
+.bracket-match {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.bracket-match.on-station,
+.bracket-match.playing {
+  border-color: var(--accent);
+}
+
+.bracket-label,
+.bracket-status {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.bracket-player {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.bracket-player.winner {
+  font-weight: 700;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.group-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.group-table th,
+.group-table td {
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.group-table th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.group-table .name {
+  text-align: left;
+  width: 100%;
+  white-space: normal;
+}
+
+.group-table .points {
+  font-weight: 700;
+}
+
+.fixtures summary {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.fixtures ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.fixtures li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.fixture-result {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.placings {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.placings li {
+  display: flex;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.placings li.champion {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.placing-place {
+  min-width: 3em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}

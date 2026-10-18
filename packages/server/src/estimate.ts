@@ -62,6 +62,10 @@ export function legMinutes(db: Db, startScore: number): number {
 /** About 75% of the most legs a match can take, but never fewer than are needed to win. */
 const expectedLegs = (legsToWin: number) => Math.max(legsToWin, 0.75 * (2 * legsToWin - 1));
 
+/** Expected minutes for one match, changeover included. */
+export const matchMinutes = (legsToWin: number, minutesPerLeg: number) =>
+  expectedLegs(legsToWin) * minutesPerLeg + CHANGEOVER_MINUTES;
+
 /** Minutes for the whole tournament, double elimination counted with the bracket reset. */
 export function estimateMinutes(
   config: TournamentConfig,
@@ -92,8 +96,7 @@ export function estimateMinutes(
           [advancing > 1 ? 2 : 0, legs.final],
         ];
   const total = counts.reduce(
-    (sum, [matches, legsToWin]) =>
-      sum + matches * (expectedLegs(legsToWin) * minutesPerLeg + CHANGEOVER_MINUTES),
+    (sum, [matches, legsToWin]) => sum + matches * matchMinutes(legsToWin, minutesPerLeg),
     0,
   );
   return total / Math.max(1, stations);

@@ -125,4 +125,68 @@ export interface TournamentAdminView {
   estimateMinutes: number | null;
   /** Why it can't start yet; empty when it can. */
   problems: string[];
+  /** Once started. */
+  progress: TournamentProgress | null;
+}
+
+export interface TournamentMatchView {
+  matchId: string | null;
+  slot: string;
+  label: string;
+  /** Names; null while a knockout slot waits for an earlier result. */
+  players: [string | null, string | null];
+  /** Legs won, once played. */
+  legs: [number, number] | null;
+  winner: string | null;
+  status: "waiting" | "queued" | "on-station" | "playing" | "played" | "walkover";
+  station: number | null;
+}
+
+export interface QueueEntryView {
+  matchId: string;
+  label: string;
+  players: MatchPlayer[];
+  /** Both players free. */
+  ready: boolean;
+  held: boolean;
+  pinnedStation: number | null;
+}
+
+export interface TournamentStationView {
+  id: number;
+  name: string;
+  boardOnline: boolean;
+  paused: boolean;
+  match: {
+    id: string;
+    label: string | null;
+    players: string[];
+    started: boolean;
+    /** E.g. "Ann 121 · Bob 301", "Ann won". */
+    summary: string;
+  } | null;
+}
+
+export interface TournamentProgress {
+  phase: "groups" | "knockout" | "finished";
+  played: number;
+  total: number;
+  /** ISO time; null once finished. */
+  expectedEnd: string | null;
+  stations: TournamentStationView[];
+  queue: QueueEntryView[];
+  groups: {
+    name: string;
+    table: (TableRow & { name: string })[];
+    fixtures: TournamentMatchView[];
+  }[];
+  /** Knockout rounds, in order, once the groups are done. */
+  bracket: {
+    section: "winners" | "losers" | "final";
+    name: string;
+    matches: TournamentMatchView[];
+  }[];
+  placings: { name: string; from: number; to: number }[] | null;
+  /** Ended by the organiser before a champion. */
+  endedEarly: boolean;
 }

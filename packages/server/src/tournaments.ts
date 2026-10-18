@@ -17,6 +17,7 @@ import {
   type Result,
   type TournamentConfig,
 } from "./tournament/types.ts";
+import { progressView } from "./tournamentView.ts";
 
 export class TournamentError extends Error {
   readonly status: 400 | 404 | 409;
@@ -231,10 +232,26 @@ export function createTournaments(db: Db, stations: StationDirectory) {
     }));
   }
 
+  /** The plan as it stands, for a running or finished tournament. */
+  function currentPlan(tournament: TournamentRecord): Plan {
+    return (
+      (tournament.status === "running" ? sync() : null) ??
+      plan(tournament.config, db.entrants(tournament.id), results(tournament))
+    );
+  }
+
   function view(): TournamentAdminView {
-    const tournament = active();
+    // A finished tournament stays on show until the next one is created.
+    const tournament = active() ?? db.tournaments().find((t) => t.status === "finished");
     if (!tournament) {
-      return { tournament: null, entrants: [], groups: [], estimateMinutes: null, problems: [] };
+      return {
+        tournament: null,
+        entrants: [],
+        groups: [],
+        estimateMinutes: null,
+        problems: [],
+        progress: null,
+      };
     }
     const entrants = db.entrants(tournament.id);
     const groupCount = Math.max(1, ...entrants.map((e) => e.group + 1));
@@ -262,8 +279,121 @@ export function createTournaments(db: Db, stations: StationDirectory) {
       groups,
       estimateMinutes: estimate,
       problems,
+      progress:
+        status === "draft"
+          ? null
+          : progressView(db, stations, db.getTournament(id) ?? tournament, currentPlan(tournament)),
     };
   }
+
+  /** Matches sent back from a station: the scheduler won't give them straight back to it. */
+  const sentBack = new Map<string, number>();
+
+  function running(): TournamentRecord {
+    const tournament = active();
+    if (tournament?.status !== "running") throw new TournamentError("no running tournament", 404);
+    return tournament;
+  }
+
+  /** An open match of the running tournament. */
+  function openMatch(matchId: string): MatchRecord {
+    const tournament = running();
+    const match = db.getMatch(matchId);
+    if (!match || match.tournamentId !== tournament.id || match.closedAt) {
+      throw new TournamentError("no such open tournament match", 404);
+    }
+    return match;
+  }
+
+  const stationOf = (match: MatchRecord) =>
+    match.station === null ? undefined : stations.get(match.station);
+
+  /** Takes a match off its station, if it hasn't started there. */
+  function takeOff(match: MatchRecord) {
+    const station = stationOf(match);
+    if (!station) return;
+    if (!station.release()) throw new TournamentError("the match has already started");
+    sentBack.set(match.id, station.id);
+  }
+
+  function pauseStation(stationId: number, paused: boolean) {
+    running();
+    if (!stations.get(stationId)) throw new TournamentError("no such station", 404);
+    db.setStationPaused(stationId, paused);
+    changed();
+  }
+
+  /** Held matches are skipped; holding one that waits on a station takes it off. */
+  function hold(matchId: string, held: boolean) {
+    const match = openMatch(matchId);
+    if (held) takeOff(match);
+    db.setHeld(matchId, held);
+    changed();
+  }
+
+  function pin(matchId: string, stationId: number | null) {
+    openMatch(matchId);
+    if (stationId !== null && !stations.get(stationId))
+      throw new TournamentError("no such station", 404);
+    db.setPinnedStation(matchId, stationId);
+    changed();
+  }
+
+  function sendBack(matchId: string) {
+    const match = openMatch(matchId);
+    if (match.station === null) throw new TournamentError("the match isn't on a station");
+    takeOff(match);
+    changed();
+  }
+
+  /** A queued match onto a station now, out of order; a match waiting there goes back. */
+  function playNow(matchId: string, stationId: number) {
+    const match = openMatch(matchId);
+    const station = stations.get(stationId);
+    if (!station) throw new TournamentError("no such station", 404);
+    if (match.station !== null) throw new TournamentError("the match is already on a station");
+    const waiting = station.view().match;
+    if (waiting) {
+      if (waiting.state.phase !== "notStarted")
+        throw new TournamentError(`${station.view().name} is in use`);
+      station.release();
+    }
+    const busy = db.busyPlayerIds();
+    const playing = match.playerIds.filter((p) => busy.has(p));
+    if (playing.length > 0) {
+      throw new TournamentError(
+        `${playing.map((p) => db.getPlayer(p)?.name).join(" and ")} still playing`,
+      );
+    }
+    if (match.held) db.setHeld(matchId, false);
+    station.take(matchId);
+    placed(matchId, stationId);
+    changed();
+  }
+
+  /** Ends the tournament without a champion: open matches are abandoned. */
+  function endEarly() {
+    const tournament = running();
+    for (const match of db.tournamentMatches(tournament.id)) {
+      if (match.closedAt) continue;
+      if (match.station !== null && db.events(match.id).length > 0) {
+        void stationOf(match)?.command({ type: "abandonMatch" });
+        continue;
+      }
+      stationOf(match)?.drop(match.id);
+      db.closeMatch(match.id, { abandoned: true });
+    }
+    db.saveTournament({ ...tournament, status: "finished", finishedAt: new Date().toISOString() });
+    changed();
+  }
+
+  /** The scheduler put a match on a station: whatever was sent back from there is free again. */
+  function placed(matchId: string, stationId: number) {
+    sentBack.delete(matchId);
+    for (const [id, from] of sentBack) if (from === stationId) sentBack.delete(id);
+  }
+
+  const avoids = (matchId: string, stationId: number) => sentBack.get(matchId) === stationId;
 
   function create(input: TournamentInput): TournamentAdminView {
     if (active()) throw new TournamentError("there is already an active tournament");
@@ -348,6 +478,14 @@ export function createTournaments(db: Db, stations: StationDirectory) {
     discard,
     start,
     sync,
+    pauseStation,
+    hold,
+    pin,
+    sendBack,
+    playNow,
+    endEarly,
+    placed,
+    avoids,
     subscribe(listener: () => void) {
       listeners.add(listener);
       return () => listeners.delete(listener);
@@ -385,5 +523,55 @@ export function registerTournaments(app: FastifyInstance, tournaments: Tournamen
   );
   app.post("/api/admin/tournament/start", async (_request, reply) =>
     attempt(reply, () => tournaments.start()),
+  );
+  app.post("/api/admin/tournament/end", async (_request, reply) =>
+    attempt(reply, () => {
+      tournaments.endEarly();
+      return tournaments.view();
+    }),
+  );
+  app.post<{ Params: { id: string }; Body: { paused?: unknown } }>(
+    "/api/admin/tournament/stations/:id/pause",
+    async (request, reply) =>
+      attempt(reply, () => {
+        tournaments.pauseStation(Number(request.params.id), request.body?.paused !== false);
+        return tournaments.view();
+      }),
+  );
+  app.post<{ Params: { id: string }; Body: { held?: unknown } }>(
+    "/api/admin/tournament/matches/:id/hold",
+    async (request, reply) =>
+      attempt(reply, () => {
+        tournaments.hold(request.params.id, request.body?.held !== false);
+        return tournaments.view();
+      }),
+  );
+  app.post<{ Params: { id: string }; Body: { station?: unknown } }>(
+    "/api/admin/tournament/matches/:id/pin",
+    async (request, reply) =>
+      attempt(reply, () => {
+        const station = request.body?.station;
+        tournaments.pin(
+          request.params.id,
+          station === null || station === undefined ? null : Number(station),
+        );
+        return tournaments.view();
+      }),
+  );
+  app.post<{ Params: { id: string } }>(
+    "/api/admin/tournament/matches/:id/send-back",
+    async (request, reply) =>
+      attempt(reply, () => {
+        tournaments.sendBack(request.params.id);
+        return tournaments.view();
+      }),
+  );
+  app.post<{ Params: { id: string }; Body: { station?: unknown } }>(
+    "/api/admin/tournament/matches/:id/play-now",
+    async (request, reply) =>
+      attempt(reply, () => {
+        tournaments.playNow(request.params.id, Number(request.body?.station));
+        return tournaments.view();
+      }),
   );
 }

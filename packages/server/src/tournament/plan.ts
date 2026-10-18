@@ -16,6 +16,8 @@ export interface PlannedMatch {
   order: number;
   /** Both players once known; null while a knockout match waits for earlier results. */
   players: [string, string] | null;
+  /** Each side as soon as it's known, for showing the bracket. */
+  sides: [string | null, string | null];
 }
 
 export interface Plan {
@@ -53,6 +55,7 @@ export function plan(config: TournamentConfig, entrants: Entrant[], results: Res
         label: single ? `Group match ${i + 1}` : `Group ${groupName(group)} · match ${i + 1}`,
         order: fixture.round,
         players: [fixture.a, fixture.b],
+        sides: [fixture.a, fixture.b],
       });
     });
     const groupResults = fixtures.flatMap((f) => {
@@ -95,6 +98,7 @@ export function plan(config: TournamentConfig, entrants: Entrant[], results: Res
       label: m.label,
       order: KNOCKOUT_ORDER + m.order,
       players: a.kind === "player" && b.kind === "player" ? [a.playerId, b.playerId] : null,
+      sides: [a.kind === "player" ? a.playerId : null, b.kind === "player" ? b.playerId : null],
     });
   }
 
