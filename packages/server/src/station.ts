@@ -3,7 +3,13 @@
 // always derived from that log (docs/adr/0002).
 
 import { randomUUID } from "node:crypto";
-import { defaultX01Settings, matchState } from "@n4/engine";
+import {
+  defaultX01Settings,
+  MAX_PLAYERS,
+  MIN_PLAYERS,
+  matchState,
+  RULES_VERSION,
+} from "@n4/engine";
 import type { StationCommand, StationView } from "./api.ts";
 import {
   type BoardEvent,
@@ -159,20 +165,23 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
     switch (cmd.type) {
       case "startMatch": {
         if (match) throw new CommandError("station already has a match; close it first");
-        const [a, b] = cmd.players.map((p) => p.trim());
-        if (!a || !b) throw new CommandError("both players need a name");
+        const players = cmd.players.map((p) => p.trim());
+        if (players.length < MIN_PLAYERS || players.length > MAX_PLAYERS) {
+          throw new CommandError(`a match needs ${MIN_PLAYERS}–${MAX_PLAYERS} players`);
+        }
+        if (players.some((p) => !p)) throw new CommandError("every player needs a name");
         // Clear the board first, so leftover darts can't count for the new match.
         await resetBoard();
         match = {
           id: randomUUID(),
           station: id,
-          settings: { ...defaultX01Settings, ...cmd.settings },
-          players: [a, b],
+          settings: { ...defaultX01Settings, ...cmd.settings, rulesVersion: RULES_VERSION },
+          players,
           closedAt: null,
         };
         db.createMatch(match);
         events = [];
-        append({ type: "MatchStarted", firstPlayer: cmd.firstPlayer });
+        append({ type: "MatchStarted", playerCount: players.length });
         break;
       }
       case "correctDart":

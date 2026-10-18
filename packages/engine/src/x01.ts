@@ -1,6 +1,13 @@
 // X01 rules as a pure fold over a match's event log (docs/adr/0002, 0003).
 
-export type PlayerIndex = 0 | 1;
+/** A player's place in the match's throwing order; player 0 starts leg 1. */
+export type PlayerIndex = number;
+
+export const MIN_PLAYERS = 2;
+export const MAX_PLAYERS = 8;
+
+/** Bumped whenever the rules change, so old matches replay under the rules they were played with. */
+export const RULES_VERSION = 1;
 
 /** Where a dart landed: the bullseye is `{ number: 25, multiplier: 2 }`, a miss has multiplier 0. */
 export interface Segment {
@@ -16,6 +23,7 @@ export interface X01Settings {
   inRule: InRule;
   outRule: OutRule;
   legsToWin: number;
+  rulesVersion: number;
 }
 
 export const defaultX01Settings: X01Settings = {
@@ -23,10 +31,11 @@ export const defaultX01Settings: X01Settings = {
   inRule: "straight",
   outRule: "straight",
   legsToWin: 1,
+  rulesVersion: RULES_VERSION,
 };
 
 export type MatchEvent =
-  | { type: "MatchStarted"; firstPlayer: PlayerIndex }
+  | { type: "MatchStarted"; playerCount: number }
   | { type: "DartThrown"; dartId: string; segment: Segment }
   | { type: "DartCorrected"; dartId: string; segment: Segment }
   | { type: "TakeoutFinished" }
@@ -68,7 +77,8 @@ export interface LegView {
 
 export interface MatchState {
   phase: Phase;
-  players: [PlayerState, PlayerState];
+  /** One entry per player, in throwing order. */
+  players: PlayerState[];
   currentPlayer: PlayerIndex;
   /** The visit in progress, until takeout. */
   currentVisit: VisitView | null;
@@ -118,9 +128,10 @@ function visitsOf(events: MatchEvent[]): RawVisit[] {
   return visits;
 }
 
-const other = (player: PlayerIndex): PlayerIndex => (player === 0 ? 1 : 0);
-
 export function matchState(settings: X01Settings, events: MatchEvent[]): MatchState {
+  if (settings.rulesVersion !== RULES_VERSION) {
+    throw new Error(`unknown X01 rules version ${settings.rulesVersion}`);
+  }
   const startIndex = events.findIndex((e) => e.type === "MatchStarted");
   const started = events[startIndex];
   const inFromStart = settings.inRule === "straight";
@@ -129,26 +140,31 @@ export function matchState(settings: X01Settings, events: MatchEvent[]): MatchSt
     legsWon: 0,
     isIn: inFromStart,
   });
-  const players: [PlayerState, PlayerState] = [player(), player()];
   if (started?.type !== "MatchStarted") {
     return {
       phase: "notStarted",
-      players,
+      players: [],
       currentPlayer: 0,
       currentVisit: null,
       legs: [],
       winner: null,
     };
   }
+  const count = started.playerCount;
+  if (!Number.isInteger(count) || count < MIN_PLAYERS || count > MAX_PLAYERS) {
+    throw new Error(`a match needs ${MIN_PLAYERS}–${MAX_PLAYERS} players, got ${count}`);
+  }
+  const players = Array.from({ length: count }, player);
+  const next = (p: PlayerIndex): PlayerIndex => (p + 1) % count;
 
-  let currentPlayer = started.firstPlayer;
+  let currentPlayer: PlayerIndex = 0;
   let leg: LegView = { starter: currentPlayer, visits: [], winner: null };
   const legs = [leg];
   let currentVisit: VisitView | null = null;
   let visitOver = false;
   let winner: PlayerIndex | null = null;
   for (const raw of visitsOf(events.slice(startIndex + 1))) {
-    const thrower = players[currentPlayer];
+    const thrower = players[currentPlayer] as PlayerState;
     const visit = scoreVisit(raw, currentPlayer, thrower, settings);
     thrower.remaining = visit.remainingAfter;
     thrower.isIn = visit.isInAfter;
@@ -172,11 +188,11 @@ export function matchState(settings: X01Settings, events: MatchEvent[]): MatchSt
         p.remaining = settings.startScore;
         p.isIn = inFromStart;
       }
-      leg = { starter: other(leg.starter), visits: [], winner: null };
+      leg = { starter: next(leg.starter), visits: [], winner: null };
       legs.push(leg);
       currentPlayer = leg.starter;
     } else {
-      currentPlayer = other(currentPlayer);
+      currentPlayer = next(currentPlayer);
     }
   }
 

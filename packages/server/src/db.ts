@@ -8,8 +8,8 @@ export interface MatchRecord {
   /** Station the match is played on; a match can exist without one. */
   station: number | null;
   settings: X01Settings;
-  /** Display names for player 0 and player 1. */
-  players: [string, string];
+  /** Display names in throwing order. */
+  players: string[];
   /** Set when the match is over or abandoned; the station is free again. */
   closedAt: string | null;
 }

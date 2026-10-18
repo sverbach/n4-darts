@@ -15,7 +15,7 @@ function seg(name: string) {
   return { number: Number(name.slice(1)), multiplier };
 }
 
-const start = (firstPlayer: 0 | 1 = 0): MatchEvent => ({ type: "MatchStarted", firstPlayer });
+const start = (playerCount = 2): MatchEvent => ({ type: "MatchStarted", playerCount });
 const dart = (name: string, dartId = `d${++nextId}`): MatchEvent => ({
   type: "DartThrown",
   dartId,
@@ -27,11 +27,102 @@ const play = (events: MatchEvent[], settings: Partial<X01Settings> = {}) =>
   matchState({ ...defaultX01Settings, ...settings }, events);
 
 describe("starting a match", () => {
-  it("gives both players 301 and the turn to the chosen first player", () => {
-    const state = play([start(1)]);
+  it("gives both players 301 and the turn to the first player in the order", () => {
+    const state = play([start()]);
 
     expect(state.phase).toBe("throwing");
     expect(state.players.map((p) => p.remaining)).toEqual([301, 301]);
+    expect(state.currentPlayer).toBe(0);
+  });
+
+  it("starts every player of a bigger match on the starting score", () => {
+    const state = play([start(8)]);
+
+    expect(state.players).toHaveLength(8);
+    expect(state.players.every((p) => p.remaining === 301 && p.legsWon === 0)).toBe(true);
+  });
+
+  it.each([1, 9])("refuses a match with %i players", (count) => {
+    expect(() => play([start(count)])).toThrow();
+  });
+
+  it("refuses a rules version it doesn't know", () => {
+    expect(() => play([start()], { rulesVersion: 2 })).toThrow();
+  });
+});
+
+describe("more than two players", () => {
+  it("passes the turn along the order and back to the first player", () => {
+    const state = play([start(3), dart("S1"), takeout, dart("S2"), takeout, dart("S3"), takeout]);
+
+    expect(state.players.map((p) => p.remaining)).toEqual([300, 299, 298]);
+    expect(state.currentPlayer).toBe(0);
+  });
+
+  it("moves the leg starter one place along the order every leg", () => {
+    const won = [dart("D20"), takeout];
+    const state = play([start(3), ...won, ...won, ...won, ...won], {
+      startScore: 40,
+      legsToWin: 5,
+    });
+
+    // Each leg is checked out by its starter with the first dart.
+    expect(state.legs.map((leg) => [leg.starter, leg.winner])).toEqual([
+      [0, 0],
+      [1, 1],
+      [2, 2],
+      [0, 0],
+      [1, null],
+    ]);
+    expect(state.currentPlayer).toBe(1);
+  });
+
+  it("ends the leg at the first checkout and resets everyone", () => {
+    const miss = [dart("M"), takeout];
+    const state = play([start(4), ...miss, ...miss, dart("D20"), takeout], {
+      startScore: 40,
+      legsToWin: 2,
+    });
+
+    expect(state.players.map((p) => p.legsWon)).toEqual([0, 0, 1, 0]);
+    expect(state.players.map((p) => p.remaining)).toEqual([40, 40, 40, 40]);
+    expect(state.legs).toHaveLength(2);
+    expect(state.currentPlayer).toBe(1);
+  });
+
+  it("wins the match for the first player to reach the legs needed, starter or not", () => {
+    const miss = [dart("M"), takeout];
+    const state = play(
+      [
+        start(3),
+        // Leg 1, started by player 0: player 2 checks out.
+        ...miss,
+        ...miss,
+        dart("D20"),
+        takeout,
+        // Leg 2, started by player 1: player 2 checks out again.
+        ...miss,
+        dart("D20"),
+      ],
+      { startScore: 40, legsToWin: 2 },
+    );
+
+    expect(state.phase).toBe("matchWon");
+    expect(state.winner).toBe(2);
+    expect(state.players.map((p) => p.legsWon)).toEqual([0, 0, 2]);
+  });
+
+  it("undo hands the turn back along the order", () => {
+    const state = play([
+      start(3),
+      dart("S1"),
+      takeout,
+      dart("S2"),
+      takeout,
+      { type: "VisitUndone" },
+    ]);
+
+    expect(state.players.map((p) => p.remaining)).toEqual([300, 301, 301]);
     expect(state.currentPlayer).toBe(1);
   });
 });
@@ -40,7 +131,7 @@ describe("a visit", () => {
   it("lowers the thrower's remaining score dart by dart", () => {
     const state = play([start(), dart("T20"), dart("S5")]);
 
-    expect(state.players[0].remaining).toBe(236);
+    expect(state.players[0]?.remaining).toBe(236);
     expect(state.currentVisit?.darts.map((d) => d.score)).toEqual([60, 5]);
     expect(state.phase).toBe("throwing");
   });
@@ -49,7 +140,7 @@ describe("a visit", () => {
     const state = play([start(), dart("T20"), dart("T20"), dart("T20"), dart("T20")]);
 
     expect(state.phase).toBe("awaitingTakeout");
-    expect(state.players[0].remaining).toBe(121);
+    expect(state.players[0]?.remaining).toBe(121);
     expect(state.currentVisit?.darts.map((d) => d.ignored)).toEqual([false, false, false, true]);
   });
 });
@@ -87,14 +178,14 @@ describe("straight out", () => {
 
     expect(state.phase).toBe("awaitingTakeout");
     expect(state.currentVisit?.bust).toBe(true);
-    expect(state.players[0].remaining).toBe(40);
+    expect(state.players[0]?.remaining).toBe(40);
     expect(state.currentVisit?.darts.map((d) => d.ignored)).toEqual([false, false, true]);
   });
 
   it("keeps the pre-bust score after takeout", () => {
     const state = play([start(), dart("T20"), takeout], { startScore: 40 });
 
-    expect(state.players[0].remaining).toBe(40);
+    expect(state.players[0]?.remaining).toBe(40);
     expect(state.currentPlayer).toBe(1);
   });
 
@@ -116,12 +207,12 @@ describe("legs", () => {
 
     expect(state.phase).toBe("awaitingTakeout");
     expect(state.winner).toBeNull();
-    expect(state.players[0].legsWon).toBe(1);
+    expect(state.players[0]?.legsWon).toBe(1);
   });
 
   it("resets both scores and lets the other player start the next leg", () => {
     // Player 0 starts leg 1, player 1 wins it, so player 1 also starts leg 2.
-    const state = play([start(0), dart("S1"), takeout, dart("D20"), takeout], firstTo2);
+    const state = play([start(), dart("S1"), takeout, dart("D20"), takeout], firstTo2);
 
     expect(state.players.map((p) => p.remaining)).toEqual([40, 40]);
     expect(state.players.map((p) => p.legsWon)).toEqual([0, 1]);
@@ -130,10 +221,10 @@ describe("legs", () => {
   });
 
   it("alternates the starting player every leg", () => {
-    const state = play(
-      [start(0), dart("D20"), takeout, dart("D20"), takeout, dart("S1"), takeout],
-      { startScore: 40, legsToWin: 3 },
-    );
+    const state = play([start(), dart("D20"), takeout, dart("D20"), takeout, dart("S1"), takeout], {
+      startScore: 40,
+      legsToWin: 3,
+    });
 
     // Leg 1: player 0 starts and wins. Leg 2: player 1 starts and wins. Leg 3: player 0 starts.
     expect(state.legs.map((leg) => [leg.starter, leg.winner])).toEqual([
@@ -145,10 +236,7 @@ describe("legs", () => {
   });
 
   it("wins the match on the deciding leg", () => {
-    const state = play(
-      [start(0), dart("D20"), takeout, dart("S1"), takeout, dart("D20")],
-      firstTo2,
-    );
+    const state = play([start(), dart("D20"), takeout, dart("S1"), takeout, dart("D20")], firstTo2);
 
     expect(state.phase).toBe("matchWon");
     expect(state.winner).toBe(0);
@@ -162,14 +250,14 @@ describe("double out", () => {
     const state = play([start(), dart("S20"), dart("S20")], doubleOut);
 
     expect(state.currentVisit?.bust).toBe(true);
-    expect(state.players[0].remaining).toBe(40);
+    expect(state.players[0]?.remaining).toBe(40);
   });
 
   it("busts when leaving 1", () => {
     const state = play([start(), dart("S19"), dart("S20")], doubleOut);
 
     expect(state.currentVisit?.bust).toBe(true);
-    expect(state.players[0].remaining).toBe(40);
+    expect(state.players[0]?.remaining).toBe(40);
   });
 
   it("wins with a double", () => {
@@ -192,7 +280,7 @@ describe("master out", () => {
     const state = play([start(), dart("S20"), dart("S20"), dart("S20")], masterOut);
 
     expect(state.currentVisit?.bust).toBe(true);
-    expect(state.players[0].remaining).toBe(60);
+    expect(state.players[0]?.remaining).toBe(60);
   });
 });
 
@@ -207,11 +295,11 @@ describe("in rules", () => {
   it("double in: stays in for later visits", () => {
     const state = play([start(), dart("D1"), takeout, takeout, dart("S20")], { inRule: "double" });
 
-    expect(state.players[0].remaining).toBe(279);
+    expect(state.players[0]?.remaining).toBe(279);
   });
 
   it("double in: has to get in again in every leg", () => {
-    const state = play([start(0), dart("D20"), takeout, takeout, dart("S1")], {
+    const state = play([start(), dart("D20"), takeout, takeout, dart("S1")], {
       inRule: "double",
       startScore: 40,
       legsToWin: 2,
@@ -224,7 +312,7 @@ describe("in rules", () => {
   it("master in: a treble gets the player in", () => {
     const state = play([start(), dart("S20"), dart("T20")], { inRule: "master" });
 
-    expect(state.players[0].remaining).toBe(241);
+    expect(state.players[0]?.remaining).toBe(241);
   });
 
   it("bull in: only the outer bull or bullseye gets the player in", () => {
@@ -244,7 +332,7 @@ describe("corrections", () => {
   it("rescores a dart of the current visit", () => {
     const state = play([start(), dart("S1", "a"), correct("a", "T20")]);
 
-    expect(state.players[0].remaining).toBe(241);
+    expect(state.players[0]?.remaining).toBe(241);
     expect(state.currentVisit?.darts[0]).toMatchObject({ dartId: "a", score: 60 });
   });
 
@@ -254,7 +342,7 @@ describe("corrections", () => {
     });
 
     expect(state.currentVisit?.bust).toBe(false);
-    expect(state.players[0].remaining).toBe(10);
+    expect(state.players[0]?.remaining).toBe(10);
     expect(state.phase).toBe("throwing");
   });
 
@@ -264,7 +352,7 @@ describe("corrections", () => {
     });
 
     expect(state.currentVisit?.bust).toBe(true);
-    expect(state.players[0].remaining).toBe(40);
+    expect(state.players[0]?.remaining).toBe(40);
   });
 
   it("rescores a dart from an earlier visit", () => {
@@ -283,7 +371,7 @@ describe("corrections", () => {
   it("ignores a correction for an unknown dart", () => {
     const state = play([start(), dart("S1"), correct("nope", "T20")]);
 
-    expect(state.players[0].remaining).toBe(300);
+    expect(state.players[0]?.remaining).toBe(300);
   });
 });
 
@@ -293,7 +381,7 @@ describe("undo", () => {
   it("clears the darts of the current visit", () => {
     const state = play([start(), dart("T20"), dart("T20"), undo]);
 
-    expect(state.players[0].remaining).toBe(301);
+    expect(state.players[0]?.remaining).toBe(301);
     expect(state.currentPlayer).toBe(0);
     expect(state.currentVisit).toBeNull();
   });
@@ -301,7 +389,7 @@ describe("undo", () => {
   it("with no darts thrown yet, gives the turn back to the previous player", () => {
     const state = play([start(), dart("T20"), takeout, undo]);
 
-    expect(state.players[0].remaining).toBe(301);
+    expect(state.players[0]?.remaining).toBe(301);
     expect(state.currentPlayer).toBe(0);
   });
 
@@ -339,10 +427,10 @@ describe("edges", () => {
   });
 
   it("ignores everything logged before the match started", () => {
-    const state = play([dart("T20"), takeout, start(1), dart("S1")]);
+    const state = play([dart("T20"), takeout, start(), dart("S1")]);
 
-    expect(state.players.map((p) => p.remaining)).toEqual([301, 300]);
-    expect(state.currentPlayer).toBe(1);
+    expect(state.players.map((p) => p.remaining)).toEqual([300, 301]);
+    expect(state.currentPlayer).toBe(0);
   });
 });
 

@@ -53,8 +53,7 @@ function NewMatch({ send }: { send: Send }) {
     e.preventDefault();
     void send({
       type: "startMatch",
-      players,
-      firstPlayer,
+      players: firstPlayer === 0 ? players : [players[1], players[0]],
       settings: { startScore, inRule, outRule, legsToWin },
     });
   };
@@ -148,9 +147,7 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
         <p className="game-shot">Game shot</p>
         <h1>{players[state.winner]} wins</h1>
         {settings.legsToWin > 1 && (
-          <p className="legs-result">
-            {state.players[0].legsWon} – {state.players[1].legsWon}
-          </p>
+          <p className="legs-result">{state.players.map((p) => p.legsWon).join(" – ")}</p>
         )}
         <div className="controls">
           <button type="button" onClick={() => send({ type: "undo" })}>
@@ -167,13 +164,13 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
   return (
     <section className="match">
       <div className="scoreboard">
-        {([0, 1] as const).map((p) => (
-          <div key={p} className={`player ${state.currentPlayer === p ? "active" : ""}`}>
+        {state.players.map((player, p) => (
+          <div key={players[p]} className={`player ${state.currentPlayer === p ? "active" : ""}`}>
             <div className="player-name">{players[p]}</div>
-            <div className="remaining">{state.players[p].remaining}</div>
+            <div className="remaining">{player.remaining}</div>
             <div className="player-meta">
-              {settings.legsToWin > 1 && <span>Legs {state.players[p].legsWon}</span>}
-              {!state.players[p].isIn && <span>Not in</span>}
+              {settings.legsToWin > 1 && <span>Legs {player.legsWon}</span>}
+              {!player.isIn && <span>Not in</span>}
               {lastVisitOf(p) && <span>Last {lastVisitOf(p)}</span>}
             </div>
           </div>

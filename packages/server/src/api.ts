@@ -1,11 +1,11 @@
 // Types shared with the web app. Type-only: nothing here may pull in Node modules.
 
-import type { MatchState, PlayerIndex, Segment, X01Settings } from "@n4/engine";
+import type { MatchState, Segment, X01Settings } from "@n4/engine";
 
 export interface MatchView {
   id: string;
-  /** Display names for player 0 and player 1. */
-  players: [string, string];
+  /** Display names in throwing order. */
+  players: string[];
   settings: X01Settings;
   state: MatchState;
 }
@@ -19,9 +19,9 @@ export interface StationView {
 export type StationCommand =
   | {
       type: "startMatch";
-      players: [string, string];
-      firstPlayer: PlayerIndex;
-      settings?: Partial<X01Settings>;
+      /** Names in throwing order: the first one starts leg 1. */
+      players: string[];
+      settings?: Partial<Omit<X01Settings, "rulesVersion">>;
     }
   | { type: "correctDart"; dartId: string; segment: Segment }
   | { type: "nextPlayer" }

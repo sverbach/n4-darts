@@ -91,7 +91,6 @@ const summary = (s: MatchState) => ({
 const start: StationCommand = {
   type: "startMatch",
   players: ["Ann", "Bob"],
-  firstPlayer: 0,
   settings: { startScore: 101 },
 };
 
@@ -189,7 +188,7 @@ describe("playing a match at a station", () => {
 
     sim.reviseDart(0, "T20");
 
-    await vi.waitFor(async () => expect((await state(server)).players[0].remaining).toBe(41));
+    await vi.waitFor(async () => expect((await state(server)).players[0]?.remaining).toBe(41));
   });
 
   it("passes the turn on 'next player' and clears the board", async () => {
@@ -233,7 +232,7 @@ describe("playing a match at a station", () => {
     await server.command(start);
     expect((await next()).match?.players).toEqual(["Ann", "Bob"]);
     sim.throwDart("T20");
-    expect((await next()).match?.state.players[0].remaining).toBe(41);
+    expect((await next()).match?.state.players[0]?.remaining).toBe(41);
     await reader.cancel();
   });
 });
