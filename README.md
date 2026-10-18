@@ -28,7 +28,7 @@ This starts four things side by side. Ctrl-C stops all of them.
 | <http://localhost:5173/>           | The app, with links to the stations and admin                      |
 | <http://localhost:5173/station/1>  | Station 1: start a match, scoreboard, correct darts                |
 | <http://localhost:5173/station/2>  | Station 2                                                          |
-| <http://localhost:5173/admin>      | Admin: players, stations, matches and history                      |
+| <http://localhost:5173/admin>      | Admin: tonight's tournament, players, stations, matches, history   |
 | <http://localhost:3180/>           | Fake board for station 1: click the dartboard to throw             |
 | <http://localhost:3181/>           | Fake board for station 2                                           |
 
@@ -50,6 +50,22 @@ PORT=3100 pnpm dev:sim        # server on another port, e.g. when Docker already
 The dev database is `packages/server/data/n4-darts.db`; delete it to start over.
 
 If pnpm 12 isn't installed, put `npx -y pnpm@12.14.0` in front of every `pnpm` command, e.g. `npx -y pnpm@12.14.0 dev:sim`.
+
+## Running a tournament
+
+Everything happens in `/admin` → **Tournament**, on the organiser's phone.
+
+1. **Set it up.** Pick tonight's players and press **Create draft**. Choose the format (groups, how many advance, single or double elimination), the legs per phase and the game (start score, in/out). The draft shows the seeds (by recent 3-dart average; new players last in a random order, ↑/↓ to change), the groups, and how long it'll take. Players and format can still change after starting, until the first match is played.
+2. **Start it.** From now on the server runs the evening: it puts the next match on every free station as soon as both players are free (round by round, longest-rested first), builds the knockout when the groups are done, and moves winners (and, in double elimination, losers) on until there's a champion. Players walk up, set who throws first, press **Start** and play. After the checkout, **Done** frees the station; if nobody presses it, that happens by itself after a minute.
+3. **Step in when needed.** The Tournament tab shows the stations, the queue, the group tables and the bracket, and refreshes by itself.
+   - **Pause** a station to keep it out of the tournament (e.g. for casual throws); its current match carries on.
+   - **Hold** a match while a player is away; it's skipped until you release it.
+   - **Send back** a match that's waiting on a station but hasn't started; **Play now on…** puts a chosen match on a station out of order; a match can also be kept for **only** one station.
+   - **Withdraw** a player who leaves: their remaining matches become walkovers. A **late arrival** can still join during the group phase.
+   - Fix a misdetected dart from **Matches → History**. A correction that would change a result a later match already depends on is refused, with that match named.
+4. **The end.** The champion and the final placings stay on the tab until you start the next tournament. **End tournament early** stops everything without a champion.
+
+**Try it locally:** run `pnpm dev:sim`, add a few players in `/admin`, create and start a tournament, then play the matches that appear on `/station/1` and `/station/2` by clicking the two fake boards (<http://localhost:3180/>, <http://localhost:3181/>). A start score of 40 with one leg makes a test evening quick: one click on D20 wins a match.
 
 ## Development
 
