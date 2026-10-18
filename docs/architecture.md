@@ -160,6 +160,19 @@ Settled in discussion (2026-10-18). The hard-to-reverse ones are recorded in `do
 - **Backups**: nightly SQLite copy, keep 30, plus a download button in `/admin`.
 - **Displays**: no separate TV view needed beyond what the projector shows: the tournament tree, and sometimes a station screen in view-only mode.
 
+### Tournaments and the scheduler (2026-10-18)
+
+Details in `.scratch/tournaments/spec.md`.
+
+- **One active tournament at a time**; quick and single matches still work alongside, on free stations.
+- **Rating**: 3-dart average over the last 10 completed matches of any kind (no abandoned matches, no walkovers); unseeded players go last in a random, changeable order.
+- **Station hand-over**: a finished tournament match frees its station on Done or 60 s after the checkout.
+- **Overrides**: pause a station, pin a match to a station, hold a match, send a match back to the queue, play a match now.
+- **Ties** after head-to-head: a mini table of the tied players' mutual matches, then this tournament's group average, then the higher seed.
+- **Knockout**: next power of two with byes for the top seeds; group winners, then runners-up, crossed; standard double elimination; no third-place match.
+- **Result changes** in `/admin` must keep a winner; what depends on a result is rebuilt while it hasn't started, otherwise the correction is refused.
+- **Withdrawals** turn every remaining match into a walkover; **late arrivals** may join during the group phase only.
+
 ## Open questions
 
 None open. New questions get added here and folded into "Decisions so far" once answered.

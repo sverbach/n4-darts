@@ -68,8 +68,19 @@ The elimination phase after the groups, either single or double elimination.
 _Avoid_: KO phase, playoffs, bracket (the bracket is the drawing of it)
 
 **Seed**:
-A player's ranking going into a tournament, derived from their recent 3-dart average.
+A player's position going into a tournament, derived from their rating.
 _Avoid_: Rank, rating (when you mean the position)
+
+**Rating**:
+A player's recent 3-dart average (last 10 completed matches), used to work out seeds.
+_Avoid_: Seed (the position), ranking
+
+**Queue**:
+The tournament matches that are ready to be played, in the order the scheduler will put them on stations.
+_Avoid_: Backlog, schedule (the whole plan)
+
+**Bracket reset**:
+In double elimination, the extra deciding match played when the losers-bracket player wins the grand final.
 
 **Walkover**:
 A match counted as won without being played, because the opponent withdrew.
