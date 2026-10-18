@@ -5,12 +5,13 @@ import { type BoardSim, createBoardSim } from "@n4/board-sim";
 import type { MatchState } from "@n4/engine";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "./app.ts";
-import { openDb } from "./db.ts";
+import { type Db, openDb } from "./db.ts";
 import type { StationCommand, StationView } from "./station.ts";
 import { startStation } from "./stations.ts";
 
 interface Server {
   app: ReturnType<typeof buildApp>;
+  db: Db;
   command(command: StationCommand): Promise<{ status: number; body: unknown }>;
   view(): Promise<StationView>;
   stop(): Promise<void>;
@@ -29,14 +30,19 @@ const tempDb = () => join(mkdtempSync(join(tmpdir(), "n4-db-")), "test.db");
 /** Server with station 1 on the simulator, as main.ts wires it; resolves once the board is online. */
 async function startServer(dbPath: string): Promise<Server> {
   const db = openDb(dbPath);
+  for (const name of PLAYERS) {
+    const id = name.toLowerCase();
+    if (!db.getPlayer(id)) db.addPlayer({ id, name, archived: false });
+  }
   const running = startStation({ id: 1, boardUrl: sim.url }, db, {
     reconnectDelayMs: 10,
     maxReconnectDelayMs: 20,
   });
-  const app = buildApp({ stations: [running.station] });
+  const app = buildApp({ stations: [running.station], db });
   let stopped = false;
   const server: Server = {
     app,
+    db,
     async command(command: StationCommand) {
       const res = await app.inject({
         method: "POST",
@@ -88,18 +94,29 @@ const summary = (s: MatchState) => ({
   visits: s.legs.flatMap((l) => l.visits.map((v) => [v.player, ...v.darts.map((d) => d.score)])),
 });
 
-const start: StationCommand = {
-  type: "startMatch",
-  players: ["Ann", "Bob"],
-  settings: { startScore: 101 },
-};
+/** Seeded into every test database; ids are the lower-cased names. */
+const PLAYERS = ["Ann", "Bob", "Cid", "Dee", "Eve"];
+
+const quick = (ids: string[], settings = {}): StationCommand => ({
+  type: "quickMatch",
+  playerIds: ids,
+  settings: { startScore: 101, ...settings },
+});
+
+/** Sets up Ann vs Bob (101) as a quick match and starts it. */
+async function start(server: Server, ids = ["ann", "bob"], settings = {}) {
+  const set = await server.command(quick(ids, settings));
+  expect(set.status, JSON.stringify(set.body)).toBe(200);
+  const started = await server.command({ type: "startMatch" });
+  expect(started.status, JSON.stringify(started.body)).toBe(200);
+}
 
 /** Ann 66 (one dart corrected), Bob 60, Ann checks out 35. Optionally restarts the server mid-visit. */
 async function playMatch(restart: boolean) {
   sim = await createBoardSim();
   const dbPath = tempDb();
   let server = await startServer(dbPath);
-  expect((await server.command(start)).status).toBe(200);
+  await start(server);
 
   await throwDart(server, "T20");
   await throwDart(server, "S1");
@@ -154,7 +171,7 @@ describe("playing a match at a station", () => {
     sim = await createBoardSim();
     const dbPath = tempDb();
     const first = await startServer(dbPath);
-    await first.command(start);
+    await start(first);
     await throwDart(first, "S20");
     await first.stop();
 
@@ -174,7 +191,9 @@ describe("playing a match at a station", () => {
     const server = await startServer(tempDb());
 
     sim.throwDart("T20");
-    await server.command(start);
+    await server.command(quick(["ann", "bob"]));
+    sim.throwDart("T20"); // set up but not started yet
+    await server.command({ type: "startMatch" });
     await throwDart(server, "S1");
 
     expect((await state(server)).currentVisit?.darts.map((d) => d.score)).toEqual([1]);
@@ -183,7 +202,7 @@ describe("playing a match at a station", () => {
   it("applies the board's own revision of a dart", async () => {
     sim = await createBoardSim();
     const server = await startServer(tempDb());
-    await server.command(start);
+    await start(server);
     await throwDart(server, "S1");
 
     sim.reviseDart(0, "T20");
@@ -194,7 +213,7 @@ describe("playing a match at a station", () => {
   it("passes the turn on 'next player' and clears the board", async () => {
     sim = await createBoardSim();
     const server = await startServer(tempDb());
-    await server.command(start);
+    await start(server);
     await throwDart(server, "S20");
 
     await server.command({ type: "nextPlayer" });
@@ -208,11 +227,11 @@ describe("playing a match at a station", () => {
   it("refuses a second match until the first is closed", async () => {
     sim = await createBoardSim();
     const server = await startServer(tempDb());
-    await server.command(start);
+    await start(server);
 
-    expect((await server.command(start)).status).toBe(409);
-    await server.command({ type: "closeMatch" });
-    expect((await server.command(start)).status).toBe(200);
+    expect((await server.command(quick(["cid", "dee"]))).status).toBe(409);
+    await server.command({ type: "abandonMatch" });
+    expect((await server.command(quick(["cid", "dee"]))).status).toBe(200);
   });
 
   it("pushes every change to live viewers", async () => {
@@ -229,10 +248,170 @@ describe("playing a match at a station", () => {
     };
 
     expect((await next()).match).toBeNull();
-    await server.command(start);
-    expect((await next()).match?.players).toEqual(["Ann", "Bob"]);
+    await server.command(quick(["ann", "bob"]));
+    expect((await next()).match?.players.map((p) => p.name)).toEqual(["Ann", "Bob"]);
+    await server.command({ type: "startMatch" });
+    await next();
     sim.throwDart("T20");
     expect((await next()).match?.state.players[0]?.remaining).toBe(41);
     await reader.cancel();
+  });
+});
+
+describe("setting up a match", () => {
+  it("shows a quick match on the station before it starts, and ignores darts until then", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await server.command(quick(["ann", "bob", "cid"]));
+
+    const view = await server.view();
+    expect(view.match?.players.map((p) => p.name)).toEqual(["Ann", "Bob", "Cid"]);
+    expect(view.match?.state.phase).toBe("notStarted");
+  });
+
+  it("lets the players change the order until the match starts", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await server.command(quick(["ann", "bob", "cid"]));
+
+    expect(
+      (await server.command({ type: "setOrder", playerIds: ["cid", "ann", "bob"] })).status,
+    ).toBe(200);
+    expect((await server.command({ type: "setOrder", playerIds: ["cid", "ann"] })).status).toBe(
+      409,
+    );
+    expect(
+      (await server.command({ type: "setOrder", playerIds: ["cid", "ann", "dee"] })).status,
+    ).toBe(409);
+    await server.command({ type: "startMatch" });
+
+    const view = await server.view();
+    expect(view.match?.players.map((p) => p.name)).toEqual(["Cid", "Ann", "Bob"]);
+    expect(view.match?.state.currentPlayer).toBe(0);
+    expect(
+      (await server.command({ type: "setOrder", playerIds: ["ann", "bob", "cid"] })).status,
+    ).toBe(409);
+  });
+
+  it.each([
+    ["one player", ["ann"]],
+    ["nine players", ["ann", "bob", "cid", "dee", "eve", "ann", "bob", "cid", "dee"]],
+    ["the same player twice", ["ann", "ann"]],
+    ["an unknown player", ["ann", "zed"]],
+  ])("refuses a match with %s", async (_, ids) => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+
+    expect((await server.command(quick(ids))).status).toBe(409);
+  });
+
+  it("refuses an archived player", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    server.db.updatePlayer({ id: "bob", name: "Bob", archived: true });
+
+    expect((await server.command(quick(["ann", "bob"]))).status).toBe(409);
+  });
+
+  it("shows a renamed player's new name", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await start(server);
+    server.db.updatePlayer({ id: "bob", name: "Bobby", archived: false });
+
+    expect((await server.view()).match?.players.map((p) => p.name)).toEqual(["Ann", "Bobby"]);
+  });
+
+  it("cancelling a match that never started leaves no trace", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await server.command(quick(["ann", "bob"]));
+    const id = (await server.view()).match?.id as string;
+
+    await server.command({ type: "abandonMatch" });
+
+    expect((await server.view()).match).toBeNull();
+    expect(server.db.getMatch(id)).toBeUndefined();
+    expect(server.db.playerHasMatches("ann")).toBe(false);
+  });
+});
+
+describe("matches with more players", () => {
+  it("plays a 4-player first-to-2 match to the end, the starter moving on every leg", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await start(server, ["ann", "bob", "cid", "dee"], { startScore: 40, legsToWin: 2 });
+
+    // Leg 1, started by Ann: Bob checks out.
+    await throwDart(server, "M3");
+    await takeout(server);
+    await throwDart(server, "D20");
+    await takeout(server);
+    // Leg 2, started by Bob: Bob checks out straight away.
+    expect((await state(server)).currentPlayer).toBe(1);
+    await throwDart(server, "D20");
+    await takeout(server);
+
+    const s = await state(server);
+    expect(s.phase).toBe("matchWon");
+    expect(s.legs.map((l) => [l.starter, l.winner])).toEqual([
+      [0, 1],
+      [1, 1],
+    ]);
+    const id = (await server.view()).match?.id as string;
+    expect(server.db.getMatch(id)?.winner).toBe("bob");
+
+    expect((await server.command({ type: "closeMatch" })).status).toBe(200);
+    expect((await server.view()).match).toBeNull();
+    expect(server.db.getMatch(id)).toMatchObject({ winner: "bob", abandoned: false });
+    expect(server.db.getMatch(id)?.closedAt).not.toBeNull();
+  });
+
+  it("takes the recorded win back when the winning visit is undone", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await start(server, ["ann", "bob", "cid"], { startScore: 40 });
+    await throwDart(server, "D20");
+    const id = (await server.view()).match?.id as string;
+    expect(server.db.getMatch(id)?.winner).toBe("ann");
+
+    await server.command({ type: "undo" });
+
+    expect(server.db.getMatch(id)?.winner).toBeNull();
+    expect((await server.command({ type: "closeMatch" })).status).toBe(409);
+  });
+
+  it("abandons a match mid-leg: closed, no winner, station free", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await start(server, ["ann", "bob", "cid", "dee"]);
+    await throwDart(server, "T20");
+    const id = (await server.view()).match?.id as string;
+
+    expect((await server.command({ type: "abandonMatch" })).status).toBe(200);
+
+    expect((await server.view()).match).toBeNull();
+    expect(server.db.getMatch(id)).toMatchObject({ winner: null, abandoned: true });
+    expect(server.db.events(id).length).toBeGreaterThan(1);
+  });
+
+  it("resumes a 3-player match after a server restart", async () => {
+    sim = await createBoardSim();
+    const dbPath = tempDb();
+    let server = await startServer(dbPath);
+    await start(server, ["ann", "bob", "cid"]);
+    await throwDart(server, "T20");
+    await takeout(server);
+    await throwDart(server, "S20");
+    await server.stop();
+
+    server = await startServer(dbPath);
+    await throwDart(server, "S1");
+    await takeout(server);
+
+    const s = await state(server);
+    expect(s.players.map((p) => p.remaining)).toEqual([41, 80, 101]);
+    expect(s.currentPlayer).toBe(2);
+    expect((await server.view()).match?.players.map((p) => p.name)).toEqual(["Ann", "Bob", "Cid"]);
   });
 });

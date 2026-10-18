@@ -30,15 +30,24 @@ export function registerPlayers(app: FastifyInstance, db: Db) {
 
   app.get("/api/players", async () => db.players());
 
+  // Open, like the rest of the station (docs/adr/0004): a new player can join at the board.
+  app.post<{ Body: { name?: unknown } }>("/api/players", async (request, reply) =>
+    add(request.body?.name, reply),
+  );
+
   app.get("/api/admin/players", async () => db.players({ includeArchived: true }));
 
-  app.post<{ Body: { name?: unknown } }>("/api/admin/players", async (request, reply) => {
-    const name = usableName(request.body?.name, reply);
+  function add(raw: unknown, reply: FastifyReply) {
+    const name = usableName(raw, reply);
     if (!name) return reply;
     const player: Player = { id: randomUUID(), name, archived: false };
     db.addPlayer(player);
     return reply.code(201).send(player);
-  });
+  }
+
+  app.post<{ Body: { name?: unknown } }>("/api/admin/players", async (request, reply) =>
+    add(request.body?.name, reply),
+  );
 
   app.patch<{ Params: { id: string }; Body: { name?: unknown; archived?: unknown } }>(
     "/api/admin/players/:id",
@@ -58,11 +67,14 @@ export function registerPlayers(app: FastifyInstance, db: Db) {
     },
   );
 
-  // A player who has played matches is archived instead; that check arrives with player-linked
-  // matches (ticket 04).
+  // A player with matches keeps their history: archive them instead.
   app.delete<{ Params: { id: string } }>("/api/admin/players/:id", async (request, reply) => {
-    if (!db.getPlayer(request.params.id)) return reply.code(404).send({ error: "no such player" });
-    db.deletePlayer(request.params.id);
+    const player = db.getPlayer(request.params.id);
+    if (!player) return reply.code(404).send({ error: "no such player" });
+    if (db.playerHasMatches(player.id)) {
+      return reply.code(409).send({ error: `${player.name} has played matches; archive instead` });
+    }
+    db.deletePlayer(player.id);
     return reply.code(204).send();
   });
 }

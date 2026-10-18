@@ -156,18 +156,72 @@ select {
   gap: 12px;
 }
 
-.player-input {
+.hint.left {
+  text-align: left;
+}
+
+.player-picker {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
-.player-input input {
-  flex: 1;
-  min-width: 0;
+.player-picker button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.throws-first {
-  white-space: nowrap;
+.pick-number {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* Lineup */
+
+.lineup-list {
+  list-style: none;
+  margin: 16px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lineup-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.lineup-position {
+  width: 1.5em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.lineup-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.lineup-list button {
+  width: 48px;
+  padding: 0;
 }
 
 .settings {
@@ -227,6 +281,20 @@ select {
   min-height: 1.5em;
   color: var(--muted);
   font-size: 0.875rem;
+}
+
+/* Three to eight players: smaller tiles, as many per row as fit. */
+.scoreboard.many {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.scoreboard.many .player {
+  padding: 10px;
+}
+
+.scoreboard.many .remaining {
+  font-size: clamp(2rem, 9vw, 3.5rem);
 }
 
 .visit {

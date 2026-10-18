@@ -84,6 +84,41 @@ describe("players", () => {
     expect(await names("/api/admin/players")).toEqual([]);
   });
 
+  it("won't delete a player who has matches", async () => {
+    const { app, add } = setup();
+    const ann = (await add("Ann")).body as Player;
+    const bob = (await add("Bob")).body as Player;
+    db.createMatch({
+      id: "m1",
+      station: null,
+      settings: {
+        startScore: 301,
+        inRule: "straight",
+        outRule: "straight",
+        legsToWin: 1,
+        rulesVersion: 1,
+      },
+      playerIds: [ann.id, bob.id],
+    });
+
+    const res = await app.inject({ method: "DELETE", url: `/api/admin/players/${ann.id}` });
+    expect(res.statusCode).toBe(409);
+    expect(db.getPlayer(ann.id)).toBeDefined();
+  });
+
+  it("lets a station add a player without the admin PIN", async () => {
+    db = openDb(":memory:");
+    const app = buildApp({ db, adminPin: "1234" });
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/players",
+      payload: { name: "Sven" },
+    });
+    expect(res.statusCode).toBe(201);
+    expect(db.playerNamed("sven")?.name).toBe("Sven");
+  });
+
   it("answers 404 for a player that doesn't exist", async () => {
     const { app, patch } = setup();
 

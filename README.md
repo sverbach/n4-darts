@@ -34,7 +34,7 @@ This starts four things side by side. Ctrl-C stops all of them.
 
 The app runs on the Vite dev server (:5173), which reloads on every code change and forwards `/api` to the n4-darts server (:3000).
 
-**Playing a leg:** open `/station/1` and a fake board side by side. Start a match on the station, click the board three times, then press **Takeout** on the fake board to end the visit, as a player pulling their darts would. On the fake board you can also:
+**Playing a leg:** open `/station/1` and a fake board side by side. On the station, pick two or more players (add them right there, or in `/admin`), set the order and press **Start**. Click the board three times, then press **Takeout** on the fake board to end the visit, as a player pulling their darts would. On the fake board you can also:
 
 - tap a listed dart, then a spot on the board, to change it (as if Autodarts corrected itself)
 - type a dart like `T20`, `D16`, `BULL` and press enter

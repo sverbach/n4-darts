@@ -131,6 +131,8 @@ export function createBoardGateway(options: BoardGatewayOptions): BoardGateway {
   let timer: ReturnType<typeof setTimeout> | undefined;
 
   const emit = (events: BoardEvent[]) => {
+    // After close() the owner may already be gone (e.g. its database closed on shutdown).
+    if (closed) return;
     for (const event of events) options.onEvent(event);
   };
 

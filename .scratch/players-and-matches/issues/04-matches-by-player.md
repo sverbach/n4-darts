@@ -1,6 +1,6 @@
 # Matches reference players; quick match at the station
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 01, 03
 
@@ -18,3 +18,9 @@ Fresh schema: drop the skeleton's `matches` / `match_events` tables (test data, 
 ## Acceptance
 
 - Integration tests against the simulator: a 4-player first-to-2 quick match played to the end, starter rotating each leg; abandon mid-leg; restart mid-match resumes it.
+
+## Comments
+
+**2026-10-18, done.** Schema versioned with `pragma user_version` (now 1): a version-0 database loses `matches` / `match_events`, keeps `players`. Matches reference players through `match_players(match_id, position, player_id)`; `matches` has `winner` (player id), `abandoned`, `closed_at`; foreign keys on. Station: `assign()` (for ticket 05's admin route too) and commands `quickMatch`, `setOrder` (only before the start, must be the same players), `startMatch` (resets the board, appends `MatchStarted { playerCount }`), `closeMatch` (only once won), `abandonMatch` (started → closed as abandoned; never started → deleted, so cancelled setups leave no history). The recorded winner follows the log after every event, so an undo or correction takes a win back. Validation: 2–8 distinct, existing, non-archived players; start score ≥ 2; legs ≥ 1. `MatchView.players` is `{ id, name }[]` (names looked up live, so renames show). Public `POST /api/players` for adding at the station; `DELETE /api/admin/players/:id` refuses a player with matches.
+- Fixed on the way: the board gateway kept reporting events after `close()`, which hit a closed database on shutdown (and in tests).
+- Web: quick match picks players in tap order (numbered chips) with inline add; lineup with ↑/↓, Shuffle, Start, Cancel; scoreboard tiles shrink for 3–8 players; win screen "Done" closes, "End match" abandons. Checked in a browser at phone width with a 4-player first-to-2 match.
