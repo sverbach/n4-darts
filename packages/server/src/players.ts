@@ -3,8 +3,9 @@
 
 import { randomUUID } from "node:crypto";
 import type { FastifyInstance, FastifyReply } from "fastify";
-import type { Player } from "./api.ts";
+import type { AdminPlayer, Player } from "./api.ts";
 import type { Db } from "./db.ts";
+import { ratingOf } from "./ratings.ts";
 
 /** Trimmed, inner whitespace collapsed; empty means invalid. */
 const cleanName = (name: unknown) =>
@@ -35,7 +36,11 @@ export function registerPlayers(app: FastifyInstance, db: Db) {
     add(request.body?.name, reply),
   );
 
-  app.get("/api/admin/players", async () => db.players({ includeArchived: true }));
+  app.get(
+    "/api/admin/players",
+    async (): Promise<AdminPlayer[]> =>
+      db.players({ includeArchived: true }).map((p) => ({ ...p, rating: ratingOf(db, p.id) })),
+  );
 
   function add(raw: unknown, reply: FastifyReply) {
     const name = usableName(raw, reply);

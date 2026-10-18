@@ -505,6 +505,13 @@ select {
   white-space: nowrap;
 }
 
+.player-row-rating {
+  min-width: 3em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
 .player-row button {
   padding: 0 10px;
 }

@@ -60,6 +60,12 @@ export interface StationAdminView {
   busy: boolean;
 }
 
+/** A player as /admin lists them. */
+export interface AdminPlayer extends Player {
+  /** 3-dart average over the last 10 completed matches; null for an unseeded player. */
+  rating: number | null;
+}
+
 export interface AdminSession {
   /** False when the server has no `ADMIN_PIN`: /admin is open. */
   pinRequired: boolean;

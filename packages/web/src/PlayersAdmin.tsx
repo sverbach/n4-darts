@@ -1,9 +1,9 @@
-import type { Player } from "@n4/server/api";
+import type { AdminPlayer } from "@n4/server/api";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { request } from "./adminApi.ts";
 
 export function PlayersAdmin() {
-  const [players, setPlayers] = useState<Player[] | null>(null);
+  const [players, setPlayers] = useState<AdminPlayer[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -85,7 +85,7 @@ function AddPlayer({ onAdd }: { onAdd: (name: string) => Promise<boolean> }) {
 
 type Change = (method: string, url: string, body?: object) => Promise<boolean>;
 
-function PlayerRow({ player, change }: { player: Player; change: Change }) {
+function PlayerRow({ player, change }: { player: AdminPlayer; change: Change }) {
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState(player.name);
   const url = `/api/admin/players/${player.id}`;
@@ -125,6 +125,9 @@ function PlayerRow({ player, change }: { player: Player; change: Change }) {
   return (
     <li className="player-row">
       <span className="player-row-name">{player.name}</span>
+      <span className="player-row-rating" title="3-dart average, last 10 matches">
+        {player.rating === null ? "–" : player.rating.toFixed(1)}
+      </span>
       <button type="button" className="ghost" onClick={() => setRenaming(true)}>
         Rename
       </button>
