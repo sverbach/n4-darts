@@ -415,3 +415,55 @@ describe("matches with more players", () => {
     expect((await server.view()).match?.players.map((p) => p.name)).toEqual(["Ann", "Bob", "Cid"]);
   });
 });
+
+describe("a reset pressed on the station laptop", () => {
+  const remaining = async (server: Server) => (await state(server)).players.map((p) => p.remaining);
+
+  it("mid-visit keeps the logged darts and carries on with the next ones", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await start(server);
+    await throwDart(server, "S20");
+
+    sim.reset();
+    await throwDart(server, "S5");
+    await throwDart(server, "S1");
+
+    const s = await state(server);
+    expect(s.currentVisit?.darts.map((d) => d.score)).toEqual([20, 5, 1]);
+    expect(s.phase).toBe("awaitingTakeout");
+    await takeout(server);
+    expect((await state(server)).currentPlayer).toBe(1);
+    expect(await remaining(server)).toEqual([75, 101]);
+  });
+
+  it("while waiting for takeout ends the visit, so the next player's darts count", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await start(server);
+    for (const _ of [1, 2, 3]) await throwDart(server, "S20");
+    expect((await state(server)).phase).toBe("awaitingTakeout");
+
+    sim.reset();
+    await vi.waitFor(async () => expect((await state(server)).currentPlayer).toBe(1));
+    await throwDart(server, "T20");
+
+    expect(await remaining(server)).toEqual([41, 41]);
+  });
+
+  it("doesn't count the server's own resets", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await start(server);
+    await throwDart(server, "S20");
+    // Undo resets the board; that reset mustn't look like one pressed on the laptop.
+    await server.command({ type: "undo" });
+    for (const _ of [1, 2, 3]) await throwDart(server, "S20");
+    await server.command({ type: "undo" });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const s = await state(server);
+    expect(s.currentPlayer).toBe(0);
+    expect(s.legs[0]?.visits).toEqual([]);
+  });
+});

@@ -141,7 +141,7 @@ Settled in discussion (2026-10-18). The hard-to-reverse ones are recorded in `do
 - **Legs per phase**: groups / winners / losers / final each have their own best-of setting.
 - **Leg 1 throw**: players set the order at the station before starting (reorder or shuffle); bull-off detection is a later feature.
 - **Matches with 2–8 players** outside tournaments (`/admin` and quick matches); tournament matches stay one against one. A leg ends at the first checkout; the setting is "first to N legs". No teams.
-- **Board reset mid-visit** (pressed on the laptop): the logged darts stand and the visit carries on with the next darts. No prompt; "undo" and "next player" are there if needed.
+- **Board reset pressed on the laptop**: the logged darts stand, no prompt. Mid-visit the visit carries on with the next darts; when the visit is already over (waiting for takeout) the reset ends it, since the cleared board won't see a takeout. "Undo" and "next player" are there if needed.
 - **Stations are URLs**: any number of devices may control `/station/n` at once; `/watch/n` is view-only.
 - **Manual "next player"** button ends a visit if takeout isn't detected, and resets the board.
 - **Scheduling**: a free board gets the next match whose players are both free, longest-rested first; the KO starts when the group phase is complete; the organiser can override.

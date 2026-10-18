@@ -97,7 +97,11 @@ export function diffSnapshots(
   let known = prev.throws ?? [];
   const current = next.throws ?? [];
   if (mode === "live") {
-    if (current.length < known.length) {
+    // A reset is reported even on an empty board, so whoever asked for it hears it back.
+    if (next.event === "Manual reset") {
+      events.push({ type: "BoardReset" });
+      known = [];
+    } else if (current.length < known.length) {
       events.push({ type: next.event === "Takeout finished" ? "TakeoutFinished" : "BoardReset" });
       known = [];
     }

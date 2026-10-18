@@ -190,10 +190,15 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
     }
   }
 
+  /** Resets we asked for whose `BoardReset` hasn't come back yet. */
+  let ownResets = 0;
+
   async function resetBoard() {
     boardDarts = [];
+    ownResets += 1;
     await board.reset().catch(() => {
       // Board offline: it'll be out of sync until the next takeout; nothing better to do here.
+      ownResets = Math.max(0, ownResets - 1);
     });
   }
 
@@ -205,6 +210,8 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
         break;
       case "BoardOffline":
         boardOnline = false;
+        // A reset we sent may never be answered now.
+        ownResets = 0;
         break;
       case "DartDetected":
         if (!acceptingDarts()) return;
@@ -226,9 +233,17 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
         break;
       }
       case "BoardReset":
-        // Someone (us, or a click on the laptop) cleared the board's darts.
         boardDarts = [];
-        return;
+        if (ownResets > 0) {
+          ownResets -= 1;
+          return;
+        }
+        // Pressed on the laptop. The logged darts stand (players-and-matches spec). Mid-visit the
+        // visit carries on with the next darts; a finished visit ends here, because the board is
+        // clear and won't see a takeout, and the next player's darts must count.
+        if (state()?.phase !== "awaitingTakeout") return;
+        append({ type: "TakeoutFinished", source: "reset" });
+        break;
       default:
         return;
     }

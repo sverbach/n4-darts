@@ -106,6 +106,14 @@ describe("board gateway", () => {
     );
   });
 
+  it("reports a reset of an empty board too", async () => {
+    const events = await connect();
+
+    await gateway.reset();
+
+    await vi.waitFor(() => expect(summary(events)).toEqual(["BoardReset"]));
+  });
+
   it("doesn't report darts that were already on the board when it connected", async () => {
     const board = await createBoardSim();
     board.throwDart("T20");
