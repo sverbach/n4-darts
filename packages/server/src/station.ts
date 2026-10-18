@@ -59,6 +59,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
     const current = state();
     return {
       id,
+      name: db.getStationConfig(id)?.name ?? `Station ${id}`,
       boardOnline,
       match:
         match && current

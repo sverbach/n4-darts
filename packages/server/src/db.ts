@@ -19,10 +19,26 @@ export interface MatchRecord {
   closedAt: string | null;
 }
 
+/** A station as configured in /admin. */
+export interface StationConfig {
+  id: number;
+  name: string;
+  /** Board Manager base URL, e.g. `http://192.168.1.139:3180`. */
+  boardUrl: string;
+}
+
 /** An engine event plus whatever the server records alongside it (e.g. board coordinates). */
 export type StoredEvent = MatchEvent & Record<string, unknown>;
 
 export interface Db {
+  stationConfigs(): StationConfig[];
+  getStationConfig(id: number): StationConfig | undefined;
+  /** Adds the station, or replaces the one with the same id. */
+  saveStation(config: StationConfig): void;
+  deleteStation(id: number): void;
+  /** Whether stations were ever seeded from `STATIONS`; it only happens once per database. */
+  stationsSeeded(): boolean;
+  markStationsSeeded(): void;
   /** Alphabetical; archived players only when asked for. */
   players(options?: { includeArchived?: boolean }): Player[];
   getPlayer(id: string): Player | undefined;
@@ -89,6 +105,15 @@ export function openDb(path: string): Db {
   };
   if (version < 1) db.exec("drop table if exists match_events; drop table if exists matches;");
   db.exec(`
+    create table if not exists meta (
+      key text primary key,
+      value text not null
+    );
+    create table if not exists stations (
+      id integer primary key,
+      name text not null,
+      board_url text not null
+    );
     create table if not exists players (
       id text primary key,
       name text not null,
@@ -121,6 +146,22 @@ export function openDb(path: string): Db {
     );
     pragma user_version = ${SCHEMA_VERSION};
   `);
+
+  const selectStations = db.prepare("select * from stations order by id");
+  const selectStation = db.prepare("select * from stations where id = ?");
+  const upsertStation = db.prepare(
+    "insert into stations (id, name, board_url) values (?, ?, ?) on conflict(id) do update set name = excluded.name, board_url = excluded.board_url",
+  );
+  const deleteStationStmt = db.prepare("delete from stations where id = ?");
+  const selectMeta = db.prepare("select value from meta where key = ?");
+  const upsertMeta = db.prepare(
+    "insert into meta (key, value) values (?, ?) on conflict(key) do update set value = excluded.value",
+  );
+  const toStation = (row: { id: number; name: string; board_url: string }): StationConfig => ({
+    id: row.id,
+    name: row.name,
+    boardUrl: row.board_url,
+  });
 
   const selectPlayers = db.prepare("select * from players where archived = 0 or ?");
   const selectPlayer = db.prepare("select * from players where id = ?");
@@ -190,6 +231,29 @@ export function openDb(path: string): Db {
   });
 
   return {
+    stationConfigs() {
+      return (selectStations.all() as { id: number; name: string; board_url: string }[]).map(
+        toStation,
+      );
+    },
+    getStationConfig(id) {
+      const row = selectStation.get(id) as
+        | { id: number; name: string; board_url: string }
+        | undefined;
+      return row && toStation(row);
+    },
+    saveStation(config) {
+      upsertStation.run(config.id, config.name, config.boardUrl);
+    },
+    deleteStation(id) {
+      deleteStationStmt.run(id);
+    },
+    stationsSeeded() {
+      return selectMeta.get("stations_seeded") !== undefined;
+    },
+    markStationsSeeded() {
+      upsertMeta.run("stations_seeded", new Date().toISOString());
+    },
     players(options = {}) {
       const rows = selectPlayers.all(options.includeArchived ? 1 : 0) as unknown as PlayerRow[];
       return rows.map(toPlayer).sort((a, b) => a.name.localeCompare(b.name));

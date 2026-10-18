@@ -31,7 +31,7 @@ export function MatchesAdmin() {
   }, [load]);
 
   const abandon = async (station: StationView) => {
-    if (!confirm(`End the match on station ${station.id} without a result?`)) return;
+    if (!confirm(`End the match on ${station.name} without a result?`)) return;
     setError(await request("POST", `/api/admin/stations/${station.id}/abandon`));
     await load();
   };
@@ -74,7 +74,7 @@ function StationRow(props: { station: StationView; onAbandon(): void; onOpen(): 
   return (
     <li className="station-row">
       <div className="station-row-head">
-        <a href={`/station/${station.id}`}>Station {station.id}</a>
+        <a href={`/station/${station.id}`}>{station.name}</a>
         <span className={`status ${station.boardOnline ? "ok" : "warn"}`}>
           {station.boardOnline ? "Board online" : "Board offline"}
         </span>
@@ -152,7 +152,7 @@ function NewMatch({ stations, onCreated }: { stations: StationView[]; onCreated(
             {free.length === 0 && <option value="">All stations busy</option>}
             {free.map((s) => (
               <option key={s.id} value={s.id}>
-                Station {s.id}
+                {s.name}
               </option>
             ))}
           </select>
@@ -170,7 +170,7 @@ function NewMatch({ stations, onCreated }: { stations: StationView[]; onCreated(
         onClick={submit}
       >
         {target
-          ? `Put on station ${target.id} · ${settings.startScore}, ${legsLabel(settings.legsToWin, picked.length).toLowerCase()}`
+          ? `Put on ${target.name} · ${settings.startScore}, ${legsLabel(settings.legsToWin, picked.length).toLowerCase()}`
           : "No free station"}
       </button>
     </div>

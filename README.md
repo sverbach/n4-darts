@@ -28,7 +28,7 @@ This starts four things side by side. Ctrl-C stops all of them.
 | <http://localhost:5173/>           | The app, with links to the stations and admin                      |
 | <http://localhost:5173/station/1>  | Station 1: start a match, scoreboard, correct darts                |
 | <http://localhost:5173/station/2>  | Station 2                                                          |
-| <http://localhost:5173/admin>      | Admin: players, stations, matches (still empty, being built now)   |
+| <http://localhost:5173/admin>      | Admin: players, stations, matches and history                      |
 | <http://localhost:3180/>           | Fake board for station 1: click the dartboard to throw             |
 | <http://localhost:3181/>           | Fake board for station 2                                           |
 
@@ -86,6 +86,6 @@ docker compose up -d --build
 ```
 
 Serves on port 3000 (override with `N4_PORT=8080`). Data lives in the `n4-data` volume.
-Stations are set with `N4_STATIONS`, e.g. `N4_STATIONS=1=http://192.168.1.139:3180,2=http://192.168.1.140:3180`.
+Stations are managed in `/admin` (Stations tab). On the very first start they're seeded from `N4_STATIONS`, e.g. `N4_STATIONS=1=http://192.168.1.139:3180,2=http://192.168.1.140:3180`; after that the variable is ignored. Lock `/admin` with `N4_ADMIN_PIN=1234`.
 
 Open `http://<server>:3000/station/1` on the station laptop (and on any phone that should control it).

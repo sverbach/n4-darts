@@ -6,7 +6,8 @@ services:
     ports:
       - "${N4_PORT:-3000}:3000"
     environment:
-      # Station number = Board Manager address; comma-separate more stations.
+      # Seeds the stations on the very first start (number = Board Manager address, comma-separated);
+      # after that they're managed in /admin and this is ignored.
       STATIONS: "${N4_STATIONS:-1=http://192.168.1.139:3180}"
       # Shared PIN for /admin; leave empty to keep /admin open.
       ADMIN_PIN: "${N4_ADMIN_PIN:-}"

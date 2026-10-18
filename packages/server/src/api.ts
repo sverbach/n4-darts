@@ -38,6 +38,7 @@ export interface MatchDetail extends MatchSummary {
 
 export interface StationView {
   id: number;
+  name: string;
   boardOnline: boolean;
   match: MatchView | null;
 }
@@ -47,6 +48,16 @@ export interface Player {
   name: string;
   /** Hidden from pickers; their history stays. */
   archived: boolean;
+}
+
+/** A station as /admin manages it. */
+export interface StationAdminView {
+  id: number;
+  name: string;
+  boardUrl: string;
+  boardOnline: boolean;
+  /** Has a match (set up or running); can't be removed until it's closed. */
+  busy: boolean;
 }
 
 export interface AdminSession {

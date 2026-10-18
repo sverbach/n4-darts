@@ -7,7 +7,8 @@ import { matchState, type Segment } from "@n4/engine";
 import type { FastifyInstance } from "fastify";
 import type { MatchDetail, MatchSettingsInput, MatchSummary } from "./api.ts";
 import type { Db, MatchRecord, StoredEvent } from "./db.ts";
-import { CommandError, type Station } from "./station.ts";
+import { CommandError } from "./station.ts";
+import type { StationDirectory } from "./stations.ts";
 
 const isSegment = (value: unknown): value is Segment => {
   const { number, multiplier } = (value ?? {}) as Partial<Segment>;
@@ -16,7 +17,7 @@ const isSegment = (value: unknown): value is Segment => {
   return validNumber && [0, 1, 2, 3].includes(multiplier);
 };
 
-export function registerMatches(app: FastifyInstance, stations: Map<number, Station>, db?: Db) {
+export function registerMatches(app: FastifyInstance, stations: StationDirectory, db?: Db) {
   app.post<{ Body: { station?: unknown; playerIds?: unknown; settings?: MatchSettingsInput } }>(
     "/api/admin/matches",
     async (request, reply) => {
@@ -48,7 +49,7 @@ export function registerMatches(app: FastifyInstance, stations: Map<number, Stat
 
   /** The station currently running this match, if any. */
   const stationOf = (matchId: string) =>
-    [...stations.values()].find((s) => s.view().match?.id === matchId);
+    stations.list().find((s) => s.view().match?.id === matchId);
 
   function detail(match: MatchRecord, events: StoredEvent[]): MatchDetail {
     const state = matchState(match.settings, events);

@@ -2,6 +2,7 @@ import type { AdminSession } from "@n4/server/api";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { MatchesAdmin } from "./MatchesAdmin.tsx";
 import { PlayersAdmin } from "./PlayersAdmin.tsx";
+import { StationsAdmin } from "./StationsAdmin.tsx";
 
 const sections = {
   players: { title: "Players", blurb: "Add, rename and archive players." },
@@ -69,12 +70,13 @@ export function AdminPage({ section }: { section: AdminSection }) {
           </nav>
           <section>
             <h1>{sections[section].title}</h1>
+            <p className="hint">{sections[section].blurb}</p>
             {section === "players" ? (
               <PlayersAdmin />
             ) : section === "matches" ? (
               <MatchesAdmin />
             ) : (
-              <p className="hint">{sections[section].blurb}</p>
+              <StationsAdmin />
             )}
           </section>
         </>

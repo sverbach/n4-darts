@@ -27,7 +27,7 @@ export function StationPage({ id }: { id: number }) {
   return (
     <main className="station">
       <header className="station-bar">
-        <span className="station-name">Station {id}</span>
+        <span className="station-name">{view?.name ?? `Station ${id}`}</span>
         <span className={`status ${connected && view?.boardOnline ? "ok" : "warn"}`}>
           {!connected ? "Server offline" : view?.boardOnline ? "Board online" : "Board offline"}
         </span>

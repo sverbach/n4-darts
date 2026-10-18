@@ -6,11 +6,19 @@ import type { Db } from "./db.ts";
 import { registerMatches } from "./matches.ts";
 import { registerPlayers } from "./players.ts";
 import { CommandError, type Station, type StationCommand } from "./station.ts";
+import { registerStationAdmin } from "./stationAdmin.ts";
+import {
+  fixedDirectory,
+  isRegistry,
+  type StationDirectory,
+  type StationRegistry,
+} from "./stations.ts";
 
 export interface AppOptions {
   /** Directory with the built web app; served at `/` when it exists. */
   webDir?: string;
-  stations?: Station[];
+  /** A fixed list (tests), or the registry, which also enables managing stations in /admin. */
+  stations?: Station[] | StationDirectory | StationRegistry;
   db?: Db;
   /** Shared PIN for /admin; without one /admin is open. */
   adminPin?: string | undefined;
@@ -18,14 +26,17 @@ export interface AppOptions {
 
 export function buildApp(options: AppOptions = {}) {
   const app = Fastify({ logger: false });
-  const stations = new Map((options.stations ?? []).map((s) => [s.id, s]));
+  const stations = Array.isArray(options.stations)
+    ? fixedDirectory(options.stations)
+    : (options.stations ?? fixedDirectory([]));
 
   app.get("/api/health", async () => ({ ok: true }));
   registerAdmin(app, options.adminPin);
   if (options.db) registerPlayers(app, options.db);
   registerMatches(app, stations, options.db);
+  if (isRegistry(stations)) registerStationAdmin(app, stations);
 
-  app.get("/api/stations", async () => [...stations.values()].map((s) => s.view()));
+  app.get("/api/stations", async () => stations.list().map((s) => s.view()));
 
   app.get<{ Params: { id: string } }>("/api/stations/:id", async (request, reply) => {
     const station = stations.get(Number(request.params.id));

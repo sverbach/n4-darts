@@ -677,3 +677,10 @@ button.danger {
 .visit-list li.bust .visit-score {
   color: var(--danger);
 }
+
+.station-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}

@@ -1,3 +1,5 @@
+import type { StationView } from "@n4/server/api";
+import { useEffect, useState } from "react";
 import { AdminPage, isAdminSection } from "./AdminPage.tsx";
 import { StationPage } from "./StationPage.tsx";
 
@@ -11,12 +13,27 @@ export function App() {
     if (isAdminSection(section)) return <AdminPage section={section} />;
   }
 
+  return <Home />;
+}
+
+function Home() {
+  const [stations, setStations] = useState<StationView[]>([]);
+  useEffect(() => {
+    void (async () => {
+      const res = await fetch("/api/stations").catch(() => null);
+      if (res?.ok) setStations(await res.json());
+    })();
+  }, []);
+
   return (
     <main className="home">
       <h1>n4-darts</h1>
       <nav>
-        <a href="/station/1">Station 1</a>
-        <a href="/station/2">Station 2</a>
+        {stations.map((s) => (
+          <a key={s.id} href={`/station/${s.id}`}>
+            {s.name}
+          </a>
+        ))}
         <a href="/admin">Admin</a>
       </nav>
     </main>
