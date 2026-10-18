@@ -16,6 +16,12 @@ export interface StationView {
   match: MatchView | null;
 }
 
+export interface AdminSession {
+  /** False when the server has no `ADMIN_PIN`: /admin is open. */
+  pinRequired: boolean;
+  authenticated: boolean;
+}
+
 export type StationCommand =
   | {
       type: "startMatch";

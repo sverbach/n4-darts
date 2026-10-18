@@ -8,6 +8,8 @@ services:
     environment:
       # Station number = Board Manager address; comma-separate more stations.
       STATIONS: "${N4_STATIONS:-1=http://192.168.1.139:3180}"
+      # Shared PIN for /admin; leave empty to keep /admin open.
+      ADMIN_PIN: "${N4_ADMIN_PIN:-}"
     volumes:
       - n4-data:/data
 

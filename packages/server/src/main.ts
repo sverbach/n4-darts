@@ -11,13 +11,16 @@ const dataDir = process.env.DATA_DIR ?? "data";
 // Until stations are configurable in /admin: STATIONS=1=http://192.168.1.139:3180,2=http://...
 const stationsConfig = parseStationsConfig(process.env.STATIONS ?? "1=http://localhost:3180");
 
+const adminPin = process.env.ADMIN_PIN || undefined;
+
 mkdirSync(dataDir, { recursive: true });
 const db = openDb(join(dataDir, "n4-darts.db"));
 const stations = stationsConfig.map((config) => startStation(config, db));
 
-const app = buildApp({ webDir, stations: stations.map((s) => s.station) });
+const app = buildApp({ webDir, stations: stations.map((s) => s.station), adminPin });
 await app.listen({ host: "0.0.0.0", port });
 console.log(`n4-darts listening on http://0.0.0.0:${port}`);
+if (!adminPin) console.warn("ADMIN_PIN is not set: /admin is open to everyone on the network");
 for (const config of stationsConfig) console.log(`station ${config.id} → board ${config.boardUrl}`);
 
 const shutdown = async () => {
