@@ -3,6 +3,7 @@ import fastifyStatic from "@fastify/static";
 import Fastify from "fastify";
 import { registerAdmin } from "./admin.ts";
 import type { Db } from "./db.ts";
+import { registerMatches } from "./matches.ts";
 import { registerPlayers } from "./players.ts";
 import { CommandError, type Station, type StationCommand } from "./station.ts";
 
@@ -22,6 +23,7 @@ export function buildApp(options: AppOptions = {}) {
   app.get("/api/health", async () => ({ ok: true }));
   registerAdmin(app, options.adminPin);
   if (options.db) registerPlayers(app, options.db);
+  registerMatches(app, stations);
 
   app.get("/api/stations", async () => [...stations.values()].map((s) => s.view()));
 

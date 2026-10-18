@@ -520,3 +520,51 @@ button.danger {
   color: var(--muted);
   cursor: pointer;
 }
+
+.admin h2 {
+  margin: 24px 0 8px;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.station-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.station-row {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.station-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.station-row-head a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.station-row .hint,
+.station-row-match {
+  margin: 8px 0 0;
+}
+
+.station-row-match {
+  overflow-wrap: anywhere;
+}
+
+.station-row button {
+  margin-top: 4px;
+  padding: 0;
+}

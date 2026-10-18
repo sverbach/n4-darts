@@ -1,14 +1,14 @@
-import {
-  type DartView,
-  type InRule,
-  MAX_PLAYERS,
-  MIN_PLAYERS,
-  type OutRule,
-  type PlayerIndex,
-} from "@n4/engine";
-import type { MatchView, Player, StationCommand } from "@n4/server/api";
-import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { type DartView, MAX_PLAYERS, MIN_PLAYERS, type PlayerIndex } from "@n4/engine";
+import type { MatchView, StationCommand } from "@n4/server/api";
+import { useState } from "react";
 import { dartLabel } from "./darts.ts";
+import {
+  defaultSetupSettings,
+  legsLabel,
+  PlayerPicker,
+  SettingsFields,
+  type SetupSettings,
+} from "./MatchSetup.tsx";
 import { SegmentPicker } from "./SegmentPicker.tsx";
 import { useStation } from "./useStation.ts";
 
@@ -52,54 +52,8 @@ export function StationPage({ id }: { id: number }) {
 
 /** Pick players from the list (or add one), choose settings, then go to the lineup. */
 function QuickMatch({ send }: { send: Send }) {
-  const [players, setPlayers] = useState<Player[] | null>(null);
   const [picked, setPicked] = useState<string[]>([]);
-  const [newName, setNewName] = useState("");
-  const [addError, setAddError] = useState<string | null>(null);
-  const [startScore, setStartScore] = useState(301);
-  const [inRule, setInRule] = useState<InRule>("straight");
-  const [outRule, setOutRule] = useState<OutRule>("straight");
-  const [legsToWin, setLegsToWin] = useState(1);
-
-  const load = useCallback(async () => {
-    const res = await fetch("/api/players").catch(() => null);
-    if (res?.ok) setPlayers(await res.json());
-  }, []);
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const toggle = (playerId: string) =>
-    setPicked((current) =>
-      current.includes(playerId)
-        ? current.filter((p) => p !== playerId)
-        : current.length < MAX_PLAYERS
-          ? [...current, playerId]
-          : current,
-    );
-
-  const addPlayer = async (e: FormEvent) => {
-    e.preventDefault();
-    const res = await fetch("/api/players", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: newName }),
-    }).catch(() => null);
-    if (!res) return setAddError("Server not reachable");
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) return setAddError((body as { error?: string }).error ?? "Couldn't add player");
-    setAddError(null);
-    setNewName("");
-    await load();
-    toggle((body as Player).id);
-  };
-
-  const submit = () =>
-    send({
-      type: "quickMatch",
-      playerIds: picked,
-      settings: { startScore, inRule, outRule, legsToWin },
-    });
+  const [settings, setSettings] = useState<SetupSettings>(defaultSetupSettings);
 
   return (
     <div className="new-match">
@@ -107,85 +61,13 @@ function QuickMatch({ send }: { send: Send }) {
       <p className="hint left">
         Pick {MIN_PLAYERS}–{MAX_PLAYERS} players. You can change the order next.
       </p>
-      {!players ? (
-        <p className="hint">Loading players…</p>
-      ) : (
-        <div className="player-picker">
-          {players.length === 0 && <p className="hint left">No players yet: add the first one.</p>}
-          {players.map((p) => {
-            const position = picked.indexOf(p.id);
-            return (
-              <button
-                type="button"
-                key={p.id}
-                aria-pressed={position >= 0}
-                onClick={() => toggle(p.id)}
-                disabled={position < 0 && picked.length >= MAX_PLAYERS}
-              >
-                {position >= 0 && <span className="pick-number">{position + 1}</span>}
-                {p.name}
-              </button>
-            );
-          })}
-        </div>
-      )}
-      <form className="inline-form" onSubmit={addPlayer}>
-        <input
-          aria-label="New player"
-          placeholder="New player"
-          value={newName}
-          required
-          onChange={(e) => setNewName(e.target.value)}
-        />
-        <button type="submit">Add</button>
-      </form>
-      {addError && (
-        <p className="error" role="alert">
-          {addError}
-        </p>
-      )}
-      <div className="settings">
-        <label>
-          Start
-          <select value={startScore} onChange={(e) => setStartScore(Number(e.target.value))}>
-            {[301, 501, 701].map((s) => (
-              <option key={s}>{s}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          In
-          <select value={inRule} onChange={(e) => setInRule(e.target.value as InRule)}>
-            <option value="straight">Single</option>
-            <option value="double">Double</option>
-            <option value="master">Master</option>
-            <option value="bull">Bull</option>
-          </select>
-        </label>
-        <label>
-          Out
-          <select value={outRule} onChange={(e) => setOutRule(e.target.value as OutRule)}>
-            <option value="straight">Single</option>
-            <option value="double">Double</option>
-            <option value="master">Master</option>
-          </select>
-        </label>
-        <label>
-          First to
-          <select value={legsToWin} onChange={(e) => setLegsToWin(Number(e.target.value))}>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <option key={n} value={n}>
-                {n} {n === 1 ? "leg" : "legs"}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      <PlayerPicker picked={picked} onChange={setPicked} />
+      <SettingsFields value={settings} onChange={setSettings} playerCount={picked.length} />
       <button
         type="button"
         className="primary"
         disabled={picked.length < MIN_PLAYERS}
-        onClick={submit}
+        onClick={() => send({ type: "quickMatch", playerIds: picked, settings })}
       >
         Continue
       </button>
@@ -219,7 +101,7 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
         {match.players.length === 2 ? match.players.map((p) => p.name).join(" vs ") : "Next match"}
       </h1>
       <p className="hint left">
-        {startScore}, first to {legsToWin} {legsToWin === 1 ? "leg" : "legs"}. Top of the list
+        {startScore}, {legsLabel(legsToWin, match.players.length).toLowerCase()}. Top of the list
         throws first.
       </p>
       <ol className="lineup-list">

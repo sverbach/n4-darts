@@ -1,21 +1,6 @@
 import type { Player } from "@n4/server/api";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
-
-/** Sends an admin request; resolves to an error message, or null on success. */
-async function request(method: string, url: string, body?: object): Promise<string | null> {
-  try {
-    const res = await fetch(url, {
-      method,
-      headers: body ? { "content-type": "application/json" } : {},
-      body: body ? JSON.stringify(body) : null,
-    });
-    if (res.ok) return null;
-    const json = await res.json().catch(() => ({}));
-    return (json as { error?: string }).error ?? `Server error ${res.status}`;
-  } catch {
-    return "Server not reachable";
-  }
-}
+import { request } from "./adminApi.ts";
 
 export function PlayersAdmin() {
   const [players, setPlayers] = useState<Player[] | null>(null);
