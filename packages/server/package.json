@@ -12,5 +12,8 @@
     "@fastify/static": "10.1.6",
     "@n4/engine": "workspace:*",
     "fastify": "5.12.7"
+  },
+  "devDependencies": {
+    "@n4/board-sim": "workspace:*"
   }
 }
