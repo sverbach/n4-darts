@@ -51,6 +51,25 @@ The dev database is `packages/server/data/n4-darts.db`; delete it to start over.
 
 If pnpm 12 isn't installed, put `npx -y pnpm@12.14.0` in front of every `pnpm` command, e.g. `npx -y pnpm@12.14.0 dev:sim`.
 
+### Without the simulator (real boards)
+
+```sh
+STATIONS=1=http://192.168.1.139:3180 pnpm dev   # dev mode: app on :5173, server on :3000
+pnpm build && pnpm start                        # production mode: everything on :3000
+```
+
+`STATIONS` (number = Board Manager address, comma-separated) only seeds the stations on a fresh database; after that, manage them in `/admin` → Stations. `pnpm start` keeps its database in `data/` at the repo root (`DATA_DIR` to change it).
+
+### With Docker
+
+```sh
+docker build -t n4-darts .
+docker run --rm -p 3000:3000 -v n4-data:/data \
+  -e STATIONS=1=http://192.168.1.139:3180 -e ADMIN_PIN=1234 n4-darts
+```
+
+Then open <http://localhost:3000>. To run the published image instead, use `ghcr.io/sverbach/n4-darts:latest` in place of `n4-darts`.
+
 ## Running a tournament
 
 Everything happens in `/admin` → **Tournament**, on the organiser's phone.
