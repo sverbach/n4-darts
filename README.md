@@ -58,7 +58,7 @@ STATIONS=1=http://192.168.1.139:3180 pnpm dev   # dev mode: app on :5173, server
 pnpm build && pnpm start                        # production mode: everything on :3000
 ```
 
-`STATIONS` (number = Board Manager address, comma-separated) only seeds the stations on a fresh database; after that, manage them in `/admin` → Stations. `pnpm start` keeps its database in `data/` at the repo root (`DATA_DIR` to change it).
+`STATIONS` (number = Board Manager address, comma-separated) only seeds the stations on a fresh database; after that it's ignored and you change board addresses in `/admin` → Stations. `pnpm dev` shares its database with `pnpm dev:sim`, so if you've used the simulator, station 1 still points at `localhost:3180`: change it in `/admin`, or delete `packages/server/data/n4-darts.db*` to start over. `pnpm start` keeps its own database in `data/` at the repo root (`DATA_DIR` to change it).
 
 ### With Docker
 
