@@ -97,8 +97,11 @@ pnpm sim --replay prototypes/recordings/2026-10-18-board1.txt --speed 10
 
 ## Running on the server
 
+Every push to `main` that passes CI publishes `ghcr.io/sverbach/n4-darts:latest` (and a tag per commit SHA). On the server, next to `docker-compose.yml`:
+
 ```sh
-docker compose up -d --build
+docker compose pull && docker compose up -d   # latest published image
+docker compose up -d --build                  # or build from the checkout instead
 ```
 
 Serves on port 3000 (override with `N4_PORT=8080`). Data lives in the `n4-data` volume.

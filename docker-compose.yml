@@ -1,7 +1,7 @@
 services:
   n4-darts:
+    image: ghcr.io/sverbach/n4-darts:latest
     build: .
-    image: n4-darts
     restart: unless-stopped
     ports:
       - "${N4_PORT:-3000}:3000"
