@@ -7,6 +7,7 @@ import { matchState, type Segment } from "@n4/engine";
 import type { FastifyInstance } from "fastify";
 import type { MatchDetail, MatchSettingsInput, MatchSummary } from "./api.ts";
 import type { Db, MatchRecord, StoredEvent } from "./db.ts";
+import { type ChangeFeed, streamView } from "./live.ts";
 import { CommandError } from "./station.ts";
 import type { StationDirectory } from "./stations.ts";
 import type { Tournaments } from "./tournaments.ts";
@@ -23,6 +24,7 @@ export function registerMatches(
   stations: StationDirectory,
   db?: Db,
   tournaments?: Tournaments,
+  feed?: ChangeFeed,
 ) {
   app.post<{ Body: { station?: unknown; playerIds?: unknown; settings?: MatchSettingsInput } }>(
     "/api/admin/matches",
@@ -94,6 +96,18 @@ export function registerMatches(
     const match = db.getMatch(request.params.id);
     if (!match) return reply.code(404).send({ error: "no such match" });
     return detail(match, db.events(match.id));
+  });
+
+  app.get<{ Params: { id: string } }>("/api/admin/matches/:id/live", (request, reply) => {
+    const id = request.params.id;
+    const first = db.getMatch(id);
+    if (!first || !feed) return reply.code(404).send({ error: "no such match" });
+    let last = first;
+    // A match removed meanwhile (set up, never started) keeps showing its last state.
+    streamView(request, reply, feed.subscribe, () => {
+      last = db.getMatch(id) ?? last;
+      return detail(last, db.events(id));
+    });
   });
 
   app.post<{ Params: { id: string }; Body: { dartId?: unknown; segment?: unknown } }>(

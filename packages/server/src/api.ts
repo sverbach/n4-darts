@@ -190,3 +190,44 @@ export interface TournamentProgress {
   /** Ended by the organiser before a champion. */
   endedEarly: boolean;
 }
+
+/** A station's match in short, for the projector. */
+export interface ScoreCard {
+  matchId: string;
+  label: string | null;
+  /** In throwing order. */
+  players: { name: string; legsWon: number; remaining: number }[];
+  legsToWin: number;
+  startScore: number;
+  phase: MatchState["phase"];
+  /** Whose visit it is, while the match is on. */
+  throwing: number | null;
+  /** The darts of the visit in progress. */
+  visit: { segment: Segment; score: number; ignored: boolean }[];
+  winner: number | null;
+}
+
+export interface DisplayStation {
+  id: number;
+  name: string;
+  boardOnline: boolean;
+  paused: boolean;
+  match: ScoreCard | null;
+}
+
+/** What /display shows: the running or just finished tournament, or just the stations. */
+export interface DisplayView {
+  tournament: {
+    name: string;
+    phase: TournamentProgress["phase"];
+    played: number;
+    total: number;
+    endedEarly: boolean;
+  } | null;
+  stations: DisplayStation[];
+  /** The next queued matches. */
+  upNext: { label: string; players: string[] }[];
+  groups: TournamentProgress["groups"];
+  bracket: TournamentProgress["bracket"];
+  placings: TournamentProgress["placings"];
+}

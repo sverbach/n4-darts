@@ -3,6 +3,8 @@ import fastifyStatic from "@fastify/static";
 import Fastify from "fastify";
 import { registerAdmin } from "./admin.ts";
 import type { Db } from "./db.ts";
+import { displayView } from "./display.ts";
+import { createChangeFeed, streamView } from "./live.ts";
 import { registerMatches } from "./matches.ts";
 import { registerPlayers } from "./players.ts";
 import { createScheduler, type SchedulerOptions } from "./scheduler.ts";
@@ -38,10 +40,21 @@ export function buildApp(options: AppOptions = {}) {
   registerAdmin(app, options.adminPin);
   if (options.db) registerPlayers(app, options.db);
   const tournaments = options.db ? createTournaments(options.db, stations) : undefined;
-  registerMatches(app, stations, options.db, tournaments);
+  const feed = options.db ? createChangeFeed(options.db, stations) : undefined;
+  if (feed) app.addHook("onClose", async () => feed.close());
+  registerMatches(app, stations, options.db, tournaments, feed);
   if (isRegistry(stations)) registerStationAdmin(app, stations);
-  if (options.db && tournaments) {
+  if (options.db && tournaments && feed) {
+    const db = options.db;
     registerTournaments(app, tournaments);
+    app.get("/api/admin/tournament/live", (request, reply) =>
+      streamView(request, reply, feed.subscribe, () => tournaments.view()),
+    );
+    const display = () => displayView(db, stations, tournaments);
+    app.get("/api/display", async () => display());
+    app.get("/api/display/live", (request, reply) =>
+      streamView(request, reply, feed.subscribe, display),
+    );
     if (options.scheduler) {
       const scheduler = createScheduler(options.db, stations, tournaments, options.scheduler);
       app.addHook("onClose", async () => scheduler.stop());
@@ -73,22 +86,7 @@ export function buildApp(options: AppOptions = {}) {
   app.get<{ Params: { id: string } }>("/api/stations/:id/live", (request, reply) => {
     const station = stations.get(Number(request.params.id));
     if (!station) return reply.code(404).send({ error: "no such station" });
-
-    reply.hijack();
-    const res = reply.raw;
-    res.writeHead(200, {
-      "content-type": "text/event-stream",
-      "cache-control": "no-cache",
-      connection: "keep-alive",
-    });
-    const send = (view: unknown) => res.write(`data: ${JSON.stringify(view)}\n\n`);
-    send(station.view());
-    const unsubscribe = station.subscribe(send);
-    const keepAlive = setInterval(() => res.write(": keep-alive\n\n"), 25_000);
-    request.raw.on("close", () => {
-      clearInterval(keepAlive);
-      unsubscribe();
-    });
+    streamView(request, reply, station.subscribe, station.view);
   });
 
   if (options.webDir && existsSync(options.webDir)) {

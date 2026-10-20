@@ -121,8 +121,40 @@ export interface Db {
   /** Appends to the match's log; `at` defaults to now (tests pass their own). */
   append(matchId: string, event: StoredEvent, at?: string): void;
   events(matchId: string): StoredEvent[];
+  /** Called after every write; `matchId` names the match it touched, if any. */
+  onChange(listener: (change: DbChange) => void): () => void;
   close(): void;
 }
+
+export interface DbChange {
+  matchId: string | null;
+}
+
+/** Writes that take a match id as their first argument. */
+const MATCH_WRITES = [
+  "setStation",
+  "setHeld",
+  "setPinnedStation",
+  "closeAsWalkover",
+  "setOrder",
+  "setWinner",
+  "closeMatch",
+  "deleteMatch",
+  "append",
+] as const;
+const OTHER_WRITES = [
+  "saveStation",
+  "deleteStation",
+  "addPlayer",
+  "updatePlayer",
+  "deletePlayer",
+  "createMatch",
+  "setStationPaused",
+  "createTournament",
+  "saveTournament",
+  "deleteTournament",
+  "setEntrants",
+] as const;
 
 /**
  * Bumped when the schema changes incompatibly. Version 0 is the walking skeleton's, whose test
@@ -414,7 +446,7 @@ export function openDb(path: string): Db {
     placings: row.placings ? JSON.parse(row.placings) : null,
   });
 
-  return {
+  const store: Omit<Db, "onChange"> = {
     stationConfigs() {
       return (selectStations.all() as { id: number; name: string; board_url: string }[]).map(
         toStation,
@@ -605,4 +637,35 @@ export function openDb(path: string): Db {
       db.close();
     },
   };
+  return withChanges(store);
+}
+
+/** Announces every write to the listeners, after it happened. */
+function withChanges(store: Omit<Db, "onChange">): Db {
+  const listeners = new Set<(change: DbChange) => void>();
+  const announce = (change: DbChange) => {
+    for (const listener of listeners) listener(change);
+  };
+  const db: Db = {
+    ...store,
+    onChange(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+  };
+  for (const name of MATCH_WRITES) {
+    const write = store[name] as (id: string, ...rest: unknown[]) => void;
+    (db[name] as typeof write) = (id, ...rest) => {
+      write(id, ...rest);
+      announce({ matchId: id });
+    };
+  }
+  for (const name of OTHER_WRITES) {
+    const write = store[name] as (...args: unknown[]) => void;
+    (db[name] as typeof write) = (...args) => {
+      write(...args);
+      announce({ matchId: name === "createMatch" ? (args[0] as NewMatch).id : null });
+    };
+  }
+  return db;
 }
