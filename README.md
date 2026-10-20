@@ -29,6 +29,9 @@ This starts four things side by side. Ctrl-C stops all of them.
 | <http://localhost:5173/station/1>  | Station 1: start a match, scoreboard, correct darts                |
 | <http://localhost:5173/station/2>  | Station 2                                                          |
 | <http://localhost:5173/admin>      | Admin: tonight's tournament, players, stations, matches, history   |
+| <http://localhost:5173/display>    | Projector: the tournament with live scores, or the leaderboard     |
+| <http://localhost:5173/watch/1>    | Projector: station 1's scoreboard, nothing to press                |
+| <http://localhost:5173/players>    | Leaderboard; a name opens that player's stats                      |
 | <http://localhost:3180/>           | Fake board for station 1: click the dartboard to throw             |
 | <http://localhost:3181/>           | Fake board for station 2                                           |
 
@@ -82,7 +85,11 @@ Everything happens in `/admin` → **Tournament**, on the organiser's phone.
    - **Send back** a match that's waiting on a station but hasn't started; **Play now on…** puts a chosen match on a station out of order; a match can also be kept for **only** one station.
    - **Withdraw** a player who leaves: their remaining matches become walkovers. A **late arrival** can still join during the group phase.
    - Fix a misdetected dart from **Matches → History**. A correction that would change a result a later match already depends on is refused, with that match named.
-4. **The end.** The champion and the final placings stay on the tab until you start the next tournament. **End tournament early** stops everything without a champion.
+4. **The end.** The champion, the final placings and the evening's awards (best match average, highest checkout, most 180s, best leg) stay on the tab until you start the next tournament. **End tournament early** stops everything without a champion.
+
+**On the projector:** open `/display` in the projector's browser (full screen, e.g. F11) and leave it. It follows the evening by itself: live scores of every station and what's up next beside the group tables, then the bracket, then the champion, placings and awards. Without a tournament it shows the stations and the leaderboard. Tap a station card (or open `/watch/1`) to put one station's scoreboard on screen; go back to `/display` when you're done. Both pages fit any screen size without scrolling.
+
+**Stats:** every finished match counts towards the players' long-term stats (not walkovers or abandoned matches), whatever kind of match it was. `/players` ranks everyone by rating; a profile shows averages, checkout %, 180s, best leg, results, the average per evening, tournaments and recent matches. Both pages are public, so players can look themselves up on their phones.
 
 **Try it locally:** run `pnpm dev:sim`, add a few players in `/admin`, create and start a tournament, then play the matches that appear on `/station/1` and `/station/2` by clicking the two fake boards (<http://localhost:3180/>, <http://localhost:3181/>). Set every phase to best of 1 for a quick test evening; typing darts on the fake board (`T20`, enter, three times) is faster than clicking.
 

@@ -32,7 +32,7 @@ Run private, offline dart tournaments in a room with two Autodarts boards. An or
  Station 2 (laptop)                 │        ▼                ▼               │
 ┌──────────────────────┐            │   Event store / DB (SQLite)             │
 │ Board Manager :3180  │◀──────────┤                                          │
-│ Browser /station/2 ──┼───────────▶│  Web app + realtime push (WebSocket)    │
+│ Browser /station/2 ──┼───────────▶│  Web app + realtime push (SSE)          │
 └──────────────────────┘            └──────────┬──────────────┬───────────────┘
                                                │              │
                                      /admin (phone)      /display, /watch/n (projector)
@@ -70,7 +70,7 @@ Pure, deterministic game rules. `state = fold(rules, events)`.
 
 ### Web app
 
-One frontend, three surfaces, all live via a WebSocket from the server:
+One frontend, three surfaces, all live via Server-Sent Events from the server:
 
 | Route        | Where                    | Purpose                                                          |
 | ------------ | ------------------------ | ---------------------------------------------------------------- |
@@ -157,7 +157,7 @@ Settled in discussion (2026-10-18). The hard-to-reverse ones are recorded in `do
 - **Repo layout**: pnpm workspace with `packages/engine`, `packages/server`, `packages/web`, `tools/board-sim`. Single domain context.
 - **Stations** are configured in `/admin` (name + Board Manager address) with a live connection indicator. Laptops get DHCP reservations.
 - **Fully offline assets**: no CDN, fonts or icons from the internet.
-- **Backups**: nightly SQLite copy, keep 30, plus a download button in `/admin`.
+- **Backups**: nightly SQLite copy, keep 30 (no download button for now).
 - **Displays**: no separate TV view needed beyond what the projector shows: the tournament tree, and sometimes a station screen in view-only mode.
 
 ### Tournaments and the scheduler (2026-10-18)
@@ -173,14 +173,29 @@ Details in `.scratch/tournaments/spec.md`.
 - **Result changes** in `/admin` must keep a winner; what depends on a result is rebuilt while it hasn't started, otherwise the correction is refused.
 - **Withdrawals** turn every remaining match into a walkover; **late arrivals** may join during the group phase only.
 
+### Display and stats (2026-10-20)
+
+Details in `.scratch/display-and-stats/spec.md`.
+
+- **Live updates** everywhere as Server-Sent Events: every database write and station change triggers a recompute, and a view is only sent when it changed. No polling left.
+- **`/display`**: a fixed split, scaled to fit any screen, no rotating pages. Now playing (live scores) and Up next beside the group tables or the bracket; afterwards the champion, placings and awards; with no tournament, the stations and the top 10. It never switches to a station by itself.
+- **`/watch/n`**: the station's scoreboard without controls, linked from `/display` and the home page.
+- **Stats** over every completed match of any kind (no walkovers, no abandoned matches), computed from the event log and cached per match until it changes. Public leaderboard (`/players`) and profiles (`/players/<id>`). A match's evening is the day it started, shifted 6 h so a night past midnight counts to the day it began. Checkout % counts darts at a one-dart finish in double-out matches.
+- **Awards** for a tournament finished with a champion: best match average, highest checkout, most 180s, best leg; ties shared, empty categories left out.
+- **Backups** at start when the last is over a day old, then whenever a day has passed; 30 kept in `DATA_DIR/backups`.
+- **Later**: head-to-head between two players, filtering stats by game.
+
 ## Open questions
 
 None open. New questions get added here and folded into "Decisions so far" once answered.
 
 ## Suggested build order
 
+Steps 1–5 are done (as of 2026-10-20); the design system pass comes last.
+
 1. **Gateway + engine spike**: server connects to one board and plays a 301 leg end to end on a bare `/station/1` page.
 2. Corrections + crash recovery (event log).
 3. Players + single match created from `/admin`, assigned to a station.
 4. Tournament formats + scheduler for two stations.
 5. `/display` projector view, long-term stats and seeding.
+6. Design system styling across all pages.

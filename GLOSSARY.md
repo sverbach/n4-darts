@@ -89,3 +89,27 @@ _Avoid_: Forfeit, bye
 **Bye**:
 A knockout slot without an opponent; the player advances without a match.
 _Avoid_: Walkover
+
+## Stats
+
+**3-dart average**:
+Points scored per dart, times three. Busts count their darts for zero; darts thrown after a visit was already over don't count.
+_Avoid_: PPD (unless you mean per dart), average (alone, when it's ambiguous)
+
+**First-9 average**:
+The 3-dart average over the first three visits of each leg: how well a player scores before the checkout matters.
+
+**Checkout %**:
+The share of darts thrown at a one-dart finish (a double of 40 or less, or the bull) that finished the leg. Only double-out matches count.
+_Avoid_: Doubles %, finishing rate
+
+**Leaderboard**:
+Every player with at least one counted match, ranked by rating.
+_Avoid_: Ranking, table (that's a group's)
+
+**Profile**:
+One player's long-term stats page: averages, checkouts, scoring, results, the average per evening, tournaments and recent matches.
+
+**Awards**:
+The best of one tournament: best match average, highest checkout, most 180s, best leg.
+_Avoid_: Prizes, records
