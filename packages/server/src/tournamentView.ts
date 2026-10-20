@@ -5,6 +5,7 @@ import { matchState } from "@n4/engine";
 import type { TournamentMatchView, TournamentProgress, TournamentStationView } from "./api.ts";
 import type { Db, MatchRecord, TournamentRecord } from "./db.ts";
 import { legMinutes, matchMinutes } from "./estimate.ts";
+import { matchPlayer } from "./players.ts";
 import { queueOf } from "./scheduler.ts";
 import type { StationDirectory } from "./stations.ts";
 import type { Stats } from "./stats.ts";
@@ -135,7 +136,7 @@ export function progressView(
       : queueOf(db, tournament.id, plan).map(({ match, ready }) => ({
           matchId: match.id,
           label: match.label ?? "",
-          players: match.playerIds.map((id) => ({ id, name: name(id) ?? "?" })),
+          players: match.playerIds.map((id) => matchPlayer(db, id)),
           ready,
           held: match.held,
           pinnedStation: match.pinnedStation,
@@ -144,7 +145,7 @@ export function progressView(
     bracket,
     placings:
       tournament.placings?.map((p) => ({
-        name: name(p.playerId) ?? "?",
+        ...matchPlayer(db, p.playerId),
         from: p.from,
         to: p.to,
       })) ?? null,

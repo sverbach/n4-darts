@@ -8,6 +8,7 @@ import type { FastifyInstance } from "fastify";
 import type { MatchDetail, MatchSettingsInput, MatchSummary } from "./api.ts";
 import type { Db, MatchRecord, StoredEvent } from "./db.ts";
 import { type ChangeFeed, streamView } from "./live.ts";
+import { matchPlayer } from "./players.ts";
 import { CommandError } from "./station.ts";
 import type { StationDirectory } from "./stations.ts";
 import type { Tournaments } from "./tournaments.ts";
@@ -54,6 +55,7 @@ export function registerMatches(
   );
 
   if (!db) return;
+  const store = db; // Narrowed for the closures below.
 
   /** The station currently running this match, if any. */
   const stationOf = (matchId: string) =>
@@ -75,7 +77,7 @@ export function registerMatches(
     return {
       id: match.id,
       station: match.station,
-      players: match.playerIds.map((id) => ({ id, name: db?.getPlayer(id)?.name ?? "?" })),
+      players: match.playerIds.map((id) => matchPlayer(store, id)),
       settings: match.settings,
       winner: match.winner,
       abandoned: match.abandoned,

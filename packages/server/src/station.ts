@@ -19,6 +19,7 @@ import {
   toDetectedDart,
 } from "./board/gateway.ts";
 import type { Db, StoredEvent } from "./db.ts";
+import { matchPlayer } from "./players.ts";
 
 export type { StationCommand, StationView };
 
@@ -84,10 +85,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
         match && current
           ? {
               id: match.id,
-              players: match.playerIds.map((playerId) => ({
-                id: playerId,
-                name: db.getPlayer(playerId)?.name ?? "?",
-              })),
+              players: match.playerIds.map((playerId) => matchPlayer(db, playerId)),
               settings: match.settings,
               state: current,
               label: match.label,

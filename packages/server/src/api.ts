@@ -9,6 +9,8 @@ export type { Placing, TableRow, TournamentConfig };
 export interface MatchPlayer {
   id: string;
   name: string;
+  /** Photo version, see `Player.photo`. */
+  photo: string | null;
 }
 
 export interface MatchView {
@@ -58,7 +60,12 @@ export interface Player {
   name: string;
   /** Hidden from pickers; their history stays. */
   archived: boolean;
+  /** Version of the player's photo (for `/api/players/:id/photo?v=`); null without one. */
+  photo: string | null;
 }
+
+/** What the database needs to add or change a player; the photo is managed on its own. */
+export type PlayerInput = Omit<Player, "photo">;
 
 /** A station as /admin manages it. */
 export interface StationAdminView {
@@ -189,7 +196,7 @@ export interface TournamentProgress {
     name: string;
     matches: TournamentMatchView[];
   }[];
-  placings: { name: string; from: number; to: number }[] | null;
+  placings: (MatchPlayer & { from: number; to: number })[] | null;
   /** The evening's awards, once finished with a champion; categories nobody scored in are left out. */
   awards: Award[] | null;
   /** Ended by the organiser before a champion. */
@@ -209,7 +216,7 @@ export interface ScoreCard {
   matchId: string;
   label: string | null;
   /** In throwing order. */
-  players: { name: string; legsWon: number; remaining: number }[];
+  players: (MatchPlayer & { legsWon: number; remaining: number })[];
   legsToWin: number;
   startScore: number;
   phase: MatchState["phase"];
@@ -239,7 +246,7 @@ export interface DisplayView {
   } | null;
   stations: DisplayStation[];
   /** The next queued matches. */
-  upNext: { label: string; players: string[] }[];
+  upNext: { label: string; players: MatchPlayer[] }[];
   groups: TournamentProgress["groups"];
   bracket: TournamentProgress["bracket"];
   placings: TournamentProgress["placings"];
@@ -270,6 +277,7 @@ export interface StatTotals {
 export interface LeaderboardRow {
   playerId: string;
   name: string;
+  photo: string | null;
   /** 3-dart average over the last 10 counted matches. */
   rating: number | null;
   average: number | null;
@@ -282,6 +290,7 @@ export interface LeaderboardRow {
 export interface PlayerProfile {
   playerId: string;
   name: string;
+  photo: string | null;
   rating: number | null;
   totals: StatTotals;
   /** One entry per day played (an evening past midnight counts to the day it started), oldest first. */

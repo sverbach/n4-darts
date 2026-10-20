@@ -18,7 +18,7 @@ export function scoreCard(match: MatchView): ScoreCard {
     matchId: match.id,
     label: match.label,
     players: match.players.map((p, i) => ({
-      name: p.name,
+      ...p,
       legsWon: state.players[i]?.legsWon ?? 0,
       remaining: state.players[i]?.remaining ?? settings.startScore,
     })),
@@ -70,7 +70,7 @@ export function displayView(
       }),
     upNext: (progress?.queue ?? []).slice(0, UP_NEXT).map((q) => ({
       label: q.label,
-      players: q.players.map((p) => p.name),
+      players: q.players,
     })),
     groups: progress?.groups ?? [],
     bracket: progress?.bracket ?? [],

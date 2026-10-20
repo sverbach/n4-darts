@@ -2,7 +2,7 @@
 
 import { DatabaseSync } from "node:sqlite";
 import type { MatchEvent, X01Settings } from "@n4/engine";
-import type { Player } from "./api.ts";
+import type { Player, PlayerInput } from "./api.ts";
 import type { Entrant, Placing, TournamentConfig } from "./tournament/types.ts";
 
 export interface MatchRecord {
@@ -73,9 +73,14 @@ export interface Db {
   getPlayer(id: string): Player | undefined;
   /** The player with this name, ignoring case, if any. */
   playerNamed(name: string): Player | undefined;
-  addPlayer(player: Player): void;
-  updatePlayer(player: Player): void;
+  addPlayer(player: PlayerInput): void;
+  updatePlayer(player: PlayerInput): void;
+  /** Also removes their photo. */
   deletePlayer(id: string): void;
+  /** Stores (or replaces) the player's photo, a JPEG. */
+  setPhoto(playerId: string, jpeg: Uint8Array): void;
+  photo(playerId: string): { jpeg: Uint8Array; version: string } | undefined;
+  deletePhoto(playerId: string): void;
   /** Whether the player is in any match, open or closed. */
   playerHasMatches(id: string): boolean;
   createMatch(match: NewMatch): void;
@@ -156,13 +161,15 @@ const OTHER_WRITES = [
   "saveTournament",
   "deleteTournament",
   "setEntrants",
+  "setPhoto",
+  "deletePhoto",
 ] as const;
 
 /**
  * Bumped when the schema changes incompatibly. Version 0 is the walking skeleton's, whose test
  * matches only had player names: they're dropped, not migrated (players-and-matches spec).
  */
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 interface MatchRow {
   id: string;
@@ -204,12 +211,14 @@ interface PlayerRow {
   id: string;
   name: string;
   archived: number;
+  photo: string | null;
 }
 
 const toPlayer = (row: PlayerRow): Player => ({
   id: row.id,
   name: row.name,
   archived: row.archived === 1,
+  photo: row.photo,
 });
 
 /** Names are unique ignoring case, including non-ASCII letters (SQLite's NOCASE is ASCII only). */
@@ -274,6 +283,11 @@ export function openDb(path: string): Db {
       withdrawn integer not null default 0,
       primary key (tournament_id, player_id)
     );
+    create table if not exists player_photos (
+      player_id text primary key references players(id) on delete cascade,
+      jpeg blob not null,
+      updated_at text not null
+    );
     create table if not exists paused_stations (
       id integer primary key
     );
@@ -312,9 +326,17 @@ export function openDb(path: string): Db {
     boardUrl: row.board_url,
   });
 
-  const selectPlayers = db.prepare("select * from players where archived = 0 or ?");
-  const selectPlayer = db.prepare("select * from players where id = ?");
-  const selectPlayerByKey = db.prepare("select * from players where name_key = ?");
+  const playerColumns =
+    "select p.*, ph.updated_at as photo from players p left join player_photos ph on ph.player_id = p.id";
+  const selectPlayers = db.prepare(`${playerColumns} where p.archived = 0 or ?`);
+  const selectPlayer = db.prepare(`${playerColumns} where p.id = ?`);
+  const selectPlayerByKey = db.prepare(`${playerColumns} where p.name_key = ?`);
+  const upsertPhoto = db.prepare(`
+    insert into player_photos (player_id, jpeg, updated_at) values (?, ?, ?)
+    on conflict (player_id) do update set jpeg = excluded.jpeg, updated_at = excluded.updated_at
+  `);
+  const selectPhoto = db.prepare("select jpeg, updated_at from player_photos where player_id = ?");
+  const deletePhotoStmt = db.prepare("delete from player_photos where player_id = ?");
   const insertPlayer = db.prepare(
     "insert into players (id, name, name_key, archived) values (?, ?, ?, ?)",
   );
@@ -492,6 +514,17 @@ export function openDb(path: string): Db {
     },
     deletePlayer(id) {
       deletePlayerStmt.run(id);
+    },
+    setPhoto(playerId, jpeg) {
+      // Milliseconds, so a quick replace still gets a new version.
+      upsertPhoto.run(playerId, jpeg, new Date().toISOString());
+    },
+    photo(playerId) {
+      const row = selectPhoto.get(playerId) as { jpeg: Uint8Array; updated_at: string } | undefined;
+      return row && { jpeg: row.jpeg, version: row.updated_at };
+    },
+    deletePhoto(playerId) {
+      deletePhotoStmt.run(playerId);
     },
     playerHasMatches(id) {
       return selectPlayerMatch.get(id) !== undefined;

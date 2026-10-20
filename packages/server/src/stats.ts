@@ -92,6 +92,7 @@ export function createStats(db: Db) {
         {
           playerId: player.id,
           name: player.name,
+          photo: player.photo,
           rating: ratingFrom(counted),
           average: totals.average,
           matches: totals.matches,
@@ -138,6 +139,7 @@ export function createStats(db: Db) {
     return {
       playerId,
       name: player.name,
+      photo: player.photo,
       rating: ratingFrom(counted),
       totals: totalsOf(counted.map((c) => c.own)),
       evenings: [...byDay].map(([day, own]) => ({
