@@ -1,15 +1,7 @@
-import { MIN_PLAYERS } from "@n4/engine";
 import type { StationView } from "@n4/server/api";
 import { useState } from "react";
 import { request } from "./adminApi.ts";
 import { MatchDetailView, MatchHistory } from "./MatchHistory.tsx";
-import {
-  defaultSetupSettings,
-  legsLabel,
-  PlayerPicker,
-  SettingsFields,
-  type SetupSettings,
-} from "./MatchSetup.tsx";
 import { useLive } from "./useLive.ts";
 
 export function MatchesAdmin() {
@@ -46,8 +38,6 @@ export function MatchesAdmin() {
           ))}
         </ul>
       )}
-      <h2>New match</h2>
-      {stations && <NewMatch stations={stations} />}
       <h2>History</h2>
       <MatchHistory onOpen={setOpenId} />
     </div>
@@ -98,66 +88,4 @@ function matchSummary(match: NonNullable<StationView["match"]>) {
       (p, i) => `${name(i)} ${p.remaining}${match.settings.legsToWin > 1 ? ` (${p.legsWon})` : ""}`,
     )
     .join(" · ");
-}
-
-function NewMatch({ stations }: { stations: StationView[] }) {
-  const free = stations.filter((s) => !s.match);
-  const [picked, setPicked] = useState<string[]>([]);
-  const [settings, setSettings] = useState<SetupSettings>(defaultSetupSettings);
-  const [stationId, setStationId] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  // Fall back to the first free station when none is chosen or the chosen one got busy.
-  const target = free.find((s) => s.id === stationId) ?? free[0];
-
-  const submit = async () => {
-    if (!target) return;
-    const message = await request("POST", "/api/admin/matches", {
-      station: target.id,
-      playerIds: picked,
-      settings,
-    });
-    setError(message);
-    if (message) return;
-    setPicked([]);
-    setStationId(null);
-  };
-
-  return (
-    <div className="new-match">
-      <PlayerPicker picked={picked} onChange={setPicked} />
-      <SettingsFields value={settings} onChange={setSettings} playerCount={picked.length} />
-      <div className="settings">
-        <label>
-          Station
-          <select
-            value={target?.id ?? ""}
-            disabled={!target}
-            onChange={(e) => setStationId(Number(e.target.value))}
-          >
-            {free.length === 0 && <option value="">All stations busy</option>}
-            {free.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      {error && (
-        <p className="error" role="alert">
-          {error}
-        </p>
-      )}
-      <button
-        type="button"
-        className="primary"
-        disabled={!target || picked.length < MIN_PLAYERS}
-        onClick={submit}
-      >
-        {target
-          ? `Put on ${target.name} · ${settings.startScore}, ${legsLabel(settings.legsToWin, picked.length).toLowerCase()}`
-          : "No free station"}
-      </button>
-    </div>
-  );
 }

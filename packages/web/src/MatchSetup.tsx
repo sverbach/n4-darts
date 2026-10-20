@@ -1,4 +1,4 @@
-// Choosing players and settings for a new match: shared by the station's quick match and /admin.
+// Choosing players and settings for a new match: the station's quick match and the tournament draft.
 
 import { type InRule, MAX_PLAYERS, type OutRule } from "@n4/engine";
 import type { MatchSettingsInput, Player } from "@n4/server/api";

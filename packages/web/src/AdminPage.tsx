@@ -12,7 +12,7 @@ const sections = {
   },
   players: { title: "Players", blurb: "Add, rename and archive players." },
   stations: { title: "Stations", blurb: "Boards and their Board Manager addresses." },
-  matches: { title: "Matches", blurb: "Create matches, put them on a station, see results." },
+  matches: { title: "Matches", blurb: "What each station is playing, and past results." },
 } as const;
 
 export type AdminSection = keyof typeof sections;
