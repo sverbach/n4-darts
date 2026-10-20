@@ -1,6 +1,7 @@
 import type { StationAdminView } from "@n4/server/api";
 import { type FormEvent, useState } from "react";
 import { request } from "./adminApi.ts";
+import { BoardMenu } from "./BoardMenu.tsx";
 import { useLive } from "./useLive.ts";
 
 export function StationsAdmin() {
@@ -57,9 +58,11 @@ function StationRow({ station, change }: { station: StationAdminView; change: Ch
         <a href={`/station/${station.id}`}>
           {station.id}. {station.name}
         </a>
-        <span className={`status ${station.boardOnline ? "ok" : "warn"}`}>
-          {station.boardOnline ? "Board online" : "Board offline"}
-        </span>
+        <BoardMenu
+          stationId={station.id}
+          online={station.boardOnline}
+          running={station.boardRunning}
+        />
       </div>
       {editing ? (
         <StationForm

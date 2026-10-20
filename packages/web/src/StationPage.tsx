@@ -1,6 +1,7 @@
 import { type DartView, MAX_PLAYERS, MIN_PLAYERS, type PlayerIndex } from "@n4/engine";
 import type { MatchView, StationCommand } from "@n4/server/api";
 import { type ReactNode, useState } from "react";
+import { BoardMenu } from "./BoardMenu.tsx";
 import { dartLabel } from "./darts.ts";
 import {
   defaultSetupSettings,
@@ -28,9 +29,12 @@ export function StationPage({ id }: { id: number }) {
     <main className="station">
       <header className="station-bar">
         <span className="station-name">{view?.name ?? `Station ${id}`}</span>
-        <span className={`status ${connected && view?.boardOnline ? "ok" : "warn"}`}>
-          {!connected ? "Server offline" : view?.boardOnline ? "Board online" : "Board offline"}
-        </span>
+        <BoardMenu
+          stationId={id}
+          online={view?.boardOnline ?? false}
+          running={view?.boardRunning ?? true}
+          connected={connected}
+        />
       </header>
       {error && (
         <p className="error" role="alert">

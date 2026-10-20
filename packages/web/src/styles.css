@@ -1516,3 +1516,51 @@ button.danger {
   flex: 0 1 22em;
   font-size: 1.3em;
 }
+
+/* Board menu (station bar, admin Stations) */
+
+.board-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.board-message.warn {
+  color: var(--warn);
+}
+
+.board-menu-button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.board-menu-items {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+}
+
+.board-menu-items button {
+  border: none;
+  background: none;
+  text-align: left;
+  color: var(--text);
+}
+
+.board-menu-items button:hover,
+.board-menu-items button:focus-visible {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
