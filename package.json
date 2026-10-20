@@ -16,6 +16,7 @@
     "dev": "pnpm -r --parallel dev",
     "start": "node packages/server/dist/main.js",
     "sim": "pnpm --filter @n4/board-sim sim",
+    "db:reset": "rm -f packages/server/data/n4-darts.db* && echo 'dev database cleared'",
     "dev:sim": "STATIONS=1=http://localhost:3180,2=http://localhost:3181 pnpm -r --parallel run \"/^dev(:sim)?$/\""
   },
   "devDependencies": {

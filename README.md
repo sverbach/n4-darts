@@ -47,7 +47,7 @@ ADMIN_PIN=1234 pnpm dev:sim   # lock /admin behind a PIN (open without one)
 PORT=3100 pnpm dev:sim        # server on another port, e.g. when Docker already uses 3000
 ```
 
-The dev database is `packages/server/data/n4-darts.db`; delete it to start over.
+The dev database is `packages/server/data/n4-darts.db`; `pnpm db:reset` (with the server stopped) clears it to start over.
 
 If pnpm 12 isn't installed, put `npx -y pnpm@12.14.0` in front of every `pnpm` command, e.g. `npx -y pnpm@12.14.0 dev:sim`.
 
@@ -58,7 +58,7 @@ STATIONS=1=http://192.168.1.139:3180 pnpm dev   # dev mode: app on :5173, server
 pnpm build && pnpm start                        # production mode: everything on :3000
 ```
 
-`STATIONS` (number = Board Manager address, comma-separated) only seeds the stations on a fresh database; after that it's ignored and you change board addresses in `/admin` → Stations. `pnpm dev` shares its database with `pnpm dev:sim`, so if you've used the simulator, station 1 still points at `localhost:3180`: change it in `/admin`, or delete `packages/server/data/n4-darts.db*` to start over. `pnpm start` keeps its own database in `data/` at the repo root (`DATA_DIR` to change it).
+`STATIONS` (number = Board Manager address, comma-separated) only seeds the stations on a fresh database; after that it's ignored and you change board addresses in `/admin` → Stations. `pnpm dev` shares its database with `pnpm dev:sim`, so if you've used the simulator, station 1 still points at `localhost:3180`: change it in `/admin`, or start over with `pnpm db:reset`. `pnpm start` keeps its own database in `data/` at the repo root (`DATA_DIR` to change it).
 
 ### With Docker
 
