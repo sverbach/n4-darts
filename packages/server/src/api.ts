@@ -46,6 +46,8 @@ export interface StationView {
   id: number;
   name: string;
   boardOnline: boolean;
+  /** Detection is running; false after a stop (from the station's menu or the laptop). */
+  boardRunning: boolean;
   /** Shown while there's no match, e.g. "Paused for the tournament". */
   notice: string | null;
   match: MatchView | null;
@@ -64,6 +66,7 @@ export interface StationAdminView {
   name: string;
   boardUrl: string;
   boardOnline: boolean;
+  boardRunning: boolean;
   /** Has a match (set up or running); can't be removed until it's closed. */
   busy: boolean;
 }

@@ -467,3 +467,49 @@ describe("a reset pressed on the station laptop", () => {
     expect(s.legs[0]?.visits).toEqual([]);
   });
 });
+
+describe("the board menu", () => {
+  const board = (server: Server, action: string) =>
+    server.app.inject({ method: "POST", url: "/api/stations/1/board", payload: { action } });
+
+  it("stops and starts detection, and the station shows it", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    expect((await server.view()).boardRunning).toBe(true);
+
+    expect((await board(server, "stop")).statusCode).toBe(200);
+    await vi.waitFor(async () => expect((await server.view()).boardRunning).toBe(false));
+    expect(sim.state.running).toBe(false);
+
+    await board(server, "start");
+    await vi.waitFor(async () => expect((await server.view()).boardRunning).toBe(true));
+  });
+
+  it("calibrates and resets the board", async () => {
+    sim = await createBoardSim({ calibrationMs: 50 });
+    const server = await startServer(tempDb());
+    const statuses: string[] = [];
+    const ws = new WebSocket(`${sim.url.replace("http", "ws")}/api/events`);
+    ws.onmessage = (e) => statuses.push(JSON.parse(String(e.data)).data?.status ?? "");
+    await new Promise((resolve) => ws.addEventListener("open", resolve));
+
+    expect((await board(server, "calibrate")).statusCode).toBe(200);
+    await vi.waitFor(() => expect(statuses).toContain("Calibrating"));
+    sim.throwDart("S5");
+    await vi.waitFor(() => expect(sim.state.numThrows).toBe(1));
+    expect((await board(server, "reset")).statusCode).toBe(200);
+    await vi.waitFor(() => expect(sim.state.numThrows).toBe(0));
+    ws.close();
+  });
+
+  it("answers with an error when the board is offline, and refuses unknown actions", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    sim.setOnline(false);
+
+    const res = await board(server, "stop");
+    expect(res.statusCode).toBe(502);
+    expect(res.json().error).toMatch(/didn't answer/);
+    expect((await board(server, "explode")).statusCode).toBe(400);
+  });
+});

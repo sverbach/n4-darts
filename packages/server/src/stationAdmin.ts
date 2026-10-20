@@ -12,7 +12,12 @@ export function registerStationAdmin(
 ) {
   const adminView = (config: StationConfig): StationAdminView => {
     const view = registry.get(config.id)?.view();
-    return { ...config, boardOnline: view?.boardOnline ?? false, busy: Boolean(view?.match) };
+    return {
+      ...config,
+      boardOnline: view?.boardOnline ?? false,
+      boardRunning: view?.boardRunning ?? true,
+      busy: Boolean(view?.match),
+    };
   };
 
   /** Runs a registry change, answering its errors with their status. */

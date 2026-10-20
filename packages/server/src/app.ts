@@ -92,6 +92,25 @@ export function buildApp(options: AppOptions = {}) {
     },
   );
 
+  app.post<{ Params: { id: string }; Body: { action?: unknown } }>(
+    "/api/stations/:id/board",
+    async (request, reply) => {
+      const station = stations.get(Number(request.params.id));
+      if (!station) return reply.code(404).send({ error: "no such station" });
+      const action = request.body?.action;
+      if (action !== "start" && action !== "stop" && action !== "calibrate" && action !== "reset") {
+        return reply.code(400).send({ error: "action must be start, stop, calibrate or reset" });
+      }
+      try {
+        await station.boardCommand(action);
+        return { ok: true };
+      } catch (error) {
+        if (error instanceof CommandError) return reply.code(502).send({ error: error.message });
+        throw error;
+      }
+    },
+  );
+
   // Live station state as Server-Sent Events: the full view on connect and after every change.
   app.get<{ Params: { id: string } }>("/api/stations/:id/live", (request, reply) => {
     const station = stations.get(Number(request.params.id));

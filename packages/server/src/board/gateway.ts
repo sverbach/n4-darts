@@ -54,6 +54,8 @@ export interface BoardGateway {
   start(): Promise<void>;
   stop(): Promise<void>;
   reset(): Promise<void>;
+  /** Auto-calibration; can take a while. */
+  calibrate(): Promise<void>;
   close(): void;
 }
 
@@ -197,8 +199,11 @@ export function createBoardGateway(options: BoardGatewayOptions): BoardGateway {
     socket.addEventListener("error", abandon);
   }
 
-  async function command(method: "PUT" | "POST", path: string) {
-    const res = await fetch(`${base}/api/${path}`, { method, signal: AbortSignal.timeout(3000) });
+  async function command(method: "PUT" | "POST", path: string, timeoutMs = 3000) {
+    const res = await fetch(`${base}/api/${path}`, {
+      method,
+      signal: AbortSignal.timeout(timeoutMs),
+    });
     if (!res.ok) throw new Error(`${method} /api/${path}: ${res.status}`);
   }
 
@@ -211,6 +216,7 @@ export function createBoardGateway(options: BoardGatewayOptions): BoardGateway {
     start: () => command("PUT", "start"),
     stop: () => command("PUT", "stop"),
     reset: () => command("POST", "reset"),
+    calibrate: () => command("POST", "config/calibration/auto", 60_000),
     close() {
       closed = true;
       clearTimeout(timer);

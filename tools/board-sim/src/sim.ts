@@ -27,6 +27,8 @@ export interface BoardSimOptions {
   /** 0 picks a free port. */
   port?: number;
   host?: string;
+  /** How long auto-calibration takes. */
+  calibrationMs?: number;
 }
 
 export interface BoardSim {
@@ -42,6 +44,8 @@ export interface BoardSim {
   reset(): void;
   stop(): void;
   start(): void;
+  /** Auto-calibration: "Calibrating" for `calibrationMs`, then back to throwing. */
+  calibrate(): Promise<void>;
   /** Publishes an arbitrary state, e.g. from a recording. */
   publish(state: BoardState): void;
   /** Offline: drops WebSocket clients and refuses all requests until back online. */
@@ -139,6 +143,12 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
       emit("Starting", { running: true, status: "Starting" });
       emit("Started", { running: true, status: "Throw" });
     },
+    async calibrate() {
+      // Unverified on a real board (docs/board-manager-api.md); a guess at what it reports.
+      emit("Calibrating", { status: "Calibrating" });
+      await new Promise((resolve) => setTimeout(resolve, options.calibrationMs ?? 1500));
+      emit("Calibrated", { status: state.running ? "Throw" : "Stopped" });
+    },
     publish,
     setOnline(next: boolean) {
       online = next;
@@ -158,6 +168,7 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
     "HEAD /api/ping": () => "",
     "PUT /api/start": () => sim.start(),
     "PUT /api/stop": () => sim.stop(),
+    "POST /api/config/calibration/auto": () => sim.calibrate(),
     "POST /api/reset": () => sim.reset(),
     // Control API for tests and manual play; not part of the real Board Manager.
     "GET /sim/state": () => simView(),
@@ -193,7 +204,7 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
     let body = "";
     for await (const chunk of req) body += chunk;
     try {
-      const result = route(body);
+      const result = await route(body);
       if (typeof result === "string") {
         res.writeHead(200, { "content-type": "text/plain" }).end(result);
       } else {

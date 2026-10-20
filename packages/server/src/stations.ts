@@ -95,7 +95,12 @@ export function createStationRegistry(
     entry.station = createStation({
       id: config.id,
       db,
-      board: { reset: () => entry.gateway.reset() },
+      board: {
+        reset: () => entry.gateway.reset(),
+        start: () => entry.gateway.start(),
+        stop: () => entry.gateway.stop(),
+        calibrate: () => entry.gateway.calibrate(),
+      },
     });
     connect(entry, config.boardUrl);
     entries.set(config.id, entry);
@@ -179,7 +184,12 @@ export function startStation(
   const station = createStation({
     id: config.id,
     db,
-    board: { reset: () => gateway.reset() },
+    board: {
+      reset: () => gateway.reset(),
+      start: () => gateway.start(),
+      stop: () => gateway.stop(),
+      calibrate: () => gateway.calibrate(),
+    },
   });
   const gateway = createBoardGateway({
     ...gatewayOptions,

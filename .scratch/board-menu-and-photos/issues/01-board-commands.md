@@ -1,6 +1,6 @@
 # Board commands and the stopped state
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 - Gateway: `calibrate()` (`POST /api/config/calibration/auto`, a longer timeout than the other commands); start/stop/reset exist.
@@ -11,3 +11,9 @@ Type: task
 ## Acceptance
 
 - Tests against the simulator: each action reaches the board; stop shows `boardRunning: false` live and start brings it back; calibrate answers; an offline board gives an error.
+
+## Comments
+
+**2026-10-20, done.** Gateway `calibrate()` (`POST /api/config/calibration/auto`, 60 s timeout); the station's `BoardControl` gained optional `start` / `stop` / `calibrate`, wired to the gateway in the registry. `StationView.boardRunning` and `StationAdminView.boardRunning` (from the snapshot on connect and `BoardStarted` / `BoardStopped`). `station.boardCommand(action)` and `POST /api/stations/:id/board` `{ action }` (400 for an unknown action, 502 with "The board didn't answer" / "Calibration failed: …" when the board refuses or is unreachable). Simulator: `POST /api/config/calibration/auto` reports status "Calibrating" for `calibrationMs` (default 1.5 s) and answers when done; a guess until checked on the real board.
+- Changed from the ticket: a reset from the menu is not counted as the station's own. It behaves like a reset pressed on the laptop, so a visit waiting for takeout ends (the cleared board won't see a takeout); mid-visit the visit carries on.
+- Tests against the simulator: stop/start with `boardRunning` following, calibrate and reset reaching the board, an offline board's error, an unknown action.

@@ -25,7 +25,12 @@ export type { StationCommand, StationView };
 /** The part of the board gateway a station needs to send commands. */
 export interface BoardControl {
   reset(): Promise<void>;
+  start?(): Promise<void>;
+  stop?(): Promise<void>;
+  calibrate?(): Promise<void>;
 }
+
+export type BoardAction = "start" | "stop" | "calibrate" | "reset";
 
 export class CommandError extends Error {}
 
@@ -47,6 +52,8 @@ export interface Station {
   /** A line for the station page while it has no match, e.g. "Paused for the tournament". */
   setNotice(notice: string | null): void;
   subscribe(listener: (view: StationView) => void): () => void;
+  /** Sends a command to the board; throws a `CommandError` the station page can show. */
+  boardCommand(action: BoardAction): Promise<void>;
 }
 
 export function createStation(options: { id: number; db: Db; board: BoardControl }): Station {
@@ -56,6 +63,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
   let match = db.openMatchOn(id) ?? null;
   let events: StoredEvent[] = match ? db.events(match.id) : [];
   let boardOnline = false;
+  let boardRunning = true;
   /** Whether the board's darts have been matched against the log since this process started. */
   let synced = false;
   /** Dart ids of the darts currently on the board, by the board's index (0–2). */
@@ -70,6 +78,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
       id,
       name: db.getStationConfig(id)?.name ?? `Station ${id}`,
       boardOnline,
+      boardRunning,
       notice: match ? null : notice,
       match:
         match && current
@@ -242,6 +251,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
     switch (event.type) {
       case "BoardOnline":
         boardOnline = true;
+        boardRunning = event.snapshot.running;
         if (!synced) syncWithBoard(event.snapshot.throws ?? []);
         break;
       case "BoardOffline":
@@ -268,6 +278,10 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
         }
         break;
       }
+      case "BoardStarted":
+      case "BoardStopped":
+        boardRunning = event.type === "BoardStarted";
+        break;
       case "BoardReset":
         boardDarts = [];
         if (ownResets > 0) {
@@ -356,6 +370,21 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
     release,
     drop,
     setNotice,
+    async boardCommand(action) {
+      const send = action === "reset" ? board.reset : board[action];
+      if (!send) throw new CommandError("this board can't do that");
+      try {
+        // A reset from the menu is like one pressed on the laptop: it isn't counted as our own,
+        // so a visit waiting for takeout ends (the cleared board won't see one).
+        await send.call(board);
+      } catch {
+        throw new CommandError(
+          action === "calibrate"
+            ? "Calibration failed: the board didn't answer"
+            : "The board didn't answer",
+        );
+      }
+    },
     subscribe(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
