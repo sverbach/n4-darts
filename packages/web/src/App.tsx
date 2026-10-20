@@ -1,12 +1,14 @@
 import type { StationView } from "@n4/server/api";
 import { useEffect, useState } from "react";
 import { AdminPage, isAdminSection } from "./AdminPage.tsx";
+import { DisplayPage } from "./DisplayPage.tsx";
 import { StationPage } from "./StationPage.tsx";
 
 export function App() {
   const path = window.location.pathname;
   const station = /^\/station\/(\d+)\/?$/.exec(path);
   if (station) return <StationPage id={Number(station[1])} />;
+  if (/^\/display\/?$/.test(path)) return <DisplayPage />;
   const admin = /^\/admin(?:\/(\w+))?\/?$/.exec(path);
   if (admin) {
     const section = admin[1] ?? "tournament";
@@ -34,6 +36,7 @@ function Home() {
             {s.name}
           </a>
         ))}
+        <a href="/display">Display (projector)</a>
         <a href="/admin">Admin</a>
       </nav>
     </main>

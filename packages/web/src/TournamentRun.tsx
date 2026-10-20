@@ -204,7 +204,7 @@ function fixtureResult(f: TournamentMatchView) {
 
 const SIDES = ["top", "bottom"] as const;
 
-function MatchCard({ match }: { match: TournamentMatchView }) {
+export function MatchCard({ match }: { match: TournamentMatchView }) {
   return (
     <div className={`bracket-match ${match.status}`}>
       <div className="bracket-label">{match.label}</div>
