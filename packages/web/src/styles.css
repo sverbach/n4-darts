@@ -512,12 +512,14 @@ span.dart {
 
 .player-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 4px;
 }
 
+/* At least room for a name; the buttons wrap below on a narrow phone. */
 .player-row-name {
-  flex: 1;
+  flex: 1 1 7em;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1563,4 +1565,80 @@ button.danger {
 .board-menu-items button:hover,
 .board-menu-items button:focus-visible {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+/* Avatars and the photo editor */
+
+.avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  object-fit: cover;
+  color: #fff;
+  font-size: 1em;
+  font-weight: 600;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+span.avatar {
+  font-size: 0.8em;
+  width: 2.5em;
+  height: 2.5em;
+}
+
+.avatar.large {
+  width: 4em;
+  height: 4em;
+}
+
+span.avatar.large {
+  font-size: 1.6em;
+  width: 2.5em;
+  height: 2.5em;
+}
+
+.avatar-button {
+  min-width: 48px;
+  padding: 0 4px;
+}
+
+.crop {
+  position: relative;
+  overflow: hidden;
+  margin: 8px auto;
+  border-radius: 50%;
+  background: var(--border);
+  touch-action: none;
+  cursor: grab;
+}
+
+.crop img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+.zoom {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.zoom input {
+  flex: 1;
+}
+
+.photo-current {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0;
+  font-size: 2rem;
 }

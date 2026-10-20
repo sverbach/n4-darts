@@ -1,6 +1,8 @@
 import type { AdminPlayer } from "@n4/server/api";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { Avatar } from "./Avatar.tsx";
 import { request } from "./adminApi.ts";
+import { PhotoEditor } from "./PhotoEditor.tsx";
 
 export function PlayersAdmin() {
   const [players, setPlayers] = useState<AdminPlayer[] | null>(null);
@@ -42,7 +44,7 @@ export function PlayersAdmin() {
           {active.length === 0 && <p className="hint">No players yet.</p>}
           <ul className="player-list">
             {active.map((p) => (
-              <PlayerRow key={p.id} player={p} change={change} />
+              <PlayerRow key={p.id} player={p} change={change} reload={load} />
             ))}
           </ul>
           {archived.length > 0 && (
@@ -50,7 +52,7 @@ export function PlayersAdmin() {
               <summary>Archived ({archived.length})</summary>
               <ul className="player-list">
                 {archived.map((p) => (
-                  <PlayerRow key={p.id} player={p} change={change} />
+                  <PlayerRow key={p.id} player={p} change={change} reload={load} />
                 ))}
               </ul>
             </details>
@@ -85,8 +87,10 @@ function AddPlayer({ onAdd }: { onAdd: (name: string) => Promise<boolean> }) {
 
 type Change = (method: string, url: string, body?: object) => Promise<boolean>;
 
-function PlayerRow({ player, change }: { player: AdminPlayer; change: Change }) {
+function PlayerRow(props: { player: AdminPlayer; change: Change; reload(): void }) {
+  const { player, change, reload } = props;
   const [renaming, setRenaming] = useState(false);
+  const [editingPhoto, setEditingPhoto] = useState(false);
   const [name, setName] = useState(player.name);
   const url = `/api/admin/players/${player.id}`;
 
@@ -124,6 +128,17 @@ function PlayerRow({ player, change }: { player: AdminPlayer; change: Change }) 
 
   return (
     <li className="player-row">
+      <button
+        type="button"
+        className="ghost avatar-button"
+        aria-label={`Photo of ${player.name}`}
+        onClick={() => setEditingPhoto(true)}
+      >
+        <Avatar player={player} />
+      </button>
+      {editingPhoto && (
+        <PhotoEditor player={player} onClose={() => setEditingPhoto(false)} onChanged={reload} />
+      )}
       <span className="player-row-name">{player.name}</span>
       <span className="player-row-rating" title="3-dart average, last 10 matches">
         {player.rating === null ? "–" : player.rating.toFixed(1)}
