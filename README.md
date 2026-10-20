@@ -43,6 +43,10 @@ The app runs on the Vite dev server (:5173), which reloads on every code change 
 - type a dart like `T20`, `D16`, `BULL` and press enter
 - press **Reset** (as if someone pressed reset on the station laptop), **Stop** / **Start**, or **Go offline** to see how the station copes
 
+**Board menu:** the ⋮ next to the board status on a station page stops or starts detection, calibrates the board and resets it, so players never have to leave the kiosk browser. The status shows "Board stopped" while detection is off. The same menu is on every station in `/admin` → Stations.
+
+**Photos:** in `/admin` → Players, tap a player's avatar to add a photo (camera or gallery on a phone), crop it to the circle and save. Photos show on the station, the projector and the stats pages; players without one get their initials.
+
 **Options**, set in front of the command:
 
 ```sh

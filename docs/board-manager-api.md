@@ -18,7 +18,7 @@ Read from the web UI bundle (the board client calls these on the local Board Man
 - `PUT /api/stop`: stop detection. Verified: `Stopping` then `Stopped` (`running: false`, `status` equals `event`), under 1 s.
 - `PUT /api/start`: start detection. Verified: `Starting` then `Started` (`running: true`, `status: "Throw"`), under 1 s.
 - `POST /api/reset`: clear the current visit. Verified: emits `event: "Manual reset"`, `numThrows: 0`, `status: "Throw"`.
-- `POST /api/config/calibration/auto`: auto-calibrate.
+- `POST /api/config/calibration/auto`: auto-calibrate. Not yet observed on a real board (what it reports while calibrating, how long it takes, whether the request returns before it's done); the station menu sends it with a 60 s timeout, and the simulator assumes status `Calibrating` for 1.5 s, answering when done.
 - `HEAD /api/ping`: health check.
 
 ## Message shape

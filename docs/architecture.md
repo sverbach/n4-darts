@@ -185,6 +185,13 @@ Details in `.scratch/display-and-stats/spec.md`.
 - **Backups** at start when the last is over a day old, then whenever a day has passed; 30 kept in `DATA_DIR/backups`.
 - **Later**: head-to-head between two players, filtering stats by game.
 
+### Board menu and photos (2026-10-20)
+
+Details in `.scratch/board-menu-and-photos/spec.md`.
+
+- **Board menu** on every station page (no PIN) and in `/admin` → Stations: stop/start detection, auto-calibrate, reset. A reset from the menu behaves like one pressed on the laptop. The board status distinguishes online, stopped and offline.
+- **Player photos** live in SQLite (so they're in the backups), uploaded by the organiser only, cropped and shrunk to a 512×512 JPEG in the browser; served by a versioned URL that can be cached forever. Players without a photo get initials on a colour of their own.
+
 ## Open questions
 
 None open. New questions get added here and folded into "Decisions so far" once answered.
