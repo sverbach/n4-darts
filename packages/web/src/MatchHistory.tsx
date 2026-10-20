@@ -1,12 +1,10 @@
 import type { DartView } from "@n4/engine";
 import type { MatchDetail, MatchSummary } from "@n4/server/api";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { dartLabel } from "./darts.ts";
 import { legsLabel } from "./MatchSetup.tsx";
 import { SegmentPicker } from "./SegmentPicker.tsx";
-
-/** How often an open match's detail refreshes while it's being played. */
-const REFRESH_MS = 3000;
+import { useLive } from "./useLive.ts";
 
 const when = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "";
@@ -47,25 +45,10 @@ export function MatchHistory({ onOpen }: { onOpen(id: string): void }) {
 }
 
 export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) {
-  const [match, setMatch] = useState<MatchDetail | null>(null);
+  const live = useLive<MatchDetail>(`/api/admin/matches/${id}/live`);
+  const match = live.view;
   const [error, setError] = useState<string | null>(null);
   const [correcting, setCorrecting] = useState<DartView | null>(null);
-
-  const load = useCallback(async () => {
-    const res = await fetch(`/api/admin/matches/${id}`).catch(() => null);
-    if (!res?.ok) return setError("Couldn't load the match");
-    setMatch(await res.json());
-  }, [id]);
-
-  const open = match !== null && match.closedAt === null;
-  useEffect(() => {
-    void load();
-  }, [load]);
-  useEffect(() => {
-    if (!open) return;
-    const timer = setInterval(load, REFRESH_MS);
-    return () => clearInterval(timer);
-  }, [open, load]);
 
   const correct = async (dartId: string, segment: DartView["segment"]) => {
     const res = await fetch(`/api/admin/matches/${id}/corrections`, {
@@ -79,8 +62,7 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
       const body = (await res.json().catch(() => ({}))) as { error?: string };
       return setError(body.error ?? "Correction failed");
     }
-    setError(null);
-    setMatch(await res.json());
+    setError(null); // The corrected match arrives through the live stream.
   };
 
   const name = (i: number) => match?.players[i]?.name ?? "?";
@@ -90,9 +72,9 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
       <button type="button" className="ghost back" onClick={onBack}>
         ← Matches
       </button>
-      {error && (
+      {(error ?? live.failed) && (
         <p className="error" role="alert">
-          {error}
+          {error ?? "Couldn't load the match"}
         </p>
       )}
       {!match ? (

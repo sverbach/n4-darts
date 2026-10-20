@@ -1,8 +1,9 @@
 import type { TournamentAdminView, TournamentConfig } from "@n4/server/api";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { request } from "./adminApi.ts";
 import { PlayerPicker } from "./MatchSetup.tsx";
 import { TournamentRun } from "./TournamentRun.tsx";
+import { useLive } from "./useLive.ts";
 
 /** "about 45 min", "about 2 h 30". */
 export function formatMinutes(minutes: number) {
@@ -15,31 +16,25 @@ export function formatMinutes(minutes: number) {
 const groupName = (group: number) => String.fromCharCode(65 + group);
 const bestOf = (legsToWin: number) => `Best of ${legsToWin * 2 - 1}`;
 
-/** Loads the active tournament and sends changes; every change answers with the fresh view. */
+/** Follows the active tournament live and sends changes; the server pushes the fresh view. */
 function useTournament() {
-  const [view, setView] = useState<TournamentAdminView | null>(null);
+  const live = useLive<TournamentAdminView>("/api/admin/tournament/live");
   const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    const res = await fetch("/api/admin/tournament").catch(() => null);
-    if (!res?.ok) return setError("Couldn't load the tournament");
-    setView(await res.json());
-  }, []);
-  useEffect(() => {
-    void load();
-  }, [load]);
 
   const send = async (method: string, url: string, body?: object) => {
     const message = await request(method, url, body);
     setError(message);
-    await load();
     return message === null;
   };
-  return { view, error, send, load };
+  return {
+    view: live.view,
+    error: error ?? (live.failed ? "Couldn't load the tournament" : null),
+    send,
+  };
 }
 
 export function TournamentAdmin() {
-  const { view, error, send, load } = useTournament();
+  const { view, error, send } = useTournament();
   // After a finished tournament, "New tournament" switches to the create form.
   const [creating, setCreating] = useState(false);
   const finished = view?.tournament?.status === "finished";
@@ -63,7 +58,7 @@ export function TournamentAdmin() {
       ) : view.tournament.status === "draft" ? (
         <DraftEditor view={view} send={send} />
       ) : (
-        <TournamentRun view={view} send={send} reload={load} onNew={() => setCreating(true)} />
+        <TournamentRun view={view} send={send} onNew={() => setCreating(true)} />
       )}
     </div>
   );

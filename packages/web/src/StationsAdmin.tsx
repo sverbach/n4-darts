@@ -1,30 +1,17 @@
 import type { StationAdminView } from "@n4/server/api";
-import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { request } from "./adminApi.ts";
-
-/** How often board status refreshes. */
-const REFRESH_MS = 3000;
+import { useLive } from "./useLive.ts";
 
 export function StationsAdmin() {
-  const [stations, setStations] = useState<StationAdminView[] | null>(null);
+  const live = useLive<StationAdminView[]>("/api/admin/stations/live");
+  const stations = live.view;
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    const res = await fetch("/api/admin/stations").catch(() => null);
-    if (res?.ok) setStations(await res.json());
-  }, []);
-
-  useEffect(() => {
-    void load();
-    const timer = setInterval(load, REFRESH_MS);
-    return () => clearInterval(timer);
-  }, [load]);
-
-  /** Runs a change, shows its error if any, and reloads. Resolves to success. */
+  /** Runs a change and shows its error if any; the list updates live. Resolves to success. */
   const change = async (method: string, url: string, body?: object) => {
     const message = await request(method, url, body);
     setError(message);
-    await load();
     return message === null;
   };
 

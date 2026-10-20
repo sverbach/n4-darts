@@ -1,5 +1,6 @@
 import type { StationCommand, StationView } from "@n4/server/api";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useLive } from "./useLive.ts";
 
 export interface StationConnection {
   view: StationView | null;
@@ -10,19 +11,7 @@ export interface StationConnection {
 }
 
 export function useStation(id: number): StationConnection {
-  const [view, setView] = useState<StationView | null>(null);
-  const [connected, setConnected] = useState(false);
-
-  useEffect(() => {
-    const source = new EventSource(`/api/stations/${id}/live`);
-    source.onopen = () => setConnected(true);
-    source.onerror = () => setConnected(false);
-    source.onmessage = (e) => {
-      setConnected(true);
-      setView(JSON.parse(e.data));
-    };
-    return () => source.close();
-  }, [id]);
+  const { view, connected } = useLive<StationView>(`/api/stations/${id}/live`);
 
   const send = useCallback(
     async (command: StationCommand) => {

@@ -5,11 +5,8 @@ import type {
   TournamentProgress,
   TournamentStationView,
 } from "@n4/server/api";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePlayers } from "./MatchSetup.tsx";
-
-/** How often the running tournament refreshes. */
-const REFRESH_MS = 3000;
 
 type Send = (method: string, url: string, body?: object) => Promise<boolean>;
 
@@ -17,22 +14,11 @@ const time = (iso: string) => new Date(iso).toLocaleTimeString(undefined, { time
 const place = (from: number, to: number) => (from === to ? `${from}` : `${from}–${to}`);
 const PHASES = { groups: "Group phase", knockout: "Knockout", finished: "Finished" };
 
-export function TournamentRun(props: {
-  view: TournamentAdminView;
-  send: Send;
-  reload(): void;
-  onNew(): void;
-}) {
-  const { view, send, reload, onNew } = props;
+export function TournamentRun(props: { view: TournamentAdminView; send: Send; onNew(): void }) {
+  const { view, send, onNew } = props;
   const tournament = view.tournament as NonNullable<TournamentAdminView["tournament"]>;
   const progress = view.progress as TournamentProgress;
   const live = tournament.status === "running";
-
-  useEffect(() => {
-    if (!live) return;
-    const timer = setInterval(reload, REFRESH_MS);
-    return () => clearInterval(timer);
-  }, [live, reload]);
 
   const base = "/api/admin/tournament";
   return (

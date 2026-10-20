@@ -2,9 +2,14 @@
 
 import type { FastifyInstance, FastifyReply } from "fastify";
 import type { StationAdminView } from "./api.ts";
+import { type ChangeFeed, streamView } from "./live.ts";
 import { type StationConfig, StationConfigError, type StationRegistry } from "./stations.ts";
 
-export function registerStationAdmin(app: FastifyInstance, registry: StationRegistry) {
+export function registerStationAdmin(
+  app: FastifyInstance,
+  registry: StationRegistry,
+  feed?: ChangeFeed,
+) {
   const adminView = (config: StationConfig): StationAdminView => {
     const view = registry.get(config.id)?.view();
     return { ...config, boardOnline: view?.boardOnline ?? false, busy: Boolean(view?.match) };
@@ -23,6 +28,11 @@ export function registerStationAdmin(app: FastifyInstance, registry: StationRegi
   }
 
   app.get("/api/admin/stations", async () => registry.configs().map(adminView));
+  if (feed) {
+    app.get("/api/admin/stations/live", (request, reply) =>
+      streamView(request, reply, feed.subscribe, () => registry.configs().map(adminView)),
+    );
+  }
 
   app.post<{ Body: { id?: unknown; name?: unknown; boardUrl?: unknown } }>(
     "/api/admin/stations",

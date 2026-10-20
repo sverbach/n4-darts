@@ -209,7 +209,7 @@ function Score({ card }: { card: ScoreCard }) {
   const total = card.visit.reduce((sum, d) => sum + (d.ignored ? 0 : d.score), 0);
   return (
     <>
-      <ul className={`display-score ${card.players.length > 2 ? "many" : ""}`}>
+      <ul className={`display-score ${card.players.length > 2 ? "display-many" : ""}`}>
         {card.players.map((p, i) => (
           <li
             key={p.name}

@@ -1,6 +1,6 @@
 import Fastify from "fastify";
 import { afterEach, describe, expect, it } from "vitest";
-import type { DisplayView, MatchDetail, TournamentAdminView } from "./api.ts";
+import type { DisplayView, MatchDetail, StationView, TournamentAdminView } from "./api.ts";
 import { buildApp } from "./app.ts";
 import { type Db, openDb } from "./db.ts";
 import { streamView } from "./live.ts";
@@ -114,6 +114,16 @@ describe("live streams", () => {
       payload: { dartId, segment: { number: 20, multiplier: 3 } },
     });
     expect((await detail.next()).state.players[0]?.remaining).toBe(241);
+  });
+
+  it("pushes the station list when a station changes", async () => {
+    const { app, station } = setup();
+    const base = await listen(app);
+    const list = await open<StationView[]>(`${base}/api/stations/live`);
+    expect((await list.next())[0]?.match).toBeNull();
+
+    await station.command({ type: "quickMatch", playerIds: ["ann", "bob"] });
+    expect((await list.next())[0]?.match?.players).toHaveLength(2);
   });
 
   it("refuses the admin streams without the PIN; the display stream is public", async () => {

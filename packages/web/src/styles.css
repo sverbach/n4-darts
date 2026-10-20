@@ -1088,16 +1088,8 @@ button.danger {
   font-variant-numeric: tabular-nums;
 }
 
-.display-score.many li {
+.display-many li {
   font-size: 1.1em;
-}
-
-.display-score li.throwing {
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
-}
-
-.display-score li.won {
-  color: var(--ok);
 }
 
 .display-score-name {
@@ -1238,4 +1230,14 @@ button.danger {
   gap: 1em;
   padding: 0.2em 0;
   border-bottom: 1px solid var(--border);
+}
+
+/* After the plain `li` rules above, which they override. */
+
+.display-score li.throwing {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.display-score li.won {
+  color: var(--ok);
 }

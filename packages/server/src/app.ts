@@ -43,7 +43,7 @@ export function buildApp(options: AppOptions = {}) {
   const feed = options.db ? createChangeFeed(options.db, stations) : undefined;
   if (feed) app.addHook("onClose", async () => feed.close());
   registerMatches(app, stations, options.db, tournaments, feed);
-  if (isRegistry(stations)) registerStationAdmin(app, stations);
+  if (isRegistry(stations)) registerStationAdmin(app, stations, feed);
   if (options.db && tournaments && feed) {
     const db = options.db;
     registerTournaments(app, tournaments);
@@ -62,6 +62,11 @@ export function buildApp(options: AppOptions = {}) {
   }
 
   app.get("/api/stations", async () => stations.list().map((s) => s.view()));
+  if (feed) {
+    app.get("/api/stations/live", (request, reply) =>
+      streamView(request, reply, feed.subscribe, () => stations.list().map((s) => s.view())),
+    );
+  }
 
   app.get<{ Params: { id: string } }>("/api/stations/:id", async (request, reply) => {
     const station = stations.get(Number(request.params.id));

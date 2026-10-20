@@ -1,6 +1,6 @@
 import { MIN_PLAYERS } from "@n4/engine";
 import type { StationView } from "@n4/server/api";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { request } from "./adminApi.ts";
 import { MatchDetailView, MatchHistory } from "./MatchHistory.tsx";
 import {
@@ -10,30 +10,16 @@ import {
   SettingsFields,
   type SetupSettings,
 } from "./MatchSetup.tsx";
-
-/** How often the station overview refreshes. */
-const REFRESH_MS = 3000;
+import { useLive } from "./useLive.ts";
 
 export function MatchesAdmin() {
-  const [stations, setStations] = useState<StationView[] | null>(null);
+  const stations = useLive<StationView[]>("/api/stations/live").view;
   const [error, setError] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    const res = await fetch("/api/stations").catch(() => null);
-    if (res?.ok) setStations(await res.json());
-  }, []);
-
-  useEffect(() => {
-    void load();
-    const timer = setInterval(load, REFRESH_MS);
-    return () => clearInterval(timer);
-  }, [load]);
 
   const abandon = async (station: StationView) => {
     if (!confirm(`End the match on ${station.name} without a result?`)) return;
     setError(await request("POST", `/api/admin/stations/${station.id}/abandon`));
-    await load();
   };
 
   if (openId) return <MatchDetailView id={openId} onBack={() => setOpenId(null)} />;
@@ -61,7 +47,7 @@ export function MatchesAdmin() {
         </ul>
       )}
       <h2>New match</h2>
-      {stations && <NewMatch stations={stations} onCreated={load} />}
+      {stations && <NewMatch stations={stations} />}
       <h2>History</h2>
       <MatchHistory onOpen={setOpenId} />
     </div>
@@ -114,7 +100,7 @@ function matchSummary(match: NonNullable<StationView["match"]>) {
     .join(" · ");
 }
 
-function NewMatch({ stations, onCreated }: { stations: StationView[]; onCreated(): void }) {
+function NewMatch({ stations }: { stations: StationView[] }) {
   const free = stations.filter((s) => !s.match);
   const [picked, setPicked] = useState<string[]>([]);
   const [settings, setSettings] = useState<SetupSettings>(defaultSetupSettings);
@@ -134,7 +120,6 @@ function NewMatch({ stations, onCreated }: { stations: StationView[]; onCreated(
     if (message) return;
     setPicked([]);
     setStationId(null);
-    onCreated();
   };
 
   return (
