@@ -1,5 +1,6 @@
 import type { DisplayStation, DisplayView, ScoreCard } from "@n4/server/api";
 import { type ReactNode, useCallback, useLayoutEffect, useRef, useState } from "react";
+import { Avatar } from "./Avatar.tsx";
 import { dartLabel } from "./darts.ts";
 import { Awards, MatchCard } from "./TournamentRun.tsx";
 import { useLive } from "./useLive.ts";
@@ -57,9 +58,16 @@ function Running({ view }: { view: DisplayView }) {
               <h2>Up next</h2>
               <ol className="display-next">
                 {view.upNext.map((m) => (
-                  <li key={`${m.label}-${m.players.join()}`}>
+                  <li key={`${m.label}-${m.players.map((p) => p.id).join()}`}>
                     <span className="display-next-label">{m.label}</span>
-                    <span>{m.players.join(" vs ")}</span>
+                    <span className="display-next-players">
+                      {m.players.map((p, i) => (
+                        <span key={p.id}>
+                          {i > 0 && " vs "}
+                          <Avatar player={p} /> {p.name}
+                        </span>
+                      ))}
+                    </span>
                   </li>
                 ))}
               </ol>
@@ -84,6 +92,7 @@ function Finished({ view }: { view: DisplayView }) {
         {champion && (
           <div className="display-champion">
             <p>Champion</p>
+            <Avatar player={champion} large />
             <h2>{champion.name}</h2>
           </div>
         )}
@@ -141,7 +150,10 @@ function Idle({ view }: { view: DisplayView }) {
                 {view.leaderboard.map((row, i) => (
                   <tr key={row.playerId}>
                     <td>{i + 1}</td>
-                    <td className="name">{row.name}</td>
+                    <td className="name">
+                      <Avatar player={{ id: row.playerId, name: row.name, photo: row.photo }} />{" "}
+                      {row.name}
+                    </td>
                     <td className="points">{row.rating === null ? "–" : row.rating.toFixed(1)}</td>
                     <td>{row.matches}</td>
                     <td>{row.s180}</td>
@@ -255,7 +267,9 @@ function Score({ card }: { card: ScoreCard }) {
             key={p.name}
             className={`${card.throwing === i ? "throwing" : ""} ${card.winner === i ? "won" : ""}`}
           >
-            <span className="display-score-name">{p.name}</span>
+            <span className="display-score-name">
+              <Avatar player={p} /> {p.name}
+            </span>
             <span className="display-score-legs">{card.legsToWin > 1 ? p.legsWon : ""}</span>
             <span className="display-score-remaining">
               {card.winner === i ? "Won" : p.remaining}

@@ -1312,11 +1312,11 @@ button.danger {
 }
 
 .watch .player-name {
-  font-size: 2.5em;
+  font-size: 2.2em;
 }
 
 .watch .scoreboard .remaining {
-  font-size: 7em;
+  font-size: 6em;
 }
 
 .watch .player-meta {
@@ -1641,4 +1641,18 @@ span.avatar.large {
   justify-content: center;
   margin: 12px 0;
   font-size: 2rem;
+}
+
+.profile-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.player .avatar {
+  margin-bottom: 4px;
+}
+
+.display-champion .avatar {
+  font-size: 2.5em;
 }

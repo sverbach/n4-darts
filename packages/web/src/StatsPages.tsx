@@ -1,5 +1,6 @@
 import type { LeaderboardRow, PlayerProfile } from "@n4/server/api";
 import { useEffect, useState } from "react";
+import { Avatar } from "./Avatar.tsx";
 
 const avg = (value: number | null) => (value === null ? "–" : value.toFixed(1));
 const num = (value: number | null) => (value === null ? "–" : String(value));
@@ -65,7 +66,10 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
             <tr key={row.playerId}>
               <td>{i + 1}</td>
               <td className="name">
-                <a href={`/players/${row.playerId}`}>{row.name}</a>
+                <a href={`/players/${row.playerId}`}>
+                  <Avatar player={{ id: row.playerId, name: row.name, photo: row.photo }} />{" "}
+                  {row.name}
+                </a>
               </td>
               <td className="points">{avg(row.rating)}</td>
               <td>{avg(row.average)}</td>
@@ -114,7 +118,10 @@ function Profile({ profile }: { profile: PlayerProfile }) {
   }
   return (
     <>
-      <h1>{profile.name}</h1>
+      <h1 className="profile-name">
+        <Avatar player={{ id: profile.playerId, name: profile.name, photo: profile.photo }} large />
+        {profile.name}
+      </h1>
       <div className="stat-groups">
         <StatGroup
           title="Average"

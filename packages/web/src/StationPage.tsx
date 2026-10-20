@@ -1,6 +1,7 @@
 import { type DartView, MAX_PLAYERS, MIN_PLAYERS, type PlayerIndex } from "@n4/engine";
 import type { MatchView, StationCommand } from "@n4/server/api";
 import { type ReactNode, useState } from "react";
+import { Avatar } from "./Avatar.tsx";
 import { BoardMenu } from "./BoardMenu.tsx";
 import { dartLabel } from "./darts.ts";
 import {
@@ -116,6 +117,7 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
         {match.players.map((p, i) => (
           <li key={p.id}>
             <span className="lineup-position">{i + 1}</span>
+            <Avatar player={p} />
             <span className="lineup-name">{p.name}</span>
             <button
               type="button"
@@ -258,6 +260,7 @@ export function Scoreboard(props: { match: MatchView; onDart?: (dart: DartView) 
             key={players[p]?.id ?? p}
             className={`player ${state.currentPlayer === p ? "active" : ""}`}
           >
+            {players[p] && <Avatar player={players[p]} large />}
             <div className="player-name">{nameOf(p)}</div>
             <div className="remaining">{player.remaining}</div>
             <div className="player-meta">

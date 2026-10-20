@@ -3,6 +3,7 @@
 import { type InRule, MAX_PLAYERS, type OutRule } from "@n4/engine";
 import type { MatchSettingsInput, Player } from "@n4/server/api";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { Avatar } from "./Avatar.tsx";
 
 export type SetupSettings = Required<MatchSettingsInput>;
 
@@ -84,6 +85,7 @@ export function PlayerPicker(props: { picked: string[]; onChange(picked: string[
                 disabled={position < 0 && picked.length >= MAX_PLAYERS}
               >
                 {position >= 0 && <span className="pick-number">{position + 1}</span>}
+                <Avatar player={p} />
                 {p.name}
               </button>
             );
