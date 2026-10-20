@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { AdminPage, isAdminSection } from "./AdminPage.tsx";
 import { DisplayPage } from "./DisplayPage.tsx";
 import { StationPage } from "./StationPage.tsx";
+import { LeaderboardPage, ProfilePage } from "./StatsPages.tsx";
 import { WatchPage } from "./WatchPage.tsx";
 
 export function App() {
@@ -10,6 +11,9 @@ export function App() {
   const station = /^\/station\/(\d+)\/?$/.exec(path);
   if (station) return <StationPage id={Number(station[1])} />;
   if (/^\/display\/?$/.test(path)) return <DisplayPage />;
+  if (/^\/players\/?$/.test(path)) return <LeaderboardPage />;
+  const player = /^\/players\/([^/]+)\/?$/.exec(path);
+  if (player) return <ProfilePage id={decodeURIComponent(player[1] as string)} />;
   const watch = /^\/watch\/(\d+)\/?$/.exec(path);
   if (watch) return <WatchPage id={Number(watch[1])} />;
   const admin = /^\/admin(?:\/(\w+))?\/?$/.exec(path);
@@ -42,6 +46,7 @@ function Home() {
             </a>
           </span>
         ))}
+        <a href="/players">Players and stats</a>
         <a href="/display">Display (projector)</a>
         <a href="/admin">Admin</a>
       </nav>
