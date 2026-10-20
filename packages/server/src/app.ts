@@ -16,6 +16,7 @@ import {
   type StationDirectory,
   type StationRegistry,
 } from "./stations.ts";
+import { createStats, registerStats } from "./stats.ts";
 import { createTournaments, registerTournaments } from "./tournaments.ts";
 
 export interface AppOptions {
@@ -38,7 +39,10 @@ export function buildApp(options: AppOptions = {}) {
 
   app.get("/api/health", async () => ({ ok: true }));
   registerAdmin(app, options.adminPin);
-  if (options.db) registerPlayers(app, options.db);
+  if (options.db) {
+    registerPlayers(app, options.db);
+    registerStats(app, createStats(options.db));
+  }
   const tournaments = options.db ? createTournaments(options.db, stations) : undefined;
   const feed = options.db ? createChangeFeed(options.db, stations) : undefined;
   if (feed) app.addHook("onClose", async () => feed.close());

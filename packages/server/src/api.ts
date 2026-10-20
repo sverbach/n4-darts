@@ -231,3 +231,58 @@ export interface DisplayView {
   bracket: TournamentProgress["bracket"];
   placings: TournamentProgress["placings"];
 }
+
+/** A player's long-term numbers over their counted matches. */
+export interface StatTotals {
+  matches: number;
+  matchesWon: number;
+  legs: number;
+  legsWon: number;
+  average: number | null;
+  first9Average: number | null;
+  /** Share of darts at a one-dart finish that finished, in double-out matches; null without any. */
+  checkoutPercent: number | null;
+  checkoutAttempts: number;
+  highestCheckout: number | null;
+  /** Fewest darts in a won leg. */
+  bestLeg: number | null;
+  s180: number;
+  s140: number;
+  s100: number;
+}
+
+export interface LeaderboardRow {
+  playerId: string;
+  name: string;
+  /** 3-dart average over the last 10 counted matches. */
+  rating: number | null;
+  average: number | null;
+  matches: number;
+  matchesWon: number;
+  s180: number;
+  highestCheckout: number | null;
+}
+
+export interface PlayerProfile {
+  playerId: string;
+  name: string;
+  rating: number | null;
+  totals: StatTotals;
+  /** One entry per day played (an evening past midnight counts to the day it started), oldest first. */
+  evenings: { day: string; average: number | null; matches: number }[];
+  /** Finished tournaments the player was in, newest first. */
+  tournaments: { id: string; name: string; date: string; from: number; to: number }[];
+  tournamentsWon: number;
+  bestPlacing: { from: number; to: number } | null;
+  /** The last 20 counted matches, newest first. */
+  recent: {
+    matchId: string;
+    date: string;
+    opponents: string[];
+    won: boolean;
+    legsFor: number;
+    /** The best opponent's legs. */
+    legsAgainst: number;
+    average: number | null;
+  }[];
+}

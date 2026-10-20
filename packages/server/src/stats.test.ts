@@ -1,0 +1,152 @@
+import { defaultX01Settings, type Segment, type X01Settings } from "@n4/engine";
+import { afterEach, describe, expect, it } from "vitest";
+import type { LeaderboardRow, PlayerProfile } from "./api.ts";
+import { buildApp } from "./app.ts";
+import { type Db, openDb } from "./db.ts";
+
+let db: Db;
+afterEach(() => db?.close());
+
+const seg = (name: string): Segment => {
+  if (name === "M") return { number: 0, multiplier: 0 };
+  const multiplier = ({ S: 1, D: 2, T: 3 } as const)[name[0] as "S" | "D" | "T"];
+  return { number: Number(name.slice(1)), multiplier };
+};
+
+let n = 0;
+/** Plays a match from visits (dart names per visit, players taking turns) and closes it. */
+function play(
+  playerIds: string[],
+  visits: string[][],
+  options: { settings?: Partial<X01Settings>; at?: string } = {},
+) {
+  const id = `m${++n}`;
+  const settings = { ...defaultX01Settings, startScore: 101, ...options.settings };
+  db.createMatch({ id, station: null, settings, playerIds });
+  db.append(id, { type: "MatchStarted", playerCount: playerIds.length }, options.at);
+  visits.forEach((darts, v) => {
+    darts.forEach((name, d) => {
+      db.append(
+        id,
+        { type: "DartThrown", dartId: `${id}-${v}-${d}`, segment: seg(name) },
+        options.at,
+      );
+    });
+    db.append(id, { type: "TakeoutFinished" }, options.at);
+  });
+  // Visits alternate, so the last one belongs to the winner.
+  db.setWinner(id, playerIds[(visits.length - 1) % playerIds.length] ?? null);
+  db.closeMatch(id);
+  return id;
+}
+
+function setup() {
+  db = openDb(":memory:");
+  for (const id of ["ann", "bob", "cid", "dee"]) {
+    db.addPlayer({ id, name: id[0]?.toUpperCase() + id.slice(1), archived: false });
+  }
+  const app = buildApp({ db });
+  const get = async <T>(url: string) => {
+    const res = await app.inject({ method: "GET", url });
+    return { status: res.statusCode, body: res.json() as T };
+  };
+  return { app, get };
+}
+
+describe("stats", () => {
+  it("ranks players with a counted match by rating", async () => {
+    const { get } = setup();
+    play(["ann", "bob"], [["T20", "S1"], ["S20"], ["D20"]]); // Ann checks out 101 in 3 darts
+    db.updatePlayer({ id: "dee", name: "Dee", archived: true });
+
+    const { body } = await get<LeaderboardRow[]>("/api/players/stats");
+    expect(body.map((r) => r.name)).toEqual(["Ann", "Bob"]);
+    expect(body[0]).toMatchObject({ matches: 1, matchesWon: 1, highestCheckout: 40, s180: 0 });
+    expect(body[0]?.rating).toBe(101);
+    expect(body[1]).toMatchObject({ matches: 1, matchesWon: 0, average: 60 });
+  });
+
+  it("leaves out walkovers and abandoned matches", async () => {
+    const { get } = setup();
+    db.createMatch({
+      id: "w",
+      station: null,
+      settings: defaultX01Settings,
+      playerIds: ["cid", "dee"],
+    });
+    db.closeAsWalkover("w", "cid");
+    db.createMatch({
+      id: "a",
+      station: null,
+      settings: defaultX01Settings,
+      playerIds: ["cid", "dee"],
+    });
+    db.append("a", { type: "MatchStarted", playerCount: 2 });
+    db.append("a", { type: "DartThrown", dartId: "a1", segment: seg("T20") });
+    db.closeMatch("a", { abandoned: true });
+
+    expect((await get<LeaderboardRow[]>("/api/players/stats")).body).toEqual([]);
+    const cid = (await get<PlayerProfile>("/api/players/cid/stats")).body;
+    expect(cid.totals.matches).toBe(0);
+    expect(cid.recent).toEqual([]);
+  });
+
+  it("follows a correction", async () => {
+    const { get } = setup();
+    const id = play(["ann", "bob"], [["T20", "S1"], ["S20"], ["D20"]]);
+    expect((await get<PlayerProfile>("/api/players/bob/stats")).body.totals.average).toBe(60);
+
+    db.append(id, { type: "DartCorrected", dartId: `${id}-1-0`, segment: seg("T20") });
+    expect((await get<PlayerProfile>("/api/players/bob/stats")).body.totals.average).toBe(180);
+  });
+
+  it("builds a profile: totals, evenings, tournaments and recent matches", async () => {
+    const { get } = setup();
+    // Two evenings; the second one runs past midnight.
+    play(["ann", "bob"], [["T20", "S1"], ["S20"], ["D20"]], { at: "2026-10-16T19:00:00.000Z" });
+    play(["bob", "ann"], [["S1"], ["T20", "T20", "T20"]], {
+      at: "2026-10-17T20:00:00.000Z",
+      settings: { startScore: 180 },
+    });
+    play(["ann", "bob", "cid"], [["S1"], ["T20", "S1", "D20"]], { at: "2026-10-18T00:30:00.000Z" });
+    db.createTournament({
+      id: "t1",
+      name: "Friday",
+      status: "finished",
+      config: {} as never,
+      createdAt: "2026-10-17T18:00:00.000Z",
+      startedAt: "2026-10-17T18:30:00.000Z",
+      finishedAt: "2026-10-17T23:00:00.000Z",
+      placings: [
+        { playerId: "bob", from: 1, to: 1 },
+        { playerId: "ann", from: 2, to: 2 },
+      ],
+    });
+
+    const ann = (await get<PlayerProfile>("/api/players/ann/stats")).body;
+    expect(ann.totals).toMatchObject({
+      matches: 3,
+      matchesWon: 2,
+      legs: 3,
+      legsWon: 2,
+      s180: 1,
+      highestCheckout: 180,
+      bestLeg: 3,
+      checkoutPercent: null, // no double-out matches
+    });
+    expect(ann.evenings.map((e) => [e.day, e.matches])).toEqual([
+      ["2026-10-16", 1],
+      ["2026-10-17", 2],
+    ]);
+    expect(ann.tournaments).toEqual([
+      { id: "t1", name: "Friday", date: "2026-10-17T18:30:00.000Z", from: 2, to: 2 },
+    ]);
+    expect(ann).toMatchObject({ tournamentsWon: 0, bestPlacing: { from: 2, to: 2 } });
+    expect(ann.recent.map((r) => [r.opponents.join(), r.won, r.legsFor, r.legsAgainst])).toEqual([
+      ["Bob,Cid", false, 0, 1],
+      ["Bob", true, 1, 0],
+      ["Bob", true, 1, 0],
+    ]);
+    expect((await get("/api/players/nobody/stats")).status).toBe(404);
+  });
+});
