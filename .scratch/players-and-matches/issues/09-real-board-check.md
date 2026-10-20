@@ -1,6 +1,6 @@
 # Real-board check: an evening of matches
 
-Status: ready-for-human
+Status: done
 Type: task
 Blocked by: 04, 05, 06, 07, 08
 
@@ -12,3 +12,7 @@ On the home server, with the real board(s):
 - Play a 3- or 4-player quick match from the station.
 - Press reset on the laptop mid-visit, keep throwing, confirm the visit finishes normally.
 - Correct a dart in a finished match from `/admin` history.
+
+## Comments
+
+2026-10-20: covered by the real-board tournament evening; the user confirmed it can be closed.
