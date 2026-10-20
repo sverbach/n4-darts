@@ -1236,10 +1236,17 @@ button.danger {
   letter-spacing: 0;
 }
 
+.display-results {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 3em;
+}
+
 .display-placings {
   list-style: none;
-  max-width: 20em;
-  margin: 0 auto;
+  flex: 0 1 16em;
+  margin: 0;
   padding: 0;
   font-size: 1.5em;
 }
@@ -1472,4 +1479,40 @@ button.danger {
   align-self: center;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+/* Awards (admin Tournament tab and /display) */
+
+.awards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.awards li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.award-title {
+  color: var(--muted);
+}
+
+.award-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.award-players {
+  grid-column: 1 / span 2;
+  font-weight: 600;
+}
+
+.display .awards {
+  flex: 0 1 22em;
+  font-size: 1.3em;
 }

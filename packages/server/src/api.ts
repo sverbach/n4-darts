@@ -187,8 +187,18 @@ export interface TournamentProgress {
     matches: TournamentMatchView[];
   }[];
   placings: { name: string; from: number; to: number }[] | null;
+  /** The evening's awards, once finished with a champion; categories nobody scored in are left out. */
+  awards: Award[] | null;
   /** Ended by the organiser before a champion. */
   endedEarly: boolean;
+}
+
+export interface Award {
+  kind: "bestAverage" | "highestCheckout" | "most180s" | "bestLeg";
+  /** The 3-dart average, the checkout, the number of 180s, or the darts in the leg. */
+  value: number;
+  /** Names; more than one on a tie. */
+  players: string[];
 }
 
 /** A station's match in short, for the projector. */
@@ -230,6 +240,7 @@ export interface DisplayView {
   groups: TournamentProgress["groups"];
   bracket: TournamentProgress["bracket"];
   placings: TournamentProgress["placings"];
+  awards: TournamentProgress["awards"];
 }
 
 /** A player's long-term numbers over their counted matches. */

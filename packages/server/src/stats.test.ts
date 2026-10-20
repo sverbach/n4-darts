@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import type { LeaderboardRow, PlayerProfile } from "./api.ts";
 import { buildApp } from "./app.ts";
 import { type Db, openDb } from "./db.ts";
+import { createStats } from "./stats.ts";
 
 let db: Db;
 afterEach(() => db?.close());
@@ -18,11 +19,17 @@ let n = 0;
 function play(
   playerIds: string[],
   visits: string[][],
-  options: { settings?: Partial<X01Settings>; at?: string } = {},
+  options: { settings?: Partial<X01Settings>; at?: string; tournamentId?: string } = {},
 ) {
   const id = `m${++n}`;
   const settings = { ...defaultX01Settings, startScore: 101, ...options.settings };
-  db.createMatch({ id, station: null, settings, playerIds });
+  db.createMatch({
+    id,
+    station: null,
+    settings,
+    playerIds,
+    ...(options.tournamentId ? { tournamentId: options.tournamentId } : {}),
+  });
   db.append(id, { type: "MatchStarted", playerCount: playerIds.length }, options.at);
   visits.forEach((darts, v) => {
     darts.forEach((name, d) => {
@@ -148,5 +155,34 @@ describe("stats", () => {
       ["Bob", true, 1, 0],
     ]);
     expect((await get("/api/players/nobody/stats")).status).toBe(404);
+  });
+});
+
+describe("tournament awards", () => {
+  it("names the best of the evening, ties shared, empty categories left out", () => {
+    setup();
+    const t = { tournamentId: "t" };
+    // Ann: 101 in 3 darts (avg 101, checkout 40). Bob: 101 in 3 darts the same way.
+    play(["ann", "cid"], [["T20", "S1"], ["S20"], ["D20"]], t);
+    play(["bob", "dee"], [["T20", "S1"], ["S20"], ["D20"]], t);
+    // Cid's bigger checkout, in more darts.
+    play(["cid", "dee"], [["S1"], ["M"], ["M"], ["M"], ["T20", "D20"]], t);
+    // Outside the tournament, and a walkover inside it: neither counts.
+    play(["dee", "ann"], [["T20", "T20", "S20"], ["S1"], ["S1"]]);
+    db.createMatch({
+      id: "w",
+      station: null,
+      settings: defaultX01Settings,
+      playerIds: ["dee", "ann"],
+      tournamentId: "t",
+    });
+    db.closeAsWalkover("w", "dee");
+
+    const awards = createStats(db).awards("t");
+    expect(awards).toEqual([
+      { kind: "bestAverage", value: 101, players: ["Ann", "Bob"] },
+      { kind: "highestCheckout", value: 100, players: ["Cid"] },
+      { kind: "bestLeg", value: 3, players: ["Ann", "Bob"] },
+    ]);
   });
 });

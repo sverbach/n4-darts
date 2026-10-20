@@ -4,7 +4,7 @@
 
 import { matchStats, type PlayerMatchStats, threeDartAverage } from "@n4/engine";
 import type { FastifyInstance } from "fastify";
-import type { LeaderboardRow, PlayerProfile, StatTotals } from "./api.ts";
+import type { Award, LeaderboardRow, PlayerProfile, StatTotals } from "./api.ts";
 import type { Db, MatchRecord } from "./db.ts";
 import { RATING_MATCHES } from "./ratings.ts";
 
@@ -164,7 +164,51 @@ export function createStats(db: Db) {
     };
   }
 
-  return { ofMatch, leaderboard, profile };
+  /** The best of a tournament's played matches (no walkovers, no abandoned ones). */
+  function awards(tournamentId: string): Award[] {
+    const name = (id: string) => db.getPlayer(id)?.name ?? "?";
+    const own = db
+      .tournamentMatches(tournamentId)
+      .filter((m) => m.closedAt && !m.abandoned && !m.walkover)
+      .flatMap((match) =>
+        ofMatch(match).map((stats, i) => ({ playerId: match.playerIds[i] as string, stats })),
+      );
+    const result: Award[] = [];
+    /** The players with the best value (higher or lower is better), if anyone has one. */
+    const best = (
+      kind: Award["kind"],
+      entries: { playerId: string; value: number | null }[],
+      lower = false,
+    ) => {
+      const values = entries.flatMap((e) => (e.value === null ? [] : [e.value]));
+      if (values.length === 0) return;
+      const top = lower ? Math.min(...values) : Math.max(...values);
+      const players = [...new Set(entries.filter((e) => e.value === top).map((e) => e.playerId))];
+      result.push({ kind, value: top, players: players.map(name) });
+    };
+    best(
+      "bestAverage",
+      own.map((o) => ({ playerId: o.playerId, value: threeDartAverage([o.stats]) })),
+    );
+    best(
+      "highestCheckout",
+      own.map((o) => ({ playerId: o.playerId, value: o.stats.highestCheckout })),
+    );
+    const s180 = new Map<string, number>();
+    for (const o of own) s180.set(o.playerId, (s180.get(o.playerId) ?? 0) + o.stats.s180);
+    best(
+      "most180s",
+      [...s180].map(([playerId, count]) => ({ playerId, value: count > 0 ? count : null })),
+    );
+    best(
+      "bestLeg",
+      own.map((o) => ({ playerId: o.playerId, value: o.stats.bestLeg })),
+      true,
+    );
+    return result;
+  }
+
+  return { ofMatch, leaderboard, profile, awards };
 }
 
 export type Stats = ReturnType<typeof createStats>;

@@ -1,7 +1,7 @@
 import type { DisplayStation, DisplayView, ScoreCard } from "@n4/server/api";
 import { type ReactNode, useCallback, useLayoutEffect, useRef, useState } from "react";
 import { dartLabel } from "./darts.ts";
-import { MatchCard } from "./TournamentRun.tsx";
+import { Awards, MatchCard } from "./TournamentRun.tsx";
 import { useLive } from "./useLive.ts";
 
 const PHASES = { groups: "Group phase", knockout: "Knockout", finished: "Finished" };
@@ -87,16 +87,19 @@ function Finished({ view }: { view: DisplayView }) {
             <h2>{champion.name}</h2>
           </div>
         )}
-        {view.placings && (
-          <ol className="display-placings">
-            {view.placings.map((p) => (
-              <li key={p.name}>
-                <span className="placing-place">{place(p.from, p.to)}</span>
-                <span>{p.name}</span>
-              </li>
-            ))}
-          </ol>
-        )}
+        <div className="display-results">
+          {view.placings && (
+            <ol className="display-placings">
+              {view.placings.map((p) => (
+                <li key={p.name}>
+                  <span className="placing-place">{place(p.from, p.to)}</span>
+                  <span>{p.name}</span>
+                </li>
+              ))}
+            </ol>
+          )}
+          {view.awards && view.awards.length > 0 && <Awards awards={view.awards} />}
+        </div>
       </Fit>
     </>
   );

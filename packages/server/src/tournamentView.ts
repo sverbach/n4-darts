@@ -7,6 +7,7 @@ import type { Db, MatchRecord, TournamentRecord } from "./db.ts";
 import { legMinutes, matchMinutes } from "./estimate.ts";
 import { queueOf } from "./scheduler.ts";
 import type { StationDirectory } from "./stations.ts";
+import type { Stats } from "./stats.ts";
 import { groupName, type Plan, type PlannedMatch } from "./tournament/plan.ts";
 
 export function progressView(
@@ -14,6 +15,7 @@ export function progressView(
   stations: StationDirectory,
   tournament: TournamentRecord,
   plan: Plan,
+  stats?: Stats,
 ): TournamentProgress {
   const name = (id: string | null) => (id ? (db.getPlayer(id)?.name ?? "?") : null);
   const records = db.tournamentMatches(tournament.id);
@@ -146,6 +148,7 @@ export function progressView(
         from: p.from,
         to: p.to,
       })) ?? null,
+    awards: finished && tournament.placings && stats ? stats.awards(tournament.id) : null,
     endedEarly: finished && !tournament.placings,
   };
 }

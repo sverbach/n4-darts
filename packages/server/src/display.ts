@@ -71,5 +71,6 @@ export function displayView(
     groups: progress?.groups ?? [],
     bracket: progress?.bracket ?? [],
     placings: progress?.placings ?? null,
+    awards: progress?.awards ?? null,
   };
 }

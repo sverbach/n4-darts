@@ -9,6 +9,7 @@ import type { Db, MatchRecord, StoredEvent, TournamentRecord } from "./db.ts";
 import { estimateMinutes, legMinutes } from "./estimate.ts";
 import { ratingOf } from "./ratings.ts";
 import type { StationDirectory } from "./stations.ts";
+import type { Stats } from "./stats.ts";
 import { snakeGroups } from "./tournament/groups.ts";
 import { configProblems, type MatchPhase, type Plan, plan } from "./tournament/plan.ts";
 import {
@@ -90,7 +91,7 @@ function resultOf(match: MatchRecord, events: ReturnType<Db["events"]>): Result 
 const sameSet = (a: string[], b: string[]) =>
   a.length === b.length && a.every((x) => b.includes(x));
 
-export function createTournaments(db: Db, stations: StationDirectory) {
+export function createTournaments(db: Db, stations: StationDirectory, stats?: Stats) {
   const listeners = new Set<() => void>();
   /** Tells the scheduler that something changed. */
   const changed = () => {
@@ -330,7 +331,13 @@ export function createTournaments(db: Db, stations: StationDirectory) {
       progress:
         status === "draft"
           ? null
-          : progressView(db, stations, db.getTournament(id) ?? tournament, currentPlan(tournament)),
+          : progressView(
+              db,
+              stations,
+              db.getTournament(id) ?? tournament,
+              currentPlan(tournament),
+              stats,
+            ),
     };
   }
 

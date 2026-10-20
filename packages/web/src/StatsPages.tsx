@@ -134,7 +134,10 @@ function Profile({ profile }: { profile: PlayerProfile }) {
                 : `${t.checkoutPercent.toFixed(0)}% of ${t.checkoutAttempts}`,
             ],
             ["Highest checkout", num(t.highestCheckout)],
-            ["Best leg", t.bestLeg === null ? "–" : `${t.bestLeg} darts`],
+            [
+              "Best leg",
+              t.bestLeg === null ? "–" : `${t.bestLeg} dart${t.bestLeg === 1 ? "" : "s"}`,
+            ],
           ]}
         />
         <StatGroup
