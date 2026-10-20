@@ -2,6 +2,7 @@ import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildApp } from "./app.ts";
+import { startBackups } from "./backups.ts";
 import { openDb } from "./db.ts";
 import { createStationRegistry } from "./stations.ts";
 
@@ -15,6 +16,7 @@ const adminPin = process.env.ADMIN_PIN || undefined;
 
 mkdirSync(dataDir, { recursive: true });
 const db = openDb(join(dataDir, "n4-darts.db"));
+const backups = startBackups(db, join(dataDir, "backups"));
 const stations = createStationRegistry(db, { seed });
 
 const app = buildApp({ webDir, stations, db, adminPin, scheduler: {} });
@@ -29,6 +31,7 @@ for (const config of stations.configs()) {
 }
 
 const shutdown = async () => {
+  backups.stop();
   stations.close();
   await app.close();
   db.close();

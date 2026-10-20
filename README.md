@@ -127,3 +127,18 @@ Serves on port 3000 (override with `N4_PORT=8080`). Data lives in the `n4-data` 
 Stations are managed in `/admin` (Stations tab). On the very first start they're seeded from `N4_STATIONS`, e.g. `N4_STATIONS=1=http://192.168.1.139:3180,2=http://192.168.1.140:3180`; after that the variable is ignored. Lock `/admin` with `N4_ADMIN_PIN=1234`.
 
 Open `http://<server>:3000/station/1` on the station laptop (and on any phone that should control it).
+
+### Backups
+
+The server copies its database once a day (at start if the last copy is more than a day old, then whenever a day has passed) to `backups/` next to the database, as `n4-darts-YYYY-MM-DD-HHmm.db` (server time: UTC in Docker unless you set `TZ`), and keeps the newest 30. In Docker that's `/data/backups` in the `n4-data` volume; with `pnpm start` it's `data/backups/`. They're on the same disk as the database, so copy one elsewhere now and then.
+
+To restore one in Docker:
+
+```sh
+docker compose stop
+docker compose run --rm --no-deps --entrypoint sh n4-darts -c \
+  'cd /data && rm -f n4-darts.db-wal n4-darts.db-shm && cp backups/n4-darts-2026-10-20-2315.db n4-darts.db'
+docker compose up -d
+```
+
+Without Docker: stop the server, copy the backup over `n4-darts.db`, delete `n4-darts.db-wal` and `n4-darts.db-shm`, start it again.

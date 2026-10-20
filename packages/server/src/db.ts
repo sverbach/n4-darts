@@ -121,6 +121,8 @@ export interface Db {
   /** Appends to the match's log; `at` defaults to now (tests pass their own). */
   append(matchId: string, event: StoredEvent, at?: string): void;
   events(matchId: string): StoredEvent[];
+  /** Writes a consistent copy of the whole database to `path` (which must not exist yet). */
+  backupTo(path: string): void;
   /** Called after every write; `matchId` names the match it touched, if any. */
   onChange(listener: (change: DbChange) => void): () => void;
   close(): void;
@@ -632,6 +634,9 @@ export function openDb(path: string): Db {
     },
     events(matchId) {
       return (selectEvents.all(matchId) as { event: string }[]).map((row) => JSON.parse(row.event));
+    },
+    backupTo(path) {
+      db.prepare("vacuum into ?").run(path);
     },
     close() {
       db.close();
