@@ -1,6 +1,6 @@
 import { type DartView, MAX_PLAYERS, MIN_PLAYERS, type PlayerIndex } from "@n4/engine";
 import type { MatchView, StationCommand } from "@n4/server/api";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { dartLabel } from "./darts.ts";
 import {
   defaultSetupSettings,
@@ -155,31 +155,11 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
 }
 
 function Match({ match, send }: { match: MatchView; send: Send }) {
-  const { state, players, settings } = match;
   const [correcting, setCorrecting] = useState<DartView | null>(null);
-  const leg = state.legs.at(-1);
-  const visit = state.currentVisit;
-  const visitTotal = visit?.bust ? 0 : (visit?.darts.reduce((sum, d) => sum + d.score, 0) ?? 0);
-  const nameOf = (player: PlayerIndex) => players[player]?.name ?? "?";
 
-  const lastVisitOf = (player: PlayerIndex) => {
-    const last = leg?.visits.findLast((v) => v.player === player);
-    if (!last) return null;
-    return last.bust ? "Bust" : String(last.darts.reduce((sum, d) => sum + d.score, 0));
-  };
-
-  if (state.phase === "matchWon" && state.winner !== null) {
+  if (match.state.phase === "matchWon") {
     return (
-      <section className="match-over">
-        <p className="game-shot">Game shot</p>
-        <h1>{nameOf(state.winner)} wins</h1>
-        {settings.legsToWin > 1 && (
-          <p className="legs-result">
-            {players.length === 2
-              ? state.players.map((p) => p.legsWon).join(" – ")
-              : `${state.players[state.winner]?.legsWon} legs`}
-          </p>
-        )}
+      <MatchOver match={match}>
         <div className="controls">
           <button type="button" onClick={() => send({ type: "undo" })}>
             Undo
@@ -188,56 +168,13 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
             Done
           </button>
         </div>
-      </section>
+      </MatchOver>
     );
   }
 
   return (
     <section className="match">
-      <div className={`scoreboard ${players.length > 2 ? "many" : ""}`}>
-        {state.players.map((player, p) => (
-          <div
-            key={players[p]?.id ?? p}
-            className={`player ${state.currentPlayer === p ? "active" : ""}`}
-          >
-            <div className="player-name">{nameOf(p)}</div>
-            <div className="remaining">{player.remaining}</div>
-            <div className="player-meta">
-              {settings.legsToWin > 1 && <span>Legs {player.legsWon}</span>}
-              {!player.isIn && <span>Not in</span>}
-              {lastVisitOf(p) && <span>Last {lastVisitOf(p)}</span>}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className={`visit ${visit?.bust ? "bust" : ""}`}>
-        <div className="darts">
-          {[0, 1, 2].map((i) => {
-            const dart = visit?.darts[i];
-            return dart ? (
-              <button
-                type="button"
-                key={dart.dartId}
-                className={`dart ${dart.ignored ? "ignored" : ""}`}
-                onClick={() => setCorrecting(dart)}
-                aria-label={`Correct dart ${i + 1}: ${dartLabel(dart.segment)}`}
-              >
-                {dartLabel(dart.segment)}
-              </button>
-            ) : (
-              <span key={`empty-${i}`} className="dart empty" />
-            );
-          })}
-        </div>
-        <div className="visit-total">{visit ? (visit.bust ? "Bust" : visitTotal) : ""}</div>
-        {state.phase === "awaitingTakeout" ? (
-          <p className="prompt">Remove darts</p>
-        ) : (
-          <p className="hint">{nameOf(state.currentPlayer)} to throw</p>
-        )}
-        {visit && <p className="hint">Tap a dart to correct it</p>}
-      </div>
+      <Scoreboard match={match} onDart={setCorrecting} />
 
       <div className="controls">
         <button type="button" onClick={() => send({ type: "undo" })}>
@@ -271,5 +208,94 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
         />
       )}
     </section>
+  );
+}
+
+/** "Game shot, Ann wins" with the legs; `children` go below (the station's buttons). */
+export function MatchOver({ match, children }: { match: MatchView; children?: ReactNode }) {
+  const { state, players, settings } = match;
+  const winner = state.winner ?? 0;
+  return (
+    <section className="match-over">
+      <p className="game-shot">Game shot</p>
+      <h1>{players[winner]?.name ?? "?"} wins</h1>
+      {settings.legsToWin > 1 && (
+        <p className="legs-result">
+          {players.length === 2
+            ? state.players.map((p) => p.legsWon).join(" – ")
+            : `${state.players[winner]?.legsWon} legs`}
+        </p>
+      )}
+      {children}
+    </section>
+  );
+}
+
+/** Scores, the current visit and whose turn it is; with `onDart`, darts can be tapped. */
+export function Scoreboard(props: { match: MatchView; onDart?: (dart: DartView) => void }) {
+  const { match, onDart } = props;
+  const { state, players, settings } = match;
+  const leg = state.legs.at(-1);
+  const visit = state.currentVisit;
+  const visitTotal = visit?.bust ? 0 : (visit?.darts.reduce((sum, d) => sum + d.score, 0) ?? 0);
+  const nameOf = (player: PlayerIndex) => players[player]?.name ?? "?";
+
+  const lastVisitOf = (player: PlayerIndex) => {
+    const last = leg?.visits.findLast((v) => v.player === player);
+    if (!last) return null;
+    return last.bust ? "Bust" : String(last.darts.reduce((sum, d) => sum + d.score, 0));
+  };
+
+  return (
+    <>
+      <div className={`scoreboard ${players.length > 2 ? "many" : ""}`}>
+        {state.players.map((player, p) => (
+          <div
+            key={players[p]?.id ?? p}
+            className={`player ${state.currentPlayer === p ? "active" : ""}`}
+          >
+            <div className="player-name">{nameOf(p)}</div>
+            <div className="remaining">{player.remaining}</div>
+            <div className="player-meta">
+              {settings.legsToWin > 1 && <span>Legs {player.legsWon}</span>}
+              {!player.isIn && <span>Not in</span>}
+              {lastVisitOf(p) && <span>Last {lastVisitOf(p)}</span>}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className={`visit ${visit?.bust ? "bust" : ""}`}>
+        <div className="darts">
+          {[0, 1, 2].map((i) => {
+            const dart = visit?.darts[i];
+            if (!dart) return <span key={`empty-${i}`} className="dart empty" />;
+            const className = `dart ${dart.ignored ? "ignored" : ""}`;
+            return onDart ? (
+              <button
+                type="button"
+                key={dart.dartId}
+                className={className}
+                onClick={() => onDart(dart)}
+                aria-label={`Correct dart ${i + 1}: ${dartLabel(dart.segment)}`}
+              >
+                {dartLabel(dart.segment)}
+              </button>
+            ) : (
+              <span key={dart.dartId} className={className}>
+                {dartLabel(dart.segment)}
+              </span>
+            );
+          })}
+        </div>
+        <div className="visit-total">{visit ? (visit.bust ? "Bust" : visitTotal) : ""}</div>
+        {state.phase === "awaitingTakeout" ? (
+          <p className="prompt">Remove darts</p>
+        ) : (
+          <p className="hint">{nameOf(state.currentPlayer)} to throw</p>
+        )}
+        {visit && onDart && <p className="hint">Tap a dart to correct it</p>}
+      </div>
+    </>
   );
 }
