@@ -1,6 +1,6 @@
 import { defaultX01Settings, type Segment, type X01Settings } from "@n4/engine";
 import { afterEach, describe, expect, it } from "vitest";
-import type { LeaderboardRow, PlayerProfile } from "./api.ts";
+import type { DisplayView, LeaderboardRow, PlayerProfile } from "./api.ts";
 import { buildApp } from "./app.ts";
 import { type Db, openDb } from "./db.ts";
 import { createStats } from "./stats.ts";
@@ -184,5 +184,26 @@ describe("tournament awards", () => {
       { kind: "highestCheckout", value: 100, players: ["Cid"] },
       { kind: "bestLeg", value: 3, players: ["Ann", "Bob"] },
     ]);
+  });
+});
+
+describe("idle display", () => {
+  it("shows the leaderboard while there's no running tournament", async () => {
+    const { app, get } = setup();
+    play(["ann", "bob"], [["T20", "S1"], ["S20"], ["D20"]]);
+    expect((await get<DisplayView>("/api/display")).body.leaderboard.map((r) => r.name)).toEqual([
+      "Ann",
+      "Bob",
+    ]);
+
+    await app.inject({
+      method: "POST",
+      url: "/api/admin/tournament",
+      payload: { playerIds: ["ann", "bob", "cid"] },
+    });
+    // A draft is still no tournament on the display.
+    expect((await get<DisplayView>("/api/display")).body.leaderboard).toHaveLength(2);
+    await app.inject({ method: "POST", url: "/api/admin/tournament/start" });
+    expect((await get<DisplayView>("/api/display")).body.leaderboard).toEqual([]);
   });
 });

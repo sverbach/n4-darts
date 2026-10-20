@@ -3,10 +3,13 @@
 import type { DisplayView, MatchView, ScoreCard } from "./api.ts";
 import type { Db } from "./db.ts";
 import type { StationDirectory } from "./stations.ts";
+import type { Stats } from "./stats.ts";
 import type { Tournaments } from "./tournaments.ts";
 
 /** How many queued matches "Up next" lists. */
 const UP_NEXT = 5;
+/** How many players the idle display ranks. */
+const LEADERBOARD = 10;
 
 export function scoreCard(match: MatchView): ScoreCard {
   const { state, settings } = match;
@@ -38,6 +41,7 @@ export function displayView(
   db: Db,
   stations: StationDirectory,
   tournaments: Tournaments | undefined,
+  stats?: Stats,
 ): DisplayView {
   const admin = tournaments?.view();
   const progress = admin?.tournament?.status === "draft" ? null : (admin?.progress ?? null);
@@ -72,5 +76,6 @@ export function displayView(
     bracket: progress?.bracket ?? [],
     placings: progress?.placings ?? null,
     awards: progress?.awards ?? null,
+    leaderboard: progress || !stats ? [] : stats.leaderboard().slice(0, LEADERBOARD),
   };
 }

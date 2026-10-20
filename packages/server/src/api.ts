@@ -241,6 +241,8 @@ export interface DisplayView {
   bracket: TournamentProgress["bracket"];
   placings: TournamentProgress["placings"];
   awards: TournamentProgress["awards"];
+  /** The leaderboard's top 10, while there's no tournament. */
+  leaderboard: LeaderboardRow[];
 }
 
 /** A player's long-term numbers over their counted matches. */

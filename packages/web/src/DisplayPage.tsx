@@ -106,16 +106,53 @@ function Finished({ view }: { view: DisplayView }) {
 }
 
 function Idle({ view }: { view: DisplayView }) {
+  const cards = (
+    <div className={`display-cards ${view.leaderboard.length > 0 ? "" : "wide"}`}>
+      {view.stations.map((s) => (
+        <StationCard key={s.id} station={s} />
+      ))}
+    </div>
+  );
   return (
     <>
       <Header title="n4-darts" />
-      <Fit className="display-idle">
-        <div className="display-cards wide">
-          {view.stations.map((s) => (
-            <StationCard key={s.id} station={s} />
-          ))}
+      {view.leaderboard.length === 0 ? (
+        <Fit className="display-idle">{cards}</Fit>
+      ) : (
+        <div className="display-split">
+          <Fit className="display-side">
+            <h2>Stations</h2>
+            {cards}
+          </Fit>
+          <Fit className="display-main">
+            <h2>Leaderboard</h2>
+            <table className="group-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th className="name">Player</th>
+                  <th>Rating</th>
+                  <th>Matches</th>
+                  <th>180s</th>
+                  <th>High out</th>
+                </tr>
+              </thead>
+              <tbody>
+                {view.leaderboard.map((row, i) => (
+                  <tr key={row.playerId}>
+                    <td>{i + 1}</td>
+                    <td className="name">{row.name}</td>
+                    <td className="points">{row.rating === null ? "–" : row.rating.toFixed(1)}</td>
+                    <td>{row.matches}</td>
+                    <td>{row.s180}</td>
+                    <td>{row.highestCheckout ?? "–"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Fit>
         </div>
-      </Fit>
+      )}
     </>
   );
 }

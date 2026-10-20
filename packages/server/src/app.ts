@@ -55,7 +55,7 @@ export function buildApp(options: AppOptions = {}) {
     app.get("/api/admin/tournament/live", (request, reply) =>
       streamView(request, reply, feed.subscribe, () => tournaments.view()),
     );
-    const display = () => displayView(db, stations, tournaments);
+    const display = () => displayView(db, stations, tournaments, stats);
     app.get("/api/display", async () => display());
     app.get("/api/display/live", (request, reply) =>
       streamView(request, reply, feed.subscribe, display),
