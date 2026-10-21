@@ -16,7 +16,7 @@ Read first: `docs/ui-pages.md` (what each page does), `docs/architecture.md`, `G
   - Accent violet `#A68CFF`, with its tint `#120F1A`.
   - Online green `#5CFFA0`, warning amber `#FFB23D`, danger red `#FF4D3D`.
 - **Theme.** Dark only. The light-mode handling goes.
-- **Fonts.** Silkscreen for labels, names, buttons and headings, in capitals. VT323 for numbers and running text. Both are bundled (`@fontsource`), so nothing loads from the internet.
+- **Fonts.** Silkscreen for labels, names, buttons and headings, in capitals. Geist Pixel for numbers and running text (VT323 in the mockups, swapped 2026-10-21). Both are bundled (`@fontsource`), so nothing loads from the internet.
 - **Shapes.**
   - No rounded corners.
   - Primary buttons are slanted.

@@ -837,7 +837,7 @@
   grid-area: score;
   align-self: end;
   margin: 0;
-  font-size: calc(220 * var(--px));
+  font-size: calc(200 * var(--px));
 }
 
 /* The thrower shows by the frame and colour; no tag on the TV. */
@@ -872,7 +872,8 @@
 }
 
 .watch .scoreboard.many .remaining {
-  font-size: calc(120 * var(--px));
+  align-self: flex-start;
+  font-size: calc(90 * var(--px));
 }
 
 .watch-visit {

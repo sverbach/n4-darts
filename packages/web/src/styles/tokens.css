@@ -42,9 +42,9 @@
   --avatar-8: #3a4048;
   --avatar-9: #2e5a5a;
 
-  /* Silkscreen for labels, names and buttons; VT323 for numbers and running text. */
+  /* Silkscreen for labels, names and buttons; Geist Pixel for numbers and running text. */
   --font-pixel: "Silkscreen", monospace;
-  --font-text: "VT323", monospace;
+  --font-text: "Geist Pixel", monospace;
 
   color-scheme: dark;
 }

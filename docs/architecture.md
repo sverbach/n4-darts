@@ -196,7 +196,7 @@ Details in `.scratch/board-menu-and-photos/spec.md`.
 
 Details in `.scratch/design-system/spec.md`; mockups in the Design canvas https://claude.ai/artifact/HuW84FFVzNBsw7FVAXfy7b.
 
-- **Look**: retro terminal. Silkscreen (labels, names, buttons, in capitals) and VT323 (numbers, text), both bundled. Near-black grounds, violet accent, green/amber/red for status. No rounded corners, slanted primary buttons, pixel icons (`PixelIcon`), octagon avatars, the logo as inline SVG (`Logo`).
+- **Look**: retro terminal. Silkscreen (labels, names, buttons, in capitals) and Geist Pixel (numbers, text), both bundled. Near-black grounds, violet accent, green/amber/red for status. No rounded corners, slanted primary buttons, pixel icons (`PixelIcon`), octagon avatars, the logo as inline SVG (`Logo`).
 - **Theming**: dark only for now, but every colour is a role-named CSS variable in `styles/tokens.css`. A theme only redefines those, so components never hard-code a colour.
 - **Styles**: `styles.css` imports, in order, `tokens`, `base` (elements, buttons, fields, pills, panels), `avatar`, `components` (picker, settings, segment picker, board menu), then the page sheets `station`, `display`, `pages` and `admin`. Two layouts per page, switching at 760 px; the kiosk laptop gets the wide one.
 - **Projector**: `/display` and `/watch` size everything from `--px`, one pixel of the 1920×1080 or 1280×720 mockup, so every screen shows the same layout.

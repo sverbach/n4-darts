@@ -420,7 +420,7 @@
 }
 
 .remaining {
-  font-size: clamp(64px, 27vw, 104px);
+  font-size: clamp(44px, 17vw, 72px);
   line-height: 0.8;
 }
 
@@ -544,7 +544,7 @@
     grid-area: score;
     align-self: end;
     margin-top: 12px;
-    font-size: clamp(120px, min(16vw, 26vh), 240px);
+    font-size: clamp(96px, min(13vw, 24vh), 220px);
   }
 
   .throwing {
@@ -585,8 +585,9 @@
 
   .scoreboard.many .remaining,
   .scoreboard.many .player.active .remaining {
+    align-self: flex-start;
     margin: 0;
-    font-size: clamp(80px, min(10vw, 17vh), 160px);
+    font-size: clamp(64px, min(7vw, 15vh), 120px);
   }
 
   .scoreboard.many .throwing {
