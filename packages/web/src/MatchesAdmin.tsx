@@ -1,6 +1,7 @@
 import type { StationView } from "@n4/server/api";
 import { useState } from "react";
 import { request } from "./adminApi.ts";
+import { BoardStatus } from "./BoardMenu.tsx";
 import { MatchDetailView, MatchHistory } from "./MatchHistory.tsx";
 import { useLive } from "./useLive.ts";
 
@@ -23,23 +24,27 @@ export function MatchesAdmin() {
           {error}
         </p>
       )}
-      <h2>Stations</h2>
-      {!stations ? (
-        <p className="hint">Loading…</p>
-      ) : (
-        <ul className="station-list">
-          {stations.map((s) => (
-            <StationRow
-              key={s.id}
-              station={s}
-              onAbandon={() => abandon(s)}
-              onOpen={() => s.match && setOpenId(s.match.id)}
-            />
-          ))}
-        </ul>
-      )}
-      <h2>History</h2>
-      <MatchHistory onOpen={setOpenId} />
+      <section className="admin-section">
+        <h2>Stations</h2>
+        {!stations ? (
+          <p className="hint">Loading…</p>
+        ) : (
+          <ul className="station-cards">
+            {stations.map((s) => (
+              <StationRow
+                key={s.id}
+                station={s}
+                onAbandon={() => abandon(s)}
+                onOpen={() => s.match && setOpenId(s.match.id)}
+              />
+            ))}
+          </ul>
+        )}
+      </section>
+      <section className="admin-section">
+        <h2>History</h2>
+        <MatchHistory onOpen={setOpenId} />
+      </section>
     </div>
   );
 }
@@ -48,29 +53,27 @@ function StationRow(props: { station: StationView; onAbandon(): void; onOpen(): 
   const { station, onAbandon, onOpen } = props;
   const { match } = station;
   return (
-    <li className="station-row">
-      <div className="station-row-head">
-        <a href={`/station/${station.id}`}>{station.name}</a>
-        <span className={`status ${station.boardOnline ? "ok" : "warn"}`}>
-          {station.boardOnline ? "Board online" : "Board offline"}
-        </span>
+    <li className="station-card">
+      <div className="card-row-title spread">
+        <a className="card-row-name" href={`/station/${station.id}`}>
+          {station.name}
+        </a>
+        <BoardStatus online={station.boardOnline} running={station.boardRunning} />
       </div>
-      {!match ? (
-        <p className="hint">Free</p>
-      ) : (
-        <>
-          <p className="station-row-match">{matchSummary(match)}</p>
-          <div className="station-row-actions">
-            {match.state.phase !== "notStarted" && (
-              <button type="button" className="ghost" onClick={onOpen}>
-                Details
-              </button>
-            )}
-            <button type="button" className="ghost danger" onClick={onAbandon}>
-              {match.state.phase === "notStarted" ? "Cancel match" : "End match"}
+      <span className={`station-card-summary ${match ? "" : "hint"}`}>
+        {match ? matchSummary(match) : "Free"}
+      </span>
+      {match && (
+        <div className="card-row-actions start">
+          {match.state.phase !== "notStarted" && (
+            <button type="button" onClick={onOpen}>
+              Details
             </button>
-          </div>
-        </>
+          )}
+          <button type="button" className="danger" onClick={onAbandon}>
+            {match.state.phase === "notStarted" ? "Cancel match" : "End match"}
+          </button>
+        </div>
       )}
     </li>
   );

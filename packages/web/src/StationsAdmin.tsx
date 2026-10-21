@@ -1,7 +1,8 @@
 import type { StationAdminView } from "@n4/server/api";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, type ReactNode, useState } from "react";
 import { request } from "./adminApi.ts";
 import { BoardMenu } from "./BoardMenu.tsx";
+import { PixelIcon } from "./PixelIcon.tsx";
 import { useLive } from "./useLive.ts";
 
 export function StationsAdmin() {
@@ -17,31 +18,37 @@ export function StationsAdmin() {
   };
 
   return (
-    <div className="stations-admin">
-      {error && (
-        <p className="error" role="alert">
-          {error}
-        </p>
-      )}
-      {!stations ? (
-        <p className="hint">Loading…</p>
-      ) : (
-        <ul className="station-list">
-          {stations.length === 0 && <p className="hint">No stations yet.</p>}
-          {stations.map((s) => (
-            <StationRow key={s.id} station={s} change={change} />
-          ))}
-        </ul>
-      )}
-      <h2>Add a station</h2>
-      <StationForm
-        submitLabel="Add station"
-        onSubmit={(name, boardUrl) => change("POST", "/api/admin/stations", { name, boardUrl })}
-      />
-      <p className="hint">
-        The board address is the Board Manager on the station laptop, e.g.
-        http://192.168.1.139:3180.
-      </p>
+    <div className="stations-admin admin-columns">
+      <div className="admin-main">
+        {error && (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        )}
+        {!stations ? (
+          <p className="hint">Loading…</p>
+        ) : stations.length === 0 ? (
+          <p className="hint">No stations yet.</p>
+        ) : (
+          <ul className="card-list">
+            {stations.map((s) => (
+              <StationRow key={s.id} station={s} change={change} />
+            ))}
+          </ul>
+        )}
+      </div>
+      <section className="admin-aside panel add-station">
+        <h2>Add a station</h2>
+        <StationForm
+          submitLabel="Add station"
+          onSubmit={(name, boardUrl) => change("POST", "/api/admin/stations", { name, boardUrl })}
+        >
+          <p className="hint">
+            The address of the board's Board Manager on the local network, e.g.
+            http://192.168.1.139:3180.
+          </p>
+        </StationForm>
+      </section>
     </div>
   );
 }
@@ -52,19 +59,16 @@ function StationRow({ station, change }: { station: StationAdminView; change: Ch
   const [editing, setEditing] = useState(false);
   const url = `/api/admin/stations/${station.id}`;
 
-  return (
-    <li className="station-row">
-      <div className="station-row-head">
-        <a href={`/station/${station.id}`}>
-          {station.id}. {station.name}
-        </a>
-        <BoardMenu
-          stationId={station.id}
-          online={station.boardOnline}
-          running={station.boardRunning}
-        />
-      </div>
-      {editing ? (
+  const menu = (
+    <BoardMenu stationId={station.id} online={station.boardOnline} running={station.boardRunning} />
+  );
+  if (editing) {
+    return (
+      <li className="card-row editing">
+        <div className="card-row-title edit-head">
+          <span className="card-row-name">{station.id}. Edit station</span>
+          {menu}
+        </div>
         <StationForm
           initial={station}
           submitLabel="Save"
@@ -75,27 +79,34 @@ function StationRow({ station, change }: { station: StationAdminView; change: Ch
             return ok;
           }}
         />
-      ) : (
-        <>
-          <p className="station-row-match">{station.boardUrl}</p>
-          <div className="station-row-actions">
-            <button type="button" className="ghost" onClick={() => setEditing(true)}>
-              Edit
-            </button>
-            <button
-              type="button"
-              className="ghost danger"
-              disabled={station.busy}
-              title={station.busy ? "Close or end its match first" : undefined}
-              onClick={() => {
-                if (confirm(`Remove ${station.name}?`)) void change("DELETE", url);
-              }}
-            >
-              Remove
-            </button>
-          </div>
-        </>
-      )}
+      </li>
+    );
+  }
+  return (
+    <li className="card-row">
+      <div className="card-row-main">
+        <a className="card-row-name" href={`/station/${station.id}`}>
+          {station.id}. {station.name}
+        </a>
+        <code className="board-url">{station.boardUrl}</code>
+      </div>
+      {menu}
+      <div className="card-row-actions">
+        <button type="button" onClick={() => setEditing(true)}>
+          Edit
+        </button>
+        <button
+          type="button"
+          className="danger"
+          disabled={station.busy}
+          title={station.busy ? "Close or end its match first" : undefined}
+          onClick={() => {
+            if (confirm(`Remove ${station.name}?`)) void change("DELETE", url);
+          }}
+        >
+          Remove
+        </button>
+      </div>
     </li>
   );
 }
@@ -105,6 +116,7 @@ function StationForm(props: {
   submitLabel: string;
   onSubmit(name: string, boardUrl: string): Promise<boolean>;
   onCancel?(): void;
+  children?: ReactNode;
 }) {
   const [name, setName] = useState(props.initial?.name ?? "");
   const [boardUrl, setBoardUrl] = useState(props.initial?.boardUrl ?? "http://");
@@ -118,31 +130,38 @@ function StationForm(props: {
   };
 
   return (
-    <form className="station-form" onSubmit={submit}>
-      <input
-        aria-label="Station name"
-        placeholder="Name (optional)"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <input
-        aria-label="Board address"
-        placeholder="http://192.168.1.139:3180"
-        value={boardUrl}
-        required
-        inputMode="url"
-        onChange={(e) => setBoardUrl(e.target.value)}
-      />
-      <div className="station-row-actions">
-        <button type="submit" className="primary">
-          {props.submitLabel}
-        </button>
-        {props.onCancel && (
+    <form className={`station-form ${props.initial ? "edit" : ""}`} onSubmit={submit}>
+      <div className="station-form-fields">
+        <label className="field small">
+          {props.initial ? "Name" : "Name (optional)"}
+          <input placeholder="Station 4" value={name} onChange={(e) => setName(e.target.value)} />
+        </label>
+        <label className="field small">
+          Board address
+          <input
+            placeholder="http://192.168.1.142:3180"
+            value={boardUrl}
+            required
+            inputMode="url"
+            onChange={(e) => setBoardUrl(e.target.value)}
+          />
+        </label>
+      </div>
+      {props.children}
+      {props.onCancel ? (
+        <div className="card-row-actions start">
+          <button type="submit" className="primary">
+            {props.submitLabel}
+          </button>
           <button type="button" className="ghost" onClick={props.onCancel}>
             Cancel
           </button>
-        )}
-      </div>
+        </div>
+      ) : (
+        <button type="submit" className="primary cta">
+          {props.submitLabel} <PixelIcon name="arrow" height="0.9em" />
+        </button>
+      )}
     </form>
   );
 }

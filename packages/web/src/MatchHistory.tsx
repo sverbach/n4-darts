@@ -3,6 +3,7 @@ import type { MatchDetail, MatchSummary } from "@n4/server/api";
 import { useEffect, useState } from "react";
 import { dartLabel } from "./darts.ts";
 import { legsLabel } from "./MatchSetup.tsx";
+import { PixelIcon } from "./PixelIcon.tsx";
 import { SegmentPicker } from "./SegmentPicker.tsx";
 import { useLive } from "./useLive.ts";
 
@@ -30,17 +31,27 @@ export function MatchHistory({ onOpen }: { onOpen(id: string): void }) {
   if (!matches) return <p className="hint">Loading…</p>;
   if (matches.length === 0) return <p className="hint">No finished matches yet.</p>;
   return (
-    <ul className="history-list">
-      {matches.map((m) => (
-        <li key={m.id}>
-          <button type="button" onClick={() => onOpen(m.id)}>
-            <span className="history-players">{m.players.map((p) => p.name).join(" vs ")}</span>
-            <span className="history-result">{result(m)}</span>
-            <span className="history-when">{when(m.closedAt)}</span>
-          </button>
-        </li>
-      ))}
-    </ul>
+    <div className="history table-panel">
+      <div className="history-head label">
+        <span>Players</span>
+        <span>Result</span>
+        <span>When</span>
+      </div>
+      <ul className="history-list">
+        {matches.map((m) => (
+          <li key={m.id}>
+            <button type="button" onClick={() => onOpen(m.id)}>
+              <span className="history-players">{m.players.map((p) => p.name).join(" vs ")}</span>
+              <span className={`history-result ${m.abandoned || !m.winner ? "muted" : ""}`}>
+                {result(m)}
+              </span>
+              <span className="history-when">{when(m.closedAt)}</span>
+              <PixelIcon name="arrow" />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -69,8 +80,8 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
 
   return (
     <div className="match-detail">
-      <button type="button" className="ghost back" onClick={onBack}>
-        ← Matches
+      <button type="button" className="back" onClick={onBack}>
+        <PixelIcon name="back" height="0.7em" /> Matches
       </button>
       {(error ?? live.failed) && (
         <p className="error" role="alert">
@@ -81,21 +92,30 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
         <p className="hint">Loading…</p>
       ) : (
         <>
-          <h2>{match.players.map((p) => p.name).join(" vs ")}</h2>
-          <p className="hint">
-            {match.settings.startScore},{" "}
-            {legsLabel(match.settings.legsToWin, match.players.length).toLowerCase()}
-            {match.station !== null && ` · station ${match.station}`} · {result(match)}
-            {match.closedAt && ` · ${when(match.closedAt)}`}
-          </p>
-          <p className="hint">Tap a dart to correct it.</p>
+          <div className="detail-head">
+            <div className="admin-head">
+              {!match.closedAt && <span className="run-state running">Live</span>}
+              <h1>{match.players.map((p) => p.name).join(" vs ")}</h1>
+              <p className="hint">
+                {match.settings.startScore},{" "}
+                {legsLabel(match.settings.legsToWin, match.players.length).toLowerCase()}
+                {match.station !== null && ` · station ${match.station}`} · {result(match)}
+                {match.closedAt && ` · ${when(match.closedAt)}`}
+              </p>
+            </div>
+            <span className="match-label">Tap a dart to correct it.</span>
+          </div>
           {match.state.legs.map((leg, legIndex) => (
             // Only the last leg can be without darts, so the first dart identifies a leg.
-            <section key={leg.visits[0]?.darts[0]?.dartId ?? "current-leg"} className="leg">
-              <h3>
-                Leg {legIndex + 1} · {name(leg.starter)} starts
+            <details
+              key={leg.visits[0]?.darts[0]?.dartId ?? "current-leg"}
+              className="leg"
+              open={legIndex === match.state.legs.length - 1}
+            >
+              <summary>
+                <PixelIcon name="caret" /> Leg {legIndex + 1} · {name(leg.starter)} starts
                 {leg.winner !== null && ` · ${name(leg.winner)} won`}
-              </h3>
+              </summary>
               <ol className="visit-list">
                 {[
                   ...leg.visits,
@@ -115,11 +135,12 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
                           <button
                             type="button"
                             key={dart.dartId}
-                            className={dart.ignored ? "ignored" : ""}
+                            className={`${dart.ignored ? "ignored" : ""} ${original ? "corrected" : ""}`}
                             onClick={() => setCorrecting(dart)}
                             aria-label={`Correct ${dartLabel(dart.segment)}`}
                           >
-                            {original && <s>{dartLabel(original)}</s>} {dartLabel(dart.segment)}
+                            {original && <s>{dartLabel(original)}</s>}
+                            <span>{dartLabel(dart.segment)}</span>
                           </button>
                         );
                       })}
@@ -131,13 +152,14 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
                   </li>
                 ))}
               </ol>
-            </section>
+            </details>
           ))}
         </>
       )}
       {correcting && (
         <SegmentPicker
           title={`Correct ${dartLabel(correcting.segment)}`}
+          current={correcting.segment}
           onCancel={() => setCorrecting(null)}
           onPick={(segment) => {
             setCorrecting(null);

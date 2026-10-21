@@ -152,7 +152,7 @@ Settled in discussion (2026-10-18). The hard-to-reverse ones are recorded in `do
 - **Withdrawals**: unplayed matches become walkovers (2 points, N–0 legs) and played results stand; walkovers don't count for long-term stats. Free roster edits until the first match is played.
 - **Station corrections**: darts of the current visit, plus "undo last visit". Older changes go through `/admin`.
 - **Later, not v1**: free play / quick match (data model allows a match without a tournament from day one), sound caller, bull-off detection.
-- **Frontend**: React + Vite. Visual language follows the user's Claude design system (link to be added).
+- **Frontend**: React + Vite. Visual language from the Design canvas "n4darts — Station View" (see "Design system" below).
 - **Board simulator**: a fake Board Manager (same API, replays recorded logs or is driven from a clickable board) is built alongside the gateway and used for automated tests.
 - **Repo layout**: pnpm workspace with `packages/engine`, `packages/server`, `packages/web`, `tools/board-sim`. Single domain context.
 - **Stations** are configured in `/admin` (name + Board Manager address) with a live connection indicator. Laptops get DHCP reservations.
@@ -192,13 +192,22 @@ Details in `.scratch/board-menu-and-photos/spec.md`.
 - **Board menu** on every station page (no PIN) and in `/admin` → Stations: stop/start detection, auto-calibrate, reset. A reset from the menu behaves like one pressed on the laptop. The board status distinguishes online, stopped and offline.
 - **Player photos** live in SQLite (so they're in the backups), uploaded by the organiser only, cropped and shrunk to a 512×512 JPEG in the browser; served by a versioned URL that can be cached forever. Players without a photo get initials on a colour of their own.
 
+### Design system (2026-10-21)
+
+Details in `.scratch/design-system/spec.md`; mockups in the Design canvas https://claude.ai/artifact/HuW84FFVzNBsw7FVAXfy7b.
+
+- **Look**: retro terminal. Silkscreen (labels, names, buttons, in capitals) and VT323 (numbers, text), both bundled. Near-black grounds, violet accent, green/amber/red for status. No rounded corners, slanted primary buttons, pixel icons (`PixelIcon`), octagon avatars, the logo as inline SVG (`Logo`).
+- **Theming**: dark only for now, but every colour is a role-named CSS variable in `styles/tokens.css`. A theme only redefines those, so components never hard-code a colour.
+- **Styles**: `styles.css` imports, in order, `tokens`, `base` (elements, buttons, fields, pills, panels), `avatar`, `components` (picker, settings, segment picker, board menu), then the page sheets `station`, `display`, `pages` and `admin`. Two layouts per page, switching at 760 px; the kiosk laptop gets the wide one.
+- **Projector**: `/display` and `/watch` size everything from `--px`, one pixel of the 1920×1080 or 1280×720 mockup, so every screen shows the same layout.
+
 ## Open questions
 
 None open. New questions get added here and folded into "Decisions so far" once answered.
 
 ## Suggested build order
 
-Steps 1–5 are done (as of 2026-10-20); the design system pass comes last.
+All six steps are done (as of 2026-10-21).
 
 1. **Gateway + engine spike**: server connects to one board and plays a 301 leg end to end on a bare `/station/1` page.
 2. Corrections + crash recovery (event log).

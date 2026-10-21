@@ -3,6 +3,7 @@ import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { Avatar } from "./Avatar.tsx";
 import { request } from "./adminApi.ts";
 import { PhotoEditor } from "./PhotoEditor.tsx";
+import { PixelIcon } from "./PixelIcon.tsx";
 
 export function PlayersAdmin() {
   const [players, setPlayers] = useState<AdminPlayer[] | null>(null);
@@ -49,7 +50,9 @@ export function PlayersAdmin() {
           </ul>
           {archived.length > 0 && (
             <details className="archived">
-              <summary>Archived ({archived.length})</summary>
+              <summary>
+                <PixelIcon name="caret" /> Archived ({archived.length})
+              </summary>
               <ul className="player-list">
                 {archived.map((p) => (
                   <PlayerRow key={p.id} player={p} change={change} reload={load} />
@@ -70,16 +73,16 @@ function AddPlayer({ onAdd }: { onAdd: (name: string) => Promise<boolean> }) {
     if (await onAdd(name)) setName("");
   };
   return (
-    <form className="inline-form" onSubmit={submit}>
+    <form className="inline-form add-player" onSubmit={submit}>
       <input
         aria-label="New player"
-        placeholder="New player"
+        placeholder="New player name"
         value={name}
         required
         onChange={(e) => setName(e.target.value)}
       />
       <button type="submit" className="primary">
-        Add
+        + Add
       </button>
     </form>
   );
@@ -100,8 +103,9 @@ function PlayerRow(props: { player: AdminPlayer; change: Change; reload(): void 
       if (await change("PATCH", url, { name })) setRenaming(false);
     };
     return (
-      <li>
-        <form className="inline-form" onSubmit={submit}>
+      <li className="player-row">
+        <Avatar player={player} />
+        <form className="inline-form rename" onSubmit={submit}>
           <input
             aria-label="Name"
             value={name}
@@ -130,38 +134,44 @@ function PlayerRow(props: { player: AdminPlayer; change: Change; reload(): void 
     <li className="player-row">
       <button
         type="button"
-        className="ghost avatar-button"
+        className="avatar-button"
         aria-label={`Photo of ${player.name}`}
         onClick={() => setEditingPhoto(true)}
       >
         <Avatar player={player} />
+        <span className="avatar-badge">
+          <PixelIcon name="dots" />
+        </span>
       </button>
       {editingPhoto && (
         <PhotoEditor player={player} onClose={() => setEditingPhoto(false)} onChanged={reload} />
       )}
-      <span className="player-row-name">{player.name}</span>
-      <span className="player-row-rating" title="3-dart average, last 10 matches">
-        {player.rating === null ? "–" : player.rating.toFixed(1)}
-      </span>
-      <button type="button" className="ghost" onClick={() => setRenaming(true)}>
-        Rename
-      </button>
-      <button
-        type="button"
-        className="ghost"
-        onClick={() => change("PATCH", url, { archived: !player.archived })}
-      >
-        {player.archived ? "Restore" : "Archive"}
-      </button>
-      <button
-        type="button"
-        className="ghost danger"
-        onClick={() => {
-          if (confirm(`Delete ${player.name}?`)) void change("DELETE", url);
-        }}
-      >
-        Delete
-      </button>
+      <div className="player-row-text">
+        <span className="player-row-name">{player.name}</span>
+        <span className="label" title="3-dart average, last 10 matches">
+          Rating{" "}
+          <span className="player-row-rating">
+            {player.rating === null ? "–" : player.rating.toFixed(1)}
+          </span>
+        </span>
+      </div>
+      <div className="player-row-actions">
+        <button type="button" onClick={() => setRenaming(true)}>
+          Rename
+        </button>
+        <button type="button" onClick={() => change("PATCH", url, { archived: !player.archived })}>
+          {player.archived ? "Restore" : "Archive"}
+        </button>
+        <button
+          type="button"
+          className="danger"
+          onClick={() => {
+            if (confirm(`Delete ${player.name}?`)) void change("DELETE", url);
+          }}
+        >
+          Delete
+        </button>
+      </div>
     </li>
   );
 }

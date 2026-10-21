@@ -134,12 +134,15 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void; onCha
   };
 
   return (
-    <div className="overlay">
-      <div className="picker photo-editor" role="dialog" aria-label={`Photo of ${player.name}`}>
-        <div className="picker-head">
-          <h2>{player.name}</h2>
-          <button type="button" className="ghost" onClick={onClose}>
-            Cancel
+    <div className="photo-overlay">
+      <div className="photo-editor" role="dialog" aria-label={`Photo of ${player.name}`}>
+        <div className="photo-editor-head">
+          <div>
+            <span className="match-label">Photo</span>
+            <h2>{player.name}</h2>
+          </div>
+          <button type="button" onClick={onClose}>
+            Close ✕
           </button>
         </div>
         {error && (
@@ -159,6 +162,8 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void; onCha
           <>
             <div
               className="crop"
+              role="img"
+              aria-label="Crop area: drag to move"
               style={{ width: VIEW, height: VIEW }}
               onPointerDown={onPointerDown}
               onPointerMove={onPointerMove}
@@ -176,9 +181,15 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void; onCha
                   transform: `translate(${crop.x}px, ${crop.y}px)`,
                 }}
               />
+              {/* The octagon every avatar is cut to. */}
+              <svg className="crop-frame" viewBox="0 0 100 100" aria-hidden="true">
+                <polygon points="12.5,0.5 87.5,0.5 99.5,12.5 99.5,87.5 87.5,99.5 12.5,99.5 0.5,87.5 0.5,12.5" />
+              </svg>
             </div>
-            <label className="zoom">
+            <p className="hint">Drag to move, pinch, scroll or use the slider to zoom.</p>
+            <label className="zoom label">
               Zoom
+              <span aria-hidden="true">−</span>
               <input
                 type="range"
                 min={1}
@@ -187,13 +198,13 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void; onCha
                 value={crop.zoom}
                 onChange={(e) => zoomTo(Number(e.target.value))}
               />
+              <span aria-hidden="true">+</span>
             </label>
-            <p className="hint">Drag to move, pinch or use the slider to zoom.</p>
-            <div className="controls">
+            <div className="photo-actions">
               <button type="button" onClick={() => fileInput.current?.click()}>
-                Other photo
+                Choose another
               </button>
-              <button type="button" className="primary" disabled={saving} onClick={save}>
+              <button type="button" className="primary cta" disabled={saving} onClick={save}>
                 {saving ? "Saving…" : "Save"}
               </button>
             </div>
@@ -203,13 +214,17 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void; onCha
             <div className="photo-current">
               <Avatar player={player} large />
             </div>
-            <div className="controls">
+            <div className="photo-actions">
               {player.photo && (
-                <button type="button" className="ghost danger" onClick={remove}>
+                <button type="button" className="danger" onClick={remove}>
                   Remove photo
                 </button>
               )}
-              <button type="button" className="primary" onClick={() => fileInput.current?.click()}>
+              <button
+                type="button"
+                className="primary cta"
+                onClick={() => fileInput.current?.click()}
+              >
                 {player.photo ? "Change photo" : "Add photo"}
               </button>
             </div>
