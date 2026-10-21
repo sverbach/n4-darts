@@ -42,9 +42,13 @@ export function usePlayers() {
   return { players, add };
 }
 
-/** Players are picked in throwing order; tapping again removes one. */
-export function PlayerPicker(props: { picked: string[]; onChange(picked: string[]): void }) {
-  const { picked, onChange } = props;
+/** Players are picked in throwing order; tapping again removes one. `title` heads it with a count. */
+export function PlayerPicker(props: {
+  picked: string[];
+  onChange(picked: string[]): void;
+  title?: string;
+}) {
+  const { picked, onChange, title } = props;
   const { players, add } = usePlayers();
   const [newName, setNewName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +72,15 @@ export function PlayerPicker(props: { picked: string[]; onChange(picked: string[
   };
 
   return (
-    <>
+    <div className="player-picker-wrap">
+      {title && (
+        <div className="player-picker-head label">
+          <span>{title}</span>
+          <span>
+            <span className="player-picker-count">{picked.length}</span> / {MAX_PLAYERS} picked
+          </span>
+        </div>
+      )}
       {!players ? (
         <p className="hint">Loading players…</p>
       ) : (
@@ -84,9 +96,9 @@ export function PlayerPicker(props: { picked: string[]; onChange(picked: string[
                 onClick={() => toggle(p.id)}
                 disabled={position < 0 && picked.length >= MAX_PLAYERS}
               >
-                {position >= 0 && <span className="pick-number">{position + 1}</span>}
                 <Avatar player={p} />
-                {p.name}
+                <span className="pick-name">{p.name}</span>
+                {position >= 0 && <span className="pick-number">{position + 1}</span>}
               </button>
             );
           })}
@@ -95,19 +107,19 @@ export function PlayerPicker(props: { picked: string[]; onChange(picked: string[
       <form className="inline-form" onSubmit={submit}>
         <input
           aria-label="New player"
-          placeholder="New player"
+          placeholder="New player name"
           value={newName}
           required
           onChange={(e) => setNewName(e.target.value)}
         />
-        <button type="submit">Add</button>
+        <button type="submit">+ Add</button>
       </form>
       {error && (
         <p className="error" role="alert">
           {error}
         </p>
       )}
-    </>
+    </div>
   );
 }
 
@@ -140,7 +152,7 @@ export function SettingsFields(props: {
         </select>
       </label>
       <label>
-        In
+        In rule
         <select value={value.inRule} onChange={(e) => set("inRule", e.target.value as InRule)}>
           <option value="straight">Single</option>
           <option value="double">Double</option>
@@ -149,7 +161,7 @@ export function SettingsFields(props: {
         </select>
       </label>
       <label>
-        Out
+        Out rule
         <select value={value.outRule} onChange={(e) => set("outRule", e.target.value as OutRule)}>
           <option value="straight">Single</option>
           <option value="double">Double</option>

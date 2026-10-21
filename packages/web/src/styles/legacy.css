@@ -1,7 +1,6 @@
 /* Page styles from before the design system; each design-system ticket moves its part out. */
 
 .home,
-.station,
 .admin,
 .stats {
   max-width: 900px;
@@ -30,47 +29,12 @@
   font-size: 1rem;
 }
 
-.station-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  color: var(--muted);
-}
-
-.station-name {
-  font-weight: 600;
-}
-
 /* New match */
 
 .new-match {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-.player-picker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.player-picker button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.pick-number {
-  display: inline-grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  background: var(--accent);
-  color: var(--accent-text);
-  font-size: 0.8rem;
-  font-weight: 700;
 }
 
 /* Lineup */
@@ -112,205 +76,9 @@
   padding: 0;
 }
 
-.settings {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 8px;
-}
-
-.settings label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  color: var(--muted);
-  font-size: 0.875rem;
-}
-
-/* Match */
-
-.scoreboard {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.player {
-  padding: 16px;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  text-align: center;
-  opacity: 0.7;
-}
-
-.player.active {
-  border-color: var(--accent);
-  opacity: 1;
-}
-
-.player-name {
-  font-size: 1.125rem;
-  font-weight: 600;
-  overflow-wrap: anywhere;
-}
-
-.remaining {
-  font-size: clamp(3rem, 14vw, 6rem);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-}
-
-.player-meta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px 12px;
-  min-height: 1.5em;
-  color: var(--muted);
-  font-size: 0.875rem;
-}
-
-/* Three to eight players: smaller tiles, as many per row as fit. */
-.scoreboard.many {
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 8px;
-}
-
-.scoreboard.many .player {
-  padding: 10px;
-}
-
-.scoreboard.many .remaining {
-  font-size: clamp(2rem, 9vw, 3.5rem);
-}
-
-.visit {
-  margin: 20px 0;
-}
-
-.darts {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.dart {
-  min-height: 64px;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-span.dart {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border);
-  background: var(--surface);
-}
-
-.dart.empty {
-  border: 1px dashed var(--border);
-}
-
-/* Thrown after the visit was over; counts for nothing. */
-.dart.ignored {
-  color: var(--muted);
-  text-decoration: line-through;
-}
-
-.visit-total {
-  min-height: 1.4em;
-  margin-top: 12px;
-  font-size: 2rem;
-  font-weight: 700;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-.visit.bust .visit-total {
-  color: var(--danger);
-}
-
-.prompt {
-  margin: 8px 0;
-  color: var(--accent);
-  font-size: 1.5rem;
-  font-weight: 700;
-  text-align: center;
-}
-
 .controls {
   display: grid;
   grid-template-columns: 1fr 2fr;
-  gap: 8px;
-}
-
-.end-match {
-  width: 100%;
-  margin-top: 16px;
-}
-
-.match-over {
-  text-align: center;
-}
-
-.game-shot {
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.match-over h1 {
-  font-size: clamp(2rem, 9vw, 4rem);
-  overflow-wrap: anywhere;
-}
-
-.legs-result {
-  font-size: 2rem;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Segment picker */
-
-.overlay {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  background: rgb(0 0 0 / 0.5);
-}
-
-.picker {
-  width: 100%;
-  max-width: 600px;
-  max-height: 100%;
-  overflow-y: auto;
-  padding: 16px;
-  background: var(--bg);
-}
-
-.picker-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.picker-head h2 {
-  margin: 0;
-  font-size: 1.125rem;
-}
-
-.segmented {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin: 12px 0;
-}
-
-.number-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
   gap: 8px;
 }
 
@@ -606,20 +374,6 @@ span.dart {
 
 .estimate {
   font-weight: 600;
-}
-
-.station-notice {
-  padding: 12px;
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  font-weight: 600;
-}
-
-.match-label {
-  margin: 0;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.875rem;
 }
 
 /* Running tournament */
@@ -1377,53 +1131,6 @@ span.dart {
   font-size: 1.3em;
 }
 
-/* Board menu (station bar, admin Stations) */
-
-.board-menu {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.board-message.warn {
-  color: var(--warn);
-}
-
-.board-menu-button {
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0;
-  font-size: 1.25rem;
-  line-height: 1;
-}
-
-.board-menu-items {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  min-width: 200px;
-  padding: 6px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
-}
-
-.board-menu-items button {
-  border: none;
-  background: none;
-  text-align: left;
-  color: var(--text);
-}
-
-.board-menu-items button:hover,
-.board-menu-items button:focus-visible {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-}
-
 /* Avatars and the photo editor */
 
 .avatar-button {
@@ -1470,10 +1177,6 @@ span.dart {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.player .avatar {
-  margin-bottom: 4px;
 }
 
 .display-champion .avatar {

@@ -1,6 +1,6 @@
 # Station
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 01
 
@@ -23,3 +23,18 @@ Blocked by: 01
 ## Acceptance
 
 - Each state is compared with its mockup at 390 px and 1440 px against the simulator: menu open, bust, 4 players, correction.
+
+## Comments
+
+**2026-10-21, done.**
+- **Station page.** The bar has the logo (wide screens only) and the violet station name. The board menu has a "Match" section: End match, with "Goes back in the queue" for tournament matches, or Cancel match on a quick match's lineup. The bottom End match button and the lineup's Cancel are gone.
+- **Settings strip.** Shows the label or rules on one side and legs · leg n on the other.
+- **New match.** The picker chips have a "n / 8 picked" header; the settings are in a side panel on wide screens; the notice is an amber pill.
+- **Lineup.** Numbered rows with pixel up/down buttons.
+- **Playing.** Player cards with a "Throwing" tag; three to eight players get compact rows on a phone and columns on wide screens. The visit shows dart tiles (D1–D3 or "Ignored"; the dart that busted is red), the total or "Bust", and the "Remove darts" line. "Next player" shows who's up: the next leg's starter after a checkout.
+- **Correction.** A full-screen dialog with "Ann · Dart 2", the current value marked, and 25/Bull/Miss as their own buttons.
+- **Game shot.** The framed avatar, then the legs with names.
+- **Shared styles.** `styles/components.css` holds the player picker, settings fields, segment picker, board menu and `.wide-only`/`.narrow-only`. `styles/station.css` holds the station, including the scoreboard and game shot that `/watch` reuses.
+- **Board status.** Offline is now red, stopped amber, a running command accent.
+- **Avatar.** The size now comes from `--avatar` on any parent.
+- Every state was checked against the simulator at 390 px and 1440 px: new match, lineup with the menu open, throwing, remove darts, menu while playing, correction, 4 players with a bust, game shot.

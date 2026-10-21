@@ -1,19 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import { request } from "./adminApi.ts";
 
-/** "Board online", "Board stopped" (detection off) or "Board offline". */
+/** "Board online", "Board stopped" (detection off), "Board offline" or "Server offline". */
 export function BoardStatus(props: { online: boolean; running: boolean; connected?: boolean }) {
   const { online, running, connected = true } = props;
-  const label = !connected
-    ? "Server offline"
+  const [label, tone] = !connected
+    ? ["Server offline", "danger"]
     : !online
-      ? "Board offline"
+      ? ["Board offline", "danger"]
       : running
-        ? "Board online"
-        : "Board stopped";
-  return (
-    <span className={`status ${connected && online && running ? "ok" : "warn"}`}>{label}</span>
-  );
+        ? ["Board online", "ok"]
+        : ["Board stopped", "warn"];
+  return <span className={`status ${tone}`}>{label}</span>;
+}
+
+/** The menu's "Match" entry on the station: end or cancel the match on it. */
+export interface MatchAction {
+  label: string;
+  /** Below the entry, e.g. "Goes back in the queue". */
+  note?: string | undefined;
+  run(): void;
 }
 
 type Action = "start" | "stop" | "calibrate" | "reset";
@@ -29,14 +35,18 @@ const DONE: Record<Action, string> = {
   reset: "Board reset",
 };
 
-/** The board's status plus a menu to stop/start detection, calibrate and reset the board. */
+/**
+ * The board's status plus a menu to stop/start detection, calibrate and reset the board, and on
+ * the station to end the match.
+ */
 export function BoardMenu(props: {
   stationId: number;
   online: boolean;
   running: boolean;
   connected?: boolean;
+  matchAction?: MatchAction | undefined;
 }) {
-  const { stationId, online, running, connected } = props;
+  const { stationId, online, running, connected, matchAction } = props;
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -77,7 +87,10 @@ export function BoardMenu(props: {
   return (
     <div className="board-menu" ref={root}>
       {message ? (
-        <span className={`board-message ${message.error ? "warn" : ""}`} role="status">
+        <span
+          className={`status ${message.error ? "danger" : busy ? "accent" : "ok"}`}
+          role="status"
+        >
           {message.text}
         </span>
       ) : (
@@ -85,7 +98,7 @@ export function BoardMenu(props: {
       )}
       <button
         type="button"
-        className="ghost board-menu-button"
+        className="board-menu-button"
         aria-label="Board menu"
         aria-haspopup="menu"
         aria-expanded={open}
@@ -96,15 +109,38 @@ export function BoardMenu(props: {
       </button>
       {open && (
         <div className="board-menu-items" role="menu">
+          <span className="label">Board</span>
           <button type="button" role="menuitem" onClick={() => run(running ? "stop" : "start")}>
             {running ? "Stop detection" : "Start detection"}
           </button>
           <button type="button" role="menuitem" onClick={() => run("calibrate")}>
             Calibrate
           </button>
-          <button type="button" role="menuitem" onClick={() => run("reset")}>
+          <button
+            type="button"
+            role="menuitem"
+            className="menu-danger"
+            onClick={() => run("reset")}
+          >
             Reset board
           </button>
+          {matchAction && (
+            <>
+              <span className="label menu-section">Match</span>
+              <button
+                type="button"
+                role="menuitem"
+                className="menu-danger"
+                onClick={() => {
+                  setOpen(false);
+                  matchAction.run();
+                }}
+              >
+                {matchAction.label}
+              </button>
+              {matchAction.note && <span className="label menu-note">{matchAction.note}</span>}
+            </>
+          )}
         </div>
       )}
     </div>

@@ -77,7 +77,7 @@ This screen comes after a quick match, or when the tournament puts a match on th
   - A title, "Ann vs Bob" or "Next match".
   - The hint "501, best of 3. Top of the list throws first."
 - **Order list:** a numbered list (position, avatar, name) with ↑/↓ buttons to reorder.
-- **Buttons:** "Shuffle" and a primary "Start". There's also a ghost "Cancel" button, but only for non-tournament matches.
+- **Buttons:** "Shuffle" and a primary "Start". "Cancel match" is in the ⋮ menu, only for non-tournament matches.
 
 ### 3. Playing
 This is the central screen.
@@ -92,7 +92,7 @@ This is the central screen.
   - The hint "Tap a dart to correct it". A tapped dart opens the segment picker.
   - The visit area has a bust style, and an ignored dart is greyed out (a dart thrown after a bust or checkout).
 - **Buttons:** "Undo" and a primary "Next player" (to skip ahead when the board misses the takeout).
-- **End match:** a ghost "End match" button, with a confirmation. For a tournament match it says the match goes back in the queue.
+- **End match:** in the ⋮ menu, under "Match", with a confirmation. For a tournament match it notes "Goes back in the queue".
 
 ### 4. Match won
 - "Game shot", "Ann wins", and the legs result ("3 – 1") when legs > 1.

@@ -1,16 +1,16 @@
 /*
- * Avatars: an octagon with cut corners, photo or initials. `--avatar` sets the size (default 2em,
- * 4em when large); the initials scale with it.
+ * Avatars: an octagon with cut corners, photo or initials. A page sets the size with `--avatar`
+ * on any parent (default 2em, 4em when large); the initials scale with it.
  */
 
 .avatar {
-  --avatar: 2em;
+  --size: var(--avatar, 2em);
   display: inline-flex;
   flex: none;
   align-items: center;
   justify-content: center;
-  width: var(--avatar);
-  height: var(--avatar);
+  width: var(--size);
+  height: var(--size);
   object-fit: cover;
   color: var(--text);
   vertical-align: middle;
@@ -27,12 +27,12 @@
 }
 
 .avatar.large {
-  --avatar: 4em;
+  --size: var(--avatar, 4em);
 }
 
 .avatar-initials {
   font-family: var(--font-pixel);
-  font-size: calc(var(--avatar) * 0.32);
+  font-size: calc(var(--size) * 0.32);
   line-height: 1;
   text-transform: uppercase;
 }

@@ -10,20 +10,30 @@ const MULTIPLIERS = [
 
 interface Props {
   title: string;
+  /** Above the title, e.g. "Ann · Dart 2". */
+  context?: string;
+  /** The dart's current value, marked in the grid. */
+  current?: Segment;
   onPick(segment: Segment): void;
   onCancel(): void;
 }
 
 /** Full-screen picker for correcting a dart: pick single/double/triple, then the number. */
-export function SegmentPicker({ title, onPick, onCancel }: Props) {
-  const [multiplier, setMultiplier] = useState<1 | 2 | 3>(1);
+export function SegmentPicker({ title, context, current, onPick, onCancel }: Props) {
+  const start = current && current.number !== 25 && current.multiplier > 0 ? current.multiplier : 1;
+  const [multiplier, setMultiplier] = useState<1 | 2 | 3>(start as 1 | 2 | 3);
+  const isCurrent = (segment: Segment) =>
+    current?.number === segment.number && current.multiplier === segment.multiplier;
 
   return (
     <div className="overlay" role="dialog" aria-label={title}>
       <div className="picker">
         <div className="picker-head">
-          <h2>{title}</h2>
-          <button type="button" className="ghost" onClick={onCancel}>
+          <div>
+            {context && <span className="picker-context">{context}</span>}
+            <h2>{title}</h2>
+          </div>
+          <button type="button" className="danger" onClick={onCancel}>
             Cancel
           </button>
         </div>
@@ -41,18 +51,36 @@ export function SegmentPicker({ title, onPick, onCancel }: Props) {
         </div>
         <div className="number-grid">
           {NUMBERS.map((n) => (
-            <button type="button" key={n} onClick={() => onPick({ number: n, multiplier })}>
+            <button
+              type="button"
+              key={n}
+              className={isCurrent({ number: n, multiplier }) ? "current" : ""}
+              onClick={() => onPick({ number: n, multiplier })}
+            >
               {n}
             </button>
           ))}
+        </div>
+        <div className="picker-extra">
           <button
             type="button"
-            disabled={multiplier === 3}
-            onClick={() => onPick({ number: 25, multiplier: multiplier === 2 ? 2 : 1 })}
+            className={isCurrent({ number: 25, multiplier: 1 }) ? "current" : ""}
+            onClick={() => onPick({ number: 25, multiplier: 1 })}
           >
-            {multiplier === 2 ? "Bull" : "25"}
+            25
           </button>
-          <button type="button" onClick={() => onPick({ number: 0, multiplier: 0 })}>
+          <button
+            type="button"
+            className={isCurrent({ number: 25, multiplier: 2 }) ? "current" : ""}
+            onClick={() => onPick({ number: 25, multiplier: 2 })}
+          >
+            Bull
+          </button>
+          <button
+            type="button"
+            className={isCurrent({ number: 0, multiplier: 0 }) ? "current" : ""}
+            onClick={() => onPick({ number: 0, multiplier: 0 })}
+          >
             Miss
           </button>
         </div>

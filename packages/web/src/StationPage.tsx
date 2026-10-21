@@ -1,9 +1,16 @@
-import { type DartView, MAX_PLAYERS, MIN_PLAYERS, type PlayerIndex } from "@n4/engine";
+import {
+  type DartView,
+  MAX_PLAYERS,
+  MIN_PLAYERS,
+  type PlayerIndex,
+  type X01Settings,
+} from "@n4/engine";
 import type { MatchView, StationCommand } from "@n4/server/api";
-import { type ReactNode, useState } from "react";
+import { Fragment, type ReactNode, useState } from "react";
 import { Avatar } from "./Avatar.tsx";
-import { BoardMenu } from "./BoardMenu.tsx";
+import { BoardMenu, type MatchAction } from "./BoardMenu.tsx";
 import { dartLabel } from "./darts.ts";
+import { Logo } from "./Logo.tsx";
 import {
   defaultSetupSettings,
   legsLabel,
@@ -11,6 +18,7 @@ import {
   SettingsFields,
   type SetupSettings,
 } from "./MatchSetup.tsx";
+import { PixelIcon } from "./PixelIcon.tsx";
 import { SegmentPicker } from "./SegmentPicker.tsx";
 import { useStation } from "./useStation.ts";
 
@@ -26,59 +34,130 @@ export function StationPage({ id }: { id: number }) {
     return message;
   };
 
+  const match = view?.match ?? null;
   return (
     <main className="station">
       <header className="station-bar">
-        <span className="station-name">{view?.name ?? `Station ${id}`}</span>
+        <div className="station-id">
+          <Logo width="86px" className="wide-only" />
+          <span className="station-name">{view?.name ?? `Station ${id}`}</span>
+        </div>
         <BoardMenu
           stationId={id}
           online={view?.boardOnline ?? false}
           running={view?.boardRunning ?? true}
           connected={connected}
+          matchAction={match ? matchAction(match, run) : undefined}
         />
       </header>
-      {error && (
-        <p className="error" role="alert">
-          {error}
-        </p>
-      )}
-      {!view ? (
-        <p className="hint">Connecting…</p>
-      ) : !view.match ? (
-        <>
-          {view.notice && <p className="station-notice">{view.notice}</p>}
-          <QuickMatch send={run} />
-        </>
-      ) : view.match.state.phase === "notStarted" ? (
-        <Lineup match={view.match} send={run} />
-      ) : (
-        <Match match={view.match} send={run} />
-      )}
+      {match && <SettingsStrip match={match} />}
+      <div className="station-body">
+        {error && (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        )}
+        {!view ? (
+          <p className="hint">Connecting…</p>
+        ) : !match ? (
+          <QuickMatch send={run} notice={view.notice} />
+        ) : match.state.phase === "notStarted" ? (
+          <Lineup match={match} send={run} />
+        ) : (
+          <Match match={match} send={run} />
+        )}
+      </div>
     </main>
   );
 }
 
+/** Ending the match, from the board menu; a tournament match is only held or sent back from /admin. */
+function matchAction(match: MatchView, send: Send): MatchAction | undefined {
+  const phase = match.state.phase;
+  if (phase === "notStarted") {
+    if (match.label) return undefined;
+    return { label: "Cancel match", run: () => void send({ type: "abandonMatch" }) };
+  }
+  if (phase === "matchWon") return undefined;
+  const question = match.label
+    ? "End this match? It goes back in the queue and is played again."
+    : "End this match without a result?";
+  return {
+    label: "End match",
+    note: match.label ? "Goes back in the queue" : undefined,
+    run: () => {
+      if (confirm(question)) void send({ type: "abandonMatch" });
+    },
+  };
+}
+
+const IN_RULES = { straight: "", double: "Double in", master: "Master in", bull: "Bull in" };
+const OUT_RULES = { straight: "Single out", double: "Double out", master: "Master out" };
+
+/** "501 · Double in · Double out". */
+export function rulesLabel(settings: X01Settings) {
+  return [settings.startScore, IN_RULES[settings.inRule], OUT_RULES[settings.outRule]]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+/** The match label, rules, legs and which leg: "Group A … 501 · Double out · Best of 3 · Leg 2". */
+function SettingsStrip({ match }: { match: MatchView }) {
+  const { settings, state, players, label } = match;
+  const legs = legsLabel(settings.legsToWin, players.length);
+  const leg = settings.legsToWin > 1 && state.legs.length > 0 ? ` · Leg ${state.legs.length}` : "";
+  return (
+    <div className="settings-strip label">
+      {label ? (
+        <>
+          <span className="settings-strip-label">{label}</span>
+          <span>
+            {rulesLabel(settings)} · {legs}
+            {leg}
+          </span>
+        </>
+      ) : (
+        <>
+          <span>{rulesLabel(settings)}</span>
+          <span>
+            {legs}
+            {leg}
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
 /** Pick players from the list (or add one), choose settings, then go to the lineup. */
-function QuickMatch({ send }: { send: Send }) {
+function QuickMatch({ send, notice }: { send: Send; notice: string | null }) {
   const [picked, setPicked] = useState<string[]>([]);
   const [settings, setSettings] = useState<SetupSettings>(defaultSetupSettings);
 
   return (
-    <div className="new-match">
-      <h1>New match</h1>
-      <p className="hint left">
-        Pick {MIN_PLAYERS}–{MAX_PLAYERS} players. You can change the order next.
-      </p>
-      <PlayerPicker picked={picked} onChange={setPicked} />
-      <SettingsFields value={settings} onChange={setSettings} playerCount={picked.length} />
-      <button
-        type="button"
-        className="primary"
-        disabled={picked.length < MIN_PLAYERS}
-        onClick={() => send({ type: "quickMatch", playerIds: picked, settings })}
-      >
-        Continue
-      </button>
+    <div className="quick-match">
+      {notice && <p className="notice">{notice}</p>}
+      <section className="quick-match-players">
+        <div>
+          <h1>New match</h1>
+          <p className="hint">
+            Pick {MIN_PLAYERS}–{MAX_PLAYERS} players. You can change the order next.
+          </p>
+        </div>
+        <PlayerPicker title="Players" picked={picked} onChange={setPicked} />
+      </section>
+      <section className="quick-match-settings">
+        <span className="label">Match settings</span>
+        <SettingsFields value={settings} onChange={setSettings} playerCount={picked.length} />
+        <button
+          type="button"
+          className="primary cta"
+          disabled={picked.length < MIN_PLAYERS}
+          onClick={() => send({ type: "quickMatch", playerIds: picked, settings })}
+        >
+          Continue <PixelIcon name="arrow" height="0.9em" />
+        </button>
+      </section>
     </div>
   );
 }
@@ -105,18 +184,22 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
 
   return (
     <div className="lineup">
-      {match.label && <p className="match-label">{match.label}</p>}
-      <h1>
-        {match.players.length === 2 ? match.players.map((p) => p.name).join(" vs ") : "Next match"}
-      </h1>
-      <p className="hint left">
-        {startScore}, {legsLabel(legsToWin, match.players.length).toLowerCase()}. Top of the list
-        throws first.
-      </p>
+      <div className="lineup-head">
+        {match.label && <span className="match-label">{match.label}</span>}
+        <h1>
+          {match.players.length === 2
+            ? match.players.map((p) => p.name).join(" vs ")
+            : "Next match"}
+        </h1>
+        <p className="hint">
+          {startScore}, {legsLabel(legsToWin, match.players.length).toLowerCase()}. Top of the list
+          throws first.
+        </p>
+      </div>
       <ol className="lineup-list">
         {match.players.map((p, i) => (
           <li key={p.id}>
-            <span className="lineup-position">{i + 1}</span>
+            <span className="lineup-position">{String(i + 1).padStart(2, "0")}</span>
             <Avatar player={p} />
             <span className="lineup-name">{p.name}</span>
             <button
@@ -125,7 +208,7 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
               disabled={i === 0}
               onClick={() => move(i, i - 1)}
             >
-              ↑
+              <PixelIcon name="up" />
             </button>
             <button
               type="button"
@@ -133,7 +216,7 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
               disabled={i === match.players.length - 1}
               onClick={() => move(i, i + 1)}
             >
-              ↓
+              <PixelIcon name="down" />
             </button>
           </li>
         ))}
@@ -142,22 +225,20 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
         <button type="button" onClick={shuffle}>
           Shuffle
         </button>
-        <button type="button" className="primary" onClick={() => send({ type: "startMatch" })}>
-          Start
+        <button type="button" className="primary cta" onClick={() => send({ type: "startMatch" })}>
+          Start <PixelIcon name="arrow" height="0.9em" />
         </button>
       </div>
-      {/* A tournament match is held or sent back from /admin; here it would only come back. */}
-      {!match.label && (
-        <button
-          type="button"
-          className="ghost end-match"
-          onClick={() => send({ type: "abandonMatch" })}
-        >
-          Cancel
-        </button>
-      )}
     </div>
   );
+}
+
+/** Who throws after the current visit: the next player, or the next leg's starter after a checkout. */
+function upNext(match: MatchView): PlayerIndex {
+  const { state, players } = match;
+  const leg = state.legs.at(-1);
+  const after = state.currentVisit?.checkout && leg ? leg.starter : state.currentPlayer;
+  return (after + 1) % players.length;
 }
 
 function Match({ match, send }: { match: MatchView; send: Send }) {
@@ -170,42 +251,48 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
           <button type="button" onClick={() => send({ type: "undo" })}>
             Undo
           </button>
-          <button type="button" className="primary" onClick={() => send({ type: "closeMatch" })}>
-            Done
+          <button
+            type="button"
+            className="primary cta"
+            onClick={() => send({ type: "closeMatch" })}
+          >
+            Done <PixelIcon name="arrow" height="0.9em" />
           </button>
         </div>
       </MatchOver>
     );
   }
 
+  const visit = match.state.currentVisit;
+  const dartIndex = correcting ? (visit?.darts.indexOf(correcting) ?? -1) : -1;
+  const thrower = match.players[visit?.player ?? match.state.currentPlayer];
   return (
     <section className="match">
       <Scoreboard match={match} onDart={setCorrecting} />
 
-      <div className="controls">
+      <div className="match-actions">
+        <button
+          type="button"
+          className="primary cta next-player"
+          onClick={() => send({ type: "nextPlayer" })}
+        >
+          <span>
+            Next player <PixelIcon name="arrow" height="0.9em" />
+          </span>
+          <span className="next-player-up">Up: {match.players[upNext(match)]?.name}</span>
+        </button>
         <button type="button" onClick={() => send({ type: "undo" })}>
           Undo
         </button>
-        <button type="button" className="primary" onClick={() => send({ type: "nextPlayer" })}>
-          Next player
-        </button>
       </div>
-      <button
-        type="button"
-        className="ghost end-match"
-        onClick={() => {
-          const question = match.label
-            ? "End this match? It goes back in the queue and is played again."
-            : "End this match without a result?";
-          if (confirm(question)) void send({ type: "abandonMatch" });
-        }}
-      >
-        End match
-      </button>
 
       {correcting && (
         <SegmentPicker
           title={`Correct ${dartLabel(correcting.segment)}`}
+          context={[thrower?.name, dartIndex >= 0 ? `Dart ${dartIndex + 1}` : null]
+            .filter(Boolean)
+            .join(" · ")}
+          current={correcting.segment}
           onCancel={() => setCorrecting(null)}
           onPick={(segment) => {
             setCorrecting(null);
@@ -217,21 +304,40 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
   );
 }
 
-/** "Game shot, Ann wins" with the legs; `children` go below (the station's buttons). */
+/** "Game shot", the winner and the legs; `children` go below (the station's buttons). */
 export function MatchOver({ match, children }: { match: MatchView; children?: ReactNode }) {
   const { state, players, settings } = match;
   const winner = state.winner ?? 0;
+  const winnerPlayer = players[winner];
   return (
     <section className="match-over">
-      <p className="game-shot">Game shot</p>
-      <h1>{players[winner]?.name ?? "?"} wins</h1>
-      {settings.legsToWin > 1 && (
-        <p className="legs-result">
-          {players.length === 2
-            ? state.players.map((p) => p.legsWon).join(" – ")
-            : `${state.players[winner]?.legsWon} legs`}
-        </p>
-      )}
+      <h1 className="game-shot">Game shot</h1>
+      <div className="match-over-result">
+        {winnerPlayer && (
+          <span className="avatar-frame">
+            <Avatar player={winnerPlayer} large />
+          </span>
+        )}
+        <div className="match-over-text">
+          <p className="match-over-winner">{winnerPlayer?.name ?? "?"} wins</p>
+          {settings.legsToWin > 1 &&
+            (players.length === 2 ? (
+              <div className="legs-result">
+                {state.players.map((p, i) => (
+                  <Fragment key={players[i]?.id ?? i}>
+                    {i > 0 && <span className="legs-dash">–</span>}
+                    <div className={i === winner ? "won" : ""}>
+                      <span className="legs-number">{p.legsWon}</span>
+                      <span className="label">{players[i]?.name}</span>
+                    </div>
+                  </Fragment>
+                ))}
+              </div>
+            ) : (
+              <p className="label">{state.players[winner]?.legsWon} legs</p>
+            ))}
+        </div>
+      </div>
       {children}
     </section>
   );
@@ -245,6 +351,8 @@ export function Scoreboard(props: { match: MatchView; onDart?: (dart: DartView) 
   const visit = state.currentVisit;
   const visitTotal = visit?.bust ? 0 : (visit?.darts.reduce((sum, d) => sum + d.score, 0) ?? 0);
   const nameOf = (player: PlayerIndex) => players[player]?.name ?? "?";
+  // The dart that broke the visit, shown in red.
+  const bustDart = visit?.bust ? visit.darts.findLast((d) => !d.ignored) : undefined;
 
   const lastVisitOf = (player: PlayerIndex) => {
     const last = leg?.visits.findLast((v) => v.player === player);
@@ -255,29 +363,58 @@ export function Scoreboard(props: { match: MatchView; onDart?: (dart: DartView) 
   return (
     <>
       <div className={`scoreboard ${players.length > 2 ? "many" : ""}`}>
-        {state.players.map((player, p) => (
-          <div
-            key={players[p]?.id ?? p}
-            className={`player ${state.currentPlayer === p ? "active" : ""}`}
-          >
-            {players[p] && <Avatar player={players[p]} large />}
-            <div className="player-name">{nameOf(p)}</div>
-            <div className="remaining">{player.remaining}</div>
-            <div className="player-meta">
-              {settings.legsToWin > 1 && <span>Legs {player.legsWon}</span>}
-              {!player.isIn && <span>Not in</span>}
-              {lastVisitOf(p) && <span>Last {lastVisitOf(p)}</span>}
+        {state.players.map((player, p) => {
+          const active = state.currentPlayer === p;
+          const last = lastVisitOf(p);
+          return (
+            <div key={players[p]?.id ?? p} className={`player ${active ? "active" : ""}`}>
+              {active && (
+                <span className="throwing">
+                  <PixelIcon name="caret" /> Throwing
+                </span>
+              )}
+              {players[p] && <Avatar player={players[p]} large />}
+              <div className="player-name">{nameOf(p)}</div>
+              <div className="remaining">{player.remaining}</div>
+              <div className="player-meta">
+                {!player.isIn ? (
+                  <span className="not-in">Not in</span>
+                ) : (
+                  [settings.legsToWin > 1 && `Legs ${player.legsWon}`, last && `Last ${last}`]
+                    .filter(Boolean)
+                    .join(" · ")
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      <div className={`visit ${visit?.bust ? "bust" : ""}`}>
+      <section className={`visit ${visit?.bust ? "bust" : ""}`} aria-label="Current visit">
+        <div className="visit-head label">
+          <span>
+            Visit · {nameOf(visit?.player ?? state.currentPlayer)}
+            {visit && onDart && <span className="wide-only"> · Tap a dart to correct it</span>}
+          </span>
+          {visit?.bust ? (
+            <span className="visit-bust">Bust</span>
+          ) : (
+            <span>
+              Total <span className="visit-total">{visit ? visitTotal : ""}</span>
+            </span>
+          )}
+        </div>
         <div className="darts">
           {[0, 1, 2].map((i) => {
             const dart = visit?.darts[i];
             if (!dart) return <span key={`empty-${i}`} className="dart empty" />;
-            const className = `dart ${dart.ignored ? "ignored" : ""}`;
+            const className = `dart ${dart.ignored ? "ignored" : ""} ${dart === bustDart ? "busted" : ""}`;
+            const content = (
+              <>
+                <span className="dart-index label">{dart.ignored ? "Ignored" : `D${i + 1}`}</span>
+                <span className="dart-label">{dartLabel(dart.segment)}</span>
+              </>
+            );
             return onDart ? (
               <button
                 type="button"
@@ -286,23 +423,24 @@ export function Scoreboard(props: { match: MatchView; onDart?: (dart: DartView) 
                 onClick={() => onDart(dart)}
                 aria-label={`Correct dart ${i + 1}: ${dartLabel(dart.segment)}`}
               >
-                {dartLabel(dart.segment)}
+                {content}
               </button>
             ) : (
               <span key={dart.dartId} className={className}>
-                {dartLabel(dart.segment)}
+                {content}
               </span>
             );
           })}
         </div>
-        <div className="visit-total">{visit ? (visit.bust ? "Bust" : visitTotal) : ""}</div>
         {state.phase === "awaitingTakeout" ? (
-          <p className="prompt">Remove darts</p>
+          <p className="visit-status" role="status">
+            Remove darts
+          </p>
         ) : (
-          <p className="hint">{nameOf(state.currentPlayer)} to throw</p>
+          <p className="visit-status waiting">{nameOf(state.currentPlayer)} to throw</p>
         )}
-        {visit && onDart && <p className="hint">Tap a dart to correct it</p>}
-      </div>
+        {visit && onDart && <p className="label narrow-only">Tap a dart to correct it</p>}
+      </section>
     </>
   );
 }
