@@ -1,0 +1,50 @@
+/*
+ * Design tokens. Every colour in the app comes from here, named by its role, so a theme can
+ * swap them in one place (docs/architecture.md, Design system).
+ */
+
+:root {
+  /* Grounds, darkest first. */
+  --bg: #060708;
+  --panel: #0b0d0f;
+  --surface: #0f1215;
+  --line-soft: #1a1d20;
+  --border: #2b2f33;
+
+  --text: #f2ede4;
+  --muted: #8c9096;
+  --faint: #3a3f44;
+
+  --accent: #a68cff;
+  --accent-text: #060708;
+  --accent-tint: #120f1a;
+  --accent-line: #3a3150;
+
+  --ok: #5cffa0;
+  --ok-tint: #0a1611;
+  --ok-line: #1f4a35;
+  --warn: #ffb23d;
+  --warn-tint: #140f06;
+  --warn-line: #5a4318;
+  --danger: #ff4d3d;
+  --danger-tint: #170a09;
+  --danger-line: #5a2420;
+  --danger-faint: #6e4440;
+
+  /* Initials avatars: muted, so light text reads on all of them. */
+  --avatar-1: #4b3a7a;
+  --avatar-2: #1f5249;
+  --avatar-3: #6a3f1f;
+  --avatar-4: #2a4a72;
+  --avatar-5: #5a2645;
+  --avatar-6: #4a5a22;
+  --avatar-7: #6b2e2e;
+  --avatar-8: #3a4048;
+  --avatar-9: #2e5a5a;
+
+  /* Silkscreen for labels, names and buttons; VT323 for numbers and running text. */
+  --font-pixel: "Silkscreen", monospace;
+  --font-text: "VT323", monospace;
+
+  color-scheme: dark;
+}
