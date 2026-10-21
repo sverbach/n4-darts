@@ -145,6 +145,8 @@ export interface TournamentMatchView {
   label: string;
   /** Names; null while a knockout slot waits for an earlier result. */
   players: [string | null, string | null];
+  /** The same players with their photos, for avatars. */
+  sides: [MatchPlayer | null, MatchPlayer | null];
   /** Legs won, once played. */
   legs: [number, number] | null;
   winner: string | null;
@@ -187,7 +189,7 @@ export interface TournamentProgress {
   queue: QueueEntryView[];
   groups: {
     name: string;
-    table: (TableRow & { name: string })[];
+    table: (TableRow & { name: string; photo: string | null })[];
     fixtures: TournamentMatchView[];
   }[];
   /** Knockout rounds, in order, once the groups are done. */

@@ -345,14 +345,19 @@ export function MatchOver({ match, children }: { match: MatchView; children?: Re
 
 /** Scores, the current visit and whose turn it is; with `onDart`, darts can be tapped. */
 export function Scoreboard(props: { match: MatchView; onDart?: (dart: DartView) => void }) {
-  const { match, onDart } = props;
+  return (
+    <>
+      <PlayerCards match={props.match} />
+      <VisitPanel {...props} />
+    </>
+  );
+}
+
+/** A card per player: avatar, name, what's left, legs and last visit; the thrower's framed. */
+export function PlayerCards({ match }: { match: MatchView }) {
   const { state, players, settings } = match;
   const leg = state.legs.at(-1);
-  const visit = state.currentVisit;
-  const visitTotal = visit?.bust ? 0 : (visit?.darts.reduce((sum, d) => sum + d.score, 0) ?? 0);
   const nameOf = (player: PlayerIndex) => players[player]?.name ?? "?";
-  // The dart that broke the visit, shown in red.
-  const bustDart = visit?.bust ? visit.darts.findLast((d) => !d.ignored) : undefined;
 
   const lastVisitOf = (player: PlayerIndex) => {
     const last = leg?.visits.findLast((v) => v.player === player);
@@ -361,86 +366,97 @@ export function Scoreboard(props: { match: MatchView; onDart?: (dart: DartView) 
   };
 
   return (
-    <>
-      <div className={`scoreboard ${players.length > 2 ? "many" : ""}`}>
-        {state.players.map((player, p) => {
-          const active = state.currentPlayer === p;
-          const last = lastVisitOf(p);
-          return (
-            <div key={players[p]?.id ?? p} className={`player ${active ? "active" : ""}`}>
-              {active && (
-                <span className="throwing">
-                  <PixelIcon name="caret" /> Throwing
-                </span>
+    <div className={`scoreboard ${players.length > 2 ? "many" : ""}`}>
+      {state.players.map((player, p) => {
+        const active = state.currentPlayer === p;
+        const last = lastVisitOf(p);
+        return (
+          <div key={players[p]?.id ?? p} className={`player ${active ? "active" : ""}`}>
+            {active && (
+              <span className="throwing">
+                <PixelIcon name="caret" /> Throwing
+              </span>
+            )}
+            {players[p] && <Avatar player={players[p]} large />}
+            <div className="player-name">{nameOf(p)}</div>
+            <div className="remaining">{player.remaining}</div>
+            <div className="player-meta">
+              {!player.isIn ? (
+                <span className="not-in">Not in</span>
+              ) : (
+                [settings.legsToWin > 1 && `Legs ${player.legsWon}`, last && `Last ${last}`]
+                  .filter(Boolean)
+                  .join(" · ")
               )}
-              {players[p] && <Avatar player={players[p]} large />}
-              <div className="player-name">{nameOf(p)}</div>
-              <div className="remaining">{player.remaining}</div>
-              <div className="player-meta">
-                {!player.isIn ? (
-                  <span className="not-in">Not in</span>
-                ) : (
-                  [settings.legsToWin > 1 && `Legs ${player.legsWon}`, last && `Last ${last}`]
-                    .filter(Boolean)
-                    .join(" · ")
-                )}
-              </div>
             </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** The visit in progress: three dart tiles, the total or bust, and what happens next. */
+function VisitPanel(props: { match: MatchView; onDart?: (dart: DartView) => void }) {
+  const { match, onDart } = props;
+  const { state, players } = match;
+  const visit = state.currentVisit;
+  const visitTotal = visit?.bust ? 0 : (visit?.darts.reduce((sum, d) => sum + d.score, 0) ?? 0);
+  const nameOf = (player: PlayerIndex) => players[player]?.name ?? "?";
+  // The dart that broke the visit, shown in red.
+  const bustDart = visit?.bust ? visit.darts.findLast((d) => !d.ignored) : undefined;
+
+  return (
+    <section className={`visit ${visit?.bust ? "bust" : ""}`} aria-label="Current visit">
+      <div className="visit-head label">
+        <span>
+          Visit · {nameOf(visit?.player ?? state.currentPlayer)}
+          {visit && onDart && <span className="wide-only"> · Tap a dart to correct it</span>}
+        </span>
+        {visit?.bust ? (
+          <span className="visit-bust">Bust</span>
+        ) : (
+          <span>
+            Total <span className="visit-total">{visit ? visitTotal : ""}</span>
+          </span>
+        )}
+      </div>
+      <div className="darts">
+        {[0, 1, 2].map((i) => {
+          const dart = visit?.darts[i];
+          if (!dart) return <span key={`empty-${i}`} className="dart empty" />;
+          const className = `dart ${dart.ignored ? "ignored" : ""} ${dart === bustDart ? "busted" : ""}`;
+          const content = (
+            <>
+              <span className="dart-index label">{dart.ignored ? "Ignored" : `D${i + 1}`}</span>
+              <span className="dart-label">{dartLabel(dart.segment)}</span>
+            </>
+          );
+          return onDart ? (
+            <button
+              type="button"
+              key={dart.dartId}
+              className={className}
+              onClick={() => onDart(dart)}
+              aria-label={`Correct dart ${i + 1}: ${dartLabel(dart.segment)}`}
+            >
+              {content}
+            </button>
+          ) : (
+            <span key={dart.dartId} className={className}>
+              {content}
+            </span>
           );
         })}
       </div>
-
-      <section className={`visit ${visit?.bust ? "bust" : ""}`} aria-label="Current visit">
-        <div className="visit-head label">
-          <span>
-            Visit · {nameOf(visit?.player ?? state.currentPlayer)}
-            {visit && onDart && <span className="wide-only"> · Tap a dart to correct it</span>}
-          </span>
-          {visit?.bust ? (
-            <span className="visit-bust">Bust</span>
-          ) : (
-            <span>
-              Total <span className="visit-total">{visit ? visitTotal : ""}</span>
-            </span>
-          )}
-        </div>
-        <div className="darts">
-          {[0, 1, 2].map((i) => {
-            const dart = visit?.darts[i];
-            if (!dart) return <span key={`empty-${i}`} className="dart empty" />;
-            const className = `dart ${dart.ignored ? "ignored" : ""} ${dart === bustDart ? "busted" : ""}`;
-            const content = (
-              <>
-                <span className="dart-index label">{dart.ignored ? "Ignored" : `D${i + 1}`}</span>
-                <span className="dart-label">{dartLabel(dart.segment)}</span>
-              </>
-            );
-            return onDart ? (
-              <button
-                type="button"
-                key={dart.dartId}
-                className={className}
-                onClick={() => onDart(dart)}
-                aria-label={`Correct dart ${i + 1}: ${dartLabel(dart.segment)}`}
-              >
-                {content}
-              </button>
-            ) : (
-              <span key={dart.dartId} className={className}>
-                {content}
-              </span>
-            );
-          })}
-        </div>
-        {state.phase === "awaitingTakeout" ? (
-          <p className="visit-status" role="status">
-            Remove darts
-          </p>
-        ) : (
-          <p className="visit-status waiting">{nameOf(state.currentPlayer)} to throw</p>
-        )}
-        {visit && onDart && <p className="label narrow-only">Tap a dart to correct it</p>}
-      </section>
-    </>
+      {state.phase === "awaitingTakeout" ? (
+        <p className="visit-status" role="status">
+          Remove darts
+        </p>
+      ) : (
+        <p className="visit-status waiting">{nameOf(state.currentPlayer)} to throw</p>
+      )}
+      {visit && onDart && <p className="label narrow-only">Tap a dart to correct it</p>}
+    </section>
   );
 }

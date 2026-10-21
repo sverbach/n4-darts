@@ -2,7 +2,12 @@
 // tables, the bracket and placings.
 
 import { matchState } from "@n4/engine";
-import type { TournamentMatchView, TournamentProgress, TournamentStationView } from "./api.ts";
+import type {
+  MatchPlayer,
+  TournamentMatchView,
+  TournamentProgress,
+  TournamentStationView,
+} from "./api.ts";
 import type { Db, MatchRecord, TournamentRecord } from "./db.ts";
 import { legMinutes, matchMinutes } from "./estimate.ts";
 import { matchPlayer } from "./players.ts";
@@ -31,6 +36,10 @@ export function progressView(
       name(planned.sides[0]),
       name(planned.sides[1]),
     ];
+    const sides = planned.sides.map((id) => (id ? matchPlayer(db, id) : null)) as [
+      MatchPlayer | null,
+      MatchPlayer | null,
+    ];
     let legs: [number, number] | null = null;
     let status: TournamentMatchView["status"] = planned.players ? "queued" : "waiting";
     if (record) {
@@ -56,6 +65,7 @@ export function progressView(
       slot: planned.slot,
       label: planned.label,
       players,
+      sides,
       legs,
       winner: decided(record) ? name(record?.winner ?? null) : null,
       status,
@@ -65,7 +75,10 @@ export function progressView(
 
   const groups = plan.groups.map((group, g) => ({
     name: plan.groups.length === 1 ? "Group" : `Group ${groupName(g)}`,
-    table: group.table.map((row) => ({ ...row, name: name(row.playerId) ?? "?" })),
+    table: group.table.map((row) => {
+      const { name, photo } = matchPlayer(db, row.playerId);
+      return { ...row, name, photo };
+    }),
     fixtures: plan.matches.filter((m) => m.slot.startsWith(`g:${g}:`)).map(matchView),
   }));
 

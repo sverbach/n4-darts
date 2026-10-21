@@ -7,6 +7,7 @@ import type {
   TournamentStationView,
 } from "@n4/server/api";
 import { useState } from "react";
+import { Avatar } from "./Avatar.tsx";
 import { usePlayers } from "./MatchSetup.tsx";
 
 type Send = (method: string, url: string, body?: object) => Promise<boolean>;
@@ -96,9 +97,11 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                 className={`bracket-round ${column.section}`}
               >
                 <h3>{column.name}</h3>
-                {column.matches.map((m) => (
-                  <MatchCard key={m.slot} match={m} />
-                ))}
+                <div className="bracket-matches">
+                  {column.matches.map((m) => (
+                    <MatchCard key={m.slot} match={m} />
+                  ))}
+                </div>
               </div>
             ))}
           </div>
@@ -195,8 +198,8 @@ export function Awards({ awards }: { awards: Award[] }) {
       {awards.map((award) => (
         <li key={award.kind}>
           <span className="award-title">{AWARDS[award.kind].title}</span>
-          <span className="award-value">{AWARDS[award.kind].format(award.value)}</span>
           <span className="award-players">{award.players.join(", ")}</span>
+          <span className="award-value">{AWARDS[award.kind].format(award.value)}</span>
         </li>
       ))}
     </ul>
@@ -224,11 +227,15 @@ export function MatchCard({ match }: { match: TournamentMatchView }) {
     <div className={`bracket-match ${match.status}`}>
       <div className="bracket-label">{match.label}</div>
       {SIDES.map((side, i) => {
-        const p = match.players[i];
+        const p = match.sides[i];
         return (
-          <div key={side} className={`bracket-player ${p && match.winner === p ? "winner" : ""}`}>
-            <span>{p ?? "–"}</span>
-            {match.legs && <span>{match.legs[i]}</span>}
+          <div
+            key={side}
+            className={`bracket-player ${p && match.winner === p.name ? "winner" : ""}`}
+          >
+            {p && <Avatar player={p} />}
+            <span className="bracket-name">{p?.name ?? "–"}</span>
+            {match.legs && <span className="bracket-legs">{match.legs[i]}</span>}
           </div>
         );
       })}

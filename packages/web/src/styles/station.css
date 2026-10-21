@@ -512,7 +512,7 @@
       "avatar name"
       "avatar meta"
       "score score";
-    align-content: space-between;
+    grid-template-rows: auto auto 1fr;
     align-items: center;
     gap: 8px 20px;
     padding: 24px 28px;
@@ -542,6 +542,7 @@
 
   .remaining {
     grid-area: score;
+    align-self: end;
     margin-top: 12px;
     font-size: clamp(120px, min(16vw, 26vh), 240px);
   }

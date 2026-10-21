@@ -2,7 +2,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import type { Player } from "./api.ts";
+import type { DisplayView, Player } from "./api.ts";
 import { buildApp } from "./app.ts";
 import { backupIfDue, backupsIn } from "./backups.ts";
 import { type Db, openDb } from "./db.ts";
@@ -86,5 +86,31 @@ describe("player photos", () => {
 
     db.deletePlayer("bob");
     expect(db.photo("bob")).toBeUndefined();
+  });
+});
+
+describe("photos in the tournament", () => {
+  it("come with the group table rows and the bracket's players", async () => {
+    const { app, upload } = setup();
+    for (const [id, name] of [
+      ["bob", "Bob"],
+      ["cid", "Cid"],
+    ]) {
+      db.addPlayer({ id: id as string, name: name as string, archived: false });
+    }
+    const version = ((await upload("ann", jpeg())).json() as Player).photo;
+    await app.inject({
+      method: "POST",
+      url: "/api/admin/tournament",
+      payload: { playerIds: ["ann", "bob", "cid"] },
+    });
+    await app.inject({ method: "POST", url: "/api/admin/tournament/start" });
+    const display = (await app.inject("/api/display")).json() as DisplayView;
+    const group = display.groups[0];
+    expect(group?.table.find((r) => r.playerId === "ann")?.photo).toBe(version);
+    expect(group?.table.find((r) => r.playerId === "bob")?.photo).toBeNull();
+    const fixture = group?.fixtures.find((f) => f.players.includes("Ann"));
+    const ann = fixture?.sides.find((p) => p?.id === "ann");
+    expect(ann).toEqual({ id: "ann", name: "Ann", photo: version });
   });
 });
