@@ -3,6 +3,7 @@ import { type ReactNode, useCallback, useLayoutEffect, useRef, useState } from "
 import { Avatar } from "./Avatar.tsx";
 import { dartLabel } from "./darts.ts";
 import { Logo } from "./Logo.tsx";
+import { Progress } from "./Progress.tsx";
 import { Awards, MatchCard } from "./TournamentRun.tsx";
 import { useLive } from "./useLive.ts";
 
@@ -44,23 +45,6 @@ function Header(props: { title: string; detail: string; played?: number; total?:
         <Progress played={played} total={total} />
       )}
     </header>
-  );
-}
-
-/** A square per match, filled once played. */
-export function Progress({ played, total }: { played: number; total: number }) {
-  return (
-    <div
-      className="progress"
-      style={{ gridTemplateColumns: `repeat(${total}, minmax(0, 1fr))` }}
-      role="img"
-      aria-label={`${played} of ${total} matches played`}
-    >
-      {Array.from({ length: total }, (_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: the squares are just positions.
-        <span key={i} className={i < played ? "done" : ""} />
-      ))}
-    </div>
   );
 }
 

@@ -1,18 +1,21 @@
 import type { AdminSession } from "@n4/server/api";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { Logo } from "./Logo.tsx";
 import { MatchesAdmin } from "./MatchesAdmin.tsx";
+import { PixelIcon } from "./PixelIcon.tsx";
 import { PlayersAdmin } from "./PlayersAdmin.tsx";
 import { StationsAdmin } from "./StationsAdmin.tsx";
 import { TournamentAdmin } from "./TournamentAdmin.tsx";
 
+/** The tournament tab heads itself, by its state; the others get a title and a line. */
 const sections = {
-  tournament: {
-    title: "Tournament",
-    blurb: "Tonight's tournament: set it up, start it, follow it.",
+  tournament: { title: "Tournament", blurb: "" },
+  players: {
+    title: "Players",
+    blurb: "Everyone who can be picked for a match. Tap an avatar to change the photo.",
   },
-  players: { title: "Players", blurb: "Add, rename and archive players." },
-  stations: { title: "Stations", blurb: "Boards and their Board Manager addresses." },
-  matches: { title: "Matches", blurb: "What each station is playing, and past results." },
+  stations: { title: "Stations", blurb: "The dartboards in the room and how to reach them." },
+  matches: { title: "Matches", blurb: "What's on each board, and every finished match." },
 } as const;
 
 export type AdminSection = keyof typeof sections;
@@ -41,28 +44,28 @@ export function AdminPage({ section }: { section: AdminSection }) {
     await refresh();
   };
 
+  if (!session || !session.authenticated) {
+    return (
+      <main className="admin-login-page">
+        {error && (
+          <p className="error admin-alert" role="alert">
+            {error}
+          </p>
+        )}
+        {!session ? <p className="hint">Connecting…</p> : <Login onDone={refresh} />}
+      </main>
+    );
+  }
+
   return (
-    <main className="admin">
-      {error && (
-        <p className="error" role="alert">
-          {error}
-        </p>
-      )}
-      {!session ? (
-        <p className="hint">Connecting…</p>
-      ) : !session.authenticated ? (
-        <Login onDone={refresh} />
-      ) : (
-        <>
-          <header className="admin-bar">
+    <div className="admin-page">
+      <header className="admin-bar">
+        <div className="admin-bar-inner">
+          <div className="admin-id">
+            <Logo width="72px" />
             <span className="admin-title">Admin</span>
-            {session.pinRequired && (
-              <button type="button" className="ghost" onClick={logout}>
-                Log out
-              </button>
-            )}
-          </header>
-          <nav className="admin-nav">
+          </div>
+          <nav className="admin-nav" aria-label="Admin sections">
             {Object.entries(sections).map(([key, { title }]) => (
               <a
                 key={key}
@@ -73,22 +76,36 @@ export function AdminPage({ section }: { section: AdminSection }) {
               </a>
             ))}
           </nav>
-          <section>
+          {session.pinRequired && (
+            <button type="button" className="admin-logout" onClick={logout}>
+              Log out
+            </button>
+          )}
+        </div>
+      </header>
+      <main className="admin">
+        {error && (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        )}
+        {section !== "tournament" && (
+          <div className="admin-head">
             <h1>{sections[section].title}</h1>
             <p className="hint">{sections[section].blurb}</p>
-            {section === "tournament" ? (
-              <TournamentAdmin />
-            ) : section === "players" ? (
-              <PlayersAdmin />
-            ) : section === "matches" ? (
-              <MatchesAdmin />
-            ) : (
-              <StationsAdmin />
-            )}
-          </section>
-        </>
-      )}
-    </main>
+          </div>
+        )}
+        {section === "tournament" ? (
+          <TournamentAdmin />
+        ) : section === "players" ? (
+          <PlayersAdmin />
+        ) : section === "matches" ? (
+          <MatchesAdmin />
+        ) : (
+          <StationsAdmin />
+        )}
+      </main>
+    </div>
   );
 }
 
@@ -112,26 +129,35 @@ function Login({ onDone }: { onDone: () => Promise<void> }) {
   };
 
   return (
-    <form className="admin-login" onSubmit={submit}>
-      <h1>Admin</h1>
-      <input
-        aria-label="PIN"
-        placeholder="PIN"
-        type="password"
-        inputMode="numeric"
-        autoComplete="current-password"
-        value={pin}
-        required
-        onChange={(e) => setPin(e.target.value)}
-      />
+    <>
       {error && (
-        <p className="error" role="alert">
+        <p className="error admin-alert" role="alert">
           {error}
         </p>
       )}
-      <button type="submit" className="primary">
-        Unlock
-      </button>
-    </form>
+      <form className="admin-login" onSubmit={submit}>
+        <Logo width="108px" />
+        <div className="admin-login-head">
+          <h1>Admin</h1>
+          <span className="label">Enter PIN to unlock</span>
+        </div>
+        <label className="label" htmlFor="admin-pin">
+          PIN
+        </label>
+        <input
+          id="admin-pin"
+          type="password"
+          inputMode="numeric"
+          autoComplete="current-password"
+          value={pin}
+          required
+          aria-invalid={error ? true : undefined}
+          onChange={(e) => setPin(e.target.value)}
+        />
+        <button type="submit" className="primary cta">
+          Unlock <PixelIcon name="arrow" height="0.9em" />
+        </button>
+      </form>
+    </>
   );
 }

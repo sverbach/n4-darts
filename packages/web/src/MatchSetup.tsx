@@ -42,13 +42,17 @@ export function usePlayers() {
   return { players, add };
 }
 
-/** Players are picked in throwing order; tapping again removes one. `title` heads it with a count. */
+/**
+ * Players are picked in order; tapping again removes one. `title` heads it with a count; `max`
+ * caps it (a match's player limit unless given, e.g. none for a tournament).
+ */
 export function PlayerPicker(props: {
   picked: string[];
   onChange(picked: string[]): void;
   title?: string;
+  max?: number;
 }) {
-  const { picked, onChange, title } = props;
+  const { picked, onChange, title, max = MAX_PLAYERS } = props;
   const { players, add } = usePlayers();
   const [newName, setNewName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +61,7 @@ export function PlayerPicker(props: {
     onChange(
       current.includes(playerId)
         ? current.filter((p) => p !== playerId)
-        : current.length < MAX_PLAYERS
+        : current.length < max
           ? [...current, playerId]
           : current,
     );
@@ -77,7 +81,8 @@ export function PlayerPicker(props: {
         <div className="player-picker-head label">
           <span>{title}</span>
           <span>
-            <span className="player-picker-count">{picked.length}</span> / {MAX_PLAYERS} picked
+            <span className="player-picker-count">{picked.length}</span>
+            {Number.isFinite(max) && ` / ${max}`} picked
           </span>
         </div>
       )}
@@ -94,7 +99,7 @@ export function PlayerPicker(props: {
                 key={p.id}
                 aria-pressed={position >= 0}
                 onClick={() => toggle(p.id)}
-                disabled={position < 0 && picked.length >= MAX_PLAYERS}
+                disabled={position < 0 && picked.length >= max}
               >
                 <Avatar player={p} />
                 <span className="pick-name">{p.name}</span>

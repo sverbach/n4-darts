@@ -9,6 +9,8 @@ import type {
 import { useState } from "react";
 import { Avatar } from "./Avatar.tsx";
 import { usePlayers } from "./MatchSetup.tsx";
+import { PixelIcon } from "./PixelIcon.tsx";
+import { Progress } from "./Progress.tsx";
 
 type Send = (method: string, url: string, body?: object) => Promise<boolean>;
 
@@ -21,77 +23,226 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
   const tournament = view.tournament as NonNullable<TournamentAdminView["tournament"]>;
   const progress = view.progress as TournamentProgress;
   const live = tournament.status === "running";
+  const champion = progress.placings?.find((p) => p.from === 1);
 
   const base = "/api/admin/tournament";
   return (
     <div className="tournament-run">
       <header className="run-header">
-        <h2>{tournament.name}</h2>
-        <p>
-          {progress.endedEarly ? "Ended early" : PHASES[progress.phase]} · {progress.played} of{" "}
-          {progress.total} matches played
-          {progress.expectedEnd && ` · ends around ${time(progress.expectedEnd)}`}
-        </p>
+        <div>
+          {live ? (
+            <span className="run-state running">Running</span>
+          ) : (
+            <span className="run-state">{progress.endedEarly ? "Ended early" : "Finished"}</span>
+          )}
+          <h1>{tournament.name}</h1>
+          <p className="hint">
+            {live && `${PHASES[progress.phase]} · `}
+            {progress.played} of {progress.total} matches played
+            {progress.expectedEnd && ` · ends around ${time(progress.expectedEnd)}`}
+          </p>
+        </div>
+        {live ? (
+          <Progress played={progress.played} total={progress.total} />
+        ) : (
+          <button type="button" className="primary cta" onClick={onNew}>
+            New tournament <PixelIcon name="arrow" height="0.9em" />
+          </button>
+        )}
       </header>
 
-      {progress.placings && (
-        <section>
-          <h2>Final placings</h2>
-          <ol className="placings">
-            {progress.placings.map((p) => (
-              <li key={p.name} className={p.from === 1 ? "champion" : ""}>
-                <span className="placing-place">{place(p.from, p.to)}</span>
-                <span>{p.name}</span>
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
-      {progress.awards && progress.awards.length > 0 && (
-        <section>
-          <h2>Awards</h2>
-          <Awards awards={progress.awards} />
-        </section>
-      )}
-      {!live && (
-        <button type="button" className="primary" onClick={onNew}>
-          New tournament
-        </button>
+      {(progress.placings || (progress.awards && progress.awards.length > 0)) && (
+        <div className="admin-columns even">
+          {progress.placings && (
+            <section className="admin-section">
+              <h2>Final placings</h2>
+              {champion && (
+                <div className="champion-card">
+                  <Avatar player={champion} large />
+                  <div>
+                    <span className="match-label">Champion</span>
+                    <span className="champion-name">{champion.name}</span>
+                  </div>
+                  <PixelIcon name="trophy" label="Champion" />
+                  <span className="champion-place">1</span>
+                </div>
+              )}
+              <ol className="placings">
+                {progress.placings
+                  .filter((p) => p !== champion)
+                  .map((p) => (
+                    <li key={p.id}>
+                      <span className="placing-place">{place(p.from, p.to)}</span>
+                      <Avatar player={p} />
+                      <span className="placing-name">{p.name}</span>
+                    </li>
+                  ))}
+              </ol>
+            </section>
+          )}
+          {progress.awards && progress.awards.length > 0 && (
+            <section className="admin-section">
+              <h2>Awards</h2>
+              <Awards awards={progress.awards} />
+            </section>
+          )}
+        </div>
       )}
 
       {live && (
-        <>
-          <h2>Stations</h2>
-          <ul className="station-list">
-            {progress.stations.map((s) => (
-              <StationRow key={s.id} station={s} send={send} base={base} />
-            ))}
-          </ul>
-
-          <h2>Queue ({progress.queue.length})</h2>
-          {progress.queue.length === 0 ? (
-            <p className="hint">Nothing waiting.</p>
-          ) : (
-            <ul className="queue-list">
-              {progress.queue.map((q) => (
-                <QueueRow
-                  key={q.matchId}
-                  entry={q}
-                  stations={progress.stations}
-                  send={send}
-                  base={base}
-                />
-              ))}
-            </ul>
-          )}
-        </>
+        <div className="admin-columns even">
+          <div className="admin-main">
+            <section className="admin-section">
+              <h2>Stations</h2>
+              <ul className="card-list">
+                {progress.stations.map((s) => (
+                  <StationRow key={s.id} station={s} send={send} base={base} />
+                ))}
+              </ul>
+            </section>
+            <section className="admin-section">
+              <h2>
+                Queue <span className="count">({progress.queue.length})</span>
+              </h2>
+              {progress.queue.length === 0 ? (
+                <p className="hint">Nothing waiting.</p>
+              ) : (
+                <ul className="card-list">
+                  {progress.queue.map((q) => (
+                    <QueueRow
+                      key={q.matchId}
+                      entry={q}
+                      stations={progress.stations}
+                      send={send}
+                      base={base}
+                    />
+                  ))}
+                </ul>
+              )}
+            </section>
+          </div>
+          <div className="admin-main">
+            <Roster view={view} send={send} base={base} groupPhase={progress.phase === "groups"} />
+          </div>
+        </div>
       )}
 
       {progress.bracket.length > 0 && (
-        <>
+        <section className="admin-section">
           <h2>Knockout</h2>
+          <BracketRows bracket={progress.bracket} />
+        </section>
+      )}
+
+      <section className="admin-section">
+        <h2>Groups</h2>
+        <div className="group-grid">
+          {progress.groups.map((group) => (
+            <div key={group.name} className="group-block">
+              {progress.groups.length > 1 && <span className="match-label">{group.name}</span>}
+              <div className="table-scroll table-panel">
+                <table className="group-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th className="name">Player</th>
+                      <th>P</th>
+                      <th>W</th>
+                      <th>L</th>
+                      <th>Legs</th>
+                      <th>+/−</th>
+                      <th className="accent">Pts</th>
+                      <th>Avg</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {group.table.map((row, i) => (
+                      <tr key={row.playerId}>
+                        <td className="rank">{i + 1}</td>
+                        <td className="name">
+                          <span className="table-player">
+                            <Avatar
+                              player={{ id: row.playerId, name: row.name, photo: row.photo }}
+                            />
+                            {row.name}
+                          </span>
+                        </td>
+                        <td>{row.played}</td>
+                        <td>{row.won}</td>
+                        <td>{row.lost}</td>
+                        <td className="muted">
+                          {row.legsFor}:{row.legsAgainst}
+                        </td>
+                        <td>{row.legDiff > 0 ? `+${row.legDiff}` : row.legDiff}</td>
+                        <td className="points">{row.points}</td>
+                        <td className="muted">
+                          {row.average === null ? "–" : row.average.toFixed(1)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <details className="fixtures">
+                <summary>
+                  <PixelIcon name="caret" /> Matches ({group.fixtures.length})
+                </summary>
+                <ul>
+                  {group.fixtures.map((f) => (
+                    <li key={f.slot}>
+                      <span className="fixture-players">
+                        {f.players[0]} <span className="vs">vs</span> {f.players[1]}
+                      </span>
+                      <span className={`fixture-result ${f.legs ? "" : "pending"}`}>
+                        {fixtureResult(f)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {live && (
+        <div className="run-end">
+          <button
+            type="button"
+            className="danger"
+            onClick={() => {
+              if (
+                confirm(
+                  "End the tournament now? Open matches are abandoned and there's no champion.",
+                )
+              ) {
+                void send("POST", `${base}/end`);
+              }
+            }}
+          >
+            End tournament early
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** The winners bracket and final in one row, the losers bracket in another; each scrolls sideways. */
+function BracketRows({ bracket }: { bracket: TournamentProgress["bracket"] }) {
+  const top = bracket.filter((c) => c.section !== "losers");
+  const losers = bracket.filter((c) => c.section === "losers");
+  const rows = [
+    { title: losers.length > 0 ? "Winners bracket" : "", columns: top },
+    { title: "Losers bracket", columns: losers },
+  ].filter((row) => row.columns.length > 0);
+  return (
+    <>
+      {rows.map((row) => (
+        <div key={row.title} className="bracket-row">
+          {row.title && <span className="match-label">{row.title}</span>}
           <div className="bracket">
-            {progress.bracket.map((column) => (
+            {row.columns.map((column) => (
               <div
                 key={`${column.section}-${column.name}`}
                 className={`bracket-round ${column.section}`}
@@ -105,82 +256,9 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
               </div>
             ))}
           </div>
-        </>
-      )}
-
-      {progress.groups.map((group) => (
-        <section key={group.name}>
-          <h2>{group.name}</h2>
-          <div className="table-scroll">
-            <table className="group-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th className="name">Player</th>
-                  <th>P</th>
-                  <th>W</th>
-                  <th>L</th>
-                  <th>Legs</th>
-                  <th>+/−</th>
-                  <th>Pts</th>
-                  <th>Avg</th>
-                </tr>
-              </thead>
-              <tbody>
-                {group.table.map((row, i) => (
-                  <tr key={row.playerId}>
-                    <td>{i + 1}</td>
-                    <td className="name">{row.name}</td>
-                    <td>{row.played}</td>
-                    <td>{row.won}</td>
-                    <td>{row.lost}</td>
-                    <td>
-                      {row.legsFor}:{row.legsAgainst}
-                    </td>
-                    <td>{row.legDiff > 0 ? `+${row.legDiff}` : row.legDiff}</td>
-                    <td className="points">{row.points}</td>
-                    <td>{row.average === null ? "–" : row.average.toFixed(1)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <details className="fixtures">
-            <summary>Matches</summary>
-            <ul>
-              {group.fixtures.map((f) => (
-                <li key={f.slot}>
-                  <span className="fixture-players">
-                    {f.players[0]} – {f.players[1]}
-                  </span>
-                  <span className="fixture-result">{fixtureResult(f)}</span>
-                </li>
-              ))}
-            </ul>
-          </details>
-        </section>
+        </div>
       ))}
-
-      {live && (
-        <Roster view={view} send={send} base={base} groupPhase={progress.phase === "groups"} />
-      )}
-
-      {live && (
-        <button
-          type="button"
-          className="ghost danger end-match"
-          onClick={() => {
-            if (
-              confirm("End the tournament now? Open matches are abandoned and there's no champion.")
-            ) {
-              void send("POST", `${base}/end`);
-            }
-          }}
-        >
-          End tournament early
-        </button>
-      )}
-    </div>
+    </>
   );
 }
 
@@ -249,26 +327,32 @@ export function MatchCard({ match }: { match: TournamentMatchView }) {
 function StationRow(props: { station: TournamentStationView; send: Send; base: string }) {
   const { station, send, base } = props;
   const match = station.match;
+  const [status, tone] = station.paused
+    ? ["Paused", "warn"]
+    : station.boardOnline
+      ? ["Board online", "ok"]
+      : ["Board offline", "danger"];
   return (
-    <li className="station-row">
-      <div className="station-row-head">
-        <span className="station-row-name">{station.name}</span>
-        <span className={`status ${station.boardOnline ? "ok" : "warn"}`}>
-          {station.paused ? "Paused" : station.boardOnline ? "Board online" : "Board offline"}
-        </span>
+    <li className="card-row">
+      <div className="card-row-main">
+        <div className="card-row-title">
+          <span className="card-row-name">{station.name}</span>
+          <span className={`status small ${tone}`}>{status}</span>
+        </div>
+        {match ? (
+          <span className="card-row-detail">
+            {match.label && <span className="match-label">{match.label}</span>}{" "}
+            {match.players.join(" vs ")}: {match.summary}
+          </span>
+        ) : (
+          <span className="card-row-detail hint">
+            {station.paused ? "Paused for the tournament" : "Free"}
+          </span>
+        )}
       </div>
-      {match ? (
-        <p className="station-row-match">
-          {match.label && <span className="match-label">{match.label} </span>}
-          {match.players.join(" vs ")}: {match.summary}
-        </p>
-      ) : (
-        <p className="hint">{station.paused ? "Paused for the tournament" : "Free"}</p>
-      )}
-      <div className="station-row-actions">
+      <div className="card-row-actions">
         <button
           type="button"
-          className="ghost"
           onClick={() =>
             send("POST", `${base}/stations/${station.id}/pause`, { paused: !station.paused })
           }
@@ -279,14 +363,12 @@ function StationRow(props: { station: TournamentStationView; send: Send; base: s
           <>
             <button
               type="button"
-              className="ghost"
               onClick={() => send("POST", `${base}/matches/${match.id}/send-back`)}
             >
               Send back
             </button>
             <button
               type="button"
-              className="ghost"
               onClick={() => send("POST", `${base}/matches/${match.id}/hold`, { held: true })}
             >
               Hold
@@ -309,22 +391,21 @@ function QueueRow(props: {
   // Play now: a free station, or one whose match hasn't started (that one goes back).
   const open = stations.filter((s) => !s.match?.started);
   const pinnedTo = stations.find((s) => s.id === entry.pinnedStation);
+  const [badge, tone] = entry.held
+    ? ["Held", "warn"]
+    : entry.ready
+      ? ["Ready", "ok"]
+      : ["Waiting for players", ""];
   return (
-    <li className={`queue-row ${entry.ready ? "ready" : ""}`}>
+    <li className="queue-row">
       <div className="queue-row-head">
         <span className="match-label">{entry.label}</span>
-        <span className="queue-badges">
-          {entry.held ? "Held" : entry.ready ? "Ready" : "Waiting for players"}
-          {pinnedTo && ` · only ${pinnedTo.name}`}
-        </span>
+        <span className="queue-players">{entry.players.map((p) => p.name).join(" vs ")}</span>
+        <span className={`badge ${tone}`}>{badge}</span>
+        {pinnedTo && <span className="badge">Only {pinnedTo.name}</span>}
       </div>
-      <p className="queue-players">{entry.players.map((p) => p.name).join(" vs ")}</p>
       <div className="queue-actions">
-        <button
-          type="button"
-          className="ghost"
-          onClick={() => send("POST", `${url}/hold`, { held: !entry.held })}
-        >
+        <button type="button" onClick={() => send("POST", `${url}/hold`, { held: !entry.held })}>
           {entry.held ? "Release" : "Hold"}
         </button>
         <select
@@ -376,18 +457,21 @@ function Roster(props: {
   const available = players?.filter((p) => !inIt.has(p.id)) ?? [];
 
   return (
-    <section>
-      <h2>Players</h2>
-      <ul className="player-list">
+    <section className="admin-section">
+      <h2>
+        Players <span className="count">({view.entrants.length})</span>
+      </h2>
+      <ul className="roster">
         {view.entrants.map((e) => (
-          <li key={e.playerId} className="player-row">
-            <span className={`player-row-name ${e.withdrawn ? "withdrawn" : ""}`}>{e.name}</span>
+          <li key={e.playerId} className={e.withdrawn ? "withdrawn" : ""}>
+            <Avatar player={{ id: e.playerId, name: e.name, photo: e.photo }} />
+            <span className="roster-name">{e.name}</span>
             {e.withdrawn ? (
-              <span className="hint">Withdrawn</span>
+              <span className="label">Withdrawn</span>
             ) : (
               <button
                 type="button"
-                className="ghost danger"
+                className="ghost"
                 onClick={() => {
                   if (confirm(`Withdraw ${e.name}? Their remaining matches become walkovers.`)) {
                     void send("POST", `${base}/withdraw`, { playerId: e.playerId });
@@ -401,7 +485,7 @@ function Roster(props: {
         ))}
       </ul>
       {groupPhase && available.length > 0 && (
-        <div className="inline-form">
+        <div className="inline-form late-arrival">
           <select aria-label="Late arrival" value={late} onChange={(e) => setLate(e.target.value)}>
             <option value="">Late arrival…</option>
             {available.map((p) => (

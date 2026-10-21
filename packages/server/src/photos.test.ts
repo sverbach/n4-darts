@@ -2,7 +2,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import type { DisplayView, Player } from "./api.ts";
+import type { DisplayView, Player, TournamentAdminView } from "./api.ts";
 import { buildApp } from "./app.ts";
 import { backupIfDue, backupsIn } from "./backups.ts";
 import { type Db, openDb } from "./db.ts";
@@ -104,6 +104,8 @@ describe("photos in the tournament", () => {
       url: "/api/admin/tournament",
       payload: { playerIds: ["ann", "bob", "cid"] },
     });
+    const draft = (await app.inject("/api/admin/tournament")).json() as TournamentAdminView;
+    expect(draft.entrants.find((e) => e.playerId === "ann")?.photo).toBe(version);
     await app.inject({ method: "POST", url: "/api/admin/tournament/start" });
     const display = (await app.inject("/api/display")).json() as DisplayView;
     const group = display.groups[0];

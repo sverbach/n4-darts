@@ -114,6 +114,7 @@ export interface TournamentEntrantView {
   seed: number;
   group: number;
   withdrawn: boolean;
+  photo: string | null;
   rating: number | null;
 }
 

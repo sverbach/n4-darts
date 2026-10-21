@@ -323,6 +323,7 @@ export function createTournaments(db: Db, stations: StationDirectory, stats?: St
       entrants: entrants.map((e) => ({
         ...e,
         name: db.getPlayer(e.playerId)?.name ?? "?",
+        photo: db.getPlayer(e.playerId)?.photo ?? null,
         rating: ratingOf(db, e.playerId),
       })),
       groups,
