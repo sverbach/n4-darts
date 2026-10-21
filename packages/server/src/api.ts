@@ -294,13 +294,18 @@ export interface PlayerProfile {
   name: string;
   photo: string | null;
   rating: number | null;
+  /** Position on the leaderboard; null without a counted match. */
+  rank: number | null;
+  /** The day (YYYY-MM-DD) of the first counted match. */
+  since: string | null;
   totals: StatTotals;
   /** One entry per day played (an evening past midnight counts to the day it started), oldest first. */
   evenings: { day: string; average: number | null; matches: number }[];
   /** Finished tournaments the player was in, newest first. */
   tournaments: { id: string; name: string; date: string; from: number; to: number }[];
   tournamentsWon: number;
-  bestPlacing: { from: number; to: number } | null;
+  /** The best finish, and the (latest) tournament it was in. */
+  bestPlacing: { from: number; to: number; tournament: string } | null;
   /** The last 20 counted matches, newest first. */
   recent: {
     matchId: string;

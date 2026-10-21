@@ -148,7 +148,16 @@ describe("stats", () => {
     expect(ann.tournaments).toEqual([
       { id: "t1", name: "Friday", date: "2026-10-17T18:30:00.000Z", from: 2, to: 2 },
     ]);
-    expect(ann).toMatchObject({ tournamentsWon: 0, bestPlacing: { from: 2, to: 2 } });
+    expect(ann).toMatchObject({
+      tournamentsWon: 0,
+      bestPlacing: { from: 2, to: 2, tournament: "Friday" },
+      rank: 1,
+      since: "2026-10-16",
+    });
+    expect((await get<PlayerProfile>("/api/players/dee/stats")).body).toMatchObject({
+      rank: null,
+      since: null,
+    });
     expect(ann.recent.map((r) => [r.opponents.join(), r.won, r.legsFor, r.legsAgainst])).toEqual([
       ["Bob,Cid", false, 0, 1],
       ["Bob", true, 1, 0],

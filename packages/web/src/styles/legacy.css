@@ -1,32 +1,9 @@
 /* Page styles from before the design system; each design-system ticket moves its part out. */
 
-.home,
-.admin,
-.stats {
+.admin {
   max-width: 900px;
   margin: 0 auto;
   padding: 16px;
-}
-
-.home nav {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.home a {
-  color: var(--accent);
-  font-size: 1.25rem;
-}
-
-.home-station {
-  display: flex;
-  gap: 16px;
-  align-items: baseline;
-}
-
-.home a.home-watch {
-  font-size: 1rem;
 }
 
 /* New match */
@@ -589,115 +566,6 @@
   min-width: 0;
 }
 
-/* Stats pages (/players, /players/<id>) */
-
-.stats .back {
-  color: var(--accent);
-}
-
-.leaderboard a {
-  color: inherit;
-  font-weight: 600;
-}
-
-.stat-groups {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
-}
-
-.stat-group {
-  padding: 12px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-}
-
-.stat-group h2 {
-  margin: 0 0 6px;
-  color: var(--muted);
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.stat-group dl {
-  margin: 0;
-}
-
-.stat-group dl div {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 3px 0;
-}
-
-.stat-group dt {
-  color: var(--muted);
-}
-
-.stat-group dd {
-  margin: 0;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.average-chart {
-  width: 100%;
-  max-width: 600px;
-  height: auto;
-}
-
-.average-chart .grid {
-  stroke: var(--border);
-}
-
-.average-chart .axis {
-  fill: var(--muted);
-  font-size: 11px;
-}
-
-.average-chart .line {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 2.5;
-}
-
-.average-chart .dot {
-  fill: var(--accent);
-}
-
-.stat-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.stat-list li {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.stat-list-main {
-  font-weight: 600;
-}
-
-.stat-list-date {
-  grid-row: 2;
-  color: var(--muted);
-  font-size: 0.875rem;
-}
-
-.stat-list-value {
-  grid-row: 1 / span 2;
-  grid-column: 2;
-  align-self: center;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
 /* Awards (admin Tournament tab and /display) */
 
 .awards {
@@ -769,10 +637,4 @@
   justify-content: center;
   margin: 12px 0;
   font-size: 2rem;
-}
-
-.profile-name {
-  display: flex;
-  align-items: center;
-  gap: 12px;
 }

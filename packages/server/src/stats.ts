@@ -131,16 +131,20 @@ export function createStats(db: Db) {
         },
       ];
     });
-    const best = tournaments.reduce<{ from: number; to: number } | null>(
-      (b, t) => (b === null || t.from < b.from ? { from: t.from, to: t.to } : b),
+    const best = tournaments.reduce<PlayerProfile["bestPlacing"]>(
+      (b, t) =>
+        b === null || t.from < b.from ? { from: t.from, to: t.to, tournament: t.name } : b,
       null,
     );
+    const rank = leaderboard().findIndex((row) => row.playerId === playerId);
 
     return {
       playerId,
       name: player.name,
       photo: player.photo,
       rating: ratingFrom(counted),
+      rank: rank < 0 ? null : rank + 1,
+      since: byDay.keys().next().value ?? null,
       totals: totalsOf(counted.map((c) => c.own)),
       evenings: [...byDay].map(([day, own]) => ({
         day,

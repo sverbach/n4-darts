@@ -2,6 +2,8 @@ import type { StationView } from "@n4/server/api";
 import { useEffect, useState } from "react";
 import { AdminPage, isAdminSection } from "./AdminPage.tsx";
 import { DisplayPage } from "./DisplayPage.tsx";
+import { Logo } from "./Logo.tsx";
+import { PixelIcon } from "./PixelIcon.tsx";
 import { StationPage } from "./StationPage.tsx";
 import { LeaderboardPage, ProfilePage } from "./StatsPages.tsx";
 import { WatchPage } from "./WatchPage.tsx";
@@ -36,20 +38,43 @@ function Home() {
 
   return (
     <main className="home">
-      <h1>n4-darts</h1>
-      <nav>
-        {stations.map((s) => (
-          <span key={s.id} className="home-station">
-            <a href={`/station/${s.id}`}>{s.name}</a>
-            <a href={`/watch/${s.id}`} className="home-watch">
-              Watch
+      <h1 className="home-logo">
+        <Logo />
+      </h1>
+      <div className="home-lists">
+        <nav aria-label="Stations" className="home-list">
+          <span className="label">Stations</span>
+          {stations.map((s) => (
+            <div key={s.id} className="home-station">
+              <a href={`/station/${s.id}`} className="home-tile">
+                <span className="home-tile-index">{String(s.id).padStart(2, "0")}</span>
+                <span className="home-tile-name">{s.name}</span>
+                <PixelIcon name="arrow" />
+              </a>
+              <a href={`/watch/${s.id}`} className="home-watch">
+                Watch
+              </a>
+            </div>
+          ))}
+        </nav>
+        <nav aria-label="More" className="home-list">
+          <span className="label">More</span>
+          {[
+            ["/players", "Players and stats"],
+            ["/display", "Display (projector)"],
+            ["/admin", "Admin"],
+          ].map(([href, text]) => (
+            <a key={href} href={href} className="home-tile">
+              <span className="home-tile-name">{text}</span>
+              <PixelIcon name="arrow" />
             </a>
-          </span>
-        ))}
-        <a href="/players">Players and stats</a>
-        <a href="/display">Display (projector)</a>
-        <a href="/admin">Admin</a>
-      </nav>
+          ))}
+        </nav>
+      </div>
+      <footer className="home-footer label">
+        <span>n4-darts</span>
+        <span>x01 · tournaments</span>
+      </footer>
     </main>
   );
 }
