@@ -131,16 +131,19 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
                     <span className="visit-darts">
                       {visit.darts.map((dart) => {
                         const original = match.originals[dart.dartId];
+                        const added = match.added.includes(dart.dartId);
                         return (
                           <button
                             type="button"
                             key={dart.dartId}
-                            className={`${dart.ignored ? "ignored" : ""} ${original ? "corrected" : ""}`}
+                            className={`${dart.ignored ? "ignored" : ""} ${original ? "corrected" : ""} ${added ? "added" : ""}`}
                             onClick={() => setCorrecting(dart)}
                             aria-label={`Correct ${dartLabel(dart.segment)}`}
+                            title={added ? "Added by hand: the board missed it" : undefined}
                           >
                             {original && <s>{dartLabel(original)}</s>}
                             <span>{dartLabel(dart.segment)}</span>
+                            {added && <small>added</small>}
                           </button>
                         );
                       })}

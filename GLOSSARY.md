@@ -53,6 +53,10 @@ _Avoid_: Game, fixture, pairing
 A player or the organiser changing a dart's recorded segment after a misdetection. The original detection is kept.
 _Avoid_: Edit, override
 
+**Added dart**:
+A dart the board didn't detect, entered by hand on the station as the visit's next dart. It counts like any other.
+_Avoid_: Manual dart, missed dart (the miss segment is a dart that hit no number)
+
 ## Tournament
 
 **Tournament**:

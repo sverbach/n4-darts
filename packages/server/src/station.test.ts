@@ -258,6 +258,92 @@ describe("playing a match at a station", () => {
   });
 });
 
+describe("a dart the board missed", () => {
+  const add = (server: Server, number: number, multiplier: 0 | 1 | 2 | 3) =>
+    server.command({ type: "addDart", segment: { number, multiplier } });
+
+  it("is added by hand, counts, and the visit ends on takeout as usual", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await start(server);
+    await throwDart(server, "S20");
+    await throwDart(server, "S20");
+    sim.missDart();
+
+    expect((await add(server, 20, 3)).status).toBe(200);
+    expect((await state(server)).phase).toBe("awaitingTakeout");
+    // Detection catches up after all: a 4th dart, which counts for nothing.
+    await throwDart(server, "T20");
+    expect((await state(server)).currentVisit?.darts.map((d) => [d.score, d.ignored])).toEqual([
+      [20, false],
+      [20, false],
+      [60, false],
+      [0, true],
+    ]);
+    await takeout(server);
+
+    const s = await state(server);
+    expect(s.players.map((p) => p.remaining)).toEqual([1, 101]);
+    expect(s.currentPlayer).toBe(1);
+    const detail = (
+      await server.app.inject(`/api/admin/matches/${(await server.view()).match?.id}`)
+    ).json();
+    expect(detail.added).toEqual([s.legs[0]?.visits[0]?.darts[2]?.dartId]);
+  });
+
+  it("can be all three darts of a visit, a checkout or a bust", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await start(server, ["ann", "bob"], { startScore: 101, outRule: "double" });
+    for (const _ of [1, 2, 3]) await add(server, 20, 1);
+    sim.missDart();
+    await takeout(server);
+
+    // Bob busts with an added dart: 60 + 60 leaves no double out of 101.
+    await throwDart(server, "T20");
+    await add(server, 20, 2);
+    expect((await state(server)).currentVisit?.bust).toBe(true);
+    await takeout(server);
+
+    // Ann checks out 41 with D16 added after S9.
+    await throwDart(server, "S9");
+    await add(server, 16, 2);
+    const s = await state(server);
+    expect(s.phase).toBe("matchWon");
+    expect(s.winner).toBe(0);
+  });
+
+  it("is refused once the visit has three darts or isn't being thrown", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await server.command(quick(["ann", "bob"]));
+    expect((await add(server, 20, 1)).status).toBe(409);
+    await server.command({ type: "startMatch" });
+    for (const _ of [1, 2, 3]) await throwDart(server, "S1");
+    expect((await add(server, 20, 1)).status).toBe(409);
+    expect((await add(server, 21, 1)).status).toBe(409);
+  });
+
+  it("isn't taken for a pulled dart when the server restarts mid-visit", async () => {
+    sim = await createBoardSim();
+    const dbPath = tempDb();
+    const first = await startServer(dbPath);
+    await start(first);
+    await throwDart(first, "S20");
+    sim.missDart();
+    await add(first, 5, 1);
+    await first.stop();
+
+    sim.throwDart("S1"); // thrown while the server is down
+    const second = await startServer(dbPath);
+    await vi.waitFor(async () =>
+      expect((await state(second)).currentVisit?.darts.map((d) => d.score)).toEqual([20, 5, 1]),
+    );
+    await takeout(second);
+    expect((await state(second)).players.map((p) => p.remaining)).toEqual([75, 101]);
+  });
+});
+
 describe("setting up a match", () => {
   it("shows a quick match on the station before it starts, and ignores darts until then", async () => {
     sim = await createBoardSim();

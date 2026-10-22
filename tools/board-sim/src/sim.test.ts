@@ -72,6 +72,18 @@ describe("board simulator", () => {
     expect(states[2]?.throws).toBeUndefined();
   });
 
+  it("reports nothing for a missed dart, but still sees it pulled", async () => {
+    sim = await createBoardSim();
+    const { states } = await listen(sim);
+
+    sim.missDart();
+    expect(states).toHaveLength(0);
+    sim.takeout();
+
+    await vi.waitFor(() => expect(states).toHaveLength(2));
+    expect(states[1]).toMatchObject({ event: "Takeout finished", numThrows: 0 });
+  });
+
   it("accepts start, stop and reset over the Board Manager API", async () => {
     sim = await createBoardSim();
     const { states } = await listen(sim);

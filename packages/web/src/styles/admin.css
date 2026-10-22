@@ -1548,6 +1548,19 @@
   line-height: 0.9;
 }
 
+/* Added by hand on the station: the board missed it. */
+.visit-darts button.added {
+  border-style: dashed;
+  line-height: 0.9;
+}
+
+.visit-darts small {
+  color: var(--muted);
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
 .visit-darts s {
   color: var(--muted);
   font-size: 16px;

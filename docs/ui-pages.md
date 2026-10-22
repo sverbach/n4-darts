@@ -33,8 +33,8 @@ n4-darts runs darts evenings: a few automatic dartboards (stations) play x01, wh
   - In rule: Single, Double, Master or Bull.
   - Out rule: Single, Double or Master.
   - Legs: "Best of 3/5/…" for two players, "First to n legs" for more.
-- **Segment picker:** a full-screen overlay for correcting a dart.
-  - A title such as "Correct T20" and a Cancel button.
+- **Segment picker:** a full-screen overlay for correcting a dart, or adding one the board missed.
+  - A title such as "Correct T20" or "Add dart 3", and a Cancel button.
   - A Single/Double/Triple segmented control.
   - A grid of 1–20, plus 25/Bull and Miss buttons.
 - **Group table:** columns #, Player, P, W, L, (Legs), +/−, Pts, Avg.
@@ -90,6 +90,7 @@ This is the central screen.
   - The visit total, or "Bust".
   - Below it, either "Remove darts" (prominent; the board waits for the darts to be pulled out) or "Ann to throw".
   - The hint "Tap a dart to correct it". A tapped dart opens the segment picker.
+  - While the player is throwing, the next empty slot shows "+ Add": for a dart the board missed. It opens the segment picker ("Add dart 3") and the dart counts as if the board had seen it.
   - The visit area has a bust style, and an ignored dart is greyed out (a dart thrown after a bust or checkout).
 - **Buttons:** "Undo" and a primary "Next player" (to skip ahead when the board misses the takeout).
 - **End match:** in the ⋮ menu, under "Match", with a confirmation. For a tournament match it notes "Goes back in the queue".
@@ -257,4 +258,4 @@ There's one tournament at a time, and the tab shows one of three states.
   - The title "Ann vs Bob" and the line "501, best of 3 · station 1 · Ann won 2–1 · 20 Oct 2026, 21:14".
   - The hint "Tap a dart to correct it."
   - Per leg, the heading "Leg 1 · Ann starts · Ann won" and a list of visits. Each visit shows the player name, the dart buttons and the visit score, with "Bust" or ✓ for a checkout.
-  - A corrected dart shows its original struck through. Tapping a dart opens the segment picker.
+  - A corrected dart shows its original struck through, and a dart added by hand on the station is marked "added". Tapping a dart opens the segment picker.

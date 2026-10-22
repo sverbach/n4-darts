@@ -243,6 +243,7 @@ function upNext(match: MatchView): PlayerIndex {
 
 function Match({ match, send }: { match: MatchView; send: Send }) {
   const [correcting, setCorrecting] = useState<DartView | null>(null);
+  const [adding, setAdding] = useState(false);
 
   if (match.state.phase === "matchWon") {
     return (
@@ -268,7 +269,7 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
   const thrower = match.players[visit?.player ?? match.state.currentPlayer];
   return (
     <section className="match">
-      <Scoreboard match={match} onDart={setCorrecting} />
+      <Scoreboard match={match} onDart={setCorrecting} onAdd={() => setAdding(true)} />
 
       <div className="match-actions">
         <button
@@ -297,6 +298,17 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
           onPick={(segment) => {
             setCorrecting(null);
             void send({ type: "correctDart", dartId: correcting.dartId, segment });
+          }}
+        />
+      )}
+      {adding && (
+        <SegmentPicker
+          title={`Add dart ${(visit?.darts.length ?? 0) + 1}`}
+          context={[thrower?.name, "Missed by the board"].filter(Boolean).join(" · ")}
+          onCancel={() => setAdding(false)}
+          onPick={(segment) => {
+            setAdding(false);
+            void send({ type: "addDart", segment });
           }}
         />
       )}
@@ -343,8 +355,16 @@ export function MatchOver({ match, children }: { match: MatchView; children?: Re
   );
 }
 
-/** Scores, the current visit and whose turn it is; with `onDart`, darts can be tapped. */
-export function Scoreboard(props: { match: MatchView; onDart?: (dart: DartView) => void }) {
+interface ScoreboardProps {
+  match: MatchView;
+  /** Darts can be tapped to correct them. */
+  onDart?: (dart: DartView) => void;
+  /** The next empty slot can be tapped to add a dart the board missed. */
+  onAdd?: () => void;
+}
+
+/** Scores, the current visit and whose turn it is. */
+export function Scoreboard(props: ScoreboardProps) {
   return (
     <>
       <PlayerCards match={props.match} />
@@ -397,8 +417,8 @@ export function PlayerCards({ match }: { match: MatchView }) {
 }
 
 /** The visit in progress: three dart tiles, the total or bust, and what happens next. */
-function VisitPanel(props: { match: MatchView; onDart?: (dart: DartView) => void }) {
-  const { match, onDart } = props;
+function VisitPanel(props: ScoreboardProps) {
+  const { match, onDart, onAdd } = props;
   const { state, players } = match;
   const visit = state.currentVisit;
   const visitTotal = visit?.bust ? 0 : (visit?.darts.reduce((sum, d) => sum + d.score, 0) ?? 0);
@@ -424,6 +444,20 @@ function VisitPanel(props: { match: MatchView; onDart?: (dart: DartView) => void
       <div className="darts">
         {[0, 1, 2].map((i) => {
           const dart = visit?.darts[i];
+          if (!dart && onAdd && state.phase === "throwing" && i === (visit?.darts.length ?? 0)) {
+            return (
+              <button
+                type="button"
+                key={`add-${i}`}
+                className="dart add"
+                onClick={onAdd}
+                aria-label={`Add dart ${i + 1}`}
+              >
+                <span className="dart-index label">D{i + 1}</span>
+                <span className="dart-add label">+ Add</span>
+              </button>
+            );
+          }
           if (!dart) return <span key={`empty-${i}`} className="dart empty" />;
           const className = `dart ${dart.ignored ? "ignored" : ""} ${dart === bustDart ? "busted" : ""}`;
           const content = (

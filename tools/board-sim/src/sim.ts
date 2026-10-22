@@ -21,6 +21,8 @@ export interface SimView {
   state: BoardState;
   /** Clients connected to the Board Manager API's WebSocket, e.g. the n4-darts server. */
   boardClients: number;
+  /** Darts on the board that detection missed (see `missDart`). */
+  missed: number;
 }
 
 export interface BoardSimOptions {
@@ -39,6 +41,8 @@ export interface BoardSim {
   throwDart(dart: string | BoardThrow): void;
   /** Replaces an already detected dart, as if detection changed its mind. */
   reviseDart(index: number, dart: string | BoardThrow): void;
+  /** A dart lands but detection misses it: nothing is reported, but takeout still sees it. */
+  missDart(): void;
   /** Pulls the darts: "Takeout started" then "Takeout finished". */
   takeout(): void;
   reset(): void;
@@ -65,12 +69,13 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
     status: "Throw",
   };
   let online = true;
+  let missed = 0;
 
   const wss = new WebSocketServer({ noServer: true });
   // The control page's own channel; it keeps working while the board is "offline".
   const uiWss = new WebSocketServer({ noServer: true });
 
-  const simView = (): SimView => ({ online, state, boardClients: wss.clients.size });
+  const simView = (): SimView => ({ online, state, boardClients: wss.clients.size, missed });
   function notifyUi() {
     const message = JSON.stringify(simView());
     for (const client of uiWss.clients) client.send(message);
@@ -121,6 +126,11 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
       const next = [...throws, toThrow(dart)];
       emit("Throw detected", { status: next.length === 3 ? "Takeout" : "Throw" }, next);
     },
+    missDart() {
+      if (!state.running || state.status !== "Throw") return;
+      missed += 1;
+      notifyUi();
+    },
     reviseDart(index: number, dart: string | BoardThrow) {
       const throws = [...(state.throws ?? [])];
       if (index >= throws.length) throw new Error(`no dart at index ${index}`);
@@ -128,11 +138,13 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
       emit("Throw detected", {}, throws);
     },
     takeout() {
-      if (!state.throws?.length) return;
+      if (!state.throws?.length && !missed) return;
+      missed = 0;
       emit("Takeout started", { status: "Takeout in progress" }, state.throws);
       emit("Takeout finished", { status: "Throw" });
     },
     reset() {
+      missed = 0;
       emit("Manual reset", { status: "Throw" });
     },
     stop() {
@@ -177,6 +189,7 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
       const parsed = JSON.parse(body);
       sim.reviseDart(parsed.index, dartFrom(parsed));
     },
+    "POST /sim/miss": () => sim.missDart(),
     "POST /sim/takeout": () => sim.takeout(),
     // As if someone pressed reset / stop / start in Board Manager on the laptop.
     "POST /sim/reset": () => sim.reset(),

@@ -672,6 +672,25 @@
   background: transparent;
 }
 
+/* The next slot: a dart the board missed can be added here. */
+.dart.add {
+  border-style: dashed;
+  border-color: var(--line-soft);
+  background: transparent;
+  color: var(--faint);
+}
+
+.dart.add:hover,
+.dart.add:focus-visible {
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+
+.dart-add {
+  align-self: flex-end;
+  font-size: 13px;
+}
+
 .visit.bust .dart {
   border-color: var(--danger-line);
 }

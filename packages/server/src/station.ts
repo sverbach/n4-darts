@@ -5,6 +5,7 @@
 import { randomUUID } from "node:crypto";
 import {
   defaultX01Settings,
+  isSegment,
   MAX_PLAYERS,
   MIN_PLAYERS,
   matchState,
@@ -209,13 +210,16 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
   function syncWithBoard(throws: BoardThrow[]) {
     synced = true;
     if (!acceptingDarts()) return;
-    const logged = state()?.currentVisit?.darts ?? [];
-    // A board dart is a logged one if it sits at exactly the recorded coordinates.
+    // A board dart is a logged one if it sits at exactly the recorded coordinates. Darts added by
+    // hand have none: the board never saw them, so they're not expected on it.
     const coordsOf = new Map(
       events.flatMap((e) =>
-        e.type === "DartThrown" ? [[e.dartId, e.coords as BoardThrow["coords"]] as const] : [],
+        e.type === "DartThrown" && e.coords
+          ? [[e.dartId, e.coords as BoardThrow["coords"]] as const]
+          : [],
       ),
     );
+    const logged = (state()?.currentVisit?.darts ?? []).filter((d) => coordsOf.has(d.dartId));
     const stillOnBoard = logged.every((dart, i) => {
       const recorded = coordsOf.get(dart.dartId);
       const now = throws[i]?.coords;
@@ -270,8 +274,12 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
       case "TakeoutFinished": {
         boardDarts = [];
         const current = state();
-        // Also close the winning visit, so it lands in the leg history.
-        if (acceptingDarts() || (current?.phase === "matchWon" && current.currentVisit)) {
+        // A visit without darts doesn't end: that would skip the player. Also close the winning
+        // visit, so it lands in the leg history.
+        if (
+          current?.currentVisit?.darts.length &&
+          (acceptingDarts() || current.phase === "matchWon")
+        ) {
           append({ type: "TakeoutFinished" });
         }
         break;
@@ -323,7 +331,23 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
         append({ type: "MatchStarted", playerCount: match.playerIds.length });
         break;
       case "correctDart":
+        if (!isSegment(cmd.segment)) throw new CommandError("not a valid segment");
         return correct(cmd.dartId, cmd.segment, "station");
+      case "addDart": {
+        if (!isSegment(cmd.segment)) throw new CommandError("not a valid segment");
+        const current = state();
+        if (current?.phase !== "throwing" || (current.currentVisit?.darts.length ?? 0) >= 3) {
+          throw new CommandError("a dart can only be added while a visit has fewer than 3");
+        }
+        // Not on the board, so not in `boardDarts`: the board's own darts keep their indexes.
+        append({
+          type: "DartThrown",
+          dartId: randomUUID(),
+          segment: cmd.segment,
+          source: "manual",
+        });
+        break;
+      }
       case "nextPlayer":
         if (!match) throw new CommandError("no match on this station");
         append({ type: "VisitEndedManually" });

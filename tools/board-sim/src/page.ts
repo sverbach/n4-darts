@@ -134,6 +134,7 @@ export function renderPage(port: number) {
     <div class="buttons">
       <button type="button" class="primary" data-post="/sim/takeout">Takeout</button>
       <button type="button" id="bounce">Bounce-out</button>
+      <button type="button" data-post="/sim/miss">Missed dart</button>
       <button type="button" data-post="/sim/reset">Reset</button>
       <button type="button" id="run">Stop</button>
       <button type="button" id="power">Go offline</button>
@@ -162,7 +163,7 @@ export function renderPage(port: number) {
 
   function render() {
     if (!view) return;
-    const { online, state, boardClients } = view;
+    const { online, state, boardClients, missed } = view;
     $("online").textContent = online ? "online" : "offline";
     $("online").className = online ? "ok" : "bad";
     $("status").textContent = state.status;
@@ -176,7 +177,7 @@ export function renderPage(port: number) {
     if (revising !== null && revising >= throws.length) revising = null;
     const list = $("darts");
     list.replaceChildren();
-    if (!throws.length) {
+    if (!throws.length && !missed) {
       const li = document.createElement("li");
       li.className = "empty";
       li.textContent = "None";
@@ -192,6 +193,12 @@ export function renderPage(port: number) {
       li.append(b);
       list.append(li);
     });
+    for (let i = 0; i < missed; i++) {
+      const li = document.createElement("li");
+      li.className = "empty";
+      li.textContent = "Missed by detection";
+      list.append(li);
+    }
     $("revise-hint").textContent = revising === null
       ? "Tap a dart, then the board, to revise it."
       : "Now tap the board where dart " + (revising + 1) + " should be.";

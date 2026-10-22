@@ -106,6 +106,9 @@ export function diffSnapshots(
     } else if (current.length < known.length) {
       events.push({ type: next.event === "Takeout finished" ? "TakeoutFinished" : "BoardReset" });
       known = [];
+    } else if (next.event === "Takeout finished" && prev.event !== next.event) {
+      // Darts pulled that detection missed altogether (they were added by hand on the station).
+      events.push({ type: "TakeoutFinished" });
     }
     known.forEach((dart, i) => {
       const now = current[i];

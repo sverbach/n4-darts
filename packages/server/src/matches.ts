@@ -3,7 +3,7 @@
 // /admin also shows the history and can correct any dart of any match (docs/adr/0002: the
 // correction is appended, the original detection stays in the log).
 
-import { matchState, type Segment } from "@n4/engine";
+import { isSegment, matchState, type Segment } from "@n4/engine";
 import type { FastifyInstance } from "fastify";
 import type { MatchDetail, MatchSettingsInput, MatchSummary } from "./api.ts";
 import type { Db, MatchRecord, StoredEvent } from "./db.ts";
@@ -12,13 +12,6 @@ import { matchPlayer } from "./players.ts";
 import { CommandError } from "./station.ts";
 import type { StationDirectory } from "./stations.ts";
 import type { Tournaments } from "./tournaments.ts";
-
-const isSegment = (value: unknown): value is Segment => {
-  const { number, multiplier } = (value ?? {}) as Partial<Segment>;
-  if (typeof number !== "number" || typeof multiplier !== "number") return false;
-  const validNumber = number === 25 || (Number.isInteger(number) && number >= 0 && number <= 20);
-  return validNumber && [0, 1, 2, 3].includes(multiplier);
-};
 
 export function registerMatches(
   app: FastifyInstance,
@@ -74,6 +67,9 @@ export function registerMatches(
     for (const dartId of Object.keys(originals)) {
       if (!corrected.has(dartId)) delete originals[dartId];
     }
+    const added = events.flatMap((e) =>
+      e.type === "DartThrown" && e.source === "manual" ? [e.dartId] : [],
+    );
     return {
       id: match.id,
       station: match.station,
@@ -85,6 +81,7 @@ export function registerMatches(
       legsWon: match.playerIds.map((_, i) => state.players[i]?.legsWon ?? 0),
       state,
       originals,
+      added,
     };
   }
 

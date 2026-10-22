@@ -15,6 +15,14 @@ export interface Segment {
   multiplier: 0 | 1 | 2 | 3;
 }
 
+/** Whether a value from outside (a request body) is a segment a dart can land in. */
+export function isSegment(value: unknown): value is Segment {
+  const { number, multiplier } = (value ?? {}) as Partial<Segment>;
+  if (typeof number !== "number" || typeof multiplier !== "number") return false;
+  const validNumber = number === 25 || (Number.isInteger(number) && number >= 0 && number <= 20);
+  return validNumber && [0, 1, 2, 3].includes(multiplier);
+}
+
 export type InRule = "straight" | "double" | "master" | "bull";
 export type OutRule = "straight" | "double" | "master";
 

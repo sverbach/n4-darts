@@ -88,6 +88,15 @@ describe("board gateway", () => {
     );
   });
 
+  it("reports a takeout of darts detection missed altogether", async () => {
+    const events = await connect();
+
+    sim.missDart();
+    sim.takeout();
+
+    await vi.waitFor(() => expect(summary(events)).toEqual(["TakeoutStarted", "TakeoutFinished"]));
+  });
+
   it("controls the board: reset, stop and start", async () => {
     const events = await connect();
 

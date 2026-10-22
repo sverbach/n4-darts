@@ -42,6 +42,8 @@ export interface MatchDetail extends MatchSummary {
   state: MatchState;
   /** What the board first detected, for every dart that was corrected since. */
   originals: Record<string, Segment>;
+  /** Darts the board missed that were added by hand on the station. */
+  added: string[];
 }
 
 export interface StationView {
@@ -97,6 +99,8 @@ export type StationCommand =
   | { type: "setOrder"; playerIds: string[] }
   | { type: "startMatch" }
   | { type: "correctDart"; dartId: string; segment: Segment }
+  /** Adds a dart the board missed as the visit's next dart. */
+  | { type: "addDart"; segment: Segment }
   | { type: "nextPlayer" }
   | { type: "undo" }
   /** Frees the station after the match is won. */
