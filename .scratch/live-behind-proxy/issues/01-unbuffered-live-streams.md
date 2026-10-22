@@ -1,6 +1,6 @@
 # Live streams that work behind a reverse proxy
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 On 2026-10-21 the app ran behind nginx (default config) at darts.niver.ch.
@@ -25,3 +25,13 @@ The app is meant for the local network, and the public access is being removed. 
 
 - A test checks the headers on a live stream.
 - Checked through a local nginx with its default config (e.g. a Docker `nginx:stable` with a plain `proxy_pass`): darts show up as fast as without the proxy, also late in a long match.
+
+## Comments
+
+2026-10-22: Done.
+- **Change:** `streamView` sends `X-Accel-Buffering: no` and `Cache-Control: no-cache, no-transform`. The 25 s keep-alive stays, with a comment. There's a header test in `live.test.ts`, and a README section "Behind a reverse proxy".
+- **Local nginx check** (`nginx:stable`, plain `proxy_pass`; 120 visits = 360 darts; dart → station stream):
+  - **Default config:** didn't reproduce the delay even without the header (about 25 ms). nginx's default gzip doesn't touch `text/event-stream`.
+  - **`gzip on` + `gzip_types text/event-stream`, header ignored** (the old behaviour): every dart waited for the keep-alive, 25–30 s.
+  - **Same config with the header:** 25–28 ms, flat over the whole match.
+  - So the live setup most likely had gzip on for event streams (or something similar that buffers). The header fixes both.

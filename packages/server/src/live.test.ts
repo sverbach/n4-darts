@@ -62,6 +62,15 @@ const dart = (station: Station, name: string, number: number, multiplier: 0 | 1 
   });
 
 describe("live streams", () => {
+  it("tells proxies not to buffer or compress the stream", async () => {
+    const { app } = setup();
+    const res = await fetch(`${await listen(app)}/api/display/live`);
+    closers.unshift(() => (res.body as ReadableStream).cancel().catch(() => {}));
+    expect(res.headers.get("content-type")).toBe("text/event-stream");
+    expect(res.headers.get("x-accel-buffering")).toBe("no");
+    expect(res.headers.get("cache-control")).toBe("no-cache, no-transform");
+  });
+
   it("pushes the display view when a dart is thrown", async () => {
     const { app, station } = setup();
     const base = await listen(app);

@@ -67,7 +67,10 @@ export function streamView(
   const res = reply.raw;
   res.writeHead(200, {
     "content-type": "text/event-stream",
-    "cache-control": "no-cache",
+    // A proxy in front (nginx buffers by default) would hold messages back until its buffer
+    // fills: turn buffering off for nginx, and keep any proxy from compressing the stream.
+    "cache-control": "no-cache, no-transform",
+    "x-accel-buffering": "no",
     connection: "keep-alive",
   });
   let last = "";
@@ -79,6 +82,7 @@ export function streamView(
   };
   send(view());
   const unsubscribe = subscribe(() => send(view()));
+  // Well under nginx's default proxy_read_timeout of 60 s, so a proxy doesn't drop a quiet stream.
   const keepAlive = setInterval(() => res.write(": keep-alive\n\n"), 25_000);
   request.raw.on("close", () => {
     clearInterval(keepAlive);

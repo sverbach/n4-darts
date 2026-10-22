@@ -139,6 +139,10 @@ Stations are managed in `/admin` (Stations tab). On the very first start they're
 
 Open `http://<server>:3000/station/1` on the station laptop (and on any phone that should control it).
 
+### Behind a reverse proxy
+
+The app is meant for the local network: apart from the `/admin` PIN there's no login, so don't expose it to the internet. If you still put a proxy in front, the live updates (Server-Sent Events on `/api/*/live`) need it to pass messages through straight away. nginx works out of the box: the streams send `X-Accel-Buffering: no`. For other proxies, turn response buffering and compression off for `/api/*/live`; otherwise darts show up seconds late.
+
 ### Backups
 
 The server copies its database once a day (at start if the last copy is more than a day old, then whenever a day has passed) to `backups/` next to the database, as `n4-darts-YYYY-MM-DD-HHmm.db` (server time: UTC in Docker unless you set `TZ`), and keeps the newest 30. In Docker that's `/data/backups` in the `n4-data` volume; with `pnpm start` it's `data/backups/`. They're on the same disk as the database, so copy one elsewhere now and then.
