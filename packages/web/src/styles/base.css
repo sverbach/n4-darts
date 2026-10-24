@@ -12,6 +12,11 @@ body {
   font-size: 20px;
   line-height: 1.2;
   -webkit-tap-highlight-color: transparent;
+
+  ::selection {
+    color: var(--accent-text);
+    background: var(--accent);
+  }
 }
 
 @media (min-width: 760px) {
