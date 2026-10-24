@@ -45,10 +45,10 @@ export function WatchPage({ id }: { id: number }) {
 
 /** "501 · Best of 3 · Leg 2" */
 function MatchLine({ match }: { match: MatchView }) {
-  const { settings, state, players } = match;
+  const { settings, state } = match;
   return (
     <span className="watch-line">
-      {settings.startScore} · {legsLabel(settings.legsToWin, players.length)}
+      {settings.startScore} · {legsLabel(settings.legsToWin)}
       {settings.legsToWin > 1 && (
         <>
           {" "}
@@ -75,8 +75,7 @@ function NextMatch({ match }: { match: MatchView }) {
         ))}
       </div>
       <span className="label">
-        {rulesLabel(match.settings)} · {legsLabel(match.settings.legsToWin, match.players.length)} ·
-        Waiting to start
+        {rulesLabel(match.settings)} · {legsLabel(match.settings.legsToWin)} · Waiting to start
       </span>
     </div>
   );

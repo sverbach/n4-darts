@@ -128,9 +128,7 @@ export function PlayerPicker(props: {
   );
 }
 
-/** "Best of 5" reads naturally for two players; with more it has to be "first to 3". */
-export function legsLabel(legsToWin: number, playerCount: number) {
-  if (playerCount === 2 && legsToWin > 1) return `Best of ${legsToWin * 2 - 1}`;
+export function legsLabel(legsToWin: number) {
   return `First to ${legsToWin} ${legsToWin === 1 ? "leg" : "legs"}`;
 }
 
@@ -178,7 +176,7 @@ export function SettingsFields(props: {
         <select value={value.legsToWin} onChange={(e) => set("legsToWin", Number(e.target.value))}>
           {[1, 2, 3, 4, 5].map((n) => (
             <option key={n} value={n}>
-              {legsLabel(n, playerCount)}
+              {legsLabel(n)}
             </option>
           ))}
         </select>

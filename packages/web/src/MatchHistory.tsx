@@ -97,8 +97,7 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
               {!match.closedAt && <span className="run-state running">Live</span>}
               <h1>{match.players.map((p) => p.name).join(" vs ")}</h1>
               <p className="hint">
-                {match.settings.startScore},{" "}
-                {legsLabel(match.settings.legsToWin, match.players.length).toLowerCase()}
+                {match.settings.startScore}, {legsLabel(match.settings.legsToWin).toLowerCase()}
                 {match.station !== null && ` · station ${match.station}`} · {result(match)}
                 {match.closedAt && ` · ${when(match.closedAt)}`}
               </p>

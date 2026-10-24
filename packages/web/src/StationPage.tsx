@@ -103,8 +103,8 @@ export function rulesLabel(settings: X01Settings) {
 
 /** The match label, rules, legs and which leg: "Group A … 501 · Double out · Best of 3 · Leg 2". */
 function SettingsStrip({ match }: { match: MatchView }) {
-  const { settings, state, players, label } = match;
-  const legs = legsLabel(settings.legsToWin, players.length);
+  const { settings, state, label } = match;
+  const legs = legsLabel(settings.legsToWin);
   const leg = settings.legsToWin > 1 && state.legs.length > 0 ? ` · Leg ${state.legs.length}` : "";
   return (
     <div className="settings-strip label">
@@ -192,8 +192,7 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
             : "Next match"}
         </h1>
         <p className="hint">
-          {startScore}, {legsLabel(legsToWin, match.players.length).toLowerCase()}. Top of the list
-          throws first.
+          {startScore}, {legsLabel(legsToWin).toLowerCase()}. Top of the list throws first.
         </p>
       </div>
       <ol className="lineup-list">
