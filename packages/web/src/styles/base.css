@@ -449,3 +449,30 @@ button.back {
   height: auto;
   color: var(--text);
 }
+
+/* The animated logo (SparkleLogo): a strip of 64 frames moved one frame at a time. Its width is
+   the logo's width plus the 2 px margin on each side (76 / 72). */
+.logo-sparkle {
+  overflow: hidden;
+  aspect-ratio: 76 / 39;
+}
+
+.logo-sparkle img {
+  display: block;
+  width: 6400%;
+  height: 100%;
+  image-rendering: pixelated;
+  animation: logo-sparkle 5.12s steps(64) infinite;
+}
+
+@keyframes logo-sparkle {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-sparkle img {
+    animation: none;
+  }
+}

@@ -17,9 +17,10 @@
   padding: 8px 0 12px;
 }
 
-.home-logo .logo {
-  width: 216px;
-  max-width: 60vw;
+/* 3× the sprite's 76 pixels, so the logo itself stays 216 px wide. */
+.home-logo .logo-sparkle {
+  width: 228px;
+  max-width: 63vw;
 }
 
 .home-lists {
@@ -100,8 +101,8 @@
     padding: 72px 32px 32px;
   }
 
-  .home-logo .logo {
-    width: 288px;
+  .home-logo .logo-sparkle {
+    width: 304px;
   }
 
   .home-tile {

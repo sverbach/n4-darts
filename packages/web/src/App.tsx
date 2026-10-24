@@ -2,7 +2,7 @@ import type { StationView } from "@n4/server/api";
 import { useEffect, useState } from "react";
 import { AdminPage, isAdminSection } from "./AdminPage.tsx";
 import { DisplayPage } from "./DisplayPage.tsx";
-import { Logo } from "./Logo.tsx";
+import { SparkleLogo } from "./Logo.tsx";
 import { PixelIcon } from "./PixelIcon.tsx";
 import { StationPage } from "./StationPage.tsx";
 import { LeaderboardPage, ProfilePage } from "./StatsPages.tsx";
@@ -39,7 +39,7 @@ function Home() {
   return (
     <main className="home">
       <h1 className="home-logo">
-        <Logo />
+        <SparkleLogo />
       </h1>
       <div className="home-lists">
         <nav aria-label="Stations" className="home-list">
