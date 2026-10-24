@@ -6,15 +6,17 @@ const PATH =
 /** Sized by its width (here or in CSS); the height follows (72 × 33 pixels). */
 export function Logo({ width, className }: { width?: string; className?: string }) {
   return (
-    <svg
-      className={`logo ${className ?? ""}`}
-      viewBox="0 0 72 33"
-      shapeRendering="crispEdges"
-      style={width ? { width } : undefined}
-      role="img"
-      aria-label="n4-darts"
-    >
-      <path fill="currentColor" d={PATH} />
-    </svg>
+    <a href="/">
+      <svg
+        className={`logo ${className ?? ""}`}
+        viewBox="0 0 72 33"
+        shapeRendering="crispEdges"
+        style={width ? { width } : undefined}
+        role="img"
+        aria-label="n4-darts"
+      >
+        <path fill="currentColor" d={PATH} />
+      </svg>
+    </a>
   );
 }
