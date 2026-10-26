@@ -1,6 +1,6 @@
 # Heatmap on the player profile
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 The player profile shows where that player's darts actually land, as a heatmap over a drawn dartboard, from the last 500 darts.
@@ -30,3 +30,10 @@ The player profile shows where that player's darts actually land, as a heatmap o
 ## Comments
 
 2026-10-24: Proposal confirmed by the user as written.
+
+2026-10-26: Built. `PlayerProfile.heatmap` comes from `landedDarts()` in `packages/server/src/stats.ts`, cached per match with the other stats. Darts are matched to players by folding the log with `matchState`, so undone visits drop out too. Coordinates are rounded to 3 decimals. The drawing is `packages/web/src/Heatmap.tsx`, plain SVG: 500 blurred circles are fast enough, so there's no canvas.
+- The ring radii match the simulator (outside of the double ring ≈ 0.99, fitted to recorded darts), not the 0.95 in the ticket text.
+- Misses further out than radius 1.3 aren't drawn.
+- The design system is dark only, so there's no light variant to check. The colours are all tokens, so a light theme would apply to it.
+- Checked at 1440 px and 390 px with a simulator match: T20, S3 and M17 (off the board) each land where they should. A player with 5 darts gets "Not enough darts yet".
+- The average chart now draws at 760 px wide on desktop, so its text stays readable in the narrower column.

@@ -1,6 +1,7 @@
 import type { LeaderboardRow, PlayerProfile } from "@n4/server/api";
 import { type ReactNode, useEffect, useState } from "react";
 import { Avatar } from "./Avatar.tsx";
+import { Heatmap } from "./Heatmap.tsx";
 import { Logo } from "./Logo.tsx";
 import { PixelIcon } from "./PixelIcon.tsx";
 
@@ -227,11 +228,19 @@ function Profile({ profile }: { profile: PlayerProfile }) {
         />
       </div>
 
-      {profile.evenings.length > 0 && (
-        <section className="stats-section">
-          <h2 className="label">Average per evening</h2>
-          <AverageChart evenings={profile.evenings} />
-        </section>
+      {t.matches > 0 && (
+        <div className="stats-charts">
+          {profile.evenings.length > 0 && (
+            <section className="stats-section">
+              <h2 className="label">Average per evening</h2>
+              <AverageChart evenings={profile.evenings} />
+            </section>
+          )}
+          <section className="stats-section">
+            <h2 className="label">Where the darts land</h2>
+            <Heatmap points={profile.heatmap} />
+          </section>
+        </div>
       )}
 
       <div className="stats-lists">
@@ -326,8 +335,9 @@ function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
   const points = evenings.flatMap((e) => (e.average === null ? [] : [{ ...e, value: e.average }]));
   if (points.length === 0) return null;
   // Drawn at about its real size, so the text comes out right: a phone's width or the page's.
-  const width = wide ? 1136 : 358;
-  const height = wide ? 260 : 200;
+  // On a wide screen it shares the row with the heatmap: about two thirds of the page.
+  const width = wide ? 760 : 358;
+  const height = wide ? 300 : 200;
   const font = wide ? 20 : 13;
   const dot = wide ? 10 : 6;
   const pad = wide

@@ -168,6 +168,7 @@ The layout must cope with 1–3+ stations and 2–8 players per match.
   - **Scoring:** 180, 140+, 100+ counts.
   - **Results:** Matches won ("12 of 20 (60%)"), Legs won, Tournaments won ("1 of 4"), Best placing.
 - **"Average per evening":** a small line chart (an SVG) with dates on the x axis, the average on the y axis, and a tooltip on each dot.
+- **"Where the darts land":** a drawn dartboard with a soft glowing dot for each of the player's last 500 board-detected darts, captioned "Last 500 darts" (or the real number). Misses off the board show outside it. With fewer than 30 darts it says "Not enough darts yet". Next to the average chart on desktop, below it on phones.
 - **"Tournaments":** a list of the name, date and placing, with 🏆 for a win.
 - **"Last matches":** a list of "Won 2–1 vs Bob", the date and the match average.
 - A player with no matches shows the name and "No matches played yet."

@@ -2,14 +2,16 @@
 // (completed, not abandoned, not a walkover, any kind and player count), from the event logs.
 // A closed match's numbers are cached until the match changes (e.g. a correction).
 
-import { matchStats, type PlayerMatchStats, threeDartAverage } from "@n4/engine";
+import { matchState, matchStats, type PlayerMatchStats, threeDartAverage } from "@n4/engine";
 import type { FastifyInstance } from "fastify";
 import type { Award, LeaderboardRow, PlayerProfile, StatTotals } from "./api.ts";
-import type { Db, MatchRecord } from "./db.ts";
+import type { Db, MatchRecord, StoredEvent } from "./db.ts";
 import { RATING_MATCHES } from "./ratings.ts";
 
 /** How many matches a profile lists. */
 const RECENT = 20;
+/** How many darts the profile's heatmap shows. */
+const HEATMAP = 500;
 /** An evening that runs past midnight counts to the day it started. */
 const EVENING_SHIFT_MS = 6 * 60 * 60 * 1000;
 const ALL = Number.MAX_SAFE_INTEGER;
@@ -48,8 +50,37 @@ export function totalsOf(own: PlayerMatchStats[]): StatTotals {
   };
 }
 
+type Point = { x: number; y: number };
+
+/**
+ * Where each player's darts landed (throwing order, oldest first). Only darts the board saw at a
+ * real position: no bounce-outs, no darts added by hand, and none the board got wrong (corrected).
+ */
+function landedDarts(match: MatchRecord, events: StoredEvent[]): Point[][] {
+  const corrected = new Set(events.flatMap((e) => (e.type === "DartCorrected" ? [e.dartId] : [])));
+  const where = new Map<string, Point>();
+  for (const e of events) {
+    const coords = e.coords as Point | undefined;
+    if (e.type !== "DartThrown" || !coords || e.bouncer || corrected.has(e.dartId)) continue;
+    // Three decimals is far finer than the board can tell, and keeps the JSON small.
+    const round = (v: number) => Math.round(v * 1000) / 1000;
+    where.set(e.dartId, { x: round(coords.x), y: round(coords.y) });
+  }
+  const state = matchState(match.settings, events);
+  const landed: Point[][] = match.playerIds.map(() => []);
+  const visits = state.legs.flatMap((leg) => leg.visits);
+  if (state.currentVisit) visits.push(state.currentVisit);
+  for (const visit of visits) {
+    for (const dart of visit.darts) {
+      const point = where.get(dart.dartId);
+      if (point) landed[visit.player]?.push(point);
+    }
+  }
+  return landed;
+}
+
 export function createStats(db: Db) {
-  const cache = new Map<string, { stats: PlayerMatchStats[]; day: string }>();
+  const cache = new Map<string, { stats: PlayerMatchStats[]; landed: Point[][]; day: string }>();
   db.onChange(({ matchId }) => {
     if (matchId) cache.delete(matchId);
   });
@@ -59,11 +90,10 @@ export function createStats(db: Db) {
     let entry = cache.get(match.id);
     if (!entry) {
       const timed = db.timedEvents(match.id);
+      const events = timed.map((t) => t.event);
       entry = {
-        stats: matchStats(
-          match.settings,
-          timed.map((t) => t.event),
-        ),
+        stats: matchStats(match.settings, events),
+        landed: landedDarts(match, events),
         day: dayOf(timed[0]?.at ?? match.closedAt ?? new Date().toISOString()),
       };
       cache.set(match.id, entry);
@@ -154,6 +184,11 @@ export function createStats(db: Db) {
       tournaments,
       tournamentsWon: tournaments.filter((t) => t.from === 1).length,
       bestPlacing: best,
+      heatmap: counted
+        .flatMap(({ match }) =>
+          (cached(match).landed[match.playerIds.indexOf(playerId)] ?? []).toReversed(),
+        )
+        .slice(0, HEATMAP),
       recent: counted.slice(0, RECENT).map(({ match, own }) => {
         const all = ofMatch(match);
         const others = match.playerIds.flatMap((id, i) => (id === playerId ? [] : [i]));

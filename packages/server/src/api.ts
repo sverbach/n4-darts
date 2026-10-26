@@ -311,6 +311,11 @@ export interface PlayerProfile {
   tournamentsWon: number;
   /** The best finish, and the (latest) tournament it was in. */
   bestPlacing: { from: number; to: number; tournament: string } | null;
+  /**
+   * Where the player's last 500 board-detected darts landed, newest first: normalised board
+   * coordinates (bull ≈ (0,0), double ring ≈ radius 0.95, `y` toward 20; misses beyond 1).
+   */
+  heatmap: { x: number; y: number }[];
   /** The last 20 counted matches, newest first. */
   recent: {
     matchId: string;

@@ -420,6 +420,73 @@
   text-transform: uppercase;
 }
 
+/* The average chart and the heatmap: stacked on a phone, side by side on a wide screen. */
+.stats-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+}
+
+.heatmap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.heatmap svg {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+}
+
+.heatmap .board-edge {
+  fill: var(--bg);
+}
+
+.heatmap .single.a {
+  fill: var(--surface);
+}
+
+.heatmap .single.b {
+  fill: var(--line-soft);
+}
+
+.heatmap .ring.a {
+  fill: var(--accent-line);
+}
+
+.heatmap .ring.b {
+  fill: var(--border);
+}
+
+.heatmap .board path,
+.heatmap .board circle {
+  stroke: var(--bg);
+  stroke-width: 0.004;
+}
+
+.heatmap .board-number {
+  fill: var(--muted);
+  font-family: var(--font-text);
+  font-size: 0.09px;
+}
+
+.heatmap .heat circle {
+  fill: var(--warn);
+  opacity: 0.35;
+}
+
+.heatmap .heat-dots circle {
+  fill: var(--text);
+  opacity: 0.7;
+}
+
 .stats-lists {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -602,6 +669,17 @@
   .stat-card dd {
     font-size: 48px;
     line-height: 0.8;
+  }
+
+  .stats-charts {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+
+  /* Without an average chart the heatmap keeps its own width. */
+  .stats-charts > :only-child {
+    grid-column: 2;
   }
 
   .stats-lists {

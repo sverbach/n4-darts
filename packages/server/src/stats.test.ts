@@ -167,6 +167,100 @@ describe("stats", () => {
   });
 });
 
+describe("heatmap", () => {
+  /** A board dart: the segment's name plus where it landed. */
+  const board = (id: string, dartId: string, name: string, x: number, y: number, bouncer = false) =>
+    db.append(id, {
+      type: "DartThrown",
+      dartId,
+      segment: seg(name),
+      coords: { x, y },
+      bouncer,
+    });
+
+  function boardMatch(id: string, visits: { name: string; x: number; y: number }[][]) {
+    db.createMatch({
+      id,
+      station: null,
+      settings: { ...defaultX01Settings, startScore: 701 },
+      playerIds: ["ann", "bob"],
+    });
+    db.append(id, { type: "MatchStarted", playerCount: 2 });
+    visits.forEach((darts, v) => {
+      darts.forEach((d, i) => {
+        board(id, `${id}-${v}-${i}`, d.name, d.x, d.y);
+      });
+      db.append(id, { type: "TakeoutFinished" });
+    });
+    db.setWinner(id, "ann");
+    db.closeMatch(id);
+  }
+
+  const at = (name: string, x: number) => ({ name, x, y: 0.5 });
+
+  it("lists the player's own board darts, newest first, across matches", async () => {
+    const { get } = setup();
+    boardMatch("old", [[at("S1", 0.1), at("S1", 0.2)], [at("S20", 0.9)]]);
+    boardMatch("new", [[at("S1", 0.3)], [at("S20", 0.8)], [at("M17", 1.4)]]);
+
+    const ann = (await get<PlayerProfile>("/api/players/ann/stats")).body;
+    expect(ann.heatmap.map((p) => p.x)).toEqual([1.4, 0.3, 0.2, 0.1]);
+    const bob = (await get<PlayerProfile>("/api/players/bob/stats")).body;
+    expect(bob.heatmap).toEqual([
+      { x: 0.8, y: 0.5 },
+      { x: 0.9, y: 0.5 },
+    ]);
+  });
+
+  it("leaves out bounce-outs, darts added by hand, corrected darts and abandoned matches", async () => {
+    const { get } = setup();
+    db.createMatch({
+      id: "m",
+      station: null,
+      settings: { ...defaultX01Settings, startScore: 701 },
+      playerIds: ["ann", "bob"],
+    });
+    db.append("m", { type: "MatchStarted", playerCount: 2 });
+    board("m", "kept", "S1", 0.1, 0.1);
+    board("m", "bounce", "M", 0, 0, true);
+    db.append("m", { type: "DartThrown", dartId: "manual", segment: seg("S5") });
+    db.append("m", { type: "TakeoutFinished" });
+    board("m", "wrong", "S1", 0.2, 0.2);
+    db.append("m", { type: "DartCorrected", dartId: "wrong", segment: seg("S2") });
+    db.append("m", { type: "TakeoutFinished" });
+    db.setWinner("m", "ann");
+    db.closeMatch("m");
+
+    db.createMatch({
+      id: "a",
+      station: null,
+      settings: defaultX01Settings,
+      playerIds: ["ann", "bob"],
+    });
+    db.append("a", { type: "MatchStarted", playerCount: 2 });
+    board("a", "a1", "S1", 0.3, 0.3);
+    db.closeMatch("a", { abandoned: true });
+
+    expect((await get<PlayerProfile>("/api/players/ann/stats")).body.heatmap).toEqual([
+      { x: 0.1, y: 0.1 },
+    ]);
+    expect((await get<PlayerProfile>("/api/players/bob/stats")).body.heatmap).toEqual([]);
+  });
+
+  it("keeps the last 500", async () => {
+    const { get } = setup();
+    // Ann throws 3 singles per visit, Bob misses: 170 of Ann's visits are 510 darts.
+    const visits = Array.from({ length: 339 }, (_, v) =>
+      v % 2 === 0 ? [at("S1", v), at("S1", v + 0.1), at("S1", v + 0.2)] : [at("M", 0)],
+    );
+    boardMatch("long", visits);
+
+    const heatmap = (await get<PlayerProfile>("/api/players/ann/stats")).body.heatmap;
+    expect(heatmap).toHaveLength(500);
+    expect(heatmap[0]?.x).toBe(338.2);
+  });
+});
+
 describe("tournament awards", () => {
   it("names the best of the evening, ties shared, empty categories left out", () => {
     setup();
