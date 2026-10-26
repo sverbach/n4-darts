@@ -1,6 +1,6 @@
 # Browser end-to-end tests with Playwright
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 The tests so far stop at the server. Nothing checks that the pages actually show what the server sends, or how long that takes in a browser. Playwright's test runner covers both: the UI flows, and the time from a dart to the screen.
@@ -34,3 +34,19 @@ The tests so far stop at the server. Nothing checks that the pages actually show
 
 - `pnpm e2e` passes locally and in CI. The job adds at most about 2 minutes.
 - A deliberately broken page (e.g. the station no longer rendering new darts) and an artificial delay in the station stream both make it fail. Note in the comments which were tried.
+
+## Comments
+
+2026-10-26: Built as `packages/e2e` (`@playwright/test` 1.64.1, Chromium only).
+- **Server.** `src/start.ts` starts two simulated boards (:4381/:4382) in-process and the built server (`packages/server/dist/main.js`) on :4300, with a fresh temporary database and `ADMIN_PIN=4242`. That's away from the dev ports, so it runs next to `pnpm dev:sim`.
+- **Shared state.** Tests share the server and its stations, so they run one at a time. A fixture logs in through the API, makes sure Ann, Bob and Cid exist, and clears both stations and the boards before each test.
+- **Tournaments.** A finished tournament stays on show in /admin and on /display until the next one is created, so the fixture hides it behind an empty draft. The tournament test discards that draft and uses the real "New tournament" button.
+- **Layouts.** Two projects, phone (390 px) and desktop (1440 px). Every flow runs in both, except latency, which runs on desktop (the kiosk) only.
+- **Latency.** A `MutationObserver` in the station page records when the visit's dart tiles change. Each dart is timed from the throw to that change (both `Date.now()`, same machine). 300 darts with station, /display and /watch/1 open. It fails above 150 ms or on 4× growth (medians under 5 ms are noise), and stops at the first dart over 150 ms. Locally the median is about 2 ms and the slowest 3–4 ms.
+- **Selectors.** Roles and labels only. No `aria-label` had to be added: the display's station cards are links named by their content.
+- **CI.** An `e2e` job after `check` that builds, caches `~/.cache/ms-playwright` by the lockfile, installs Chromium with its system libraries, runs `pnpm e2e`, and on failure uploads `playwright-report` and `test-results`. `docker-build` now needs both. The Dockerfile copies `packages/e2e/package.json` so the frozen-lockfile install still matches; the image built locally.
+- **Run time.** 14 tests (1 skipped), about 11–13 s locally, plus install, build and the browser in CI.
+
+Tried on purpose:
+- The station page rendering only the first dart of a visit: the station flow fails on both layouts and the latency test fails.
+- A 200 ms delay on the station stream: the latency test fails on its first dart (205 ms against 150).

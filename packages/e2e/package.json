@@ -1,0 +1,16 @@
+{
+  "name": "@n4/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Browser end-to-end tests: the built app against simulated boards (perf-tests ticket 02).",
+  "scripts": {
+    "e2e": "playwright test",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@n4/board-sim": "workspace:*",
+    "@n4/server": "workspace:*",
+    "@playwright/test": "1.64.1"
+  }
+}
