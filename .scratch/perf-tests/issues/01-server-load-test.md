@@ -1,6 +1,6 @@
 # Server load test: a long match doesn't get slower
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 On 2026-10-21 darts showed up later and later during a match. That turned out to be the proxy (see `live-behind-proxy`), but nothing stops the app itself from developing the same symptom: each dart folds the whole event log, and every live stream recomputes its view on each change. A test in CI should catch that before it ships.
@@ -22,3 +22,26 @@ On 2026-10-21 darts showed up later and later during a match. That turned out to
 - Runs in `pnpm test`, and so in CI on every push.
 - Fails when slowness is introduced on purpose, e.g. a 1 ms busy loop per logged event in `matchState`, or a second database write per dart. Note in the comments which of these were tried.
 - Passes reliably: 10 runs in a row locally without a flaky failure.
+
+## Comments
+
+2026-10-26: Built as `packages/server/src/load.test.ts`, with a seeder in `src/seed.ts`. Agreed changes to the ticket:
+- **History.** Both runs start from a database seeded with 200 finished 701 matches (`seedHistory`), as after a few months of evenings.
+- **Failure rules.** Every dart has to reach the station within **150 ms**. The growth rule is relaxed to **4×** (last 100 darts' median against the first 100), with medians under 2 ms counted as noise. The 250 ms p95 and 1 s ceiling are gone. The work counts stay: one write per dart or takeout, at most one message per stream per change.
+- **600 darts, not 1,000**, to stay under 30 s (about 22 s locally). A run stops at the first dart over 150 ms.
+
+**What it found, and the fix.** With history in the database, every tournament view (display and admin, on every dart) replayed up to 500 past matches for the duration estimate's minutes per leg: about 200 ms per view at 500 matches. Now:
+- Each match's leg durations are worked out once and stored in a new `matches.leg_minutes` column. Appending to the log clears it, so a correction gets it measured again.
+- The estimate averages over the last 50 matches only.
+- Without the fix, the tournament run fails on its first dart (216 ms).
+
+Re-reading tonight's tournament matches for results and legs (about 30 ms per view by the end of a 12-player evening) is left as it is, by decision.
+
+Numbers with history: quick match medians ~3 → 4 ms. Tournament match ~15 → 27 ms, slowest ~40 ms.
+
+Tried on purpose:
+- A 1 ms busy loop per logged event in `matchState`: both runs fail at about 12 darts on the 150 ms limit.
+- A second write per dart (`setHeld` after each dart): both fail on the write count (1,403 writes for 803 changes).
+- The old leg-duration code: the tournament run fails on its first dart (216 ms).
+
+10 runs in a row passed (21–23 s each).

@@ -1,7 +1,7 @@
 // How long a tournament will take (.scratch/tournaments/spec.md: "Duration estimate").
 
 import { matchState } from "@n4/engine";
-import type { Db } from "./db.ts";
+import type { Db, MatchRecord } from "./db.ts";
 import type { TournamentConfig } from "./tournament/types.ts";
 
 /** Minutes per leg before there's history, by start score. */
@@ -15,39 +15,56 @@ const MAX_LEG_MINUTES = 30;
 export const defaultLegMinutes = (startScore: number) =>
   DEFAULT_LEG_MINUTES[startScore] ?? Math.max(2, Math.round((startScore / 301) * 4));
 
-/** Durations in minutes of every leg played in completed two-player matches at this start score. */
+/** How many recent matches the leg length is averaged over. */
+export const MATCHES_FOR_LEG_MINUTES = 50;
+
+/** How long each leg of a finished match took, in minutes: from the start or the previous checkout. */
+function measureLegs(db: Db, match: MatchRecord): number[] {
+  const timed = db.timedEvents(match.id);
+  const at = new Map<string, number>();
+  let started: number | null = null;
+  for (const { at: when, event } of timed) {
+    if (event.type === "MatchStarted") started = Date.parse(when);
+    if (event.type === "DartThrown") at.set(event.dartId, Date.parse(when));
+  }
+  if (started === null) return [];
+  const state = matchState(
+    match.settings,
+    timed.map((t) => t.event),
+  );
+  const minutes: number[] = [];
+  let legStart = started;
+  for (const [i, leg] of state.legs.entries()) {
+    // A match can end before the winning visit's takeout: then it's still the current visit.
+    const visits =
+      i === state.legs.length - 1 && state.currentVisit
+        ? [...leg.visits, state.currentVisit]
+        : leg.visits;
+    const checkout = visits.find((v) => v.checkout);
+    const lastDart = checkout?.darts.filter((d) => !d.ignored).at(-1);
+    const end = lastDart && at.get(lastDart.dartId);
+    if (!end) break;
+    minutes.push((end - legStart) / 60_000);
+    legStart = end;
+  }
+  return minutes;
+}
+
+/**
+ * Durations in minutes of the legs played in the last 50 matches, where they were completed
+ * two-player matches at this start score. Each match's legs are measured once and stored.
+ */
 export function legDurations(db: Db, startScore: number): number[] {
   const minutes: number[] = [];
-  for (const match of db.closedMatches(500)) {
+  for (const match of db.closedMatches(MATCHES_FOR_LEG_MINUTES)) {
     if (match.abandoned || match.walkover || match.playerIds.length !== 2) continue;
     if (match.settings.startScore !== startScore) continue;
-    const timed = db.timedEvents(match.id);
-    const at = new Map<string, number>();
-    let started: number | null = null;
-    for (const { at: when, event } of timed) {
-      if (event.type === "MatchStarted") started = Date.parse(when);
-      if (event.type === "DartThrown") at.set(event.dartId, Date.parse(when));
+    let legs = match.legMinutes;
+    if (legs === null) {
+      legs = measureLegs(db, match);
+      db.setLegMinutes(match.id, legs);
     }
-    if (started === null) continue;
-    const state = matchState(
-      match.settings,
-      timed.map((t) => t.event),
-    );
-    let legStart = started;
-    for (const [i, leg] of state.legs.entries()) {
-      // A match can end before the winning visit's takeout: then it's still the current visit.
-      const visits =
-        i === state.legs.length - 1 && state.currentVisit
-          ? [...leg.visits, state.currentVisit]
-          : leg.visits;
-      const checkout = visits.find((v) => v.checkout);
-      const lastDart = checkout?.darts.filter((d) => !d.ignored).at(-1);
-      const end = lastDart && at.get(lastDart.dartId);
-      if (!end) break;
-      const length = (end - legStart) / 60_000;
-      if (length > 0 && length <= MAX_LEG_MINUTES) minutes.push(length);
-      legStart = end;
-    }
+    minutes.push(...legs.filter((length) => length > 0 && length <= MAX_LEG_MINUTES));
   }
   return minutes;
 }

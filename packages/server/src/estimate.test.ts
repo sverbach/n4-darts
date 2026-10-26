@@ -88,4 +88,39 @@ describe("leg length from history", () => {
     legOf(90, "m1");
     expect(legDurations(db, 40)).toEqual([]);
   });
+
+  it("measures a match once and stores it, until its log changes", () => {
+    setup();
+    legOf(3, "m1");
+    let reads = 0;
+    const timedEvents = db.timedEvents;
+    db.timedEvents = (id) => {
+      reads += 1;
+      return timedEvents(id);
+    };
+
+    expect(legDurations(db, 40)).toEqual([3]);
+    expect(legDurations(db, 40)).toEqual([3]);
+    expect(reads).toBe(1);
+    expect(db.getMatch("m1")?.legMinutes).toEqual([3]);
+
+    // A correction can move when a leg ended: measured again.
+    db.append("m1", {
+      type: "DartCorrected",
+      dartId: "m1-d",
+      segment: { number: 20, multiplier: 2 },
+    });
+    expect(db.getMatch("m1")?.legMinutes).toBeNull();
+    expect(legDurations(db, 40)).toEqual([3]);
+    expect(reads).toBe(2);
+  });
+
+  it("only looks at the last 50 matches", () => {
+    setup();
+    legOf(9, "old");
+    for (let i = 0; i < 50; i++) legOf(2, `m${i}`);
+    const legs = legDurations(db, 40);
+    expect(legs).toHaveLength(50);
+    expect(legs).not.toContain(9);
+  });
 });

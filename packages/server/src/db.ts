@@ -29,6 +29,11 @@ export interface MatchRecord {
   held: boolean;
   /** Only goes to this station. */
   pinnedStation: number | null;
+  /**
+   * How long each leg took, in minutes, for the duration estimate (estimate.ts). Worked out once
+   * the match is over and stored; null until then, and again whenever its log changes.
+   */
+  legMinutes: number[] | null;
 }
 
 export type NewMatch = Pick<MatchRecord, "id" | "station" | "settings" | "playerIds"> &
@@ -117,6 +122,8 @@ export interface Db {
   setOrder(id: string, playerIds: string[]): void;
   setWinner(id: string, playerId: string | null): void;
   closeMatch(id: string, options?: { abandoned?: boolean }): void;
+  /** Stores a match's leg durations; a cache, so it isn't announced as a change. */
+  setLegMinutes(id: string, minutes: number[]): void;
   /** The player's completed matches (closed, not abandoned), most recently closed first. */
   completedMatchesOf(playerId: string, limit: number): MatchRecord[];
   /** Closed matches (finished or abandoned), most recently closed first. */
@@ -169,7 +176,7 @@ const OTHER_WRITES = [
  * Bumped when the schema changes incompatibly. Version 0 is the walking skeleton's, whose test
  * matches only had player names: they're dropped, not migrated (players-and-matches spec).
  */
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 
 interface MatchRow {
   id: string;
@@ -184,6 +191,7 @@ interface MatchRow {
   walkover: number;
   held: number;
   pinned_station: number | null;
+  leg_minutes: string | null;
 }
 
 interface TournamentRow {
@@ -205,6 +213,11 @@ const MATCH_COLUMNS_V2 = {
   walkover: "integer not null default 0",
   held: "integer not null default 0",
   pinned_station: "integer",
+};
+
+/** Columns added to `matches` in schema version 4. */
+const MATCH_COLUMNS_V4 = {
+  leg_minutes: "text",
 };
 
 interface PlayerRow {
@@ -302,7 +315,7 @@ export function openDb(path: string): Db {
   const matchColumns = new Set(
     (db.prepare("pragma table_info(matches)").all() as { name: string }[]).map((c) => c.name),
   );
-  for (const [name, type] of Object.entries(MATCH_COLUMNS_V2)) {
+  for (const [name, type] of Object.entries({ ...MATCH_COLUMNS_V2, ...MATCH_COLUMNS_V4 })) {
     if (!matchColumns.has(name)) db.exec(`alter table matches add column ${name} ${type}`);
   }
   db.exec(`
@@ -409,6 +422,11 @@ export function openDb(path: string): Db {
     "update matches set closed_at = strftime('%Y-%m-%dT%H:%M:%fZ'), abandoned = ? where id = ? and closed_at is null",
   );
   const deleteMatchStmt = db.prepare("delete from matches where id = ?");
+  const updateLegMinutes = db.prepare("update matches set leg_minutes = ? where id = ?");
+  // A new event can change when legs ended (e.g. a correction), so the stored durations go.
+  const clearLegMinutes = db.prepare(
+    "update matches set leg_minutes = null where id = ? and leg_minutes is not null",
+  );
   const selectCompletedOf = db.prepare(`
     select m.* from matches m join match_players p on p.match_id = m.id
     where p.player_id = ? and m.closed_at is not null and m.abandoned = 0 and m.walkover = 0
@@ -457,6 +475,7 @@ export function openDb(path: string): Db {
     walkover: row.walkover === 1,
     held: row.held === 1,
     pinnedStation: row.pinned_station,
+    legMinutes: row.leg_minutes === null ? null : JSON.parse(row.leg_minutes),
   });
 
   const toTournament = (row: TournamentRow): TournamentRecord => ({
@@ -664,6 +683,10 @@ export function openDb(path: string): Db {
     },
     append(matchId, event, at) {
       insertEvent.run(matchId, matchId, JSON.stringify(event), at ?? null);
+      clearLegMinutes.run(matchId);
+    },
+    setLegMinutes(id, minutes) {
+      updateLegMinutes.run(JSON.stringify(minutes), id);
     },
     events(matchId) {
       return (selectEvents.all(matchId) as { event: string }[]).map((row) => JSON.parse(row.event));
