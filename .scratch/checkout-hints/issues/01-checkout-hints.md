@@ -1,6 +1,6 @@
 # Checkout hints on the station
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 When the player at the board can finish this visit, the station shows which field(s) to aim for next, e.g. `T20 · T10 · D20` at 130. Only in the desktop layout, which is the kiosk laptop next to the board. Phones don't get it.
@@ -35,3 +35,8 @@ When the player at the board can finish this visit, the station shows which fiel
 ## Comments
 
 2026-10-24: Proposal confirmed by the user as written.
+
+2026-10-26: Built. `checkoutRoute()` in `packages/engine/src/checkout.ts`, shown in the station's player cards at ≥ 760 px.
+- One addition to the rules: after fewest darts, setting up on a **double** is avoided like setting up on the bull. Without it the strict order gave e.g. 62 → `D11 D20` and 80 → `D20 D20`; with it they're `T10 D16` and `T16 D16`, as in the tables.
+- Routes that still differ from the common tables are listed in `checkout.test.ts` (101 → `T17 Bull`, 99 → `T19 S2 D20`, 65 → `25 D20`, 61 → `T7 D20`, 123 → `T20 T9 D18`).
+- Checked against the simulator at 1440 px (161: `T20 · T17 · Bull` → after T20 `T17 · Bull` → after S1 nothing; 80: `T16 · D16` → `S20 · D20` → `D20`; nothing for the other player or after the third dart) and at 390 px (hidden). The hint row is reserved on every card, so the scores stay level.

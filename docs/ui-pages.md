@@ -85,6 +85,7 @@ This is the central screen.
   - One column per player, laid out side by side for 2 players and more compact for 3–8.
   - Each column shows a large avatar, the name, a huge remaining score, and a meta line: "Legs 1", "Not in" (a double-in rule isn't met yet), "Last 60" or "Last Bust".
   - The current player's column is highlighted.
+  - Desktop only: while the current player can finish this visit, a checkout route under their score, e.g. "T20 · T10 · D20", with the next field brighter. It follows the out rule and updates after each dart.
 - **Current visit** (up to 3 darts per turn):
   - Three dart slots (e.g. "T20", "S5", "D16"), with empty slots when fewer darts have landed.
   - The visit total, or "Bust".

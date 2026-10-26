@@ -441,6 +441,23 @@
   color: var(--warn);
 }
 
+/* The checkout route under the thrower's score (desktop only); the next field stands out. */
+.checkout {
+  color: var(--muted);
+  font-family: var(--font-pixel);
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+
+.checkout-dot {
+  margin: 0 0.5em;
+  color: var(--faint);
+}
+
+.checkout-next {
+  color: var(--text);
+}
+
 /* Three to eight players on a phone: a compact row each. */
 .scoreboard.many {
   grid-template-columns: 1fr;
@@ -511,8 +528,9 @@
     grid-template-areas:
       "avatar name"
       "avatar meta"
-      "score score";
-    grid-template-rows: auto auto 1fr;
+      "score score"
+      "checkout checkout";
+    grid-template-rows: auto auto 1fr auto;
     align-items: center;
     gap: 8px 20px;
     padding: 24px 28px;
@@ -545,6 +563,12 @@
     align-self: end;
     margin-top: 12px;
     font-size: clamp(96px, min(13vw, 24vh), 220px);
+  }
+
+  .checkout {
+    grid-area: checkout;
+    min-height: 1.2em;
+    font-size: 24px;
   }
 
   .throwing {

@@ -1,8 +1,10 @@
 import {
+  checkoutRoute,
   type DartView,
   MAX_PLAYERS,
   MIN_PLAYERS,
   type PlayerIndex,
+  type Segment,
   type X01Settings,
 } from "@n4/engine";
 import type { MatchView, StationCommand } from "@n4/server/api";
@@ -268,7 +270,7 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
   const thrower = match.players[visit?.player ?? match.state.currentPlayer];
   return (
     <section className="match">
-      <Scoreboard match={match} onDart={setCorrecting} onAdd={() => setAdding(true)} />
+      <Scoreboard match={match} onDart={setCorrecting} onAdd={() => setAdding(true)} hints />
 
       <div className="match-actions">
         <button
@@ -360,23 +362,38 @@ interface ScoreboardProps {
   onDart?: (dart: DartView) => void;
   /** The next empty slot can be tapped to add a dart the board missed. */
   onAdd?: () => void;
+  /** Show the thrower's checkout route on wide screens. */
+  hints?: boolean;
 }
 
 /** Scores, the current visit and whose turn it is. */
 export function Scoreboard(props: ScoreboardProps) {
   return (
     <>
-      <PlayerCards match={props.match} />
+      <PlayerCards match={props.match} hints={props.hints ?? false} />
       <VisitPanel {...props} />
     </>
   );
 }
 
-/** A card per player: avatar, name, what's left, legs and last visit; the thrower's framed. */
-export function PlayerCards({ match }: { match: MatchView }) {
+/** The route to finish this visit for the thrower, or null when there's none to show. */
+function checkoutHint(match: MatchView): Segment[] | null {
+  const { state, settings } = match;
+  const thrower = state.players[state.currentPlayer];
+  if (state.phase !== "throwing" || !thrower?.isIn) return null;
+  const thrown = state.currentVisit?.darts.filter((d) => !d.ignored).length ?? 0;
+  return checkoutRoute(thrower.remaining, 3 - thrown, settings.outRule);
+}
+
+/**
+ * A card per player: avatar, name, what's left, legs and last visit; the thrower's framed.
+ * With `hints`, the thrower's card shows the checkout route on wide screens.
+ */
+export function PlayerCards({ match, hints = false }: { match: MatchView; hints?: boolean }) {
   const { state, players, settings } = match;
   const leg = state.legs.at(-1);
   const nameOf = (player: PlayerIndex) => players[player]?.name ?? "?";
+  const route = hints ? checkoutHint(match) : null;
 
   const lastVisitOf = (player: PlayerIndex) => {
     const last = leg?.visits.findLast((v) => v.player === player);
@@ -399,6 +416,20 @@ export function PlayerCards({ match }: { match: MatchView }) {
             {players[p] && <Avatar player={players[p]} large />}
             <div className="player-name">{nameOf(p)}</div>
             <div className="remaining">{player.remaining}</div>
+            {/* On every card, so the scores stay level whoever has a route. */}
+            {hints && (
+              <div className="checkout wide-only">
+                {(active ? (route ?? []) : []).map((segment, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: a route can repeat a field (T20 T20 Bull).
+                  <Fragment key={i}>
+                    {i > 0 && <span className="checkout-dot">·</span>}
+                    <span className={i === 0 ? "checkout-next" : undefined}>
+                      {dartLabel(segment)}
+                    </span>
+                  </Fragment>
+                ))}
+              </div>
+            )}
             <div className="player-meta">
               {!player.isIn ? (
                 <span className="not-in">Not in</span>
