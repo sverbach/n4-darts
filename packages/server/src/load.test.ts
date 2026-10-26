@@ -33,13 +33,15 @@ const NOISE_MS = 2;
 let template: string;
 beforeAll(() => {
   template = join(mkdtempSync(join(tmpdir(), "n4-load-")), "template.db");
-  const db = openDb(template);
+  // Seeded in memory and written out once: a write per event to a file is slow on CI disks.
+  const db = openDb(":memory:");
   for (const name of ["Ann", "Bob", "Cid"]) {
     db.addPlayer({ id: name.toLowerCase(), name, archived: false });
   }
   seedHistory(db, { matches: HISTORY, playerIds: ["ann", "bob", "cid"], startScore: 701 });
+  db.backupTo(template);
   db.close();
-});
+}, 30_000);
 
 let sim: BoardSim | undefined;
 const closers: (() => Promise<unknown>)[] = [];
