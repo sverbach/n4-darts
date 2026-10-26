@@ -3,6 +3,7 @@
 // always derived from that log (docs/adr/0002).
 
 import { randomUUID } from "node:crypto";
+import { performance } from "node:perf_hooks";
 import {
   defaultX01Settings,
   isSegment,
@@ -17,9 +18,11 @@ import {
   type BoardEvent,
   type BoardThrow,
   type DetectedDart,
+  type GatewayStats,
   toDetectedDart,
 } from "./board/gateway.ts";
 import type { Db, StoredEvent } from "./db.ts";
+import { diagnostics } from "./diagnostics.ts";
 import { matchPlayer } from "./players.ts";
 
 export type { StationCommand, StationView };
@@ -30,6 +33,8 @@ export interface BoardControl {
   start?(): Promise<void>;
   stop?(): Promise<void>;
   calibrate?(): Promise<void>;
+  /** How the board connection is doing, for /admin diagnostics. */
+  stats?(): GatewayStats;
 }
 
 export type BoardAction = "start" | "stop" | "calibrate" | "reset";
@@ -56,6 +61,8 @@ export interface Station {
   subscribe(listener: (view: StationView) => void): () => void;
   /** Sends a command to the board; throws a `CommandError` the station page can show. */
   boardCommand(action: BoardAction): Promise<void>;
+  /** The board connection's numbers, if the board reports them. */
+  boardStats(): GatewayStats | null;
 }
 
 export function createStation(options: { id: number; db: Db; board: BoardControl }): Station {
@@ -249,7 +256,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
     });
   }
 
-  function handleBoardEvent(event: BoardEvent) {
+  function applyBoardEvent(event: BoardEvent) {
     switch (event.type) {
       case "BoardOnline":
         boardOnline = true;
@@ -304,6 +311,15 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
         return;
     }
     notify();
+  }
+
+  function handleBoardEvent(event: BoardEvent) {
+    const before = events.length;
+    applyBoardEvent(event);
+    // A recorded dart has reached the station's streams now (notify writes to them).
+    if (event.type === "DartDetected" && event.receivedAt !== undefined && events.length > before) {
+      diagnostics.dart(id, event.name, performance.now() - event.receivedAt);
+    }
   }
 
   async function command(cmd: StationCommand): Promise<StationView> {
@@ -392,6 +408,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
     release,
     drop,
     setNotice,
+    boardStats: () => board.stats?.() ?? null,
     async boardCommand(action) {
       const send = action === "reset" ? board.reset : board[action];
       if (!send) throw new CommandError("this board can't do that");

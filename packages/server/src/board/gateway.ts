@@ -1,6 +1,7 @@
 // One connection to one Autodarts Board Manager (docs/adr/0001). Turns its full-state snapshots
 // into board events and sends commands. Knows nothing about games.
 
+import { performance } from "node:perf_hooks";
 import type { Segment } from "@n4/engine";
 
 /** A Board Manager state snapshot (docs/board-manager-api.md). */
@@ -32,7 +33,8 @@ export interface DetectedDart {
 export type BoardEvent =
   | { type: "BoardOnline"; snapshot: BoardSnapshot }
   | { type: "BoardOffline" }
-  | ({ type: "DartDetected" } & DetectedDart)
+  /** `receivedAt`: when the board's message arrived (`performance.now()`), for diagnostics. */
+  | ({ type: "DartDetected"; receivedAt?: number } & DetectedDart)
   | ({ type: "DartRevised" } & DetectedDart)
   | { type: "TakeoutStarted" }
   | { type: "TakeoutFinished" }
@@ -49,8 +51,19 @@ export interface BoardGatewayOptions {
   maxReconnectDelayMs?: number;
 }
 
+/** How the connection is doing, for /admin diagnostics. */
+export interface GatewayStats {
+  /** Times the connection was opened again after the first. */
+  reconnects: number;
+  /** When the board last sent anything (`Date.now()`); null if it never has. */
+  lastMessageAt: number | null;
+  /** The last reset, start or stop, and how long the board took to answer. */
+  lastCommand: { name: string; ms: number; ok: boolean; at: string } | null;
+}
+
 export interface BoardGateway {
   readonly online: boolean;
+  stats(): GatewayStats;
   start(): Promise<void>;
   stop(): Promise<void>;
   reset(): Promise<void>;
@@ -138,6 +151,7 @@ export function createBoardGateway(options: BoardGatewayOptions): BoardGateway {
   let closed = false;
   let delay = minDelay;
   let timer: ReturnType<typeof setTimeout> | undefined;
+  const stats: GatewayStats = { reconnects: -1, lastMessageAt: null, lastCommand: null };
 
   const emit = (events: BoardEvent[]) => {
     // After close() the owner may already be gone (e.g. its database closed on shutdown).
@@ -145,8 +159,14 @@ export function createBoardGateway(options: BoardGatewayOptions): BoardGateway {
     for (const event of events) options.onEvent(event);
   };
 
-  function applyLive(next: BoardSnapshot) {
-    if (last) emit(diffSnapshots(last, next, "live"));
+  function applyLive(next: BoardSnapshot, receivedAt: number) {
+    if (last) {
+      emit(
+        diffSnapshots(last, next, "live").map((event) =>
+          event.type === "DartDetected" ? { ...event, receivedAt } : event,
+        ),
+      );
+    }
     last = next;
   }
 
@@ -154,6 +174,7 @@ export function createBoardGateway(options: BoardGatewayOptions): BoardGateway {
     const res = await fetch(`${base}/api/state`);
     if (!res.ok) throw new Error(`GET /api/state: ${res.status}`);
     const snapshot = (await res.json()) as BoardSnapshot;
+    stats.lastMessageAt = Date.now();
     // The first snapshot is the baseline: darts already on the board aren't news.
     // After a reconnect, whatever changed while we were away is diffed in.
     const missed = last ? diffSnapshots(last, snapshot, "resync") : [];
@@ -176,18 +197,21 @@ export function createBoardGateway(options: BoardGatewayOptions): BoardGateway {
 
   function connect() {
     if (closed) return;
+    stats.reconnects += 1;
     const socket = new WebSocket(`${base.replace(/^http/, "ws")}/api/events`);
     ws = socket;
     socket.addEventListener("open", () => {
       sync().catch(() => socket.close());
     });
     socket.addEventListener("message", (e) => {
+      const receivedAt = performance.now();
+      stats.lastMessageAt = Date.now();
       // Messages arriving before the sync's snapshot are dropped: they are almost always already
       // reflected in it. A change in the few milliseconds between the board answering the sync
       // and its response arriving would be missed until the next message; darts are seconds apart.
       if (!online) return;
       const message = JSON.parse(String(e.data));
-      if (message.type === "state") applyLive(message.data as BoardSnapshot);
+      if (message.type === "state") applyLive(message.data as BoardSnapshot, receivedAt);
     });
     // A refused handshake can fire "error" without ever firing "close", leaving the socket stuck
     // in CONNECTING; so either event, or a connect timeout, abandons this socket.
@@ -203,11 +227,20 @@ export function createBoardGateway(options: BoardGatewayOptions): BoardGateway {
   }
 
   async function command(method: "PUT" | "POST", path: string, timeoutMs = 3000) {
-    const res = await fetch(`${base}/api/${path}`, {
-      method,
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-    if (!res.ok) throw new Error(`${method} /api/${path}: ${res.status}`);
+    const start = performance.now();
+    let ok = false;
+    try {
+      const res = await fetch(`${base}/api/${path}`, {
+        method,
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      if (!res.ok) throw new Error(`${method} /api/${path}: ${res.status}`);
+      ok = true;
+    } finally {
+      const name = path.split("/")[0] === "config" ? "calibrate" : path;
+      const at = new Date().toISOString();
+      stats.lastCommand = { name, ms: performance.now() - start, ok, at };
+    }
   }
 
   connect();
@@ -216,6 +249,7 @@ export function createBoardGateway(options: BoardGatewayOptions): BoardGateway {
     get online() {
       return online;
     },
+    stats: () => ({ ...stats, reconnects: Math.max(0, stats.reconnects) }),
     start: () => command("PUT", "start"),
     stop: () => command("PUT", "stop"),
     reset: () => command("POST", "reset"),

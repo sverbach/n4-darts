@@ -155,6 +155,7 @@ describe("live streams", () => {
           return () => listeners.delete(listener);
         },
         () => ({ n: listeners.size }),
+        { kind: "display" },
       ),
     );
     const base = await listen(app);

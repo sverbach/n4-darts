@@ -100,6 +100,7 @@ export function createStationRegistry(
         start: () => entry.gateway.start(),
         stop: () => entry.gateway.stop(),
         calibrate: () => entry.gateway.calibrate(),
+        stats: () => entry.gateway.stats(),
       },
     });
     connect(entry, config.boardUrl);
@@ -189,6 +190,7 @@ export function startStation(
       start: () => gateway.start(),
       stop: () => gateway.stop(),
       calibrate: () => gateway.calibrate(),
+      stats: () => gateway.stats(),
     },
   });
   const gateway = createBoardGateway({

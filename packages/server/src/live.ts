@@ -2,8 +2,11 @@
 // change (a database write or a station's view changing); each stream recomputes its view after a
 // change and sends it only when it's different from the last one it sent.
 
+import { performance } from "node:perf_hooks";
 import type { FastifyReply, FastifyRequest } from "fastify";
+import type { StreamKind } from "./api.ts";
 import type { Db } from "./db.ts";
+import { diagnostics } from "./diagnostics.ts";
 import type { StationDirectory } from "./stations.ts";
 
 export interface ChangeFeed {
@@ -56,13 +59,18 @@ export function createChangeFeed(db: Db, stations: StationDirectory): ChangeFeed
   };
 }
 
-/** Answers the request with a stream: the view now, then again whenever it changes. */
+/**
+ * Answers the request with a stream: the view now, then again whenever it changes. `stream` says
+ * what it shows, for /admin diagnostics.
+ */
 export function streamView(
   request: FastifyRequest,
   reply: FastifyReply,
   subscribe: (listener: () => void) => () => void,
   view: () => unknown,
+  stream: { kind: StreamKind; label?: string },
 ) {
+  const recorder = diagnostics.openStream(stream.kind, stream.label ?? null, request);
   reply.hijack();
   const res = reply.raw;
   res.writeHead(200, {
@@ -74,18 +82,22 @@ export function streamView(
     connection: "keep-alive",
   });
   let last = "";
-  const send = (value: unknown) => {
-    const json = JSON.stringify(value);
+  const send = () => {
+    const start = performance.now();
+    const json = JSON.stringify(view());
+    recorder.computed(performance.now() - start);
     if (json === last) return;
     last = json;
     res.write(`data: ${json}\n\n`);
+    recorder.sent();
   };
-  send(view());
-  const unsubscribe = subscribe(() => send(view()));
+  send();
+  const unsubscribe = subscribe(send);
   // Well under nginx's default proxy_read_timeout of 60 s, so a proxy doesn't drop a quiet stream.
   const keepAlive = setInterval(() => res.write(": keep-alive\n\n"), 25_000);
   request.raw.on("close", () => {
     clearInterval(keepAlive);
     unsubscribe();
+    recorder.close();
   });
 }

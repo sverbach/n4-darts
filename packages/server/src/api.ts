@@ -328,3 +328,55 @@ export interface PlayerProfile {
     average: number | null;
   }[];
 }
+
+/** What a live stream shows, for /admin diagnostics. */
+export type StreamKind =
+  | "station"
+  | "watch"
+  | "display"
+  | "admin tournament"
+  | "stations"
+  | "admin stations"
+  | "match detail";
+
+/** One board connection, for /admin diagnostics. */
+export interface BoardDiagnostics {
+  station: number;
+  name: string;
+  online: boolean;
+  /** Times the connection was opened again since the server started. */
+  reconnects: number;
+  /** Seconds since the board last sent anything; null if it never has. */
+  sinceMessageSeconds: number | null;
+  /** The last reset, start or stop sent to the board, and how long it took to answer. */
+  lastCommand: { name: string; ms: number; ok: boolean; at: string } | null;
+}
+
+/** GET /api/admin/diagnostics: whether the server keeps up (diagnostics ticket). */
+export interface DiagnosticsView {
+  startedAt: string;
+  /** How long the event loop was blocked, over the last minute (or the `seconds` measured so far). */
+  eventLoop: { seconds: number; p50Ms: number; p99Ms: number; maxMs: number };
+  streams: {
+    kind: StreamKind;
+    /** E.g. "Station 1" or a match id. */
+    label: string | null;
+    client: string;
+    userAgent: string;
+    openSeconds: number;
+    updates: number;
+  }[];
+  /** Per kind of stream, how long computing its view took, over the last minute. */
+  views: { kind: StreamKind; perMinute: number; averageMs: number | null; maxMs: number | null }[];
+  database: { writesPerMinute: number; slowestMs: number | null; slowestWrite: string | null };
+  boards: BoardDiagnostics[];
+  /** The last 20 darts: from the board's message to the station's streams, newest first. */
+  darts: { station: number; name: string; ms: number; at: string }[];
+  /** This request: whether it came through a proxy. */
+  request: {
+    client: string;
+    host: string | null;
+    proxied: boolean;
+    headers: Record<string, string>;
+  };
+}

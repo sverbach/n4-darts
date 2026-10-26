@@ -183,7 +183,7 @@ Organiser pages, used mostly on a phone.
 
 **Layout once unlocked:**
 - A top bar with "Admin" and a "Log out" button (only shown if a PIN is set).
-- Tab navigation: **Tournament · Players · Stations · Matches**.
+- Tab navigation: **Tournament · Players · Stations · Matches · Diagnostics**.
 - Each section has an h1 title and a one-line description.
 
 ### `/admin/tournament` (the default tab)
@@ -261,3 +261,15 @@ There's one tournament at a time, and the tab shows one of three states.
   - The hint "Tap a dart to correct it."
   - Per leg, the heading "Leg 1 · Ann starts · Ann won" and a list of visits. Each visit shows the player name, the dart buttons and the visit score, with "Bust" or ✓ for a checkout.
   - A corrected dart shows its original struck through, and a dart added by hand on the station is marked "added". Tapping a dart opens the segment picker.
+
+### `/admin/diagnostics`
+Whether the server keeps up, for explaining a slow evening from data. It refreshes every 2 seconds. The timings are only collected while the page has been open in the last 2 minutes, so they start fresh when you open it.
+- **Event loop:** how long the server was blocked over the last minute: median, 99th percentile and longest.
+- **Darts:** the last 20 darts, each with how long it took from the board's message to the station's screens.
+- **Boards:** per station, online or offline, reconnects since the server started, time since the board's last message, and the last reset/start/stop with its round trip.
+- **Live streams:** every open screen, with its kind (station, watch, display, admin tournament, stations, admin stations, match detail), client address, how long it has been open, updates sent and browser.
+- **Views:** per kind of stream, how often its view was computed in the last minute, and how long that took on average and at most.
+- **Database:** writes in the last minute and the slowest one.
+- **This page's request:** "Direct" or "Through a proxy", with the `x-forwarded-*`, `via` and `x-real-ip` headers it came with.
+
+Values that worry are shown in amber and red.

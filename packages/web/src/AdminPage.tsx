@@ -1,5 +1,6 @@
 import type { AdminSession } from "@n4/server/api";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { DiagnosticsAdmin } from "./DiagnosticsAdmin.tsx";
 import { Logo } from "./Logo.tsx";
 import { MatchesAdmin } from "./MatchesAdmin.tsx";
 import { PixelIcon } from "./PixelIcon.tsx";
@@ -16,6 +17,10 @@ const sections = {
   },
   stations: { title: "Stations", blurb: "The dartboards in the room and how to reach them." },
   matches: { title: "Matches", blurb: "What's on each board, and every finished match." },
+  diagnostics: {
+    title: "Diagnostics",
+    blurb: "Whether the server keeps up: for explaining a slow evening.",
+  },
 } as const;
 
 export type AdminSection = keyof typeof sections;
@@ -71,6 +76,12 @@ export function AdminPage({ section }: { section: AdminSection }) {
                 key={key}
                 href={`/admin/${key}`}
                 aria-current={key === section ? "page" : undefined}
+                // On a phone the row scrolls: keep the current tab in sight.
+                ref={
+                  key === section
+                    ? (a) => a?.scrollIntoView({ block: "nearest", inline: "nearest" })
+                    : undefined
+                }
               >
                 {title}
               </a>
@@ -101,6 +112,8 @@ export function AdminPage({ section }: { section: AdminSection }) {
           <PlayersAdmin />
         ) : section === "matches" ? (
           <MatchesAdmin />
+        ) : section === "diagnostics" ? (
+          <DiagnosticsAdmin />
         ) : (
           <StationsAdmin />
         )}

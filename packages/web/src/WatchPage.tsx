@@ -8,7 +8,7 @@ import { useStation } from "./useStation.ts";
 
 /** A station's scoreboard for a TV or the projector: live, with nothing to press. */
 export function WatchPage({ id }: { id: number }) {
-  const { view, connected } = useStation(id);
+  const { view, connected } = useStation(id, { watch: true });
   const match = view?.match;
 
   return (

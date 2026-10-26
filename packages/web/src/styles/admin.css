@@ -100,15 +100,19 @@
   text-underline-offset: 4px;
 }
 
+/* One row; on a narrow phone it scrolls sideways to the last tabs. */
 .admin-nav {
   grid-column: 1 / -1;
   grid-row: 2;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
   border-top: 1px solid var(--border);
 }
 
 .admin-nav a {
+  flex: 1 0 auto;
+  padding: 0 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -197,6 +201,7 @@
   }
 
   .admin-nav a {
+    flex: none;
     min-height: 64px;
     padding: 0 16px;
     font-size: 12px;
@@ -260,8 +265,10 @@
 
 .admin-section-head {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
+  gap: 4px 16px;
 }
 
 .admin-section h2 .count {
@@ -1581,4 +1588,74 @@
 
 .visit-list li.bust .visit-score {
   color: var(--danger);
+}
+
+/* Diagnostics: compact tables and a few big numbers, coloured by how worrying they are. */
+.diagnostics {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.diag-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.diag-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.diag-stats dd {
+  margin: 0;
+  font-size: 28px;
+}
+
+.diag-value.ok {
+  color: var(--ok);
+}
+
+.diag-value.warn {
+  color: var(--warn);
+}
+
+.diag-value.danger {
+  color: var(--danger);
+}
+
+.diag-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.diag-table th {
+  padding: 0 12px 8px 0;
+  color: var(--muted);
+  font-weight: 400;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.diag-table td {
+  padding: 8px 12px 8px 0;
+  border-top: 1px solid var(--line-soft);
+  white-space: nowrap;
+}
+
+.diag-table td.muted {
+  color: var(--muted);
+}
+
+.diag-agent {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

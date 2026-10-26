@@ -3,6 +3,7 @@ import fastifyStatic from "@fastify/static";
 import Fastify from "fastify";
 import { registerAdmin } from "./admin.ts";
 import type { Db } from "./db.ts";
+import { diagnostics } from "./diagnostics.ts";
 import { displayView } from "./display.ts";
 import { createChangeFeed, streamView } from "./live.ts";
 import { registerMatches } from "./matches.ts";
@@ -53,12 +54,14 @@ export function buildApp(options: AppOptions = {}) {
     const db = options.db;
     registerTournaments(app, tournaments);
     app.get("/api/admin/tournament/live", (request, reply) =>
-      streamView(request, reply, feed.subscribe, () => tournaments.view()),
+      streamView(request, reply, feed.subscribe, () => tournaments.view(), {
+        kind: "admin tournament",
+      }),
     );
     const display = () => displayView(db, stations, tournaments, stats);
     app.get("/api/display", async () => display());
     app.get("/api/display/live", (request, reply) =>
-      streamView(request, reply, feed.subscribe, display),
+      streamView(request, reply, feed.subscribe, display, { kind: "display" }),
     );
     if (options.scheduler) {
       const scheduler = createScheduler(options.db, stations, tournaments, options.scheduler);
@@ -66,10 +69,33 @@ export function buildApp(options: AppOptions = {}) {
     }
   }
 
+  app.get("/api/admin/diagnostics", async (request) =>
+    diagnostics.view(
+      request,
+      stations.list().map((station) => {
+        const { id, name, boardOnline } = station.view();
+        const stats = station.boardStats();
+        return {
+          station: id,
+          name,
+          online: boardOnline,
+          reconnects: stats?.reconnects ?? 0,
+          sinceMessageSeconds:
+            stats?.lastMessageAt == null
+              ? null
+              : Math.round((Date.now() - stats.lastMessageAt) / 1000),
+          lastCommand: stats?.lastCommand ?? null,
+        };
+      }),
+    ),
+  );
+
   app.get("/api/stations", async () => stations.list().map((s) => s.view()));
   if (feed) {
     app.get("/api/stations/live", (request, reply) =>
-      streamView(request, reply, feed.subscribe, () => stations.list().map((s) => s.view())),
+      streamView(request, reply, feed.subscribe, () => stations.list().map((s) => s.view()), {
+        kind: "stations",
+      }),
     );
   }
 
@@ -112,11 +138,18 @@ export function buildApp(options: AppOptions = {}) {
   );
 
   // Live station state as Server-Sent Events: the full view on connect and after every change.
-  app.get<{ Params: { id: string } }>("/api/stations/:id/live", (request, reply) => {
-    const station = stations.get(Number(request.params.id));
-    if (!station) return reply.code(404).send({ error: "no such station" });
-    streamView(request, reply, station.subscribe, station.view);
-  });
+  // `?view=watch` from /watch, so diagnostics can tell the projector from the kiosk.
+  app.get<{ Params: { id: string }; Querystring: { view?: string } }>(
+    "/api/stations/:id/live",
+    (request, reply) => {
+      const station = stations.get(Number(request.params.id));
+      if (!station) return reply.code(404).send({ error: "no such station" });
+      streamView(request, reply, station.subscribe, station.view, {
+        kind: request.query.view === "watch" ? "watch" : "station",
+        label: station.view().name,
+      });
+    },
+  );
 
   if (options.webDir && existsSync(options.webDir)) {
     app.register(fastifyStatic, { root: options.webDir });

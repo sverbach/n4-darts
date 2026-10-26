@@ -35,7 +35,9 @@ export function registerStationAdmin(
   app.get("/api/admin/stations", async () => registry.configs().map(adminView));
   if (feed) {
     app.get("/api/admin/stations/live", (request, reply) =>
-      streamView(request, reply, feed.subscribe, () => registry.configs().map(adminView)),
+      streamView(request, reply, feed.subscribe, () => registry.configs().map(adminView), {
+        kind: "admin stations",
+      }),
     );
   }
 

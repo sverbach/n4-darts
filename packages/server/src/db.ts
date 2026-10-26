@@ -3,6 +3,7 @@
 import { DatabaseSync } from "node:sqlite";
 import type { MatchEvent, X01Settings } from "@n4/engine";
 import type { Player, PlayerInput } from "./api.ts";
+import { diagnostics } from "./diagnostics.ts";
 import type { Entrant, Placing, TournamentConfig } from "./tournament/types.ts";
 
 export interface MatchRecord {
@@ -717,14 +718,14 @@ function withChanges(store: Omit<Db, "onChange">): Db {
   for (const name of MATCH_WRITES) {
     const write = store[name] as (id: string, ...rest: unknown[]) => void;
     (db[name] as typeof write) = (id, ...rest) => {
-      write(id, ...rest);
+      diagnostics.timeWrite(name, () => write(id, ...rest));
       announce({ matchId: id });
     };
   }
   for (const name of OTHER_WRITES) {
     const write = store[name] as (...args: unknown[]) => void;
     (db[name] as typeof write) = (...args) => {
-      write(...args);
+      diagnostics.timeWrite(name, () => write(...args));
       announce({ matchId: name === "createMatch" ? (args[0] as NewMatch).id : null });
     };
   }

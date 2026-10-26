@@ -103,10 +103,16 @@ export function registerMatches(
     if (!first || !feed) return reply.code(404).send({ error: "no such match" });
     let last = first;
     // A match removed meanwhile (set up, never started) keeps showing its last state.
-    streamView(request, reply, feed.subscribe, () => {
-      last = db.getMatch(id) ?? last;
-      return detail(last, db.events(id));
-    });
+    streamView(
+      request,
+      reply,
+      feed.subscribe,
+      () => {
+        last = db.getMatch(id) ?? last;
+        return detail(last, db.events(id));
+      },
+      { kind: "match detail", label: id },
+    );
   });
 
   app.post<{ Params: { id: string }; Body: { dartId?: unknown; segment?: unknown } }>(
