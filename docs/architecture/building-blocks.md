@@ -117,7 +117,6 @@ flowchart TB
     matches --> stations
     matches --> players
     matches --> live
-    players --> ratings
 
     stationAdmin --> live
     stations --> station
@@ -169,7 +168,6 @@ Shared: `Avatar.tsx`, `Logo.tsx`, `PixelIcon.tsx`, `Progress.tsx` and `styles/` 
 Where the code and `functions.md` don't line up yet:
 
 - **Tournaments and Scheduling depend on each other.** The scheduler needs Tournaments for the next ready match. But `tournamentView.ts` takes the queue from `scheduler.ts` (`queueOf`) to show it in /admin, so the modules form a loop: `tournaments.ts` → `tournamentView.ts` → `scheduler.ts` → `tournaments.ts`. It's the same pattern as the awards before one-way-dependencies ticket 02: a view inside Tournaments reaching for something another cluster owns. The same fix would work here: the route adds the queue from Scheduling.
-- **Players depends on Ratings.** The organiser's player list shows each player's rating (`players.ts` → `ratings.ts`). `functions.md` has Players depending on nothing. Either the arrow goes in `functions.md` (Players → Ratings, harmless: Ratings only needs Matches), or the rating is added by the route, as the awards are now.
 - **Live views has no single home.** The streams are in `live.ts` and the projector's view is in `display.ts`, but the tournament's view is in `tournamentView.ts` (Tournaments) and the match detail's stream is registered in `matches.ts`. That's fine while it's small, and it's why Matches and Stations depend on `live.ts`.
 - **Match play is split between engine and server.** The rules are pure in `engine`; `station.ts` runs them at a station and holds the I/O. That split is on purpose (ADR 0002, ADR 0006). The engine's dart stats are also used by Stats, which is why the engine sits under two clusters.
 - **`db.ts` is shared by every cluster.** One module holds all the tables and queries. It keeps the clusters apart from SQL, but it's the one place every change goes through.

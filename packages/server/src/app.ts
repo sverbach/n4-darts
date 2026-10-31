@@ -8,6 +8,7 @@ import { displayView } from "./display.ts";
 import { createChangeFeed, streamView } from "./live.ts";
 import { registerMatches } from "./matches.ts";
 import { registerPlayers } from "./players.ts";
+import { ratingOf } from "./ratings.ts";
 import { createScheduler, type SchedulerOptions } from "./scheduler.ts";
 import { CommandError, type Station, type StationCommand } from "./station.ts";
 import { registerStationAdmin } from "./stationAdmin.ts";
@@ -42,7 +43,8 @@ export function buildApp(options: AppOptions = {}) {
   registerAdmin(app, options.adminPin);
   const stats = options.db ? createStats(options.db) : undefined;
   if (options.db && stats) {
-    registerPlayers(app, options.db);
+    const db = options.db;
+    registerPlayers(app, db, (id) => ratingOf(db, id));
     registerStats(app, stats);
   }
   const tournaments = options.db ? createTournaments(options.db, stations) : undefined;

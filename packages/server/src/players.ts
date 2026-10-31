@@ -5,7 +5,6 @@ import { randomUUID } from "node:crypto";
 import type { FastifyInstance, FastifyReply } from "fastify";
 import type { AdminPlayer, MatchPlayer, Player } from "./api.ts";
 import type { Db } from "./db.ts";
-import { ratingOf } from "./ratings.ts";
 
 /** Trimmed, inner whitespace collapsed; empty means invalid. */
 const cleanName = (name: unknown) =>
@@ -24,7 +23,12 @@ export const MAX_PHOTO_BYTES = 1024 * 1024;
 
 const isJpeg = (data: Buffer) => data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff;
 
-export function registerPlayers(app: FastifyInstance, db: Db) {
+/** `ratingOf` is handed in: the organiser's list shows the rating, but it's Ratings' to compute. */
+export function registerPlayers(
+  app: FastifyInstance,
+  db: Db,
+  ratingOf: (playerId: string) => number | null,
+) {
   /** Answers 400/409 and returns null if the name can't be used (by anyone but `self`). */
   function usableName(raw: unknown, reply: FastifyReply, self?: string): string | null {
     const name = cleanName(raw);
@@ -50,7 +54,7 @@ export function registerPlayers(app: FastifyInstance, db: Db) {
   app.get(
     "/api/admin/players",
     async (): Promise<AdminPlayer[]> =>
-      db.players({ includeArchived: true }).map((p) => ({ ...p, rating: ratingOf(db, p.id) })),
+      db.players({ includeArchived: true }).map((p) => ({ ...p, rating: ratingOf(p.id) })),
   );
 
   function add(raw: unknown, reply: FastifyReply) {
