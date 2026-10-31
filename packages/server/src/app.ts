@@ -48,7 +48,7 @@ export function buildApp(options: AppOptions = {}) {
   const tournaments = options.db ? createTournaments(options.db, stations, stats) : undefined;
   const feed = options.db ? createChangeFeed(options.db, stations) : undefined;
   if (feed) app.addHook("onClose", async () => feed.close());
-  registerMatches(app, stations, options.db, tournaments, feed);
+  registerMatches(app, stations, options.db, tournaments?.resultGuard, feed);
   if (isRegistry(stations)) registerStationAdmin(app, stations, feed);
   if (options.db && tournaments && feed) {
     const db = options.db;

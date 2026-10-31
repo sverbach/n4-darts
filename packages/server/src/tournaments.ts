@@ -7,6 +7,7 @@ import type { FastifyInstance, FastifyReply } from "fastify";
 import type { TournamentAdminView } from "./api.ts";
 import type { Db, MatchRecord, StoredEvent, TournamentRecord } from "./db.ts";
 import { estimateMinutes, legMinutes } from "./estimate.ts";
+import type { ResultGuard } from "./matches.ts";
 import { ratingOf } from "./ratings.ts";
 import type { StationDirectory } from "./stations.ts";
 import type { Stats } from "./stats.ts";
@@ -602,8 +603,8 @@ export function createTournaments(db: Db, stations: StationDirectory, stats?: St
     endEarly,
     withdraw,
     addLate,
-    correctionProblem,
-    corrected,
+    /** Matches asks this before and after a correction (TOUR-14). */
+    resultGuard: { problem: correctionProblem, changed: corrected } satisfies ResultGuard,
     placed,
     avoids,
     subscribe(listener: () => void) {

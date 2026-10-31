@@ -11,13 +11,23 @@ import { type ChangeFeed, streamView } from "./live.ts";
 import { matchPlayer } from "./players.ts";
 import { CommandError } from "./station.ts";
 import type { StationDirectory } from "./stations.ts";
-import type { Tournaments } from "./tournaments.ts";
+
+/**
+ * A say over a stored result changing, for whatever builds on results (a tournament: TOUR-14).
+ * Matches asks it without knowing who answers.
+ */
+export interface ResultGuard {
+  /** Why a correction can't be made, or null if it can; asked with the log it would leave. */
+  problem(match: MatchRecord, events: StoredEvent[]): string | null;
+  /** Told once a correction has been stored. */
+  changed(match: MatchRecord): void;
+}
 
 export function registerMatches(
   app: FastifyInstance,
   stations: StationDirectory,
   db?: Db,
-  tournaments?: Tournaments,
+  guard?: ResultGuard,
   feed?: ChangeFeed,
 ) {
   app.post<{ Body: { station?: unknown; playerIds?: unknown; settings?: MatchSettingsInput } }>(
@@ -133,8 +143,8 @@ export function registerMatches(
         segment,
         source: "admin",
       };
-      // A tournament result may already have decided later matches.
-      const problem = tournaments?.correctionProblem(match, [...events, event]);
+      // The result may already have decided other things (a tournament's later matches).
+      const problem = guard?.problem(match, [...events, event]);
       if (problem) return reply.code(409).send({ error: problem });
 
       // A running match goes through its station, which keeps its own state and live viewers.
@@ -151,7 +161,7 @@ export function registerMatches(
         db.setWinner(match.id, winner === null ? null : (match.playerIds[winner] ?? null));
       }
       const updated = db.getMatch(match.id) as MatchRecord;
-      tournaments?.corrected(updated);
+      guard?.changed(updated);
       return detail(updated, db.events(match.id));
     },
   );
