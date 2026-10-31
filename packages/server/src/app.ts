@@ -9,7 +9,7 @@ import { createChangeFeed, streamView } from "./live.ts";
 import { registerMatches } from "./matches.ts";
 import { registerPlayers } from "./players.ts";
 import { ratingOf } from "./ratings.ts";
-import { createScheduler, type SchedulerOptions } from "./scheduler.ts";
+import { createScheduler, type SchedulerOptions, withQueue } from "./scheduler.ts";
 import { CommandError, type Station, type StationCommand } from "./station.ts";
 import { registerStationAdmin } from "./stationAdmin.ts";
 import {
@@ -55,15 +55,19 @@ export function buildApp(options: AppOptions = {}) {
   if (options.db && tournaments && feed) {
     const db = options.db;
     registerTournaments(app, tournaments);
-    // The tournament as /admin shows it, with the awards Stats gives a finished one.
-    const tournament = () => (stats ? stats.withAwards(tournaments.view()) : tournaments.view());
+    // The tournament as /admin shows it, with the queue from Scheduling and the awards from Stats.
+    const tournament = () => {
+      const { view, plan } = tournaments.shown();
+      const queued = withQueue(db, view, plan);
+      return stats ? stats.withAwards(queued) : queued;
+    };
     app.get("/api/admin/tournament", async () => tournament());
     app.get("/api/admin/tournament/live", (request, reply) =>
       streamView(request, reply, feed.subscribe, tournament, {
         kind: "admin tournament",
       }),
     );
-    const display = () => displayView(db, stations, tournaments, stats);
+    const display = () => displayView(db, stations, tournament(), stats);
     app.get("/api/display", async () => display());
     app.get("/api/display/live", (request, reply) =>
       streamView(request, reply, feed.subscribe, display, { kind: "display" }),

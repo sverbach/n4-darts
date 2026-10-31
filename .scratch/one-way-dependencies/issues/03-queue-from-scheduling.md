@@ -1,6 +1,6 @@
 # The views get the queue from Scheduling, not from Tournaments
 
-Status: needs-triage
+Status: done
 Type: task
 
 Scheduling depends on Tournaments: `scheduler.ts` takes `Tournaments` to get the next ready match. But `tournamentView.ts` (Tournaments) imports `queueOf` from `scheduler.ts` to fill `progress.queue`, which /admin shows as the queue and `/display` as "Up next". So the modules form a loop: `tournaments.ts` → `tournamentView.ts` → `scheduler.ts` → `tournaments.ts` (`docs/architecture/building-blocks.md`, Observations). It's the same pattern as the awards in ticket 02, and it gets the same fix: the views add the queue from Scheduling. Then the dependency points one way only: Scheduling → Tournaments.
@@ -25,3 +25,7 @@ No behaviour changes. This is a refactor.
   - `docs/architecture/functions.md`: check that the diagram still holds (Live views → Scheduling "up next" already says this).
 
 ## Comments
+
+2026-10-31: Confirmed by the user as written.
+
+2026-10-31: Built. `withQueue(db, view, plan)` in `scheduler.ts` fills `progress.queue` while the tournament runs; `progressView` leaves it `[]` and no longer imports `scheduler.ts`. For the plan, Tournaments now has `shown()`, which returns the view and the plan it was built from, so the plan is computed once per view (`view()` is `shown().view`). `app.ts`'s `tournament()` applies `withQueue` then `withAwards`. `displayView` takes that composed view instead of `Tournaments`, so `display.ts` no longer imports `tournaments.ts` either. New assertion in `overrides.test.ts`: `/api/display`'s "Up next" is the head of the admin queue (5 of 5 overrides tests that read the queue fail when `withQueue` does nothing). All checks pass. `building-blocks.md`: arrows (`tview → scheduler`, `display → tournaments` out, `scheduler → players` in), module rows and observations updated; `functions.md` unchanged (Live views → Scheduling "up next" already holds).

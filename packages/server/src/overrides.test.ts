@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import type { TournamentAdminView } from "./api.ts";
+import type { DisplayView, TournamentAdminView } from "./api.ts";
 import { buildApp } from "./app.ts";
 import { type Db, openDb } from "./db.ts";
 import { PAUSED } from "./scheduler.ts";
@@ -59,6 +59,12 @@ describe("organiser overrides", () => {
     expect(progress?.groups[0]?.table).toHaveLength(5);
     expect(progress?.groups[0]?.fixtures.filter((f) => f.status === "on-station")).toHaveLength(2);
     expect(Date.parse(progress?.expectedEnd ?? "")).toBeGreaterThan(Date.now());
+
+    // The projector's "Up next" is the head of the same queue.
+    const display = (await (app as ReturnType<typeof buildApp>).inject("/api/display")).json();
+    expect((display as DisplayView).upNext.map((m) => m.label)).toEqual(
+      progress?.queue.slice(0, 5).map((q) => q.label),
+    );
   });
 
   it("pauses a station: its current match carries on, nothing new comes", async () => {

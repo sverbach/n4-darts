@@ -3,7 +3,9 @@
 // matches first, then queue order, then longest-rested. Everything is derived from the database
 // on each run, so a restart just carries on.
 
+import type { TournamentAdminView } from "./api.ts";
 import type { Db, MatchRecord } from "./db.ts";
+import { matchPlayer } from "./players.ts";
 import type { StationDirectory } from "./stations.ts";
 import type { Plan } from "./tournament/plan.ts";
 import type { Tournaments } from "./tournaments.ts";
@@ -24,6 +26,25 @@ export interface QueuedMatch {
   ready: boolean;
   /** Queue order from the plan: group rounds, then knockout rounds. */
   order: number;
+}
+
+/** A tournament's view with its queue filled in, while it runs; `plan` gives the order. */
+export function withQueue(
+  db: Db,
+  view: TournamentAdminView,
+  plan: Plan | null,
+): TournamentAdminView {
+  const { tournament, progress } = view;
+  if (tournament?.status !== "running" || !progress) return view;
+  const queue = queueOf(db, tournament.id, plan).map(({ match, ready }) => ({
+    matchId: match.id,
+    label: match.label ?? "",
+    players: match.playerIds.map((id) => matchPlayer(db, id)),
+    ready,
+    held: match.held,
+    pinnedStation: match.pinnedStation,
+  }));
+  return { ...view, progress: { ...progress, queue } };
 }
 
 /** Queued matches (no station) of a tournament in the order the scheduler will hand them out. */

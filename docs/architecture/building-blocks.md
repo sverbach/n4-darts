@@ -95,7 +95,6 @@ flowchart TB
         backups["backups.ts"]
     end
 
-    display --> tournaments
     display --> stats
     display --> stations
     live --> stations
@@ -105,11 +104,11 @@ flowchart TB
     scheduler --> tournaments
     scheduler --> stations
     scheduler --> plan
+    scheduler --> players
 
     tournaments --> matches
     tournaments --> ratings
     tournaments --> stations
-    tview --> scheduler
     tview --> players
     tview --> stations
 
@@ -135,8 +134,8 @@ flowchart TB
 | `stations.ts`, `stationAdmin.ts` | Stations | The list of stations, starting and restarting each one's gateway when its board address changes, and the organiser's station pages. |
 | `players.ts` | Players | The player list, photos, archiving, and `matchPlayer` (name and photo for any view). |
 | `matches.ts` | Matches | The organiser's matches: put one on a station, the history, the detail of one match, and corrections. Offers `ResultGuard` for whoever builds on results. |
-| `tournaments.ts`, `tournament/`, `tournamentView.ts`, `estimate.ts` | Tournaments | Drafting, starting, withdrawals, late players, result changes and ending. `tournament/` is the pure part: groups, tables, knockout and the whole plan from config, entrants and results. `tournamentView.ts` puts together what /admin shows. `estimate.ts` is the duration estimate. |
-| `scheduler.ts` | Scheduling | The queue, and a tick that gives free stations their next match. Carries out pause, pin, hold, send back and play now with Tournaments. |
+| `tournaments.ts`, `tournament/`, `tournamentView.ts`, `estimate.ts` | Tournaments | Drafting, starting, withdrawals, late players, result changes and ending. `tournament/` is the pure part: groups, tables, knockout and the whole plan from config, entrants and results. `tournamentView.ts` puts together what /admin shows of the tournament's own progress. `estimate.ts` is the duration estimate. |
+| `scheduler.ts` | Scheduling | The queue, and a tick that gives free stations their next match. Carries out pause, pin, hold, send back and play now with Tournaments. `withQueue` adds the queue to the tournament's view. |
 | `ratings.ts` | Ratings | A player's rating (RATING-01). |
 | `stats.ts` | Stats | Profiles, leaderboard and awards, from the engine's per-match stats. |
 | `live.ts`, `display.ts` | Live views | `live.ts`: one change feed and the SSE streams that resend a view when it changed. `display.ts`: the projector's view. |
@@ -167,7 +166,6 @@ Shared: `Avatar.tsx`, `Logo.tsx`, `PixelIcon.tsx`, `Progress.tsx` and `styles/` 
 
 Where the code and `functions.md` don't line up yet:
 
-- **Tournaments and Scheduling depend on each other.** The scheduler needs Tournaments for the next ready match. But `tournamentView.ts` takes the queue from `scheduler.ts` (`queueOf`) to show it in /admin, so the modules form a loop: `tournaments.ts` → `tournamentView.ts` → `scheduler.ts` → `tournaments.ts`. It's the same pattern as the awards before one-way-dependencies ticket 02: a view inside Tournaments reaching for something another cluster owns. The same fix would work here: the route adds the queue from Scheduling.
-- **Live views has no single home.** The streams are in `live.ts` and the projector's view is in `display.ts`, but the tournament's view is in `tournamentView.ts` (Tournaments) and the match detail's stream is registered in `matches.ts`. That's fine while it's small, and it's why Matches and Stations depend on `live.ts`.
+- **Live views has no single home.** The streams are in `live.ts` and the projector's view is in `display.ts`, but the tournament's view is in `tournamentView.ts` (Tournaments), `app.ts` adds the queue (Scheduling) and the awards (Stats) to it, and the match detail's stream is registered in `matches.ts`. That's fine while it's small, and it's why Matches and Stations depend on `live.ts`.
 - **Match play is split between engine and server.** The rules are pure in `engine`; `station.ts` runs them at a station and holds the I/O. That split is on purpose (ADR 0002, ADR 0006). The engine's dart stats are also used by Stats, which is why the engine sits under two clusters.
 - **`db.ts` is shared by every cluster.** One module holds all the tables and queries. It keeps the clusters apart from SQL, but it's the one place every change goes through.

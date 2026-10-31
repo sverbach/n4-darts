@@ -11,7 +11,6 @@ import type {
 import type { Db, MatchRecord, TournamentRecord } from "./db.ts";
 import { legMinutes, matchMinutes } from "./estimate.ts";
 import { matchPlayer } from "./players.ts";
-import { queueOf } from "./scheduler.ts";
 import type { StationDirectory } from "./stations.ts";
 import { groupName, type Plan, type PlannedMatch } from "./tournament/plan.ts";
 
@@ -142,16 +141,8 @@ export function progressView(
     total: plan.matches.length,
     expectedEnd: finished ? null : new Date(Date.now() + minutesLeft * 60_000).toISOString(),
     stations: stationViews,
-    queue: finished
-      ? []
-      : queueOf(db, tournament.id, plan).map(({ match, ready }) => ({
-          matchId: match.id,
-          label: match.label ?? "",
-          players: match.playerIds.map((id) => matchPlayer(db, id)),
-          ready,
-          held: match.held,
-          pinnedStation: match.pinnedStation,
-        })),
+    // The queue is Scheduling's; the views add it (withQueue in scheduler.ts).
+    queue: [],
     groups,
     bracket,
     placings:

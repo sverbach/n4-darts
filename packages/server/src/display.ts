@@ -1,10 +1,9 @@
 // What the projector shows (/display): the tournament with live station scores, or the stations.
 
-import type { DisplayView, MatchView, ScoreCard } from "./api.ts";
+import type { DisplayView, MatchView, ScoreCard, TournamentAdminView } from "./api.ts";
 import type { Db } from "./db.ts";
 import type { StationDirectory } from "./stations.ts";
 import type { Stats } from "./stats.ts";
-import type { Tournaments } from "./tournaments.ts";
 
 /** How many queued matches "Up next" lists. */
 const UP_NEXT = 5;
@@ -40,11 +39,10 @@ export function scoreCard(match: MatchView): ScoreCard {
 export function displayView(
   db: Db,
   stations: StationDirectory,
-  tournaments: Tournaments | undefined,
+  /** The tournament as /admin shows it, with its queue and awards. */
+  admin: TournamentAdminView | undefined,
   stats?: Stats,
 ): DisplayView {
-  const view = tournaments?.view();
-  const admin = view && stats ? stats.withAwards(view) : view;
   const progress = admin?.tournament?.status === "draft" ? null : (admin?.progress ?? null);
   return {
     tournament:

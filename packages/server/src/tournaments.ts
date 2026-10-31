@@ -289,17 +289,21 @@ export function createTournaments(db: Db, stations: StationDirectory) {
     );
   }
 
-  function view(): TournamentAdminView {
+  /** What /admin shows, and the plan behind it (null while there's no progress), built once. */
+  function shown(): { view: TournamentAdminView; plan: Plan | null } {
     // A finished tournament stays on show until the next one is created.
     const tournament = active() ?? db.tournaments().find((t) => t.status === "finished");
     if (!tournament) {
       return {
-        tournament: null,
-        entrants: [],
-        groups: [],
-        estimateMinutes: null,
-        problems: [],
-        progress: null,
+        view: {
+          tournament: null,
+          entrants: [],
+          groups: [],
+          estimateMinutes: null,
+          problems: [],
+          progress: null,
+        },
+        plan: null,
       };
     }
     const entrants = db.entrants(tournament.id);
@@ -318,7 +322,8 @@ export function createTournaments(db: Db, stations: StationDirectory) {
           )
         : null;
     const { id, name, status, config, startedAt, finishedAt } = tournament;
-    return {
+    const shownPlan = status === "draft" ? null : currentPlan(tournament);
+    const view: TournamentAdminView = {
       tournament: { id, name, status, config, startedAt, finishedAt },
       entrants: entrants.map((e) => ({
         ...e,
@@ -329,12 +334,14 @@ export function createTournaments(db: Db, stations: StationDirectory) {
       groups,
       estimateMinutes: estimate,
       problems,
-      progress:
-        status === "draft"
-          ? null
-          : progressView(db, stations, db.getTournament(id) ?? tournament, currentPlan(tournament)),
+      progress: shownPlan
+        ? progressView(db, stations, db.getTournament(id) ?? tournament, shownPlan)
+        : null,
     };
+    return { view, plan: shownPlan };
   }
+
+  const view = (): TournamentAdminView => shown().view;
 
   /** Matches sent back from a station: the scheduler won't give them straight back to it. */
   const sentBack = new Map<string, number>();
@@ -597,6 +604,7 @@ export function createTournaments(db: Db, stations: StationDirectory) {
     withdraw,
     addLate,
     /** Matches asks this before and after a correction (TOUR-14). */
+    shown,
     resultGuard: { problem: correctionProblem, changed: corrected } satisfies ResultGuard,
     placed,
     avoids,
