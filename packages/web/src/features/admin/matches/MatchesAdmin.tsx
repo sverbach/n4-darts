@@ -3,6 +3,7 @@ import { useState } from "react";
 import { BoardStatus } from "../../../components/BoardMenu.tsx";
 import { request } from "../../../lib/api.ts";
 import { useLive } from "../../../lib/useLive.ts";
+import { CARD_NAME, cardActions, cardTitle, SECTION } from "../ui.ts";
 import { MatchDetailView, MatchHistory } from "./MatchHistory.tsx";
 
 export function MatchesAdmin() {
@@ -24,12 +25,12 @@ export function MatchesAdmin() {
           {error}
         </p>
       )}
-      <section className="admin-section">
+      <section className={SECTION}>
         <h2>Stations</h2>
         {!stations ? (
           <p className="hint">Loading…</p>
         ) : (
-          <ul className="station-cards">
+          <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3 p-0">
             {stations.map((s) => (
               <StationRow
                 key={s.id}
@@ -41,7 +42,7 @@ export function MatchesAdmin() {
           </ul>
         )}
       </section>
-      <section className="admin-section">
+      <section className={SECTION}>
         <h2>History</h2>
         <MatchHistory onOpen={setOpenId} />
       </section>
@@ -53,18 +54,22 @@ function StationRow(props: { station: StationView; onAbandon(): void; onOpen(): 
   const { station, onAbandon, onOpen } = props;
   const { match } = station;
   return (
-    <li className="station-card">
-      <div className="card-row-title spread">
-        <a className="card-row-name" href={`/station/${station.id}`}>
+    <li className="flex flex-col gap-3 border border-border border-solid bg-panel px-[18px] py-4">
+      <div className={cardTitle(true)}>
+        <a className={CARD_NAME} href={`/station/${station.id}`}>
           {station.name}
         </a>
-        <BoardStatus online={station.boardOnline} running={station.boardRunning} />
+        <BoardStatus
+          online={station.boardOnline}
+          running={station.boardRunning}
+          className="min-h-[26px]! px-2! text-[10px]!"
+        />
       </div>
-      <span className={`station-card-summary ${match ? "" : "hint"}`}>
+      <span className={`wrap-anywhere text-[26px] ${match ? "" : "hint"}`}>
         {match ? matchSummary(match) : "Free"}
       </span>
       {match && (
-        <div className="card-row-actions start">
+        <div className={`${cardActions(true)} mt-auto`}>
           {match.state.phase !== "notStarted" && (
             <button type="button" onClick={onOpen}>
               Details

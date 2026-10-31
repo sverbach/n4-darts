@@ -6,6 +6,7 @@ import { SegmentPicker } from "../../../components/SegmentPicker.tsx";
 import { dartLabel } from "../../../lib/darts.ts";
 import { legsLabel } from "../../../lib/labels.ts";
 import { useLive } from "../../../lib/useLive.ts";
+import { HEAD, runState, TABLE_PANEL } from "../ui.ts";
 
 const when = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "";
@@ -16,6 +17,21 @@ function result(match: MatchSummary) {
   if (!winner) return match.closedAt ? "No winner (corrected)" : "In progress";
   const legs = match.settings.legsToWin > 1 ? ` ${match.legsWon.join("–")}` : "";
   return `${winner.name} won${legs}`;
+}
+
+/**
+ * A dart in the match detail: corrected (framed, the original crossed out above), added by hand
+ * (dashed: the board missed it), or thrown after the visit was over (dashed, crossed out).
+ */
+function dartStyle(ignored: boolean, corrected: boolean, added: boolean) {
+  const border = `${ignored || added ? "border-dashed" : ""} ${corrected ? "border-accent" : ""}`;
+  const fill = ignored
+    ? "bg-transparent text-muted line-through"
+    : corrected
+      ? "bg-accent-tint"
+      : "";
+  const type = `${corrected ? "text-[24px]" : "text-[26px]"} ${corrected || added ? "leading-[0.9]" : ""}`;
+  return `min-h-[46px] flex-col gap-0 p-0 font-text normal-case tracking-normal ${border} ${fill} ${type}`;
 }
 
 export function MatchHistory({ onOpen }: { onOpen(id: string): void }) {
@@ -31,21 +47,31 @@ export function MatchHistory({ onOpen }: { onOpen(id: string): void }) {
   if (!matches) return <p className="hint">Loading…</p>;
   if (matches.length === 0) return <p className="hint">No finished matches yet.</p>;
   return (
-    <div className="history table-panel">
-      <div className="history-head label">
+    <div className={TABLE_PANEL}>
+      <div className="label kiosk:grid hidden min-h-11 grid-cols-[minmax(0,1fr)_auto] kiosk:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_200px_24px] items-center gap-x-4 gap-y-1 border-0 border-border border-b border-solid px-5 kiosk:[&>span:nth-child(3)]:text-right">
         <span>Players</span>
         <span>Result</span>
         <span>When</span>
       </div>
-      <ul className="history-list">
+      <ul className="m-0 list-none p-0">
         {matches.map((m) => (
-          <li key={m.id}>
-            <button type="button" onClick={() => onOpen(m.id)}>
-              <span className="history-players">{m.players.map((p) => p.name).join(" vs ")}</span>
-              <span className={`history-result ${m.abandoned || !m.winner ? "muted" : ""}`}>
+          <li key={m.id} className="border-0 border-line-soft border-b border-solid">
+            <button
+              type="button"
+              onClick={() => onOpen(m.id)}
+              className="grid min-h-[60px] w-full grid-cols-[minmax(0,1fr)_auto] kiosk:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_200px_24px] items-center gap-x-4 gap-y-1 border-0 bg-transparent kiosk:px-5 px-4 kiosk:py-0 py-2.5 text-left font-text normal-case tracking-normal kiosk:[&_.pixel-icon]:block [&_.pixel-icon]:hidden kiosk:[&_.pixel-icon]:h-[14px] kiosk:[&_.pixel-icon]:text-accent"
+            >
+              <span className="font-pixel text-[13px] uppercase tracking-[1px]">
+                {m.players.map((p) => p.name).join(" vs ")}
+              </span>
+              <span
+                className={`kiosk:row-auto row-start-2 kiosk:text-[24px] text-[22px] ${m.abandoned || !m.winner ? "text-muted" : ""}`}
+              >
                 {result(m)}
               </span>
-              <span className="history-when">{when(m.closedAt)}</span>
+              <span className="text-right font-pixel kiosk:text-[12px] text-[11px] text-muted [grid-column:2] [grid-row:1/span_2] kiosk:[grid-column:auto] kiosk:[grid-row:auto]">
+                {when(m.closedAt)}
+              </span>
               <PixelIcon name="arrow" />
             </button>
           </li>
@@ -79,8 +105,8 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
   const name = (i: number) => match?.players[i]?.name ?? "?";
 
   return (
-    <div className="match-detail">
-      <button type="button" className="back" onClick={onBack}>
+    <div className="flex flex-col gap-6">
+      <button type="button" className="back self-start" onClick={onBack}>
         <PixelIcon name="back" height="0.7em" /> Matches
       </button>
       {(error ?? live.failed) && (
@@ -92,9 +118,9 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
         <p className="hint">Loading…</p>
       ) : (
         <>
-          <div className="detail-head">
-            <div className="admin-head">
-              {!match.closedAt && <span className="run-state running">Live</span>}
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className={HEAD}>
+              {!match.closedAt && <span className={runState(true)}>Live</span>}
               <h1>{match.players.map((p) => p.name).join(" vs ")}</h1>
               <p className="hint">
                 {match.settings.startScore}, {legsLabel(match.settings.legsToWin).toLowerCase()}
@@ -108,14 +134,14 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
             // Only the last leg can be without darts, so the first dart identifies a leg.
             <details
               key={leg.visits[0]?.darts[0]?.dartId ?? "current-leg"}
-              className="leg"
+              className="max-w-[760px]"
               open={legIndex === match.state.legs.length - 1}
             >
-              <summary>
+              <summary className="bg-surface px-3.5 text-text">
                 <PixelIcon name="caret" /> Leg {legIndex + 1} · {name(leg.starter)} starts
                 {leg.winner !== null && ` · ${name(leg.winner)} won`}
               </summary>
-              <ol className="visit-list">
+              <ol className="m-0 list-none p-0">
                 {[
                   ...leg.visits,
                   ...(legIndex === match.state.legs.length - 1 && match.state.currentVisit
@@ -124,10 +150,12 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
                 ].map((visit, visitIndex) => (
                   <li
                     key={visit.darts[0]?.dartId ?? `visit-${visitIndex}`}
-                    className={visit.bust ? "bust" : ""}
+                    className="grid min-h-[58px] grid-cols-[minmax(0,70px)_minmax(0,1fr)_auto] items-center gap-2 border-0 border-line-soft border-b border-solid"
                   >
-                    <span className="visit-player">{name(visit.player)}</span>
-                    <span className="visit-darts">
+                    <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[13px] uppercase">
+                      {name(visit.player)}
+                    </span>
+                    <span className="grid grid-cols-[repeat(3,minmax(0,72px))] gap-2">
                       {visit.darts.map((dart) => {
                         const original = match.originals[dart.dartId];
                         const added = match.added.includes(dart.dartId);
@@ -135,19 +163,27 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
                           <button
                             type="button"
                             key={dart.dartId}
-                            className={`${dart.ignored ? "ignored" : ""} ${original ? "corrected" : ""} ${added ? "added" : ""}`}
+                            className={dartStyle(dart.ignored, Boolean(original), added)}
                             onClick={() => setCorrecting(dart)}
                             aria-label={`Correct ${dartLabel(dart.segment)}`}
                             title={added ? "Added by hand: the board missed it" : undefined}
                           >
-                            {original && <s>{dartLabel(original)}</s>}
+                            {original && (
+                              <s className="text-[16px] text-muted">{dartLabel(original)}</s>
+                            )}
                             <span>{dartLabel(dart.segment)}</span>
-                            {added && <small>added</small>}
+                            {added && (
+                              <small className="font-pixel text-[9px] text-muted uppercase">
+                                added
+                              </small>
+                            )}
                           </button>
                         );
                       })}
                     </span>
-                    <span className="visit-score">
+                    <span
+                      className={`min-w-[3em] text-right text-[28px] ${visit.bust ? "text-danger" : ""}`}
+                    >
                       {visit.bust ? "Bust" : visit.darts.reduce((sum, d) => sum + d.score, 0)}
                       {visit.checkout && " ✓"}
                     </span>

@@ -7,6 +7,7 @@ import { MatchesAdmin } from "./matches/MatchesAdmin.tsx";
 import { PlayersAdmin } from "./players/PlayersAdmin.tsx";
 import { StationsAdmin } from "./stations/StationsAdmin.tsx";
 import { TournamentAdmin } from "./tournament/TournamentAdmin.tsx";
+import { HEAD } from "./ui.ts";
 
 /** The tournament tab heads itself, by its state; the others get a title and a line. */
 const sections = {
@@ -24,6 +25,9 @@ const sections = {
 } as const;
 
 export type AdminSection = keyof typeof sections;
+
+/** A full-width error above the page: "Wrong PIN", "Server not reachable". */
+const ALERT = "error justify-center! border-0! border-b-2! border-danger!";
 
 export const isAdminSection = (value: string): value is AdminSection => value in sections;
 
@@ -51,9 +55,9 @@ export function AdminPage({ section }: { section: AdminSection }) {
 
   if (!session || !session.authenticated) {
     return (
-      <main className="admin-login-page">
+      <main className="flex min-h-[100dvh] flex-col">
         {error && (
-          <p className="error admin-alert" role="alert">
+          <p className={ALERT} role="alert">
             {error}
           </p>
         )}
@@ -63,19 +67,25 @@ export function AdminPage({ section }: { section: AdminSection }) {
   }
 
   return (
-    <div className="admin-page">
-      <header className="admin-bar">
-        <div className="admin-bar-inner">
-          <div className="admin-id">
+    <div>
+      <header className="border-0 border-border border-b border-solid">
+        <div className="mx-auto kiosk:flex grid max-w-[1200px] grid-cols-[1fr_auto] items-center kiosk:gap-x-8 kiosk:gap-y-0 kiosk:px-8">
+          <div className="flex kiosk:min-h-16 items-center gap-3 kiosk:gap-3.5 kiosk:p-0 px-4 py-2">
             <Logo width="72px" />
-            <span className="admin-title">Admin</span>
+            <span className="font-pixel kiosk:text-[14px] text-[13px] uppercase tracking-[1px]">
+              Admin
+            </span>
           </div>
-          <nav className="admin-nav" aria-label="Admin sections">
+          <nav
+            className="col-span-full row-start-2 flex kiosk:gap-1 overflow-x-auto border-0 border-border border-t kiosk:border-t-0 border-solid [scrollbar-width:none]"
+            aria-label="Admin sections"
+          >
             {Object.entries(sections).map(([key, { title }]) => (
               <a
                 key={key}
                 href={`/admin/${key}`}
                 aria-current={key === section ? "page" : undefined}
+                className="flex kiosk:min-h-16 min-h-[46px] flex-[1_0_auto] kiosk:flex-none items-center justify-center border-0 border-transparent border-b-2 border-solid kiosk:px-4 px-3 font-pixel kiosk:text-[12px] text-[10px] text-muted uppercase tracking-[1px] no-underline aria-[current=page]:border-accent aria-[current=page]:text-accent"
                 // On a phone the row scrolls: keep the current tab in sight.
                 ref={
                   key === section
@@ -88,20 +98,25 @@ export function AdminPage({ section }: { section: AdminSection }) {
             ))}
           </nav>
           {session.pinRequired && (
-            <button type="button" className="admin-logout" onClick={logout}>
+            <button
+              type="button"
+              className="kiosk:my-0 kiosk:mr-0 mr-4 kiosk:ml-auto border-0 bg-transparent p-0 kiosk:text-[12px] text-[11px] text-muted underline underline-offset-4"
+              onClick={logout}
+            >
               Log out
             </button>
           )}
         </div>
       </header>
-      <main className="admin">
+      {/* `admin`: a marker that admin.css still scopes its rules by. */}
+      <main className="admin mx-auto flex max-w-[1200px] flex-col gap-7 kiosk:gap-8 kiosk:px-8 px-4 kiosk:pt-10 pt-5 kiosk:pb-12 pb-7">
         {error && (
           <p className="error" role="alert">
             {error}
           </p>
         )}
         {section !== "tournament" && (
-          <div className="admin-head">
+          <div className={HEAD}>
             <h1>{sections[section].title}</h1>
             <p className="hint">{sections[section].blurb}</p>
           </div>
@@ -144,14 +159,17 @@ function Login({ onDone }: { onDone: () => Promise<void> }) {
   return (
     <>
       {error && (
-        <p className="error admin-alert" role="alert">
+        <p className={ALERT} role="alert">
           {error}
         </p>
       )}
-      <form className="admin-login" onSubmit={submit}>
-        <Logo width="108px" />
-        <div className="admin-login-head">
-          <h1>Admin</h1>
+      <form
+        className="m-auto flex w-[calc(100%_-_32px)] max-w-[440px] flex-col gap-3 border border-border border-solid bg-panel px-6 py-7"
+        onSubmit={submit}
+      >
+        <Logo width="108px" className="mb-3 self-center" />
+        <div className="mb-4 flex flex-col items-center gap-3">
+          <h1 className="tracking-[5px]">Admin</h1>
           <span className="label">Enter PIN to unlock</span>
         </div>
         <label className="label" htmlFor="admin-pin">
@@ -166,8 +184,9 @@ function Login({ onDone }: { onDone: () => Promise<void> }) {
           required
           aria-invalid={error ? true : undefined}
           onChange={(e) => setPin(e.target.value)}
+          className="min-h-[76px] border-2 bg-bg text-center text-[52px] tracking-[20px] aria-invalid:border-danger"
         />
-        <button type="submit" className="primary cta">
+        <button type="submit" className="primary cta min-h-16! text-[16px]!">
           Unlock <PixelIcon name="arrow" height="0.9em" />
         </button>
       </form>

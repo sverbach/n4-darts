@@ -5,7 +5,23 @@ import { PixelIcon } from "../../../components/PixelIcon.tsx";
 import { PlayerPicker } from "../../../components/PlayerPicker.tsx";
 import { request } from "../../../lib/api.ts";
 import { useLive } from "../../../lib/useLive.ts";
+import {
+  ASIDE,
+  COLUMNS,
+  CONTROLS,
+  CONTROLS_CTA,
+  COUNT,
+  FIELD,
+  HEAD,
+  MAIN,
+  RULED,
+  SECTION,
+  SECTION_HEAD,
+} from "../ui.ts";
 import { TournamentRun } from "./TournamentRun.tsx";
+
+/** The seed list's up and down buttons. */
+const SEED_MOVE = "w-11 bg-transparent p-0 text-[21px]";
 
 /** "about 45 min", "about 2 h 30". */
 export function formatMinutes(minutes: number) {
@@ -48,7 +64,7 @@ export function TournamentAdmin() {
   const [creating, setCreating] = useState(false);
   const finished = view?.tournament?.status === "finished";
   return (
-    <div className="tournament-admin">
+    <div className="flex flex-col gap-7">
       {error && (
         <p className="error" role="alert">
           {error}
@@ -81,13 +97,13 @@ function CreateTournament({ send }: { send: Send }) {
   const create = () => send("POST", "/api/admin/tournament", { name, playerIds: picked });
   return (
     <>
-      <div className="admin-head">
+      <div className={HEAD}>
         <h1>Tournament</h1>
         <p className="hint">One tournament at a time. Set it up here, then the stations play it.</p>
       </div>
-      <div className="admin-columns">
-        <div className="admin-main">
-          <label className="field">
+      <div className={COLUMNS}>
+        <div className={MAIN}>
+          <label className={FIELD}>
             Name
             <input
               placeholder="Today's date"
@@ -102,13 +118,13 @@ function CreateTournament({ send }: { send: Send }) {
             max={Number.POSITIVE_INFINITY}
           />
         </div>
-        <aside className="admin-aside panel create-summary">
+        <aside className="flex min-w-0 flex-[1_1_340px] flex-col gap-[18px] border border-border border-solid bg-panel p-6">
           <span className="label">New tournament</span>
-          <div className="create-count">
-            <span>{picked.length}</span>
+          <div className="flex items-baseline gap-3">
+            <span className="text-[72px] text-accent leading-[0.8]">{picked.length}</span>
             <span className="label">Players picked</span>
           </div>
-          <p className="hint">
+          <p className="hint m-0">
             Format, legs and seeds come next in the draft. Nothing starts until you press Start.
           </p>
           <button
@@ -144,11 +160,15 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
 
   return (
     <>
-      <div className="admin-head">
-        <div className="admin-head-tags">
+      <div className={HEAD}>
+        <div className="flex items-center gap-4">
           <span className="match-label">Draft</span>
           {save !== "idle" && (
-            <span className={`save-state ${save}`}>{save === "saving" ? "Saving…" : "Saved"}</span>
+            <span
+              className={`inline-flex items-center gap-1.5 font-pixel kiosk:text-[12px] text-[11px] uppercase ${save === "saved" ? "text-ok before:size-[7px] before:bg-current before:content-['']" : "text-muted"}`}
+            >
+              {save === "saving" ? "Saving…" : "Saved"}
+            </span>
           )}
         </div>
         <h1>Tournament</h1>
@@ -156,9 +176,9 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
           Every change saves right away. Start when the problems list is clear.
         </p>
       </div>
-      <div className="admin-columns">
-        <div className="admin-main">
-          <label className="field">
+      <div className={COLUMNS}>
+        <div className={MAIN}>
+          <label className={FIELD}>
             Name
             <input
               value={name}
@@ -167,9 +187,9 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
             />
           </label>
 
-          <section className="admin-section">
+          <section className={SECTION}>
             <h2>
-              Players <span className="count">({view.entrants.length})</span>
+              Players <span className={COUNT}>({view.entrants.length})</span>
             </h2>
             <PlayerPicker
               picked={order}
@@ -178,9 +198,9 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
             />
           </section>
 
-          <section className="admin-section ruled">
+          <section className={RULED}>
             <h2>Format</h2>
-            <div className="settings wide">
+            <div className="settings grid-cols-[repeat(auto-fill,minmax(160px,1fr))]!">
               <label>
                 Groups
                 <select
@@ -237,9 +257,9 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
             </div>
           </section>
 
-          <section className="admin-section ruled">
+          <section className={RULED}>
             <h2>Legs</h2>
-            <div className="settings wide">
+            <div className="settings grid-cols-[repeat(auto-fill,minmax(160px,1fr))]!">
               {(
                 [
                   ["groups", "Group matches"],
@@ -267,9 +287,9 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
             </div>
           </section>
 
-          <section className="admin-section ruled">
+          <section className={RULED}>
             <h2>Game</h2>
-            <div className="settings wide">
+            <div className="settings grid-cols-[repeat(auto-fill,minmax(160px,1fr))]!">
               <label>
                 Start
                 <select
@@ -308,19 +328,26 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
           </section>
         </div>
 
-        <aside className="admin-aside">
-          <section className="admin-section">
-            <div className="admin-section-head">
+        <aside className={ASIDE}>
+          <section className={SECTION}>
+            <div className={SECTION_HEAD}>
               <h2>Seeds</h2>
               <span className="label">By rating</span>
             </div>
-            <ol className="seed-list">
+            <ol className="m-0 flex list-none flex-col gap-1.5 p-0">
               {view.entrants.map((e, i) => (
-                <li key={e.playerId}>
-                  <span className="seed-position">{String(i + 1).padStart(2, "0")}</span>
+                <li
+                  key={e.playerId}
+                  className="flex min-h-14 items-center gap-3 border border-border border-solid bg-surface pr-1.5 pl-3.5 [--avatar:28px]"
+                >
+                  <span className="w-6 font-pixel text-[13px] text-accent">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
                   <Avatar player={{ id: e.playerId, name: e.name, photo: e.photo }} />
-                  <span className="seed-name">{e.name}</span>
-                  <span className="seed-rating">
+                  <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[14px] uppercase tracking-[1px]">
+                    {e.name}
+                  </span>
+                  <span className="text-[24px] text-muted">
                     {e.rating === null ? "–" : e.rating.toFixed(1)}
                   </span>
                   <button
@@ -328,6 +355,7 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
                     aria-label={`Move ${e.name} up`}
                     disabled={i === 0}
                     onClick={() => move(i, i - 1)}
+                    className={SEED_MOVE}
                   >
                     <PixelIcon name="up" />
                   </button>
@@ -336,6 +364,7 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
                     aria-label={`Move ${e.name} down`}
                     disabled={i === order.length - 1}
                     onClick={() => move(i, i + 1)}
+                    className={SEED_MOVE}
                   >
                     <PixelIcon name="down" />
                   </button>
@@ -345,10 +374,13 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
           </section>
 
           {view.groups.length > 1 && (
-            <section className="admin-section">
+            <section className={SECTION}>
               <h2>Groups preview</h2>
               {view.groups.map((group, g) => (
-                <p key={group.join()} className="group-preview">
+                <p
+                  key={group.join()}
+                  className="m-0 border border-line-soft border-solid bg-panel px-3.5 py-3"
+                >
                   <span className="match-label">Group {groupName(g)}</span>{" "}
                   {group.map(nameOf).join(", ")}
                 </p>
@@ -357,17 +389,27 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
           )}
 
           {view.problems.length > 0 ? (
-            <ul className="problems" aria-label="Problems">
+            <ul
+              className="m-0 flex list-none flex-col gap-1.5 border border-warn-line border-solid bg-warn-tint p-4 text-warn"
+              aria-label="Problems"
+            >
               {view.problems.map((p) => (
-                <li key={p}>{p}</li>
+                <li
+                  key={p}
+                  className="before:mr-3 before:inline-block before:size-[9px] before:bg-current before:align-[0.1em] before:content-['']"
+                >
+                  {p}
+                </li>
               ))}
             </ul>
           ) : (
             view.estimateMinutes !== null && (
-              <p className="estimate">Takes {formatMinutes(view.estimateMinutes)}.</p>
+              <p className="m-0 flex items-center gap-3 border border-ok-line border-solid bg-ok-tint p-4 text-[24px] text-text before:inline-block before:size-[9px] before:bg-ok before:align-[0.1em] before:content-['']">
+                Takes {formatMinutes(view.estimateMinutes)}.
+              </p>
             )
           )}
-          <div className="controls">
+          <div className={CONTROLS}>
             <button
               type="button"
               className="danger"
@@ -379,7 +421,7 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
             </button>
             <button
               type="button"
-              className="primary cta"
+              className={CONTROLS_CTA}
               disabled={view.problems.length > 0}
               onClick={() => send("POST", "/api/admin/tournament/start")}
             >

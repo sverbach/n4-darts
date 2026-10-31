@@ -1,5 +1,6 @@
 import type { DiagnosticsView } from "@n4/server/api";
 import { type ReactNode, useEffect, useState } from "react";
+import { RULED, SECTION_HEAD } from "../ui.ts";
 
 /** How often the page asks again. */
 const REFRESH_MS = 2000;
@@ -23,8 +24,8 @@ function Level({ value, warn, danger }: { value: number | null; warn: number; da
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
-    <section className="admin-section ruled">
-      <div className="admin-section-head">
+    <section className={RULED}>
+      <div className={SECTION_HEAD}>
         <h2>{title}</h2>
         {hint && <span className="label">{hint}</span>}
       </div>

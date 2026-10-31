@@ -12,6 +12,7 @@ import { MatchCard, STATUS } from "../../../components/MatchCard.tsx";
 import { PixelIcon } from "../../../components/PixelIcon.tsx";
 import { Progress } from "../../../components/Progress.tsx";
 import { usePlayers } from "../../../lib/usePlayers.ts";
+import { COUNT, EVEN_COLUMNS, MAIN, SECTION } from "../ui.ts";
 
 type Send = (method: string, url: string, body?: object) => Promise<boolean>;
 
@@ -53,9 +54,9 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
       </header>
 
       {(progress.placings || (progress.awards && progress.awards.length > 0)) && (
-        <div className="admin-columns even">
+        <div className={EVEN_COLUMNS}>
           {progress.placings && (
-            <section className="admin-section">
+            <section className={SECTION}>
               <h2>Final placings</h2>
               {champion && (
                 <div className="champion-card">
@@ -82,7 +83,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
             </section>
           )}
           {progress.awards && progress.awards.length > 0 && (
-            <section className="admin-section">
+            <section className={SECTION}>
               <h2>Awards</h2>
               <Awards awards={progress.awards} />
             </section>
@@ -91,9 +92,9 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
       )}
 
       {live && (
-        <div className="admin-columns even">
-          <div className="admin-main">
-            <section className="admin-section">
+        <div className={EVEN_COLUMNS}>
+          <div className={MAIN}>
+            <section className={SECTION}>
               <h2>Stations</h2>
               <ul className="card-list">
                 {progress.stations.map((s) => (
@@ -101,9 +102,9 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                 ))}
               </ul>
             </section>
-            <section className="admin-section">
+            <section className={SECTION}>
               <h2>
-                Queue <span className="count">({progress.queue.length})</span>
+                Queue <span className={COUNT}>({progress.queue.length})</span>
               </h2>
               {progress.queue.length === 0 ? (
                 <p className="hint">Nothing waiting.</p>
@@ -122,20 +123,20 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
               )}
             </section>
           </div>
-          <div className="admin-main">
+          <div className={MAIN}>
             <Roster view={view} send={send} base={base} groupPhase={progress.phase === "groups"} />
           </div>
         </div>
       )}
 
       {progress.bracket.length > 0 && (
-        <section className="admin-section">
+        <section className={SECTION}>
           <h2>Knockout</h2>
           <BracketRows bracket={progress.bracket} />
         </section>
       )}
 
-      <section className="admin-section">
+      <section className={SECTION}>
         <h2>Groups</h2>
         <div className="group-grid">
           {progress.groups.map((group) => (
@@ -401,9 +402,9 @@ function Roster(props: {
   const available = players?.filter((p) => !inIt.has(p.id)) ?? [];
 
   return (
-    <section className="admin-section">
+    <section className={SECTION}>
       <h2>
-        Players <span className="count">({view.entrants.length})</span>
+        Players <span className={COUNT}>({view.entrants.length})</span>
       </h2>
       <ul className="roster">
         {view.entrants.map((e) => (

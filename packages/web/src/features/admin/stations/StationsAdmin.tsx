@@ -4,6 +4,16 @@ import { BoardMenu } from "../../../components/BoardMenu.tsx";
 import { PixelIcon } from "../../../components/PixelIcon.tsx";
 import { request } from "../../../lib/api.ts";
 import { useLive } from "../../../lib/useLive.ts";
+import {
+  CARD_LIST,
+  CARD_MAIN,
+  CARD_NAME,
+  COLUMNS,
+  cardActions,
+  cardRow,
+  cardTitle,
+  MAIN,
+} from "../ui.ts";
 
 export function StationsAdmin() {
   const live = useLive<StationAdminView[]>("/api/admin/stations/live");
@@ -18,8 +28,8 @@ export function StationsAdmin() {
   };
 
   return (
-    <div className="stations-admin admin-columns">
-      <div className="admin-main">
+    <div className={COLUMNS}>
+      <div className={MAIN}>
         {error && (
           <p className="error" role="alert">
             {error}
@@ -30,20 +40,20 @@ export function StationsAdmin() {
         ) : stations.length === 0 ? (
           <p className="hint">No stations yet.</p>
         ) : (
-          <ul className="card-list">
+          <ul className={CARD_LIST}>
             {stations.map((s) => (
               <StationRow key={s.id} station={s} change={change} />
             ))}
           </ul>
         )}
       </div>
-      <section className="admin-aside panel add-station">
+      <section className="flex min-w-0 flex-[1_1_340px] flex-col gap-3.5 border border-border border-solid bg-panel p-[22px]">
         <h2>Add a station</h2>
         <StationForm
           submitLabel="Add station"
           onSubmit={(name, boardUrl) => change("POST", "/api/admin/stations", { name, boardUrl })}
         >
-          <p className="hint">
+          <p className="hint m-0 text-[19px]">
             The address of the board's Board Manager on the local network, e.g.
             http://192.168.1.139:3180.
           </p>
@@ -52,6 +62,10 @@ export function StationsAdmin() {
     </div>
   );
 }
+
+/** A label above its input, smaller than FIELD: the station forms. */
+const FIELD_SMALL =
+  "flex flex-col gap-2 font-pixel text-[11px] text-muted uppercase tracking-[1px] [&_input]:min-h-12 [&_input]:bg-bg [&_input]:text-[24px] [&_input]:text-text [&_input]:normal-case [&_input]:tracking-normal";
 
 type Change = (method: string, url: string, body?: object) => Promise<boolean>;
 
@@ -64,9 +78,9 @@ function StationRow({ station, change }: { station: StationAdminView; change: Ch
   );
   if (editing) {
     return (
-      <li className="card-row editing">
-        <div className="card-row-title edit-head">
-          <span className="card-row-name">{station.id}. Edit station</span>
+      <li className={cardRow(true)}>
+        <div className={cardTitle(true)}>
+          <span className={CARD_NAME}>{station.id}. Edit station</span>
           {menu}
         </div>
         <StationForm
@@ -83,15 +97,15 @@ function StationRow({ station, change }: { station: StationAdminView; change: Ch
     );
   }
   return (
-    <li className="card-row">
-      <div className="card-row-main">
-        <a className="card-row-name" href={`/station/${station.id}`}>
+    <li className={cardRow()}>
+      <div className={CARD_MAIN}>
+        <a className={CARD_NAME} href={`/station/${station.id}`}>
           {station.id}. {station.name}
         </a>
-        <code className="board-url">{station.boardUrl}</code>
+        <code className="wrap-anywhere font-text text-[22px] text-muted">{station.boardUrl}</code>
       </div>
       {menu}
-      <div className="card-row-actions">
+      <div className={cardActions()}>
         <button type="button" onClick={() => setEditing(true)}>
           Edit
         </button>
@@ -130,13 +144,15 @@ function StationForm(props: {
   };
 
   return (
-    <form className={`station-form ${props.initial ? "edit" : ""}`} onSubmit={submit}>
-      <div className="station-form-fields">
-        <label className="field small">
+    <form className="flex flex-col gap-3.5" onSubmit={submit}>
+      <div
+        className={`grid gap-3 ${props.initial ? "grid-cols-[repeat(auto-fit,minmax(200px,1fr))]" : "grid-cols-[1fr]"}`}
+      >
+        <label className={FIELD_SMALL}>
           {props.initial ? "Name" : "Name (optional)"}
           <input placeholder="Station 4" value={name} onChange={(e) => setName(e.target.value)} />
         </label>
-        <label className="field small">
+        <label className={FIELD_SMALL}>
           Board address
           <input
             placeholder="http://192.168.1.142:3180"
@@ -149,7 +165,7 @@ function StationForm(props: {
       </div>
       {props.children}
       {props.onCancel ? (
-        <div className="card-row-actions start">
+        <div className={cardActions(true)}>
           <button type="submit" className="primary">
             {props.submitLabel}
           </button>
@@ -158,7 +174,7 @@ function StationForm(props: {
           </button>
         </div>
       ) : (
-        <button type="submit" className="primary cta">
+        <button type="submit" className="primary cta min-h-14! text-[14px]!">
           {props.submitLabel} <PixelIcon name="arrow" height="0.9em" />
         </button>
       )}
