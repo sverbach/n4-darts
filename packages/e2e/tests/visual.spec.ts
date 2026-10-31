@@ -222,12 +222,11 @@ test("the organiser's area", async () => {
   await expect(page.getByRole("menu")).toBeVisible();
   await shoot(page, "admin-stations-menu", PAGES);
 
-  await open(page, "/admin/matches", (p) => p.getByText(/Ann vs Bob/));
+  // A history row: "Ann (won) vs Bob" to a screen reader.
+  const row = (p: Page) => p.getByRole("button", { name: /^Ann.* vs Bob/ });
+  await open(page, "/admin/matches", row);
   await shoot(page, "admin-matches", PAGES);
-  await page
-    .getByText(/Ann vs Bob/)
-    .first()
-    .click();
+  await row(page).first().click();
   await expect(page.getByText(/Ann won|Ann wins/).first()).toBeVisible();
   await shoot(page, "admin-match-detail", PAGES);
 

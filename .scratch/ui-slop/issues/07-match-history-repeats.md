@@ -1,6 +1,6 @@
 # Match history and detail say each fact once
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 `/admin` → Matches (`admin-matches-*`, `admin-match-detail-*`):
@@ -22,3 +22,5 @@ Type: task
 ## Comments
 
 2026-10-31: Confirmed by the user.
+
+2026-10-31: Built. The matches tab heads itself, so a match's detail replaces the whole page and its heading (only the back link remains). Detail line: "Ann won 1–0 · <rules> · Station 2 · <date>" via `matchRulesLabel`; the hint is a plain hint; a leg's winner shows only when there was more than one leg. History: grouped by evening (date heading, time per row), result as legs, the winner in full colour and the others grey (plus "(won)" for screen readers). History is set off from Stations by a rule (the missing gap).

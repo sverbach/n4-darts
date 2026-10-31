@@ -1,21 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { request } from "../lib/api.ts";
+import { MENU_ITEM as ITEM, MENU, MENU_BUTTON } from "./ActionMenu.tsx";
 
-/** The menu under ⋮, and its labels and items. */
-const MENU =
-  "absolute top-[calc(100%_+_8px)] right-0 z-10 flex w-[220px] flex-col border border-accent border-solid bg-surface kiosk:w-[280px]";
+/** A section label in the menu: "Board", "Match". */
 const MENU_LABEL = "px-3.5 pt-2.5 pb-1.5 kiosk:px-4 kiosk:pt-3 kiosk:pb-2 kiosk:text-[12px]";
-const ITEM =
-  "min-h-12 justify-start border-0 border-line-soft border-t border-solid bg-transparent px-3.5 text-left hover:bg-accent-tint focus-visible:bg-accent-tint kiosk:min-h-14 kiosk:px-4 kiosk:text-[14px]";
 
 /** "Board online", "Board stopped" (detection off), "Board offline" or "Server offline". */
 export function BoardStatus(props: {
   online: boolean;
   running: boolean;
   connected?: boolean;
+  /** Say nothing while all is well (the organiser's lists). */
+  quiet?: boolean;
   className?: string;
 }) {
-  const { online, running, connected = true, className = "" } = props;
+  const { online, running, connected = true, quiet = false, className = "" } = props;
   const [label, tone] = !connected
     ? ["Server offline", "danger"]
     : !online
@@ -23,6 +22,7 @@ export function BoardStatus(props: {
       : running
         ? ["Board online", "ok"]
         : ["Board stopped", "warn"];
+  if (quiet && tone === "ok") return null;
   return <span className={`status status-${tone} ${className}`}>{label}</span>;
 }
 
@@ -56,9 +56,11 @@ export function BoardMenu(props: {
   online: boolean;
   running: boolean;
   connected?: boolean;
+  /** No pill while the board is online and detecting (the organiser's lists). */
+  quiet?: boolean;
   matchAction?: MatchAction | undefined;
 }) {
-  const { stationId, online, running, connected, matchAction } = props;
+  const { stationId, online, running, connected, quiet, matchAction } = props;
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -110,12 +112,13 @@ export function BoardMenu(props: {
           online={online}
           running={running}
           connected={connected ?? true}
+          quiet={quiet ?? false}
           className="kiosk:min-h-10"
         />
       )}
       <button
         type="button"
-        className="kiosk:min-h-10 min-h-[30px] kiosk:min-w-10 min-w-[30px] bg-transparent p-0 font-text kiosk:text-[28px] text-[22px] tracking-normal aria-expanded:border-accent aria-expanded:bg-accent aria-expanded:text-accent-text"
+        className={MENU_BUTTON}
         aria-label="Board menu"
         aria-haspopup="menu"
         aria-expanded={open}

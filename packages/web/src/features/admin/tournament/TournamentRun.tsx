@@ -13,7 +13,6 @@ import { PixelIcon } from "../../../components/PixelIcon.tsx";
 import { Progress } from "../../../components/Progress.tsx";
 import { usePlayers } from "../../../lib/usePlayers.ts";
 import {
-  badge,
   CARD_DETAIL,
   CARD_LIST,
   CARD_MAIN,
@@ -146,17 +145,29 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
               {progress.queue.length === 0 ? (
                 <p className="hint">Nothing waiting.</p>
               ) : (
-                <ul className={CARD_LIST}>
-                  {progress.queue.map((q) => (
-                    <QueueRow
-                      key={q.matchId}
-                      entry={q}
-                      stations={progress.stations}
-                      send={send}
-                      base={base}
-                    />
-                  ))}
-                </ul>
+                // Grouped by what each match waits for, so the cards don't each say it.
+                QUEUE_GROUPS.map(({ title, has }) => {
+                  const entries = progress.queue.filter(has);
+                  if (entries.length === 0) return null;
+                  return (
+                    <div key={title} className="flex flex-col gap-2">
+                      <h3>
+                        {title} ({entries.length})
+                      </h3>
+                      <ul className={CARD_LIST}>
+                        {entries.map((q) => (
+                          <QueueRow
+                            key={q.matchId}
+                            entry={q}
+                            stations={progress.stations}
+                            send={send}
+                            base={base}
+                          />
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })
               )}
             </section>
           </div>
@@ -313,17 +324,20 @@ function fixtureResult(f: TournamentMatchView) {
 function StationRow(props: { station: TournamentStationView; send: Send; base: string }) {
   const { station, send, base } = props;
   const match = station.match;
-  const [status, tone] = station.paused
-    ? ["Paused", "warn"]
-    : station.boardOnline
-      ? ["Board online", "ok"]
-      : ["Board offline", "danger"];
+  // Only what needs the organiser: a paused station or a board that's gone. Ok says nothing.
+  const status = station.paused
+    ? { text: "Paused", tone: "warn" }
+    : !station.boardOnline
+      ? { text: "Board offline", tone: "danger" }
+      : null;
   return (
     <li className={cardRow()}>
       <div className={CARD_MAIN}>
         <div className={cardTitle()}>
           <span className={CARD_NAME}>{station.name}</span>
-          <span className={`status status-${tone} ${STATUS_SMALL}`}>{status}</span>
+          {status && (
+            <span className={`status status-${status.tone} ${STATUS_SMALL}`}>{status.text}</span>
+          )}
         </div>
         {match ? (
           <span className={CARD_DETAIL}>
@@ -366,6 +380,13 @@ function StationRow(props: { station: TournamentStationView; send: Send; base: s
   );
 }
 
+/** The queue's groups, in this order: what each match is waiting for. */
+const QUEUE_GROUPS: { title: string; has(entry: QueueEntryView): boolean }[] = [
+  { title: "Ready", has: (e) => !e.held && e.ready },
+  { title: "Waiting for players", has: (e) => !e.held && !e.ready },
+  { title: "Held", has: (e) => e.held },
+];
+
 function QueueRow(props: {
   entry: QueueEntryView;
   stations: TournamentStationView[];
@@ -374,25 +395,22 @@ function QueueRow(props: {
 }) {
   const { entry, stations, send, base } = props;
   const url = `${base}/matches/${entry.matchId}`;
-  // Play now: a free station, or one whose match hasn't started (that one goes back).
+  // Play now: on the station it's kept for, else the first one that's free or whose match hasn't
+  // started (that match goes back).
   const open = stations.filter((s) => !s.match?.started);
-  const pinnedTo = stations.find((s) => s.id === entry.pinnedStation);
-  const [label, tone] = entry.held
-    ? ["Held", "warn"]
-    : entry.ready
-      ? ["Ready", "ok"]
-      : ["Waiting for players", ""];
+  const target =
+    open.find((s) => s.id === entry.pinnedStation) ??
+    (entry.pinnedStation === null ? open[0] : undefined);
   return (
     <li className="flex flex-col gap-3 border border-border border-solid bg-panel px-4 py-3.5">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="match-label">{entry.label}</span>
-        <span className="mt-0 mr-auto mb-0 ml-2 font-pixel text-[15px] uppercase tracking-[1px]">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        {entry.label && <span className="match-label">{entry.label}</span>}
+        <span className="font-pixel text-[15px] uppercase tracking-[1px]">
           {entry.players.map((p) => p.name).join(" vs ")}
         </span>
-        <span className={badge(tone as "" | "ok" | "warn")}>{label}</span>
-        {pinnedTo && <span className={badge()}>Only {pinnedTo.name}</span>}
       </div>
-      <div className="grid grid-cols-[auto_minmax(0,1fr)] kiosk:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] gap-2">
+      {/* On a phone the station gets its own line, Hold and Play now share the next. */}
+      <div className="grid grid-cols-2 kiosk:grid-cols-[auto_minmax(0,1fr)_auto] gap-2">
         <button
           type="button"
           className="min-h-11 text-[11px]"
@@ -401,8 +419,8 @@ function QueueRow(props: {
           {entry.held ? "Release" : "Hold"}
         </button>
         <select
-          aria-label={`Pin ${entry.label} to a station`}
-          className="min-h-11 text-[20px]"
+          aria-label={`Station for ${entry.label || entry.players.map((p) => p.name).join(" vs ")}`}
+          className="kiosk:order-none order-first col-span-full kiosk:col-auto min-h-11 text-[20px]"
           value={entry.pinnedStation ?? ""}
           onChange={(e) =>
             send("POST", `${url}/pin`, {
@@ -417,22 +435,15 @@ function QueueRow(props: {
             </option>
           ))}
         </select>
-        <select
-          aria-label={`Play ${entry.label} now`}
-          // On a phone "Play now on…" gets its own line.
-          className="col-span-full kiosk:col-auto min-h-11 text-[20px]"
-          value=""
-          onChange={(e) =>
-            e.target.value && send("POST", `${url}/play-now`, { station: Number(e.target.value) })
-          }
+        <button
+          type="button"
+          className="min-h-11 text-[11px]"
+          disabled={!target}
+          title={target ? `Play now on ${target.name}` : "No station is free"}
+          onClick={() => target && send("POST", `${url}/play-now`, { station: target.id })}
         >
-          <option value="">Play now on…</option>
-          {open.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
+          Play now
+        </button>
       </div>
     </li>
   );

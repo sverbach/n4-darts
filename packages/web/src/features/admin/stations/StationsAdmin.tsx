@@ -74,7 +74,12 @@ function StationRow({ station, change }: { station: StationAdminView; change: Ch
   const url = `/api/admin/stations/${station.id}`;
 
   const menu = (
-    <BoardMenu stationId={station.id} online={station.boardOnline} running={station.boardRunning} />
+    <BoardMenu
+      stationId={station.id}
+      online={station.boardOnline}
+      running={station.boardRunning}
+      quiet
+    />
   );
   if (editing) {
     return (

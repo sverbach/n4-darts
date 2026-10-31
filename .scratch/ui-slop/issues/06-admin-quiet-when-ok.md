@@ -1,6 +1,6 @@
 # Admin is quiet when all is well
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 - "BOARD ONLINE" shows on the Tournament, Stations and Matches tabs for every station, so the organiser can't see which one needs attention (`components/BoardMenu.tsx:24`, `TournamentRun.tsx:313`, `MatchesAdmin.tsx:62`).
@@ -24,3 +24,5 @@ Type: task
 ## Comments
 
 2026-10-31: Confirmed by the user. No bulk admin actions.
+
+2026-10-31: Built. `BoardStatus` / `BoardMenu` take `quiet`: no pill while the board is online and detecting, used on Stations and Matches; the tournament's station rows show only Paused / Board offline. The station page keeps its pill. Queue grouped under Ready / Waiting for players / Held with counts (cards lost the status badge and the "Only X" badge, which the dropdown shows); one station dropdown plus a Play now button (kept-for station, else the first free one; disabled when none is free); on a phone the dropdown has its own line. Player rows: name, rating under one "Rating" heading, actions in a new `ActionMenu` (⋮), which shares its look with the board menu.

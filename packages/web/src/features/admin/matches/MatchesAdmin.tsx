@@ -1,12 +1,13 @@
 import type { StationView } from "@n4/server/api";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { BoardStatus } from "../../../components/BoardMenu.tsx";
 import { request } from "../../../lib/api.ts";
 import { useLive } from "../../../lib/useLive.ts";
-import { CARD_NAME, cardActions, cardTitle, SECTION } from "../ui.ts";
+import { CARD_NAME, cardActions, cardTitle, RULED, SECTION } from "../ui.ts";
 import { MatchDetailView, MatchHistory } from "./MatchHistory.tsx";
 
-export function MatchesAdmin() {
+/** The stations and the history; a match's detail replaces both, and the page's `head`. */
+export function MatchesAdmin({ head }: { head: ReactNode }) {
   const stations = useLive<StationView[]>("/api/stations/live").view;
   const [error, setError] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -19,7 +20,8 @@ export function MatchesAdmin() {
   if (openId) return <MatchDetailView id={openId} onBack={() => setOpenId(null)} />;
 
   return (
-    <div>
+    <div className="flex flex-col gap-7 kiosk:gap-8">
+      {head}
       {error && (
         <p className="error" role="alert">
           {error}
@@ -42,7 +44,7 @@ export function MatchesAdmin() {
           </ul>
         )}
       </section>
-      <section className={SECTION}>
+      <section className={RULED}>
         <h2>History</h2>
         <MatchHistory onOpen={setOpenId} />
       </section>
@@ -62,6 +64,7 @@ function StationRow(props: { station: StationView; onAbandon(): void; onOpen(): 
         <BoardStatus
           online={station.boardOnline}
           running={station.boardRunning}
+          quiet
           className="min-h-[26px]! px-2! text-[10px]!"
         />
       </div>

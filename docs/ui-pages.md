@@ -221,13 +221,12 @@ There's one tournament at a time, and the tab shows one of three states.
   - The awards list.
   - A "New tournament" button.
 - **Stations** (while running): a row per station with:
-  - The name and a status ("Board online", "Board offline" or "Paused").
+  - The name, and a status only when it needs the organiser ("Board offline" or "Paused"); a healthy station shows none.
   - The current match, e.g. "Group A Ann vs Bob: 301 / 140".
   - Buttons: Pause/Resume. For a match that hasn't started yet, also "Send back" and "Hold".
-- **Queue (n)** (while running): a row per waiting match with:
-  - The label and a status badge ("Ready", "Waiting for players" or "Held", plus "only Station 2" when pinned).
-  - The players.
-  - Actions: Hold/Release, a "Pin to station" dropdown (Any station or Only X), and a "Play now on…" dropdown.
+- **Queue (n)** (while running): grouped under "Ready (n)", "Waiting for players (n)" and "Held (n)", a card per waiting match with:
+  - The label and the players.
+  - Actions: Hold/Release, one station dropdown (Any station or Only X) and "Play now", which puts the match on the station it's kept for, or the first free one (disabled when none is free). On a phone the dropdown has its own line.
 - **Knockout:** the bracket, as rows of round columns with match cards. It scrolls horizontally.
 - **Groups:** for each group, the table plus a collapsible "Matches" list of fixtures with results ("3:1", "(w/o)" for walkovers, or a status).
 - **Players** (while running): the entrants, with a "Withdraw" button for each (or "Withdrawn"). During the group phase there's also a "Late arrival…" dropdown with an "Add" button.
@@ -237,9 +236,8 @@ There's one tournament at a time, and the tab shows one of three states.
 - An "Add new player" input and button.
 - **Player list:** each row shows:
   - The avatar (tap it to edit the photo).
-  - The name and rating.
-  - Buttons: Rename (switches the row to an inline form with Save/Cancel), Archive/Restore, Delete (danger).
-  - On a narrow phone, the buttons wrap below the name.
+  - The name, and the rating under the list's one "Rating" heading.
+  - A ⋮ menu: Rename (switches the row to an inline form with Save/Cancel), Archive/Restore, Delete (danger).
 - **"Archived (n)":** a collapsible list of archived players.
 - **Photo editor** (an overlay dialog):
   - The player's name and Close.
@@ -249,21 +247,21 @@ There's one tournament at a time, and the tab shows one of three states.
 
 ### `/admin/stations`
 - **Station list:** a row per station with:
-  - "1. Station name" (a link to `/station/1`) and the board status plus menu.
+  - "1. Station name" (a link to `/station/1`) and the board menu; the status pill shows only when the board isn't online and detecting, or while a menu action runs.
   - The board address (e.g. `http://192.168.1.139:3180`).
   - Buttons: Edit (switches to an inline form) and Remove (danger, disabled while the station has a match).
 - **"Add a station":** a form with a Name (optional) field, a Board address field and an "Add station" button, plus a hint about what the board address is.
 
 ### `/admin/matches`
 - **Stations:** a row per station with:
-  - The name (a link), the status pill and the current match summary: "Ann 141 (1) · Bob 60 (0)", "Ann, Bob: waiting to start" or "Ann won". The station shows "Free" when idle.
+  - The name (a link), the board status only when it isn't fine, and the current match summary: "Ann 141 (1) · Bob 60 (0)", "Ann, Bob: waiting to start" or "Ann won". The station shows "Free" when idle.
   - Buttons: "Details" (opens the match detail) and "End match" or "Cancel match" (danger).
-- **History:** a list of finished matches. Each row shows the players, the result ("Ann won 2–1", "Abandoned" or "No winner (corrected)") and the date and time. Tapping a row opens the match detail.
-- **Match detail** (replaces the list; live):
+- **History** (set off by a rule): finished matches grouped by evening, the date once as a heading. Each row shows the players (the winner in full colour, the others grey), the result as legs ("2–1", "Abandoned" or "No winner (corrected)") and the time. Tapping a row opens the match detail.
+- **Match detail** (replaces the page, its heading included; live):
   - A back button "← Matches".
-  - The title "Ann vs Bob" and the line "501, best of 3 · station 1 · Ann won 2–1 · 20 Oct 2026, 21:14".
+  - The title "Ann vs Bob" and the line "Ann won 2–1 · 501 · Double out · First to 2 legs · Station 1 · 20 Oct 2026, 21:14".
   - The hint "Tap a dart to correct it."
-  - Per leg, the heading "Leg 1 · Ann starts · Ann won" and a list of visits. Each visit shows the player name, the dart buttons and the visit score, with "Bust" or ✓ for a checkout.
+  - Per leg, the heading "Leg 1 · Ann starts · Ann won" (who won the leg only when there was more than one) and a list of visits. Each visit shows the player name, the dart buttons and the visit score, with "Bust" or ✓ for a checkout.
   - A corrected dart shows its original struck through, and a dart added by hand on the station is marked "added". Tapping a dart opens the segment picker.
 
 ### `/admin/diagnostics`

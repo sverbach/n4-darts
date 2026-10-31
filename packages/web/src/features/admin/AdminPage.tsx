@@ -102,7 +102,8 @@ export function AdminPage({ section }: { section: AdminSection }) {
             {error}
           </p>
         )}
-        {section !== "tournament" && (
+        {/* The tournament tab heads itself; the matches tab too, as a match's detail replaces it. */}
+        {section !== "tournament" && section !== "matches" && (
           <div className={HEAD}>
             <h1>{sections[section].title}</h1>
             <p className="hint">{sections[section].blurb}</p>
@@ -113,7 +114,14 @@ export function AdminPage({ section }: { section: AdminSection }) {
         ) : section === "players" ? (
           <PlayersAdmin />
         ) : section === "matches" ? (
-          <MatchesAdmin />
+          <MatchesAdmin
+            head={
+              <div className={HEAD}>
+                <h1>{sections.matches.title}</h1>
+                <p className="hint">{sections.matches.blurb}</p>
+              </div>
+            }
+          />
         ) : section === "diagnostics" ? (
           <DiagnosticsAdmin />
         ) : (
