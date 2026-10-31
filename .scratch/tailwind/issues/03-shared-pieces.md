@@ -1,6 +1,6 @@
 # The shared pieces in Tailwind
 
-Status: needs-triage
+Status: ready-for-agent
 Type: task
 Blocked by: 02
 

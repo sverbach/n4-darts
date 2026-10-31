@@ -6,7 +6,8 @@
   "description": "Browser end-to-end tests: the built app against simulated boards (perf-tests ticket 02).",
   "scripts": {
     "e2e": "playwright test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "visual": "playwright test -c playwright.visual.config.ts"
   },
   "devDependencies": {
     "@n4/board-sim": "workspace:*",

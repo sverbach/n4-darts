@@ -1,6 +1,6 @@
 # Tailwind CSS instead of the hand-written stylesheets
 
-Status: draft (2026-10-31), for review.
+Status: confirmed (2026-10-31).
 
 The web app's look lives in 8 hand-written sheets under `packages/web/src/styles/` (about 5,400 lines), used through some 585 `className`s. This moves it to [Tailwind CSS](https://tailwindcss.com) v4, the default for modern web apps, with the design system's tokens as Tailwind's theme and Biome keeping the classes sorted. **Nothing may look different afterwards**: every page is screenshotted before the first change and compared after each step.
 

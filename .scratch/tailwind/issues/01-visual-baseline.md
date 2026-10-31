@@ -1,6 +1,6 @@
 # A screenshot of every page, before anything changes
 
-Status: needs-triage
+Status: done
 Type: task
 
 The safety net for the whole migration (`../spec.md`, "The screenshot suite"): a Playwright visual suite that puts the app into every page and state, and the baseline screenshots taken with today's CSS.
@@ -23,3 +23,13 @@ The safety net for the whole migration (`../spec.md`, "The screenshot suite"): a
 - **Docs:** `README.md` (the e2e section) says how to run the visual suite and update its baseline; `docs/architecture/08-crosscutting-concepts.md` (8.7 Testability) mentions it.
 
 ## Comments
+
+2026-10-31: Confirmed by the user.
+
+2026-10-31: Built. `packages/e2e/tests/visual.spec.ts` with its own `playwright.visual.config.ts` (`pnpm --filter @n4/e2e visual`); `pnpm e2e` ignores it (`testIgnore`) and still runs its 13 tests.
+- **66 screenshots**, baseline in `tests/visual.spec.ts-snapshots/` (2.7 MB): home, players, profile; admin PIN, players (+ photo editor), stations (+ board menu), matches (+ detail), diagnostics, tournament draft / groups / knockout / finished; station new match (+ picked), lineup, visit, correcting, game shot; watch visit and game shot; display without tournament, groups, knockout, finished. Pages at 390 and 1440 px, `/watch` and `/display` also at 1920×1080 and 1280×720.
+- **Deterministic data:** the start script seeds six players with fixed ids when `N4_E2E_PLAYERS` is set (avatar colours come from the id). One story in order, every dart fixed; the tournament runs on station 1 only (a quick match of two players outside it keeps station 2 busy).
+- **No masks:** right before each screenshot, text the server stamps with the real time is overwritten with fixed text (dates, times, the duration estimate; on diagnostics every digit), so the layout around it is still compared. Masks moved with the text's width and made screenshots differ by a few pixels; overwriting doesn't. Nothing depends on class names. Browser clock pinned, locale en-GB, time zone Europe/Zurich, animations off.
+- **Stable:** three runs in a row pass at zero tolerance. **Red-capable:** changing `--accent` in `tokens.css` fails the first screenshot; restored, passes.
+- **Found an existing bug** (recorded as-is in the baseline, not fixed here): on `/display`'s final placings at 1920×1080, a shared place like "3–4" wraps and its "4" overlaps the next row.
+- Docs: README (e2e section) and 8.7.

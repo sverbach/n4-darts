@@ -1,6 +1,6 @@
 # Only the theme and a small app.css left
 
-Status: needs-triage
+Status: ready-for-agent
 Type: task
 Blocked by: 04, 05, 06, 07
 
