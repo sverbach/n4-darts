@@ -1,15 +1,12 @@
-// The organiser creates matches in /admin and puts them on a free station (no queue: dispatch
-// is the scheduler's job, later). The station then runs the match exactly like a quick match.
-// /admin also shows the history and can correct any dart of any match (docs/adr/0002: the
-// correction is appended, the original detection stays in the log).
+// The organiser creates matches in /admin and puts them on a free station; the station then runs
+// the match exactly like a quick match. /admin also shows the history and can correct any dart of
+// any match (docs/adr/0002: the correction is appended, the original detection stays in the log).
+// The routes are in matchesRoutes.ts.
 
 import { isSegment, matchState, type Segment } from "@n4/engine";
-import type { FastifyInstance } from "fastify";
-import type { MatchDetail, MatchSettingsInput, MatchSummary } from "../api.ts";
+import type { MatchDetail, MatchSummary } from "../api.ts";
 import type { Db, MatchRecord, StoredEvent } from "../db.ts";
-import { type ChangeFeed, streamView } from "../live/live.ts";
 import { matchPlayer } from "../players/players.ts";
-import { CommandError } from "../stations/station.ts";
 import type { StationDirectory } from "../stations/stations.ts";
 
 /**
@@ -23,43 +20,16 @@ export interface ResultGuard {
   changed(match: MatchRecord): void;
 }
 
-export function registerMatches(
-  app: FastifyInstance,
-  stations: StationDirectory,
-  db?: Db,
-  guard?: ResultGuard,
-  feed?: ChangeFeed,
-) {
-  app.post<{ Body: { station?: unknown; playerIds?: unknown; settings?: MatchSettingsInput } }>(
-    "/api/admin/matches",
-    async (request, reply) => {
-      const { station: stationId, playerIds, settings } = request.body ?? {};
-      if (!Array.isArray(playerIds) || !playerIds.every((p) => typeof p === "string")) {
-        return reply.code(400).send({ error: "playerIds must be a list of player ids" });
-      }
-      const station = stations.get(Number(stationId));
-      if (!station) return reply.code(404).send({ error: "no such station" });
-      try {
-        return reply.code(201).send(station.assign({ playerIds, settings }));
-      } catch (error) {
-        if (error instanceof CommandError) return reply.code(409).send({ error: error.message });
-        throw error;
-      }
-    },
-  );
+/** Why a request about a match was refused. */
+export class MatchError extends Error {
+  readonly reason: "invalid" | "missing" | "refused";
+  constructor(message: string, reason: "invalid" | "missing" | "refused") {
+    super(message);
+    this.reason = reason;
+  }
+}
 
-  app.post<{ Params: { id: string } }>(
-    "/api/admin/stations/:id/abandon",
-    async (request, reply) => {
-      const station = stations.get(Number(request.params.id));
-      if (!station) return reply.code(404).send({ error: "no such station" });
-      return station.command({ type: "abandonMatch" });
-    },
-  );
-
-  if (!db) return;
-  const store = db; // Narrowed for the closures below.
-
+export function createMatches(db: Db, stations: StationDirectory, guard?: ResultGuard) {
   /** The station currently running this match, if any. */
   const stationOf = (matchId: string) =>
     stations.list().find((s) => s.view().match?.id === matchId);
@@ -83,7 +53,7 @@ export function registerMatches(
     return {
       id: match.id,
       station: match.station,
-      players: match.playerIds.map((id) => matchPlayer(store, id)),
+      players: match.playerIds.map((id) => matchPlayer(db, id)),
       settings: match.settings,
       winner: match.winner,
       abandoned: match.abandoned,
@@ -97,44 +67,37 @@ export function registerMatches(
 
   const summary = ({ state: _, originals: __, ...rest }: MatchDetail): MatchSummary => rest;
 
-  app.get("/api/admin/matches", async () =>
-    db.closedMatches().map((match) => summary(detail(match, db.events(match.id)))),
-  );
+  function existing(id: string): MatchRecord {
+    const match = db.getMatch(id);
+    if (!match) throw new MatchError("no such match", "missing");
+    return match;
+  }
 
-  app.get<{ Params: { id: string } }>("/api/admin/matches/:id", async (request, reply) => {
-    const match = db.getMatch(request.params.id);
-    if (!match) return reply.code(404).send({ error: "no such match" });
-    return detail(match, db.events(match.id));
-  });
+  return {
+    /** Closed matches, newest first. */
+    history: () => db.closedMatches().map((match) => summary(detail(match, db.events(match.id)))),
 
-  app.get<{ Params: { id: string } }>("/api/admin/matches/:id/live", (request, reply) => {
-    const id = request.params.id;
-    const first = db.getMatch(id);
-    if (!first || !feed) return reply.code(404).send({ error: "no such match" });
-    let last = first;
-    // A match removed meanwhile (set up, never started) keeps showing its last state.
-    streamView(
-      request,
-      reply,
-      feed.subscribe,
-      () => {
+    detail(id: string): MatchDetail {
+      const match = existing(id);
+      return detail(match, db.events(match.id));
+    },
+
+    /** The match's detail as it changes; a match removed meanwhile keeps its last state. */
+    follow(id: string): () => MatchDetail {
+      let last = existing(id);
+      return () => {
         last = db.getMatch(id) ?? last;
         return detail(last, db.events(id));
-      },
-      { kind: "match detail", label: id },
-    );
-  });
+      };
+    },
 
-  app.post<{ Params: { id: string }; Body: { dartId?: unknown; segment?: unknown } }>(
-    "/api/admin/matches/:id/corrections",
-    async (request, reply) => {
-      const match = db.getMatch(request.params.id);
-      if (!match) return reply.code(404).send({ error: "no such match" });
-      const { dartId, segment } = request.body ?? {};
-      if (!isSegment(segment)) return reply.code(400).send({ error: "not a valid segment" });
+    /** Corrects a dart of a running or finished match; the result follows. */
+    correct(id: string, dartId: unknown, segment: unknown): MatchDetail {
+      const match = existing(id);
+      if (!isSegment(segment)) throw new MatchError("not a valid segment", "invalid");
       const events = db.events(match.id);
       if (!events.some((e) => e.type === "DartThrown" && e.dartId === dartId)) {
-        return reply.code(404).send({ error: "no such dart in this match" });
+        throw new MatchError("no such dart in this match", "missing");
       }
 
       const event: StoredEvent = {
@@ -145,7 +108,7 @@ export function registerMatches(
       };
       // The result may already have decided other things (a tournament's later matches).
       const problem = guard?.problem(match, [...events, event]);
-      if (problem) return reply.code(409).send({ error: problem });
+      if (problem) throw new MatchError(problem, "refused");
 
       // A running match goes through its station, which keeps its own state and live viewers.
       const station = stationOf(match.id);
@@ -164,5 +127,7 @@ export function registerMatches(
       guard?.changed(updated);
       return detail(updated, db.events(match.id));
     },
-  );
+  };
 }
+
+export type Matches = ReturnType<typeof createMatches>;

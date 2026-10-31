@@ -4,7 +4,7 @@ import type { DisplayView, MatchDetail, StationView, TournamentAdminView } from 
 import { buildApp } from "../app.ts";
 import { type Db, openDb } from "../db.ts";
 import { createStation, type Station } from "../stations/station.ts";
-import { streamView } from "./live.ts";
+import { streamView } from "./liveRoutes.ts";
 
 let db: Db | undefined;
 const closers: (() => Promise<unknown>)[] = [];

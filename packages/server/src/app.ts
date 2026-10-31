@@ -1,25 +1,34 @@
+// Wiring: creates the components and registers their routes. Each component's routes are in its
+// own *Routes.ts; only the health check and serving the web app are the app's own.
+
 import { existsSync } from "node:fs";
 import fastifyStatic from "@fastify/static";
 import Fastify from "fastify";
-import { registerAdmin } from "./access/admin.ts";
+import { registerAdmin } from "./access/accessRoutes.ts";
+import { createAccess } from "./access/admin.ts";
 import type { Db } from "./db.ts";
 import { displayView } from "./live/display.ts";
-import { createChangeFeed, streamView } from "./live/live.ts";
-import { registerMatches } from "./matches/matches.ts";
-import { diagnostics } from "./operations/diagnostics.ts";
-import { registerPlayers } from "./players/players.ts";
+import { createChangeFeed } from "./live/live.ts";
+import { registerDisplay } from "./live/liveRoutes.ts";
+import { createMatches } from "./matches/matches.ts";
+import { registerMatches } from "./matches/matchesRoutes.ts";
+import { registerDiagnostics } from "./operations/operationsRoutes.ts";
+import { createPlayers } from "./players/players.ts";
+import { registerPlayers } from "./players/playersRoutes.ts";
 import { ratingOf } from "./ratings/ratings.ts";
 import { createScheduler, type SchedulerOptions, withQueue } from "./scheduling/scheduler.ts";
-import { CommandError, type Station, type StationCommand } from "./stations/station.ts";
-import { registerStationAdmin } from "./stations/stationAdmin.ts";
+import type { Station } from "./stations/station.ts";
 import {
   fixedDirectory,
   isRegistry,
   type StationDirectory,
   type StationRegistry,
 } from "./stations/stations.ts";
-import { createStats, registerStats } from "./stats/stats.ts";
-import { createTournaments, registerTournaments } from "./tournaments/tournaments.ts";
+import { registerStationAdmin, registerStations } from "./stations/stationsRoutes.ts";
+import { createStats } from "./stats/stats.ts";
+import { registerStats } from "./stats/statsRoutes.ts";
+import { createTournaments } from "./tournaments/tournaments.ts";
+import { registerTournaments } from "./tournaments/tournamentsRoutes.ts";
 
 export interface AppOptions {
   /** Directory with the built web app; served at `/` when it exists. */
@@ -38,127 +47,46 @@ export function buildApp(options: AppOptions = {}) {
   const stations = Array.isArray(options.stations)
     ? fixedDirectory(options.stations)
     : (options.stations ?? fixedDirectory([]));
+  const db = options.db;
 
   app.get("/api/health", async () => ({ ok: true }));
-  registerAdmin(app, options.adminPin);
-  const stats = options.db ? createStats(options.db) : undefined;
-  if (options.db && stats) {
-    const db = options.db;
-    registerPlayers(app, db, (id) => ratingOf(db, id));
+  registerAdmin(app, createAccess(options.adminPin));
+
+  const stats = db ? createStats(db) : undefined;
+  if (db && stats) {
+    registerPlayers(app, createPlayers(db), (id) => ratingOf(db, id));
     registerStats(app, stats);
   }
-  const tournaments = options.db ? createTournaments(options.db, stations) : undefined;
-  const feed = options.db ? createChangeFeed(options.db, stations) : undefined;
+
+  const tournaments = db ? createTournaments(db, stations) : undefined;
+  const feed = db ? createChangeFeed(db, stations) : undefined;
   if (feed) app.addHook("onClose", async () => feed.close());
-  registerMatches(app, stations, options.db, tournaments?.resultGuard, feed);
+
+  registerStations(app, stations, feed);
   if (isRegistry(stations)) registerStationAdmin(app, stations, feed);
-  if (options.db && tournaments && feed) {
-    const db = options.db;
-    registerTournaments(app, tournaments);
+  registerMatches(
+    app,
+    stations,
+    db ? createMatches(db, stations, tournaments?.resultGuard) : undefined,
+    feed,
+  );
+
+  if (db && tournaments && feed) {
     // The tournament as /admin shows it, with the queue from Scheduling and the awards from Stats.
     const tournament = () => {
       const { view, plan } = tournaments.shown();
       const queued = withQueue(db, view, plan);
       return stats ? stats.withAwards(queued) : queued;
     };
-    app.get("/api/admin/tournament", async () => tournament());
-    app.get("/api/admin/tournament/live", (request, reply) =>
-      streamView(request, reply, feed.subscribe, tournament, {
-        kind: "admin tournament",
-      }),
-    );
-    const display = () => displayView(db, stations, tournament(), stats);
-    app.get("/api/display", async () => display());
-    app.get("/api/display/live", (request, reply) =>
-      streamView(request, reply, feed.subscribe, display, { kind: "display" }),
-    );
+    registerTournaments(app, tournaments, tournament, feed);
+    registerDisplay(app, () => displayView(db, stations, tournament(), stats), feed);
     if (options.scheduler) {
-      const scheduler = createScheduler(options.db, stations, tournaments, options.scheduler);
+      const scheduler = createScheduler(db, stations, tournaments, options.scheduler);
       app.addHook("onClose", async () => scheduler.stop());
     }
   }
 
-  app.get("/api/admin/diagnostics", async (request) =>
-    diagnostics.view(
-      request,
-      stations.list().map((station) => {
-        const { id, name, boardOnline } = station.view();
-        const stats = station.boardStats();
-        return {
-          station: id,
-          name,
-          online: boardOnline,
-          reconnects: stats?.reconnects ?? 0,
-          sinceMessageSeconds:
-            stats?.lastMessageAt == null
-              ? null
-              : Math.round((Date.now() - stats.lastMessageAt) / 1000),
-          lastCommand: stats?.lastCommand ?? null,
-        };
-      }),
-    ),
-  );
-
-  app.get("/api/stations", async () => stations.list().map((s) => s.view()));
-  if (feed) {
-    app.get("/api/stations/live", (request, reply) =>
-      streamView(request, reply, feed.subscribe, () => stations.list().map((s) => s.view()), {
-        kind: "stations",
-      }),
-    );
-  }
-
-  app.get<{ Params: { id: string } }>("/api/stations/:id", async (request, reply) => {
-    const station = stations.get(Number(request.params.id));
-    return station ? station.view() : reply.code(404).send({ error: "no such station" });
-  });
-
-  app.post<{ Params: { id: string }; Body: StationCommand }>(
-    "/api/stations/:id/commands",
-    async (request, reply) => {
-      const station = stations.get(Number(request.params.id));
-      if (!station) return reply.code(404).send({ error: "no such station" });
-      try {
-        return await station.command(request.body);
-      } catch (error) {
-        if (error instanceof CommandError) return reply.code(409).send({ error: error.message });
-        throw error;
-      }
-    },
-  );
-
-  app.post<{ Params: { id: string }; Body: { action?: unknown } }>(
-    "/api/stations/:id/board",
-    async (request, reply) => {
-      const station = stations.get(Number(request.params.id));
-      if (!station) return reply.code(404).send({ error: "no such station" });
-      const action = request.body?.action;
-      if (action !== "start" && action !== "stop" && action !== "calibrate" && action !== "reset") {
-        return reply.code(400).send({ error: "action must be start, stop, calibrate or reset" });
-      }
-      try {
-        await station.boardCommand(action);
-        return { ok: true };
-      } catch (error) {
-        if (error instanceof CommandError) return reply.code(502).send({ error: error.message });
-        throw error;
-      }
-    },
-  );
-
-  // Live station state as Server-Sent Events: the full view on connect and after every change.
-  // `?view=watch` from /watch, so diagnostics can tell the projector from the kiosk.
-  app.get<{ Params: { id: string }; Querystring: { view?: string } }>(
-    "/api/stations/:id/live",
-    (request, reply) => {
-      const station = stations.get(Number(request.params.id));
-      if (!station) return reply.code(404).send({ error: "no such station" });
-      streamView(request, reply, station.subscribe, station.view, {
-        kind: request.query.view === "watch" ? "watch" : "station",
-        label: station.view().name,
-      });
-    },
-  );
+  registerDiagnostics(app, stations);
 
   if (options.webDir && existsSync(options.webDir)) {
     app.register(fastifyStatic, { root: options.webDir });

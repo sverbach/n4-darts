@@ -1,12 +1,28 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
-  "files": { "includes": ["**", "!**/dist", "!.scratch", "!prototypes"] },
-  "formatter": { "indentStyle": "space", "lineWidth": 100 },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": ["**", "!**/dist", "!.scratch", "!prototypes"]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 100
+  },
   "linter": {
     "rules": {
       "preset": "recommended",
-      "suspicious": { "noImportCycles": { "level": "error", "options": { "ignoreTypes": false } } }
+      "suspicious": {
+        "noImportCycles": {
+          "level": "error",
+          "options": {
+            "ignoreTypes": false
+          }
+        }
+      }
     }
   },
   "overrides": [
@@ -42,6 +58,31 @@
                   {
                     "group": ["../../**", "!../../../**", "../../../features/**"],
                     "message": "A feature never imports from another feature (docs/architecture/05-building-block-view.md, 5.2). Shared between features? Move it to components/ or lib/."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "packages/server/src/**",
+        "!packages/server/src/**/*Routes.ts",
+        "!packages/server/src/app.ts",
+        "!packages/server/src/**/*.test.ts"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["fastify", "@fastify/*"],
+                    "message": "Logic has no HTTP in it (docs/architecture/05-building-block-view.md, 5.2): routes go in the component's *Routes.ts."
                   }
                 ]
               }

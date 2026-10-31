@@ -12,6 +12,6 @@
 
 ## 11.2 Technical debt
 
-- **Live views has no single home.** The streams are in `live.ts` and the projector's view in `display.ts`, but the tournament's view is put together in `tournamentView.ts` and `app.ts`, and the match detail's stream is in `matches.ts`. Fine while small (section 5.2).
+- **Live views has no single home.** The change feed, `streamView` and the projector's view are in `live/`, but the tournament's view is put together in `app.ts`, and each component streams its own views from its routes file. Fine while small (section 5.2).
 - **`db.ts` is shared by every cluster.** All tables and queries are in one module; every change goes through it (section 5.2).
 - **The shared "Guest" player** mixes different people's stats and can only be used once per match (section 1.3). It's a convention, not a feature.

@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DiagnosticsView, StationView } from "../api.ts";
 import { buildApp } from "../app.ts";
 import { openDb } from "../db.ts";
-import { streamView } from "../live/live.ts";
+import { streamView } from "../live/liveRoutes.ts";
 import { startStation } from "../stations/stations.ts";
 import { createDiagnostics, diagnostics as recorder } from "./diagnostics.ts";
 

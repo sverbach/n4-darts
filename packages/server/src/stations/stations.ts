@@ -1,3 +1,4 @@
+import type { StationAdminView } from "../api.ts";
 import {
   type BoardGateway,
   type BoardGatewayOptions,
@@ -57,6 +58,20 @@ export interface StationRegistry extends StationDirectory {
   /** Whether this start seeded the stations from `STATIONS`. */
   readonly seeded: boolean;
   close(): void;
+}
+
+/** A configured station as /admin lists it: its settings, the board's state, and whether it's busy. */
+export function stationAdminView(
+  registry: StationRegistry,
+  config: StationConfig,
+): StationAdminView {
+  const view = registry.get(config.id)?.view();
+  return {
+    ...config,
+    boardOnline: view?.boardOnline ?? false,
+    boardRunning: view?.boardRunning ?? true,
+    busy: Boolean(view?.match),
+  };
 }
 
 function checkUrl(value: unknown): string {

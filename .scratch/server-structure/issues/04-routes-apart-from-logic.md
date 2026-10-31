@@ -1,6 +1,6 @@
 # Each component's routes in their own file
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 01
 
@@ -23,3 +23,15 @@ Today most server modules hold their Fastify routes and their logic in one file:
 - **Architecture docs updated:** `docs/architecture/05-building-block-view.md` (5.2, white box server) describes the layering (routes over logic over `db.ts`) and the module table lists the route files.
 
 ## Comments
+
+2026-10-31: Confirmed by the user as written.
+
+2026-10-31: Built. Route files: `access/accessRoutes.ts`, `live/liveRoutes.ts`, `matches/matchesRoutes.ts`, `operations/operationsRoutes.ts`, `players/playersRoutes.ts`, `stations/stationsRoutes.ts` (formerly `stationAdmin.ts`, plus the station routes from `app.ts`), `stats/statsRoutes.ts`, `tournaments/tournamentsRoutes.ts`.
+- **Logic:** `createPlayers(db)` and `createMatches(db, stations, guard)` are new; `createAccess(pin)` holds the PIN and token (cookies stay in the routes); `stationAdminView` moved into `stations.ts`; `streamView` moved from `live.ts` to `liveRoutes.ts`, so `live.ts` is only the change feed.
+- **Errors:** new `PlayerError` and `MatchError` carry a reason (`invalid`, `taken`, `missing`, `in-use`, `refused`); the routes map them to 400/404/409. `TournamentError.status` and `StationConfigError.status` already carried a status and were left as they are. `CommandError` is mapped in the routes as before (409 for commands, 502 for the board).
+- **Routes moved from `app.ts`:** stations (view, stream, commands, board), display, the tournament's view and stream (the composed view is still built in `app.ts` and handed in, since it spans three components), diagnostics. `app.ts` now creates components and registers routes; only the health check and serving the web app are its own.
+- Putting a match on a station and ending it stay thin routes over `station.assign`/`station.command`, which already are the logic.
+- **Enforced:** a `noRestrictedImports` override in `biome.json` bans `fastify` and `@fastify/*` in every server file but `*Routes.ts`, `app.ts` and tests. Proven: a Fastify import in `ratings.ts` fails, one in `statsRoutes.ts` passes.
+- `diagnostics.view` still takes the request's IP and headers (to show proxy headers): a plain object, no Fastify import, so left.
+- All 455 tests pass unchanged; all checks pass. The built server was smoke-tested against a simulated board: reads, writes, refusals (400/404/409), PIN login, board menu.
+- Docs: 5.2 describes the layering and the lint rule, the module table lists the route files, the diagram's logic edges follow the code (`matches → live`, `matches → station`, `stationAdmin → live`, `live → diagnostics` gone), and the live-views observation in 5.2 and 11.2 follows.

@@ -3,7 +3,6 @@
 // A closed match's numbers are cached until the match changes (e.g. a correction).
 
 import { matchState, matchStats, type PlayerMatchStats, threeDartAverage } from "@n4/engine";
-import type { FastifyInstance } from "fastify";
 import type {
   Award,
   LeaderboardRow,
@@ -266,11 +265,3 @@ export function createStats(db: Db) {
 }
 
 export type Stats = ReturnType<typeof createStats>;
-
-export function registerStats(app: FastifyInstance, stats: Stats) {
-  app.get("/api/players/stats", async () => stats.leaderboard());
-  app.get<{ Params: { id: string } }>("/api/players/:id/stats", async (request, reply) => {
-    const profile = stats.profile(request.params.id);
-    return profile ?? reply.code(404).send({ error: "no such player" });
-  });
-}
