@@ -1,48 +1,84 @@
 # 6. Runtime view
 
-## 6.1 A dart, from the board to the screens
+Three scenarios. The participants are kept high level: the **station screen** is the kiosk browser (or any device on `/station/n`), **n4-darts** is the server with its database, the **board** is Autodarts' Board Manager, and **other screens** are everything else following along (`/watch/n`, `/display`, `/admin`).
+
+## 6.1 A player throws a dart in an active match
 
 ```mermaid
 sequenceDiagram
-    participant BM as Board Manager
-    participant GW as Gateway
-    participant ST as Station
-    participant DB as SQLite
-    participant LF as Change feed
-    participant SSE as SSE streams
-    participant BR as Browsers
+    actor P as Player
+    participant B as Board (Autodarts)
+    participant N as n4-darts
+    participant S as Station screen
+    participant O as Other screens
 
-    BM->>GW: state snapshot (WebSocket)
-    GW->>GW: diff against the last snapshot
-    GW->>ST: DartDetected
-    ST->>DB: append DartThrown to the match's log
-    ST->>ST: fold the log (engine), new view
-    DB-->>LF: change
-    ST-->>LF: view changed
-    LF->>SSE: once per turn of the event loop
-    SSE->>SSE: recompute each view, compare with the last one sent
-    SSE->>BR: changed views only
+    P->>B: throws a dart
+    B->>N: new state snapshot (WebSocket)
+    N->>N: diff with the last snapshot: a new dart
+    N->>N: append the dart to the match's log, recompute the score
+    N-->>S: new station view (SSE)
+    N-->>O: new views (SSE)
+    Note over P,O: after three darts, a bust or a checkout: "remove darts"
+    P->>B: takes the darts out
+    B->>N: snapshot: takeout finished
+    N->>N: append, end the visit, next player
+    N-->>S: next player's turn
+    N-->>O: next player's turn
 ```
 
-- The station appends the dart before it updates its own view; the change feed waits for both and calls its listeners at most once per turn of the event loop.
-- Every open stream recomputes its view (station, projector, tournament, matches) and sends it only if it's different from the last one it sent. Q-05 asks for under 150 ms from the board to the screens; the diagnostics page shows it for the last 20 darts.
-- Darts after the visit is over (waiting for takeout) are ignored and shown as such; darts while nobody is playing are ignored (PLAY-06, PLAY-14).
+- The darts count for whoever's visit it is; nobody at the board has to press anything (PLAY-05).
+- The visit ends at takeout, not at the third dart (ADR 0003). Darts after the visit is over are ignored and shown as such (PLAY-06).
+- If the connection to the board drops, n4-darts reconnects and resyncs with `GET /api/state`, so no dart is lost or counted twice (BOARD-02).
+- From the board to the screens within 150 ms (Q-05). Every screen gets a new view only if it changed (section 8.3).
 
-## 6.2 Playing a tournament match
+## 6.2 A player corrects a dart detection
 
-1. The scheduler's tick (every 2 s, and after every change) finds a free station and gives it the next ready match: both players free, longest-rested first (SCHED-01).
-2. `/station/n` shows the match; the players settle the order and press **Start**. The server resets the board (`MatchStarted`).
-3. Each dart is scored as in 6.1. After three darts, a bust or a checkout, the station shows "remove darts"; `TakeoutFinished` ends the visit and the next player throws.
-4. When the match is won, the station shows "Game shot". **Done**, or 60 s after the checkout, closes the match and frees the station (SCHED-03).
-5. Tournaments rebuilds its plan from the results: tables, the knockout draw, the next matches. The scheduler gives the station its next match.
+```mermaid
+sequenceDiagram
+    actor P as Player
+    participant S as Station screen
+    participant N as n4-darts
+    participant O as Other screens
 
-## 6.3 Correcting a dart
+    P->>S: taps the wrong dart of the current visit
+    S->>S: opens the segment picker
+    P->>S: picks the right segment
+    S->>N: correctDart (dart, segment)
+    N->>N: append the correction to the log, recompute the score
+    N-->>S: corrected view (SSE)
+    N-->>O: corrected views (SSE)
+```
 
-- **At the station:** tapping a dart of the current visit opens the segment picker; `DartCorrected` is appended and the original detection stays in the log (PLAY-09). A dart the board missed is added as the visit's next dart (PLAY-10).
-- **By the organiser:** any dart of any match, running or finished (MATCH-05). Before the correction is stored, Matches asks its `ResultGuard` whether the result may change; for a tournament match, Tournaments refuses if a later match that depends on it has started (TOUR-14). After it, the result, the tournament and every stat follow (STATS-07).
+- The correction is appended; the original detection stays in the log and the dart stays marked as corrected (PLAY-09, ADR 0002).
+- At the station only darts of the current visit can be corrected. A dart the board missed is added the same way (`addDart`, PLAY-10).
+- The organiser can correct any dart of any match from `/admin`. For a finished tournament match, n4-darts first checks whether the result may still change (TOUR-14).
 
-## 6.4 Restarts
+## 6.3 Players start a quick match
 
-- **Server restarts:** every match in progress is rebuilt from its log, including the visit in progress (Q-02); the gateways reconnect and resync with `GET /api/state`.
-- **Laptop or browser restarts:** the kiosk page reconnects and the current view is pushed again.
-- **Board Manager restarts or drops off:** the station shows the board offline; play resumes when it's back. Darts thrown meanwhile have to be added by hand (PLAY-10).
+```mermaid
+sequenceDiagram
+    actor P as Players
+    participant S as Station screen
+    participant N as n4-darts
+    participant B as Board (Autodarts)
+    participant O as Other screens
+
+    P->>S: "New match" on a free station
+    S->>N: player list
+    N-->>S: players
+    P->>S: pick players (or add one on the spot), choose settings
+    S->>N: quickMatch (players, settings)
+    N->>N: create the match on the station, not started yet
+    N-->>S: settle the throwing order
+    N-->>O: station busy
+    P->>S: reorder or shuffle, then "Start"
+    S->>N: setOrder, startMatch
+    N->>B: reset the board
+    N->>N: append "match started" to the new log
+    N-->>S: first player to throw
+    N-->>O: match on
+```
+
+- No PIN and no organiser needed: quick matches and new players are open at the station (MATCH-01, PLAYER-04, ADMIN-02).
+- A busy station refuses a new match. During a tournament, the station and the players count as busy, so the scheduler leaves them alone (SCHED-04).
+- The board is reset before the match starts, so darts still on it can't count (BOARD-05).
