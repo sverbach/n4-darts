@@ -33,7 +33,12 @@ export function Awards({ awards, projector = false }: { awards: Award[]; project
       {awards.map((award) => (
         <li key={award.kind} className={p.item}>
           <span className={p.title}>{AWARDS[award.kind].title}</span>
-          <span className={p.players}>{award.players.join(", ")}</span>
+          {/* A tie of more than two would list most of the field: the count says it. */}
+          <span className={p.players}>
+            {award.players.length > 2
+              ? `${award.players.length} players`
+              : award.players.join(", ")}
+          </span>
           <span className={p.value}>{AWARDS[award.kind].format(award.value)}</span>
         </li>
       ))}

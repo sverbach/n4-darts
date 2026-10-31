@@ -78,12 +78,7 @@ function Running({ view }: { view: DisplayView }) {
   const knockout = t.phase === "knockout";
   return (
     <>
-      <Header
-        title={t.name}
-        detail={`${PHASES[t.phase]} · ${t.played} of ${t.total} matches played`}
-        played={t.played}
-        total={t.total}
-      />
+      <Header title={t.name} detail={PHASES[t.phase]} played={t.played} total={t.total} />
       <div
         className={`grid min-h-0 flex-1 ${knockout ? "grid-cols-[calc(560*var(--px))_minmax(0,1fr)] gap-pu-48" : "grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-pu-40"}`}
       >
@@ -102,9 +97,11 @@ function Running({ view }: { view: DisplayView }) {
                   key={`${m.label}-${m.players.map((p) => p.id).join()}`}
                   className="avatar-pu-40 flex items-center gap-pu-16 border border-line-soft border-solid px-pu-22 py-pu-14 font-pixel text-pu-20 uppercase tracking-pu-2"
                 >
-                  <span className="w-pu-220 whitespace-nowrap text-accent text-pu-14 tracking-pu-1">
-                    {m.label}
-                  </span>
+                  {m.label && (
+                    <span className="w-pu-220 whitespace-nowrap text-accent text-pu-14 tracking-pu-1">
+                      {m.label}
+                    </span>
+                  )}
                   {m.players.map((p, i) => (
                     <span key={p.id} className="inline-flex items-center gap-pu-16">
                       {i > 0 && <span className="text-muted text-pu-15">vs</span>}
@@ -126,6 +123,8 @@ function Running({ view }: { view: DisplayView }) {
 function Finished({ view }: { view: DisplayView }) {
   const t = view.tournament as NonNullable<DisplayView["tournament"]>;
   const champion = view.placings?.find((p) => p.from === 1);
+  // The champion has the big panel; the list carries on from second place.
+  const rest = view.placings?.filter((p) => p !== champion) ?? [];
   return (
     <>
       <Header title={t.name} detail={t.endedEarly ? "Ended early" : "Finished"} />
@@ -149,26 +148,20 @@ function Finished({ view }: { view: DisplayView }) {
             </p>
           </section>
         )}
-        {view.placings && (
+        {rest.length > 0 && (
           <section className={SECTION}>
             <h2 className={H2}>Final placings</h2>
             <ol className="avatar-pu-56 m-0 list-none border-0 border-border border-t border-solid p-0">
-              {view.placings.map((p) => (
+              {rest.map((p) => (
                 <li
                   key={p.id}
                   className="flex h-pu-96 items-center gap-pu-22 border-0 border-line-soft border-b border-solid"
                 >
-                  <span
-                    className={`w-pu-160 whitespace-nowrap text-pu-56 ${p.from === 1 ? "text-accent" : "text-muted"}`}
-                  >
+                  <span className="w-pu-160 whitespace-nowrap text-muted text-pu-56">
                     {place(p.from, p.to)}
                   </span>
                   <Avatar player={p} />
-                  <span
-                    className={`font-pixel text-pu-28 uppercase tracking-pu-3 ${p.from === 1 ? "text-accent" : ""}`}
-                  >
-                    {p.name}
-                  </span>
+                  <span className="font-pixel text-pu-28 uppercase tracking-pu-3">{p.name}</span>
                 </li>
               ))}
             </ol>
@@ -335,7 +328,7 @@ function Bracket({ view }: { view: DisplayView }) {
                 <h3 className="text-muted text-pu-13 tracking-pu-2">{column.name}</h3>
                 <div className="flex flex-1 flex-col justify-around gap-pu-14">
                   {column.matches.map((m) => (
-                    <MatchCard key={m.slot} match={m} projector />
+                    <MatchCard key={m.slot} match={m} round={column.name} projector />
                   ))}
                 </div>
               </div>

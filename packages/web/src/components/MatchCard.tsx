@@ -40,17 +40,28 @@ function cardStyle(match: TournamentMatchView, projector: boolean) {
   };
 }
 
+/**
+ * What the card's own label adds under its round's heading: "Semi-final 2" under "Semi-final" is
+ * "2", "Final" under "Final" nothing.
+ */
+const ownLabel = (label: string, round?: string) =>
+  round && label.startsWith(round) ? label.slice(round.length).trim() : label;
+
 export function MatchCard({
   match,
+  round,
   projector = false,
 }: {
   match: TournamentMatchView;
+  /** The heading the card sits under; its label only says what the heading doesn't. */
+  round?: string;
   projector?: boolean;
 }) {
   const p = cardStyle(match, projector);
+  const label = ownLabel(match.label, round);
   return (
     <div className={p.card}>
-      <div className={p.label}>{match.label}</div>
+      {label && <div className={p.label}>{label}</div>}
       {SIDES.map((side, i) => {
         const player = match.sides[i];
         const winner = Boolean(player && match.winner === player.name);

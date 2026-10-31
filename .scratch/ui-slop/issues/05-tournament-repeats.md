@@ -1,6 +1,6 @@
 # Progress, rounds, champion and awards said once
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 On `/display` and admin's tournament tab:
@@ -28,3 +28,7 @@ On `/display` and admin's tournament tab:
 ## Comments
 
 2026-10-31: Confirmed by the user.
+
+2026-10-31: Built. Progress: the squares plus the phase name on /display and admin (the count stays in the squares' accessible label; admin shows it as text only once finished). Bracket cards say only what their round heading doesn't (`MatchCard` `round` prop): "1", "2", nothing for the final. Finished: /display's placings start at 2nd (the champion has the panel); admin's champion card lost the trophy and "1" badge; awards ties of more than two read "4 players". The admin header's state pill moved beside the title (it was a kicker above it).
+
+Up-next order: it is the scheduler's real queue order (round by round, longest-rested first, players free), and station 1's match isn't in the list because it's already on a station. What looked wrong were the labels: "Group match n" is the fixture's number in the round-robin, not the order of play. So the display drops it in the group phase (`upNextLabel` in `server/src/live/display.ts`, with a test); with several groups the group name stays; knockout labels stay. Scheduler unchanged.

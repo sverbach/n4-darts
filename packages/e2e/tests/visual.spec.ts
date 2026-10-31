@@ -300,7 +300,9 @@ test("a tournament on station 1, station 2 busy", async () => {
 
   await api.post("/api/admin/tournament/start");
   await expect.poll(async () => (await station(1)).match?.label ?? null).not.toBeNull();
-  await open(page, "/admin/tournament", (p) => p.getByText(/of \d+ matches played/));
+  await open(page, "/admin/tournament", (p) =>
+    p.getByRole("img", { name: /of \d+ matches played/ }),
+  );
   await shoot(page, "admin-tournament-groups", PAGES);
   await open(display, "/display", (p) => p.getByText(/Group/).first());
   await shoot(display, "display-groups", SCREENS);

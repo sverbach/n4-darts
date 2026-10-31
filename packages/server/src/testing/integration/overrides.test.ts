@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import type { DisplayView, TournamentAdminView } from "../../api.ts";
 import { buildApp } from "../../app.ts";
 import { type Db, openDb } from "../../db.ts";
+import { upNextLabel } from "../../live/display.ts";
 import { PAUSED } from "../../scheduling/scheduler.ts";
 import { createStation, type Station } from "../../stations/station.ts";
 
@@ -63,7 +64,7 @@ describe("organiser overrides", () => {
     // The projector's "Up next" is the head of the same queue.
     const display = (await (app as ReturnType<typeof buildApp>).inject("/api/display")).json();
     expect((display as DisplayView).upNext.map((m) => m.label)).toEqual(
-      progress?.queue.slice(0, 5).map((q) => q.label),
+      progress?.queue.slice(0, 5).map((q) => upNextLabel(q.label)),
     );
   });
 

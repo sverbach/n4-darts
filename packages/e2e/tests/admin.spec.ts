@@ -31,7 +31,7 @@ test("a small tournament: create, start, play one match, correct a dart", async 
   }
   await page.getByRole("button", { name: "Create draft" }).click();
   await page.getByRole("button", { name: "Start tournament" }).click();
-  await expect(page.getByText("0 of", { exact: false }).first()).toBeVisible();
+  await expect(page.getByRole("img", { name: /^0 of \d+ matches played/ })).toBeVisible();
 
   // The scheduler puts the first match on a station; play it there (301, single out).
   let on = 0;
@@ -62,7 +62,7 @@ test("a small tournament: create, start, play one match, correct a dart", async 
   await board1.takeout();
   await station.close();
 
-  await expect(page.getByText(/1 of \d+ matches played/).first()).toBeVisible();
+  await expect(page.getByRole("img", { name: /1 of \d+ matches played/ }).first()).toBeVisible();
 
   // Correct one of the loser's misses in the match detail: the result stands.
   await page.goto("/admin/matches");

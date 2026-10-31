@@ -48,18 +48,26 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
     <div className="flex flex-col gap-8">
       <header className="flex flex-wrap items-end justify-between gap-5">
         <div className="flex flex-col gap-2">
-          {live ? (
-            <span className={runState(true)}>Running</span>
-          ) : (
-            <span className={runState(false)}>
-              {progress.endedEarly ? "Ended early" : "Finished"}
-            </span>
-          )}
-          <h1>{tournament.name}</h1>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <h1>{tournament.name}</h1>
+            {live ? (
+              <span className={runState(true)}>Running</span>
+            ) : (
+              <span className={runState(false)}>
+                {progress.endedEarly ? "Ended early" : "Finished"}
+              </span>
+            )}
+          </div>
+          {/* While it runs, the squares count the matches; the line says the phase and the end. */}
           <p className="hint m-0">
-            {live && `${PHASES[progress.phase]} · `}
-            {progress.played} of {progress.total} matches played
-            {progress.expectedEnd && ` · ends around ${time(progress.expectedEnd)}`}
+            {live
+              ? [
+                  PHASES[progress.phase],
+                  progress.expectedEnd && `ends around ${time(progress.expectedEnd)}`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")
+              : `${progress.played} of ${progress.total} matches played`}
           </p>
         </div>
         {live ? (
@@ -81,7 +89,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
             <section className={SECTION}>
               <h2>Final placings</h2>
               {champion && (
-                <div className="relative flex items-center gap-5 border-2 border-accent border-solid bg-accent-tint px-5 kiosk:py-[22px] py-[18px] [--avatar:64px] kiosk:[--avatar:88px] [&_.pixel-icon]:h-9 [&_.pixel-icon]:text-accent">
+                <div className="flex items-center gap-5 border-2 border-accent border-solid bg-accent-tint px-5 kiosk:py-[22px] py-[18px] [--avatar:64px] kiosk:[--avatar:88px]">
                   <Avatar player={champion} large />
                   <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                     <span className="match-label">Champion</span>
@@ -89,10 +97,6 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                       {champion.name}
                     </span>
                   </div>
-                  <PixelIcon name="trophy" label="Champion" />
-                  <span className="absolute -top-0.5 -right-0.5 bg-accent px-2.5 py-1 font-bold font-pixel text-[12px] text-accent-text">
-                    1
-                  </span>
                 </div>
               )}
               <ol className="m-0 list-none border-0 border-border border-t border-solid p-0">
@@ -103,7 +107,9 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                       key={p.id}
                       className="flex min-h-[60px] items-center gap-4 border-0 border-line-soft border-b border-solid [--avatar:36px]"
                     >
-                      <span className="w-14 text-[32px] text-muted">{place(p.from, p.to)}</span>
+                      <span className="min-w-14 whitespace-nowrap text-[32px] text-muted">
+                        {place(p.from, p.to)}
+                      </span>
                       <Avatar player={p} />
                       <span className="font-pixel text-[16px] uppercase tracking-[1px]">
                         {p.name}
@@ -287,7 +293,7 @@ function BracketRows({ bracket }: { bracket: TournamentProgress["bracket"] }) {
                 <h3 className="text-[11px]">{column.name}</h3>
                 <div className="flex flex-1 flex-col justify-around gap-3">
                   {column.matches.map((m) => (
-                    <MatchCard key={m.slot} match={m} />
+                    <MatchCard key={m.slot} match={m} round={column.name} />
                   ))}
                 </div>
               </div>
