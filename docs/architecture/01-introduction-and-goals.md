@@ -1,17 +1,120 @@
-# Requirements
+# 1. Introduction and goals
 
-What n4-darts has to do (functional requirements) and how well (quality requirements), plus the constraints it works within. Gathered from the specs in `.scratch/`, `docs/architecture.md`, the ADRs in `docs/adr/` and later decisions. Terms follow `GLOSSARY.md`; stakeholders follow `stakeholders.md`.
+n4-darts runs private, offline dart tournaments in a room with automatically scored boards. An organiser sets up a tournament on a local server, the server gives each match to a free station, and players walk up and play. Autodarts boards detect the darts; everything else (scoring, matches, tournaments, stats) is n4-darts' own. No accounts, no logins, no internet.
 
-Status: **draft** (2026-10-26), for review. It describes the system as built and agreed so far.
+## 1.1 Requirements overview
+
+### Function overview
+
+The functions of n4-darts, clustered by what they're for, and how the clusters depend on each other. It stays at the business level: what each cluster does, not how it's built. Requirement IDs refer to the tables below; stakeholders to section 1.3.
+
+The clusters fall into five groups:
+- **Play**: what happens at the board.
+- **Organise**: what the organiser sets up and the evening runs on.
+- **Statistics**: the long-term numbers about each player, built up from their finished matches over many evenings.
+- **Follow**: what everyone watches.
+- **Cross-cutting**: what applies to all of them.
+
+| Cluster | What it does | Requirements | Depends on |
+|---|---|---|---|
+| **Dart detection** | Hears every dart a station's board detects, knows the board's state (online, stopped, offline), and starts, stops, calibrates and resets the board. | BOARD-01 to 05 | Stations |
+| **Match play** | Plays a match by the rules: scores darts, ends visits at takeout, busts, in and out rules, legs and the winner. Lets the players at the board correct and add darts, undo, move to the next player, and shows checkout routes. | PLAY-01 to 17 | Dart detection |
+| **Stations** | The places to play: which stations exist, which board each one uses, and whether each one is free, busy or paused. | ADMIN-03, 04 | – |
+| **Players** | The list of players across evenings: names, archiving, photos, adding someone on the spot. | PLAYER-01 to 07 | – |
+| **Matches** | Every match as a whole: quick matches and single matches put on a free station, ending a match without a result, the record and history of every match, and the organiser's corrections to any dart. | MATCH-01 to 05 | Match play, Stations, Players |
+| **Tournaments** | One evening's competition: draft, format, seeding, groups and their tables, the knockout, placings, withdrawals, late arrivals, result changes, ending early, and the duration estimate. | TOUR-01 to 17 | Matches, Players, Ratings |
+| **Scheduling** | Runs the evening: gives free stations the next ready match, hands stations over when matches finish, and carries out the organiser's overrides (pause, pin, hold, send back, play now). | SCHED-01 to 08 | Tournaments, Matches, Stations |
+| **Ratings** | Each player's rating: their recent average, from their last completed matches. | RATING-01 | Matches |
+| **Stats** | Long-term numbers per player: profile, chart, heatmap, leaderboard, and the awards of a finished tournament. | STATS-01 to 07 | Matches, Players, Ratings, Tournaments |
+| **Live views** | What the room follows: every screen kept up to date, the projector view of the whole evening, and any station's scoreboard on its own. | VIEW-01 to 06 | Match play, Tournaments, Scheduling, Stats, Players |
+| **Access** | Keeps the organiser's functions behind a shared PIN, while everything players need stays open. | ADMIN-01, 02 | – (guards the organiser's functions) |
+| **Operations** | Backups and restoring them, diagnostics, updates. | OPS-01 to 05 | – (looks after all of them) |
+
+#### Dependencies
+
+An arrow means "depends on": it needs what the other cluster provides.
+
+```mermaid
+flowchart TB
+    subgraph follow["Follow"]
+        views["Live views"]
+    end
+
+    subgraph statistics["Statistics"]
+        stats["Stats"]
+        ratings["Ratings"]
+    end
+
+    subgraph organise["Organise"]
+        scheduling["Scheduling"]
+        tournaments["Tournaments"]
+        matches["Matches"]
+        players["Players"]
+        stations["Stations"]
+    end
+
+    subgraph play["Play"]
+        matchplay["Match play"]
+        detection["Dart detection"]
+    end
+
+    subgraph cross["Cross-cutting"]
+        access["Access"]
+        operations["Operations"]
+    end
+
+    views -- "live scores" --> matchplay
+    views -- "tables, bracket, champion" --> tournaments
+    views -- "up next" --> scheduling
+    views -- "leaderboard, awards" --> stats
+    views -- "names, photos" --> players
+
+    stats -- "completed matches" --> matches
+    stats -- "placings" --> tournaments
+    stats -- "rating, rank" --> ratings
+    stats -- "who" --> players
+
+    scheduling -- "ready matches" --> tournaments
+    scheduling -- "puts matches on stations" --> matches
+    scheduling -- "free, paused" --> stations
+
+    tournaments -- "tournament matches, results" --> matches
+    tournaments -- "entrants" --> players
+    tournaments -- "seeds" --> ratings
+
+    ratings -- "recent matches" --> matches
+
+    matches -- "plays them out" --> matchplay
+    matches -- "free station" --> stations
+    matches -- "who plays" --> players
+
+    matchplay -- "darts" --> detection
+    detection -- "which board" --> stations
+```
+
+Access and Operations have no arrows: they apply to every cluster rather than depending on one. Access guards the organiser's side of Players, Matches, Tournaments, Scheduling and Stations. Operations backs up everything that's kept, and its diagnostics watch Dart detection and Live views.
+
+#### Observations
+
+- **Match play is the core, and it depends on almost nothing.** Only Dart detection is below it. It's the part that has to be right every dart, and the part that is easiest to keep right in isolation (`docs/adr/0002-match-state-from-event-log.md`).
+- **Live views depend on most clusters, and nothing depends on them.** They only consume, so they can change freely without breaking anything below.
+- **Tournaments builds on Matches, and Matches doesn't know about Tournaments.** A correction to a finished tournament match must first ask whether the result may change (TOUR-14). Matches offers a "may this result change?" check, and Tournaments plugs its rule into it (`ResultGuard` in `packages/server/src/matches.ts`). So the dependency points one way only.
+- **Ratings are their own cluster on purpose, inside Statistics.** Tournaments need a rating for seeding, and Stats shows tournament placings. If rating were part of Stats, Tournaments and Stats would depend on each other. Ratings depend only on Matches, so the loop doesn't arise. Organise reaches into Statistics only for the rating.
+- **Awards sit in Stats, but belong to a tournament.** They're computed from a tournament's matches with the stats calculations, and shown at the end of a tournament. Only Live views needs them: the views add them to the tournament from Stats (`withAwards` in `packages/server/src/stats.ts`), so Stats depending on Tournaments stays one-way.
+- **The duration estimate sits in Tournaments, but learns from Matches.** It uses the leg lengths of past matches (TOUR-16), which is part of Tournaments' dependency on Matches.
+- **Stations is shared by Play and Organise.** Dart detection needs it for which board to listen to; Matches and Scheduling for which station is free. It's the one place both sides meet.
+
+### Functional requirements
+
+What n4-darts has to do. The quality requirements are in section 10, the constraints in section 2.
 
 **Reading the tables**
+
 - **ID**: a short area prefix and a number, so requirements can be referred to.
 - **For**: the stakeholders it mainly serves. Org = organiser, Pla = players, Spe = spectators, Ops = operator, Dev = developer.
-- **Source**: where it was decided. "spec: x" is `.scratch/x/spec.md`, "ticket: x" is `.scratch/x/issues/`, "arch" is `docs/architecture.md`.
+- **Source**: where it was decided. "spec: x" is `.scratch/x/spec.md`, "ticket: x" is `.scratch/x/issues/`, "arch" is the decision log in [section 9.2](09-architecture-decisions.md#92-decision-log) (formerly docs/architecture.md).
 
-## Functional requirements
-
-### Playing a match (PLAY)
+#### Playing a match (PLAY)
 
 | ID | Requirement | For | Source |
 |---|---|---|---|
@@ -33,7 +136,7 @@ Status: **draft** (2026-10-26), for review. It describes the system as built and
 | PLAY-16 | When the match is won, the station shows "Game shot", the winner and the legs. Players close it with "Done", which frees the station. A win can still be undone until then. | Pla | spec: players-and-matches |
 | PLAY-17 | Each match records the version of the rules it was played under, so rule changes never change old results. | Pla, Org | ADR 0002 |
 
-### Boards (BOARD)
+#### Boards (BOARD)
 
 | ID | Requirement | For | Source |
 |---|---|---|---|
@@ -43,7 +146,7 @@ Status: **draft** (2026-10-26), for review. It describes the system as built and
 | BOARD-04 | From the station and from the organiser's station list, anyone can stop or start detection, auto-calibrate the board, and reset it. Stopping and calibrating ask for confirmation. | Pla, Org | spec: board-menu-and-photos |
 | BOARD-05 | n4-darts resets the board when a match starts, and after "Next player" and undo, so the board's darts and the match agree. | Pla | arch |
 
-### Players (PLAYER)
+#### Players (PLAYER)
 
 | ID | Requirement | For | Source |
 |---|---|---|---|
@@ -55,7 +158,7 @@ Status: **draft** (2026-10-26), for review. It describes the system as built and
 | PLAYER-06 | A player's photo or initials appear wherever the player does: station, projector, profile, lists and pickers. | Pla, Spe | spec: board-menu-and-photos |
 | PLAYER-07 | Guests either get their own player or play as a shared "Guest" player (a convention, not a feature). | Pla, Org | stakeholders |
 
-### Matches outside tournaments (MATCH)
+#### Matches outside tournaments (MATCH)
 
 | ID | Requirement | For | Source |
 |---|---|---|---|
@@ -65,7 +168,7 @@ Status: **draft** (2026-10-26), for review. It describes the system as built and
 | MATCH-04 | The organiser sees what's on every station and the history of finished matches, with the result and every visit of every leg. | Org | spec: players-and-matches |
 | MATCH-05 | The organiser can correct any dart of any running or finished match. The result follows the correction. Corrected and added darts stay recognisable. | Org | spec: players-and-matches |
 
-### Tournaments (TOUR)
+#### Tournaments (TOUR)
 
 | ID | Requirement | For | Source |
 |---|---|---|---|
@@ -87,7 +190,7 @@ Status: **draft** (2026-10-26), for review. It describes the system as built and
 | TOUR-16 | When creating, the tournament shows its expected duration ("about 2 h 30"); during the evening, the expected end time, updated as matches finish. It is based on the real leg lengths of the last 50 matches at the same start score, with defaults until there are at least 5 legs. | Org | spec: tournaments, ticket: perf-tests |
 | TOUR-17 | Tournament matches are labelled at the station (e.g. "Group A · match 4", "Winners semi-final"). | Pla | spec: tournaments |
 
-### Scheduling the evening (SCHED)
+#### Scheduling the evening (SCHED)
 
 | ID | Requirement | For | Source |
 |---|---|---|---|
@@ -100,7 +203,7 @@ Status: **draft** (2026-10-26), for review. It describes the system as built and
 | SCHED-07 | A free station during a tournament says why it's free: no match ready (waiting for players), or paused. | Pla | spec: tournaments |
 | SCHED-08 | The organiser sees the queue, each station's state, the group tables, the bracket and the players, all live. | Org | spec: tournaments |
 
-### Following the evening (VIEW)
+#### Following the evening (VIEW)
 
 | ID | Requirement | For | Source |
 |---|---|---|---|
@@ -111,13 +214,13 @@ Status: **draft** (2026-10-26), for review. It describes the system as built and
 | VIEW-05 | Any one station's scoreboard can be shown on its own (e.g. on the projector), without controls. From the projector view, a tap on a station opens it. The projector view never switches by itself. | Spe | spec: display-and-stats |
 | VIEW-06 | Any number of devices can show or control a station at the same time. | Pla, Spe | ADR 0004 |
 
-### Ratings (RATING)
+#### Ratings (RATING)
 
 | ID | Requirement | For | Source |
 |---|---|---|---|
 | RATING-01 | A player's rating is their 3-dart average over their last 10 completed matches (counted as in STATS-01). A player without a completed match has no rating. It seeds tournaments and ranks the leaderboard. | Org, Pla | spec: tournaments |
 
-### Stats (STATS)
+#### Stats (STATS)
 
 | ID | Requirement | For | Source |
 |---|---|---|---|
@@ -129,7 +232,7 @@ Status: **draft** (2026-10-26), for review. It describes the system as built and
 | STATS-06 | Each finished tournament gets awards: best match average, highest checkout, most 180s, best leg. Ties are shared and empty categories left out. | Pla, Spe | spec: display-and-stats |
 | STATS-07 | A correction to a past match updates every stat that depends on it. | Pla | spec: display-and-stats |
 
-### Administration (ADMIN)
+#### Administration (ADMIN)
 
 | ID | Requirement | For | Source |
 |---|---|---|---|
@@ -138,7 +241,7 @@ Status: **draft** (2026-10-26), for review. It describes the system as built and
 | ADMIN-03 | The organiser manages the stations (name and board address), with a live connection indicator per station. Changes take effect without a restart. | Org, Ops | spec: players-and-matches |
 | ADMIN-04 | On first start the stations are created from the server configuration once. After that the organiser's list is what counts. | Ops | spec: players-and-matches |
 
-### Operation (OPS)
+#### Operation (OPS)
 
 | ID | Requirement | For | Source |
 |---|---|---|---|
@@ -148,38 +251,7 @@ Status: **draft** (2026-10-26), for review. It describes the system as built and
 | OPS-04 | Live updates keep working behind a reverse proxy without special proxy configuration. | Ops | ticket: live-behind-proxy |
 | OPS-05 | An update is: pull a new image and restart. | Ops | arch |
 
-## Quality requirements
-
-| ID | Quality | Requirement | For | Source |
-|---|---|---|---|---|
-| Q-01 | Availability | A full tournament evening runs with the internet unplugged. Nothing is loaded from outside the room at runtime. | Org, Ops | ADR 0005 |
-| Q-02 | Reliability | After a server restart, every match resumes exactly where it was, including the visit in progress. | Pla, Org | spec: walking-skeleton |
-| Q-03 | Reliability | No dart is ever lost or counted twice, across board reconnects, server restarts and darts the board missed. | Pla | arch |
-| Q-04 | Integrity | Results are always derived from the full record of the match. Nothing is overwritten: corrections are added on top, and old matches are replayed under their own rules. | Pla, Org | ADR 0002 |
-| Q-05 | Responsiveness | A detected dart reaches the station's screens within 150 ms, measured over a long match. | Pla | ticket: perf-tests |
-| Q-06 | Scalability | Responsiveness doesn't degrade over a long match, over an evening, or as the history grows over months. Tested over 600 darts with 200 past matches, and in the browser over 300 darts. | Pla, Ops | ticket: perf-tests |
-| Q-07 | Durability | At most a day of data can be lost to a broken disk, given the operator keeps the backup folder elsewhere too. | Ops | spec: display-and-stats |
-| Q-08 | Usability | The station can be used by touch, quickly, from where the player stands, and is readable from 2–3 m. | Pla | docs/ui-pages.md |
-| Q-09 | Usability | The projector pages are readable from across the room and fit any screen without scrolling. | Spe | spec: design-system |
-| Q-10 | Usability | Every page works on a phone (about 390 px wide) and on a laptop or kiosk (about 1440 px), with a layout for each. The organiser's area is made for a phone first. | Org, Pla | spec: design-system |
-| Q-11 | Consistency | One visual language across all pages. Every colour is a named role, so a theme can be added in one place. | Pla, Dev | spec: design-system |
-| Q-12 | Security | The PIN stops accidental edits by guests, not attackers. The system is for a private room and must not be exposed to the internet. | Org, Ops | ADR 0004, ticket: live-behind-proxy |
-| Q-13 | Privacy | Player data (names, photos, history) stays on the room's server and in its backups. | Pla | ADR 0005 |
-| Q-14 | Testability | Everything can be exercised without a real board, through a simulator that speaks the board's protocol. Game rules, scheduling and brackets can be tested without any I/O. | Dev | arch |
-| Q-15 | Maintainability | Every change runs the full checks: types, lint, unit and integration tests, a load test, browser tests and the build. Nothing ships that fails them. | Dev, Ops | CI |
-| Q-16 | Maintainability | The game rules exist once and are shared by the server and the browser. | Dev | ADR 0006 |
-| Q-17 | Observability | A slow or broken evening can be explained afterwards from the diagnostics, and collecting them costs next to nothing when nobody looks. | Ops | ticket: diagnostics |
-| Q-18 | Deployability | One container image and one data volume. The station laptops run nothing of ours. | Ops | arch |
-
-## Constraints
-
-- **Detection is Autodarts.** Each station has an Autodarts board with its Board Manager on a Windows laptop. n4-darts uses only its local, unofficial and unauthenticated API (state snapshots plus start, stop, reset, calibrate). An update by the vendor can break it (ADR 0001, `docs/board-manager-api.md`).
-- **Nothing of ours on the laptops.** They run the Board Manager and a browser in kiosk mode (arch).
-- **One server in the room.** A Linux machine with Docker on the same network as the boards (arch).
-- **Two stations today.** Nothing should assume exactly two (arch).
-- **If the server is down, nobody can play.** A relay on the laptops that buffers darts was rejected (ADR 0001).
-
-## Deliberately out of scope
+### Deliberately out of scope
 
 - Games other than X01 (Cricket etc.). The rules are versioned and kept apart so they can come later.
 - Teams, doubles, playing on for places within a leg, a third-place match.
@@ -189,3 +261,68 @@ Status: **draft** (2026-10-26), for review. It describes the system as built and
 - Head-to-head stats and filtering stats by game, evening or tournament.
 - Players uploading their own photo, a light theme, a backup download or restore button.
 - Replacing Autodarts detection, or supporting other boards.
+
+## 1.2 Quality goals
+
+The qualities that matter most, in order. Every quality requirement is in section 10, with scenarios for these goals.
+
+| # | Quality goal | What it means here | Requirements |
+|---|---|---|---|
+| 1 | **Correct scores** | Every dart counts once, for the right player, by the match's own rules. Results are always derived from the full record, and nothing is overwritten. | Q-03, Q-04, PLAY-17 |
+| 2 | **Reliable evenings** | A tournament evening runs with the internet unplugged, survives a server restart mid-visit and a board dropping off the network, and runs itself once started. | Q-01, Q-02, BOARD-02 |
+| 3 | **Instant at the board** | A dart reaches the screens within 150 ms, also late in a long match and with months of history. | Q-05, Q-06 |
+| 4 | **Usable from where you stand** | The station works by touch, quickly, readable from 2–3 m; the projector from across the room; everything on a phone. | Q-08, Q-09, Q-10 |
+| 5 | **Safe to change** | Every change runs the full checks, including a load test and browser tests, and the rules exist once. | Q-14, Q-15, Q-16 |
+
+## 1.3 Stakeholders
+
+| Stakeholder            | Who                                                                         | Role                                                                                                                                             | Main concerns                                                                                                                                                                            | Influence | Interest |
+| ---------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | -------- |
+| **Organiser**          | Runs the tournament evening; usually also the host                          | Creates the tournament, picks and seeds players, watches the queue, holds or pins matches, corrects results, ends the evening                    | The evening runs itself once started. Setup is quick on a phone. The draw and order are fair. Mistakes can be fixed (corrections, withdrawals, late arrivals). A reliable time estimate. | High      | High     |
+| **Players**            | Everyone who throws a match, regulars and guests                            | Play at a station, follow their score, correct the board, look at their stats                                                                    | The score is right, and any mistake is quick to fix at the board. Darts show up at once. Waiting is fair and they know when they're up. A history and rating across evenings.            | Medium    | High     |
+| **Spectators**         | Anyone in the room watching: players between matches, guests who don't play | Read the projector (`/display`) or a station's screen (`/watch/n`)                                                                               | Readable from across the room. Live, with no refresh. Who's playing, who's next, the standings.                                                                                          | Low       | Medium   |
+| **Operator**           | Runs the server and the room's equipment                                    | Deploys and updates the Docker image, keeps backups, looks after the network, reverse proxy and station laptops, points stations at their boards | Works with the internet unplugged. No data loss. Easy to deploy and update. A slow or broken evening can be explained afterwards (diagnostics).                                          | High      | Medium   |
+| **Developer**          | Builds and maintains n4-darts                                               | Changes the code, tests, docs and CI                                                                                                             | Changes are safe and easy to make. Tests catch regressions, including performance. Typed end to end. Decisions are written down (ADRs).                                                  | High      | High     |
+| **Autodarts (vendor)** | The company behind the detection system                                     | Ships the Board Manager software and its API, and owns detection                                                                                 | Their product is used as intended (detection only). Their API can change between versions, has no authentication, and is only partly documented.                                         | High      | Low      |
+
+Organiser, operator and developer are often the same person. They're listed separately because their concerns differ and can pull against each other. For example:
+
+- The organiser wants a feature tonight.
+- The operator wants nothing to change before an evening.
+- The developer wants it done properly.
+
+### Sub-roles worth keeping apart
+
+- **The player at the board** uses the station kiosk to correct a dart, add a dart the board missed, undo, or press "Next player". They need large targets, few taps, and trust that the score on screen is the score.
+- **Guests** play a quick match without being regulars. They can join without logging in (`docs/adr/0004-no-logins-stations-are-urls.md`), and either get their own player on the spot, which keeps a history like everyone else's, or play as the shared **Guest** player. The shared player is a convention: a player named "Guest", not a feature. Two consequences:
+  - Its stats and rating mix different people.
+  - A match can't have the same player twice, so only one guest per match can use it.
+- **Players as the people the data is about.** Photos, match history and ratings persist across evenings. The room is private and nothing leaves it (`docs/adr/0005-fully-offline.md`), but the data is still about real people. A player can be archived or deleted, and a photo removed.
+
+### Influence and interest
+
+```mermaid
+quadrantChart
+    title Influence and interest
+    x-axis Low interest --> High interest
+    y-axis Low influence --> High influence
+    quadrant-1 Manage closely
+    quadrant-2 Keep satisfied
+    quadrant-3 Monitor
+    quadrant-4 Keep informed
+    Organiser: [0.85, 0.85]
+    Developer: [0.9, 0.75]
+    Operator: [0.55, 0.8]
+    Autodarts vendor: [0.15, 0.85]
+    Players: [0.8, 0.45]
+    Spectators: [0.55, 0.2]
+```
+
+- **Manage closely: organiser, developer, operator.** Their concerns drive the design and the ADRs.
+- **Keep satisfied: Autodarts.** They don't care about n4-darts, but a Board Manager update can break it. The board is kept behind one gateway (`docs/adr/0001-autodarts-for-detection-only.md`), and the simulator and recorded sessions keep our understanding of their API testable.
+- **Keep informed: players and spectators.** They don't decide anything, but the evening is for them. Their concerns show up as requirements on the station, `/display` and `/watch`: live updates, readability, fast correction.
+
+### Decisions
+
+- **The station kiosk isn't a stakeholder of its own.** Its needs are the player-at-the-board's.
+- **Guests keep a history.** A guest who plays as their own player keeps it like any regular. A guest who doesn't want their own player plays as the shared "Guest" player.

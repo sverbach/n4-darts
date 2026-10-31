@@ -1,6 +1,6 @@
 /*
  * Design tokens. Every colour in the app comes from here, named by its role, so a theme can
- * swap them in one place (docs/architecture.md, Design system).
+ * swap them in one place (docs/architecture/08-crosscutting-concepts.md, 8.6).
  */
 
 :root {

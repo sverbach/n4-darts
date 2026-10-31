@@ -1,7 +1,7 @@
 # n4-darts
 offline dart platform using Autodarts scoring capabilities
 
-See `docs/architecture.md` for the design and `docs/adr/` for the key decisions.
+See [`docs/architecture/`](docs/architecture/README.md) for the architecture (arc42) and `docs/adr/` for the key decisions.
 
 ## Layout
 

@@ -1,10 +1,8 @@
-# Building blocks
+# 5. Building block view
 
-What n4-darts is made of, in two levels: the parts that run (level 1), then what's inside the server and the web app (level 2). Each block is mapped to its cluster in `functions.md`. Arrows show code dependencies as they are in the code, not as they should be.
+What n4-darts is made of, in two levels: the parts that run (level 1), then what's inside the server and the web app (level 2). Each block is mapped to its cluster in the function overview (section 1.1). Arrows show code dependencies as they are in the code, not as they should be.
 
-Status: **draft** (2026-10-31), for review.
-
-## Level 1: the system
+## 5.1 Whitebox overall system
 
 ```mermaid
 flowchart LR
@@ -34,6 +32,12 @@ flowchart LR
     web -. "bundled in" .-> engine
 ```
 
+**Motivation**
+
+The rules are pure and shared (engine), everything with state or I/O sits in one server process, and the browser app only talks to that server. That keeps the score right in one place and the laptops free of anything of ours.
+
+**Contained building blocks**
+
 | Block | What it is | Clusters |
 |---|---|---|
 | **engine** (`packages/engine`) | Pure functions with no I/O: X01 rules as a fold over a match's events, checkout routes, and per-match dart stats. Used by the server and bundled into the web app (ADR 0006). | Match play (rules), Stats (calculations) |
@@ -46,7 +50,38 @@ For development only:
 - **board-sim** (`tools/board-sim`) speaks the Board Manager's protocol, so everything runs and is tested without a real board (Q-14). The server's tests use it.
 - **e2e** (`packages/e2e`) starts the server on simulators and drives the web app in a browser with Playwright.
 
-## Level 2: inside the server
+**Important interfaces**
+
+**`@n4/server/api`** (`packages/server/src/api.ts`): the types of every view and request, shared by the server and the web app, so the API is typed end to end. **`@n4/engine`**: the rules, checkout routes and dart stats, imported by both. **Board Manager API**: see section 3.2 and `docs/board-manager-api.md`.
+
+### Board gateway (inside server)
+
+One long-lived WebSocket client per board, configured per station with the Board Manager's address (`packages/server/src/board/gateway.ts`).
+
+- Turns snapshots into events by diffing them against the last one: `DartDetected`, `DartRevised` (Autodarts changed an earlier dart), `TakeoutStarted`, `TakeoutFinished`, `BoardReset`, `BoardStopped`, `BoardStarted`, `BoardOffline`, `BoardOnline`.
+- Sends commands: start, stop, reset, auto-calibrate.
+- Reconnects with backoff; on reconnect it fetches `GET /api/state` and diffs again, so a dropped connection never loses or duplicates a dart (BOARD-02, Q-03).
+- Knows nothing about games; it only speaks "board".
+
+### Engine
+
+Pure, deterministic game rules: `state = fold(rules, events)` (`packages/engine`).
+
+- Input: the match's log: `MatchStarted`, `DartThrown`, `DartCorrected`, `TakeoutFinished`, `VisitUndone`, `VisitEndedManually` and the rest.
+- Output: the current state (scores, whose visit, legs, the winner) and what follows from it (busts, legs won, the match won); checkout routes (`checkout.ts`) and per-match dart stats (`stats.ts`).
+- No I/O, no clock, no database: easy to test, and it runs in the browser too.
+- X01 only so far, versioned (`RULES_VERSION`) so old matches replay under their own rules (PLAY-17).
+
+### Persistence
+
+One SQLite file on the data volume (`packages/server/src/db.ts`):
+
+- **An event log per match**, append-only: every dart, correction and command. A match's state is rebuilt from it, which gives crash recovery, an audit trail, and stats.
+- **Plain tables** for players (with photos), tournaments and their entrants, stations, and per-match caches such as leg durations.
+
+## 5.2 Level 2
+
+### White box: server
 
 Modules in `packages/server/src`, grouped by cluster. Only dependencies between clusters are drawn. Every module uses `db.ts` and `api.ts`, and `app.ts` wires them all together, so those three are left out of the diagram.
 
@@ -143,7 +178,7 @@ flowchart TB
 | `diagnostics.ts`, `backups.ts` | Operations | Timings and counters for the diagnostics page; the daily backups. |
 | `db.ts`, `api.ts`, `app.ts`, `main.ts` | Shared | Storage for all clusters; the types the web app shares; wiring the modules into routes; reading the server's configuration and starting it. |
 
-## Level 2: inside the web app
+### White box: web app
 
 Every page is one route in `App.tsx`. Pages that follow something live use `useLive` (SSE), and the station uses `useStation` on top of it.
 
@@ -162,9 +197,9 @@ Every page is one route in `App.tsx`. Pages that follow something live use `useL
 
 Shared: `Avatar.tsx`, `Logo.tsx`, `PixelIcon.tsx`, `Progress.tsx` and `styles/` (the design system), `adminApi.ts` (requests from the admin pages; the PIN prompt is in `AdminPage.tsx`), `darts.ts` (dart labels such as `T20`).
 
-## Observations
+### Observations
 
-Where the code and `functions.md` don't line up yet:
+Where the code and the function overview don't line up yet:
 
 - **Live views has no single home.** The streams are in `live.ts` and the projector's view is in `display.ts`, but the tournament's view is in `tournamentView.ts` (Tournaments), `app.ts` adds the queue (Scheduling) and the awards (Stats) to it, and the match detail's stream is registered in `matches.ts`. That's fine while it's small, and it's why Matches and Stations depend on `live.ts`.
 - **Match play is split between engine and server.** The rules are pure in `engine`; `station.ts` runs them at a station and holds the I/O. That split is on purpose (ADR 0002, ADR 0006). The engine's dart stats are also used by Stats, which is why the engine sits under two clusters.

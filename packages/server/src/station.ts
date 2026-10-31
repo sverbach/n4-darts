@@ -198,7 +198,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
     boardDarts = [];
   }
 
-  /** Darts count while a match is being played; strays are ignored (docs/architecture.md). */
+  /** Darts count while a match is being played; strays are ignored (PLAY-14 in docs/architecture/). */
   function acceptingDarts() {
     const phase = state()?.phase;
     return phase === "throwing" || phase === "awaitingTakeout";

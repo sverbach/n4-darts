@@ -1,4 +1,4 @@
-/* The design system (docs/architecture.md): tokens, shared pieces, then the pages. */
+/* The design system (docs/architecture/08-crosscutting-concepts.md, 8.6): tokens, shared pieces, then the pages. */
 
 @import "./styles/tokens.css";
 @import "./styles/base.css";

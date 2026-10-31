@@ -1,4 +1,4 @@
-# One image: Node server + built web app (docs/architecture.md, "Proposed stack").
+# One image: Node server + built web app (docs/architecture/07-deployment-view.md).
 FROM node:24-alpine AS build
 WORKDIR /app
 ENV CI=true
