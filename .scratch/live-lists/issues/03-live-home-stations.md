@@ -1,6 +1,6 @@
 # Home's station list live
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 Home (`App.tsx`) fetches `/api/stations` once. A station added or removed in /admin only shows after a reload (`../spec.md`). The stream already exists: `/api/stations/live` (used by /admin matches).
@@ -21,3 +21,5 @@ Home (`App.tsx`) fetches `/api/stations` once. A station added or removed in /ad
 ## Comments
 
 2026-10-31: Confirmed by the user.
+
+2026-10-31: Built. Home moved out of `App.tsx` into `features/home/HomePage.tsx` (App.tsx is the route table only) and reads `/api/stations/live`. `/api/stations` stays: the stream sends the same list, and scripts use it. Browser test (`live.spec.ts`): a station added through /admin's API shows on an open home page and goes when removed. Visual suite unchanged.

@@ -60,6 +60,12 @@ export function registerMatches(
   if (!matches) return;
 
   app.get("/api/admin/matches", async () => matches.history());
+  app.get("/api/admin/matches/live", (request, reply) => {
+    if (!feed) return reply.code(404).send({ error: "not found" });
+    streamView(request, reply, feed.subscribe, () => matches.history(), {
+      kind: "match history",
+    });
+  });
 
   app.get<{ Params: { id: string } }>("/api/admin/matches/:id", async (request, reply) =>
     attempt(reply, () => matches.detail(request.params.id)),

@@ -1,6 +1,6 @@
 # The match history live
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 /admin matches shows the history list (`features/admin/matches/MatchHistory.tsx`) from `/api/admin/matches`, fetched once. A match that finishes while the organiser looks at it only shows after a reload (`../spec.md`). The match detail is already live (`/api/admin/matches/:id/live`).
@@ -21,3 +21,5 @@ Type: task
 ## Comments
 
 2026-10-31: Confirmed by the user.
+
+2026-10-31: Built. `/api/admin/matches/live` in `matchesRoutes.ts` (behind the PIN, stream kind `match history`); `MatchHistory` reads it with `useLive`. The one-shot route stays for scripts and tests. Server test: the history follows a match that ends; the PIN test covers the stream. Browser test (`live.spec.ts`): a match abandoned at station 2 shows in an open /admin history. Visual suite unchanged.

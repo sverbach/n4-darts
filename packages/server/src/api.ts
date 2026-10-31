@@ -338,6 +338,7 @@ export type StreamKind =
   | "stations"
   | "admin stations"
   | "match detail"
+  | "match history"
   | "players"
   | "admin players";
 

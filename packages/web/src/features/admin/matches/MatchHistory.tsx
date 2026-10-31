@@ -35,14 +35,8 @@ function dartStyle(ignored: boolean, corrected: boolean, added: boolean) {
 }
 
 export function MatchHistory({ onOpen }: { onOpen(id: string): void }) {
-  const [matches, setMatches] = useState<MatchSummary[] | null>(null);
-
-  useEffect(() => {
-    void (async () => {
-      const res = await fetch("/api/admin/matches").catch(() => null);
-      if (res?.ok) setMatches(await res.json());
-    })();
-  }, []);
+  // Live: a match that finishes, or a correction that changes a result, shows up by itself.
+  const matches = useLive<MatchSummary[]>("/api/admin/matches/live").view;
 
   if (!matches) return <p className="hint">Loading…</p>;
   if (matches.length === 0) return <p className="hint">No finished matches yet.</p>;

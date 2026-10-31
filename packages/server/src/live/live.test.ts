@@ -4,6 +4,7 @@ import type {
   AdminPlayer,
   DisplayView,
   MatchDetail,
+  MatchSummary,
   Player,
   StationView,
   TournamentAdminView,
@@ -163,12 +164,27 @@ describe("live streams", () => {
     expect((await admin.next()).find((p) => p.id === "ann")?.archived).toBe(true);
   });
 
+  it("pushes the match history when a match finishes", async () => {
+    const { app, station } = setup();
+    const base = await listen(app);
+    const history = await open<MatchSummary[]>(`${base}/api/admin/matches/live`);
+    expect(await history.next()).toEqual([]);
+
+    await station.command({ type: "quickMatch", playerIds: ["ann", "bob"] });
+    await station.command({ type: "startMatch" });
+    await station.command({ type: "abandonMatch" });
+    let list = await history.next();
+    while (!list[0]?.abandoned) list = await history.next();
+    expect(list).toHaveLength(1);
+  });
+
   it("refuses the admin streams without the PIN; the display stream is public", async () => {
     const { app } = setup("1234");
     const base = await listen(app);
     expect((await fetch(`${base}/api/admin/tournament/live`)).status).toBe(401);
     expect((await fetch(`${base}/api/admin/matches/x/live`)).status).toBe(401);
     expect((await fetch(`${base}/api/admin/players/live`)).status).toBe(401);
+    expect((await fetch(`${base}/api/admin/matches/live`)).status).toBe(401);
     expect((await open(`${base}/api/players/live`)).status).toBe(200);
     expect((await open(`${base}/api/display/live`)).status).toBe(200);
   });

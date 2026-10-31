@@ -182,6 +182,7 @@ Every page is one route in `App.tsx`'s route table ([wouter](https://github.com/
 
 | Folder                        | Route                      | Cluster                                                                                   | Files                                      |
 | ----------------------------- | -------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `features/home/`              | `/` (and any unknown path) | Stations (the list, live)                                                                 | `HomePage.tsx`                             |
 | `features/station/`           | `/station/n`               | Match play, Matches (quick match), Players (add on the spot), Dart detection (board menu) | `StationPage.tsx`, `MatchSetup.tsx`        |
 | `features/watch/`             | `/watch/n`                 | Live views                                                                                | `WatchPage.tsx`                            |
 | `features/display/`           | `/display`                 | Live views                                                                                | `DisplayPage.tsx`                          |

@@ -55,3 +55,29 @@ test("a player added at one station shows in /admin and at the other station", a
   await other.close();
   await station.close();
 });
+
+test("a match that ends shows in an open match history", async ({ page, n4 }) => {
+  await n4.login(page);
+  await page.goto("/admin/matches");
+  const abandoned = page.getByRole("button").filter({ hasText: "Abandoned" });
+  await expect(page.getByText(/Loading/)).toHaveCount(0);
+  const before = await abandoned.count();
+
+  await n4.quickMatch(2, ["Ann", "Bob"]);
+  await n4.command(2, { type: "abandonMatch" });
+  await expect(abandoned).toHaveCount(before + 1);
+});
+
+test("a station added in /admin shows on an open home page", async ({ page, n4 }) => {
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: /Station 1/ })).toBeVisible();
+
+  const added = await n4.api.post("/api/admin/stations", {
+    data: { id: 9, name: "Station Nine", boardUrl: "http://127.0.0.1:9" },
+  });
+  expect(added.ok(), await added.text()).toBe(true);
+  await expect(page.getByRole("link", { name: /Station Nine/ })).toBeVisible();
+
+  await n4.api.delete("/api/admin/stations/9");
+  await expect(page.getByRole("link", { name: /Station Nine/ })).toHaveCount(0);
+});
