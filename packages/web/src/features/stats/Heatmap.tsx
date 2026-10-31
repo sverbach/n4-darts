@@ -56,12 +56,12 @@ function Board() {
           <path
             key={`${number}-${inner}`}
             d={wedge(i, inner, outer)}
-            className={`${ring ? "ring" : "single"} ${i % 2 === 0 ? "a" : "b"}`}
+            className={`${ring ? "board-ring" : "single"} ${i % 2 === 0 ? "a" : "b"}`}
           />
         )),
       )}
-      <circle r={RINGS.outerBull} className="ring b" />
-      <circle r={RINGS.bull} className="ring a" />
+      <circle r={RINGS.outerBull} className="board-ring b" />
+      <circle r={RINGS.bull} className="board-ring a" />
       {ORDER.map((number, i) => {
         const [x, y] = at(NUMBERS_AT, 90 - i * 18).split(" ");
         return (

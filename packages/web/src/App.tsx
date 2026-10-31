@@ -78,7 +78,7 @@ function Home() {
           ))}
         </nav>
       </div>
-      <footer className="home-footer label">
+      <footer className="label mt-auto flex justify-between border-0 border-border border-t border-solid pt-3">
         <span>n4-darts</span>
         <span>x01 · tournaments</span>
       </footer>

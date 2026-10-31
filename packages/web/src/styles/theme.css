@@ -1,0 +1,53 @@
+/*
+ * Tailwind's theme: the design tokens (tokens.css) as utilities, so components use roles
+ * (`bg-surface`, `text-accent`, `font-pixel`) and a theme still only redefines tokens.css
+ * (docs/architecture/08-crosscutting-concepts.md, 8.6). Tailwind's own colours, fonts and
+ * breakpoints are cleared: only ours exist. `inline`: colour utilities use the tokens' variables.
+ */
+
+/* Silkscreen for labels, names and buttons; Geist Pixel for numbers and running text. Defined here,
+   not in tokens.css: as theme values they're also the `--font-pixel` / `--font-text` the sheets use. */
+@theme {
+  --font-*: initial;
+  --font-pixel: "Silkscreen", monospace;
+  --font-text: "Geist Pixel", monospace;
+}
+
+@theme inline {
+  --color-*: initial;
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-surface: var(--surface);
+  --color-line-soft: var(--line-soft);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-accent-tint: var(--accent-tint);
+  --color-accent-line: var(--accent-line);
+  --color-ok: var(--ok);
+  --color-ok-tint: var(--ok-tint);
+  --color-ok-line: var(--ok-line);
+  --color-warn: var(--warn);
+  --color-warn-tint: var(--warn-tint);
+  --color-warn-line: var(--warn-line);
+  --color-danger: var(--danger);
+  --color-danger-tint: var(--danger-tint);
+  --color-danger-line: var(--danger-line);
+  --color-danger-faint: var(--danger-faint);
+  --color-avatar-1: var(--avatar-1);
+  --color-avatar-2: var(--avatar-2);
+  --color-avatar-3: var(--avatar-3);
+  --color-avatar-4: var(--avatar-4);
+  --color-avatar-5: var(--avatar-5);
+  --color-avatar-6: var(--avatar-6);
+  --color-avatar-7: var(--avatar-7);
+  --color-avatar-8: var(--avatar-8);
+  --color-avatar-9: var(--avatar-9);
+
+  /* The app's one breakpoint: phones below, the kiosk laptop and wider screens from here. */
+  --breakpoint-*: initial;
+  --breakpoint-kiosk: 760px;
+}

@@ -18,7 +18,7 @@ The few ideas the design rests on, and which quality goal (section 1.2) each one
 
 - **TypeScript** end to end, in a pnpm workspace: `packages/engine`, `packages/server`, `packages/web`, `packages/e2e`, `tools/board-sim`.
 - **Server:** Node 24 with Fastify; SQLite through Node's built-in `node:sqlite`.
-- **Web:** React with Vite, served as files by the same server; wouter for the routes.
+- **Web:** React with Vite, served as files by the same server; wouter for the routes; Tailwind CSS on the design tokens.
 - **Tests:** Vitest for unit, integration and load tests; Playwright for browser tests.
 - **Packaging:** one Docker image, one `docker-compose.yml`, one volume. CI publishes the image on every green push to `main`.
 - **Laptops:** Chrome or Edge in kiosk mode, autostarting `http://<server>/station/<n>`.

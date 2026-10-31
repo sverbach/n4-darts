@@ -22,6 +22,12 @@
             "ignoreTypes": false
           }
         }
+      },
+      "nursery": {
+        "useSortedClasses": {
+          "level": "error",
+          "fix": "safe"
+        }
       }
     }
   },
@@ -91,5 +97,10 @@
         }
       }
     }
-  ]
+  ],
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  }
 }

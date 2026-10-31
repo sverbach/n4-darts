@@ -377,7 +377,13 @@ function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
       >
         {ticks.map((tick) => (
           <g key={tick}>
-            <line x1={pad.left} x2={width - pad.right} y1={y(tick)} y2={y(tick)} className="grid" />
+            <line
+              x1={pad.left}
+              x2={width - pad.right}
+              y1={y(tick)}
+              y2={y(tick)}
+              className="chart-grid"
+            />
             <text x={pad.left - 12} y={y(tick)} className="axis" textAnchor="end" dy="0.3em">
               {tick}
             </text>

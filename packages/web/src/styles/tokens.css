@@ -42,9 +42,7 @@
   --avatar-8: #3a4048;
   --avatar-9: #2e5a5a;
 
-  /* Silkscreen for labels, names and buttons; Geist Pixel for numbers and running text. */
-  --font-pixel: "Silkscreen", monospace;
-  --font-text: "Geist Pixel", monospace;
+  /* The fonts are in theme.css (Tailwind's theme), which defines --font-pixel and --font-text. */
 
   color-scheme: dark;
 }

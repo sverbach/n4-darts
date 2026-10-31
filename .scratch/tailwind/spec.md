@@ -17,6 +17,9 @@ The web app's look lives in 8 hand-written sheets under `packages/web/src/styles
 - **Biome sorts the classes.** `nursery/useSortedClasses` at `error` (with `fix`), so `pnpm lint` fails on unsorted classes and `pnpm format` sorts them. It's a nursery rule: check it understands Tailwind v4's utilities and our `className` patterns (template strings, conditional classes) before relying on it.
 - **Conditional classes.** Today classes are toggled with template strings (`` `player ${active ? "active" : ""}` ``). With Tailwind's longer class lists, decide once (setup ticket) whether a tiny helper like `clsx` is worth it; Biome can sort inside it via the rule's `functions` option.
 - **Old and new side by side.** During the migration both the remaining sheets and Tailwind are loaded. Tailwind's preflight (its CSS reset) can change how untouched elements look, so the setup ticket checks the screenshots with preflight on, and turns it off or layers it below the old sheets if it changes anything.
+- **Lessons from the setup (ticket 02), for every area ticket:**
+  - **Borders:** without preflight, `border-t border-solid` makes *all* sides solid at the browser's 3 px default width. Write `border-0 border-t border-solid` (and the like) until ticket 08 turns preflight on.
+  - **Name clashes:** Tailwind generates a utility for every word in the source that is one (`grid`, `ring`, `hidden`, `table`…). Where one of *our* class names is a utility name, the element gets Tailwind's style too. After each area, list the generated utilities (the `@layer utilities` block of the built CSS) and check each is meant; rename clashing class names of ours.
 - **What can't be a utility stays CSS.** Keyframe animations (3 today), the reduced-motion rule, and anything that's genuinely clearer as a few lines of CSS stay in one small `app.css` next to the theme. The aim is no page sheets, not zero CSS.
 
 ## The screenshot suite

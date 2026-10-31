@@ -1,5 +1,10 @@
 /* The design system (docs/architecture/08-crosscutting-concepts.md, 8.6): tokens, shared pieces, then the pages. */
 
+/* Tailwind without its reset (preflight) while the old sheets are still here: it rescaled the logo. */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "./styles/theme.css";
 @import "./styles/tokens.css";
 @import "./styles/base.css";
 @import "./styles/avatar.css";

@@ -1,6 +1,6 @@
 # Tailwind set up, with the design tokens as its theme
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 01
 
@@ -23,3 +23,15 @@ Add Tailwind v4 next to the existing sheets, without migrating anything yet (`..
 - **Docs:** `docs/architecture/08-crosscutting-concepts.md` (8.6) says the tokens are Tailwind's theme and the rule for conditional classes; `docs/architecture/04-solution-strategy.md` (4.1) lists Tailwind.
 
 ## Comments
+
+2026-10-31: Confirmed by the user.
+
+2026-10-31: Built. `tailwindcss` and `@tailwindcss/vite` 4.3.3 (16 Jul, exact), Vite plugin added.
+- **Theme** (`styles/theme.css`): `@theme inline` maps every colour role to its token (`--color-surface: var(--surface)`, 31 roles), so `tokens.css` stays the one place for values. Tailwind's colours, fonts and breakpoints are cleared (`--color-*: initial` etc.): only our roles, `font-pixel` / `font-text`, and the breakpoint `kiosk` (760 px; `max-kiosk:` for below). The two font stacks moved from `tokens.css` into a plain `@theme`: inline would have emitted `--font-pixel: var(--font-pixel)`, a variable pointing at itself.
+- **Preflight held back:** with it on, the home page's logo rescaled (its image rules). `styles.css` imports only `tailwindcss/theme.css` and `utilities.css` in layers; the old, unlayered sheets win over utilities. Ticket 08 turns preflight on.
+- **First real use:** the home footer's rule moved from `pages.css` to utilities on the element. It first came out 3 px off: `border-solid` makes all sides solid at the default 3 px; `border-0` first fixed it. Lesson added to the spec.
+- **Biome:** `nursery/useSortedClasses` at `error` with a safe fix, so `pnpm format` sorts. Probed on plain strings, template strings with conditions and `clsx(…)`: all sorted, our own class names kept first in their order. So **no `clsx`**: conditional classes stay template strings. Biome doesn't read our config and puts the custom `kiosk:` variant first; harmless. `css.parser.tailwindDirectives` on, so Biome parses `@theme`.
+- **Name clashes found:** the build generated 18 utilities, 10 of them unintended, from words in the source. Two were our own class names on elements: `grid` (chart grid lines) and `ring` (heatmap rings), renamed to `chart-grid` and `board-ring` (SVG, so no visible effect, but traps). Lesson added to the spec.
+- The visual suite passes against the baseline (preflight check, footer, renames); all checks pass; no URL in the CSS leaves the room.
+- **Bundle:** CSS 85.50 → 89.58 kB (gzip 22.96 → 23.79 kB), JS unchanged (321.2 kB).
+- Docs: 8.6 (Tailwind, theme, sorting, borders without preflight), 4.1.

@@ -87,14 +87,6 @@
   text-transform: uppercase;
 }
 
-.home-footer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-}
-
 @media (min-width: 760px) {
   .home {
     gap: 56px;
@@ -389,7 +381,7 @@
   font-family: var(--font-text);
 }
 
-.average-chart .grid {
+.average-chart .chart-grid {
   stroke: var(--line-soft);
 }
 
@@ -457,11 +449,11 @@
   fill: var(--line-soft);
 }
 
-.heatmap .ring.a {
+.heatmap .board-ring.a {
   fill: var(--accent-line);
 }
 
-.heatmap .ring.b {
+.heatmap .board-ring.b {
   fill: var(--border);
 }
 

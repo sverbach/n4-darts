@@ -1,8 +1,9 @@
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defaultClientConditions, defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   // Bundle workspace packages from their TypeScript sources (see vitest.config.ts).
   resolve: { conditions: ["source", ...defaultClientConditions] },
   server: {
