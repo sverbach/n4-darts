@@ -1,0 +1,389 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-31T16:12:16.602788+00:00",
+  "title": "Design System: n4-darts",
+  "extensions": {
+    "colorMeta": {
+      "mecha-violet": {
+        "role": "primary",
+        "displayName": "Mecha Violet",
+        "canonical": "oklch(71.3% 0.164 292.1)",
+        "tonalRamp": [
+          "#0f002a",
+          "#2a0c5c",
+          "#48288b",
+          "#6648b5",
+          "#866dd7",
+          "#a795f0",
+          "#cabfff",
+          "#eeebff"
+        ]
+      },
+      "phosphor-paper": {
+        "role": "neutral",
+        "displayName": "Phosphor Paper",
+        "canonical": "oklch(94.8% 0.013 82.4)",
+        "tonalRamp": [
+          "#0d0b08",
+          "#272520",
+          "#45413b",
+          "#656159",
+          "#86827a",
+          "#a8a49e",
+          "#cbc9c4",
+          "#efeeed"
+        ]
+      },
+      "command-black": {
+        "role": "neutral",
+        "displayName": "Command Black",
+        "canonical": "oklch(12.8% 0.003 245.8)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242526",
+          "#414244",
+          "#606163",
+          "#818284",
+          "#a4a5a7",
+          "#c8c9ca",
+          "#eeeeef"
+        ]
+      },
+      "cockpit-panel": {
+        "role": "neutral",
+        "displayName": "Cockpit Panel",
+        "canonical": "oklch(15.8% 0.005 248.2)",
+        "tonalRamp": [
+          "#0a0b0c",
+          "#232527",
+          "#404245",
+          "#5f6164",
+          "#808385",
+          "#a3a5a8",
+          "#c8c9cb",
+          "#eeeeef"
+        ]
+      },
+      "cockpit-surface": {
+        "role": "neutral",
+        "displayName": "Cockpit Surface",
+        "canonical": "oklch(18.0% 0.008 248.3)",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#232528",
+          "#3f4246",
+          "#5e6266",
+          "#7f8387",
+          "#a2a5a9",
+          "#c7c9cc",
+          "#eeeeef"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "oklch(22.9% 0.007 248.1)",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#232528",
+          "#3f4246",
+          "#5e6265",
+          "#7f8386",
+          "#a2a5a9",
+          "#c7c9cc",
+          "#eeeeef"
+        ]
+      },
+      "frame-line": {
+        "role": "neutral",
+        "displayName": "Frame Line",
+        "canonical": "oklch(30.3% 0.009 248.1)",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#222528",
+          "#3e4246",
+          "#5d6266",
+          "#7e8387",
+          "#a1a5a9",
+          "#c7c9cc",
+          "#edeeef"
+        ]
+      },
+      "readout-grey": {
+        "role": "neutral",
+        "displayName": "Readout Grey",
+        "canonical": "oklch(65.2% 0.010 258.3)",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#232529",
+          "#3f4247",
+          "#5e6167",
+          "#7f8388",
+          "#a2a5aa",
+          "#c7c9cd",
+          "#eeeef0"
+        ]
+      },
+      "dead-pixel": {
+        "role": "neutral",
+        "displayName": "Dead Pixel",
+        "canonical": "oklch(36.5% 0.011 248.1)",
+        "tonalRamp": [
+          "#090b0d",
+          "#222529",
+          "#3e4347",
+          "#5c6267",
+          "#7e8388",
+          "#a1a6aa",
+          "#c6c9cd",
+          "#edeef0"
+        ]
+      },
+      "sync-green": {
+        "role": "status",
+        "displayName": "Sync Green",
+        "canonical": "oklch(89.2% 0.189 154.0)",
+        "tonalRamp": [
+          "#001400",
+          "#003600",
+          "#005902",
+          "#007d25",
+          "#00a04c",
+          "#44c078",
+          "#92ddaa",
+          "#ddf6e4"
+        ]
+      },
+      "caution-amber": {
+        "role": "status",
+        "displayName": "Caution Amber",
+        "canonical": "oklch(81.8% 0.154 73.1)",
+        "tonalRamp": [
+          "#1d0200",
+          "#451300",
+          "#6d2e00",
+          "#934d00",
+          "#b67100",
+          "#d49842",
+          "#ebc18b",
+          "#fbecda"
+        ]
+      },
+      "alarm-red": {
+        "role": "status",
+        "displayName": "Alarm Red",
+        "canonical": "oklch(67.1% 0.217 29.2)",
+        "tonalRamp": [
+          "#2b0000",
+          "#5f0000",
+          "#910000",
+          "#be0000",
+          "#e43b2e",
+          "#ff7362",
+          "#ffab9c",
+          "#ffe5df"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The remaining score; leg counts on game shot."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text, numbers, field values."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Small headings, buttons, pills, table headers."
+      }
+    },
+    "shadows": [
+      {
+        "name": "selected-ring",
+        "value": "inset 0 0 0 1px var(--accent)",
+        "purpose": "The only shadow: the 1px violet ring of a pressed/selected button."
+      }
+    ],
+    "motion": [
+      {
+        "name": "logo-sparkle",
+        "value": "5.12s steps(64) infinite",
+        "purpose": "Sprite-strip logo; off under prefers-reduced-motion."
+      },
+      {
+        "name": "caret-turn",
+        "value": "transform 0.1s",
+        "purpose": "Collapsible caret rotating 90° when open."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "kiosk",
+        "value": "760px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "The default (secondary) button.",
+      "html": "<button class=\"ds-btn\">Calibrate</button>",
+      "css": ".ds-btn{font-family:'Silkscreen',monospace;font-size:12px;letter-spacing:1px;text-transform:uppercase;border-radius:0;min-height:44px;padding:0 16px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--border,#2b2f33);background:var(--surface,#0f1215);color:var(--text,#f2ede4);}.ds-btn:hover{border-color:var(--accent,#a68cff);}.ds-btn[aria-pressed=true]{border-color:var(--accent,#a68cff);background:var(--accent-tint,#120f1a);box-shadow:inset 0 0 0 1px var(--accent,#a68cff);}.ds-btn:focus-visible{outline:2px solid var(--accent,#a68cff);outline-offset:2px;}"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Filled violet, the primary action of a section.",
+      "html": "<button class=\"ds-btn-primary\">Add</button>",
+      "css": ".ds-btn-primary{font-family:'Silkscreen',monospace;font-size:12px;letter-spacing:1px;text-transform:uppercase;border-radius:0;min-height:44px;padding:0 16px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--accent,#a68cff);background:var(--accent,#a68cff);color:var(--accent-text,#060708);font-weight:700;}.ds-btn-primary:disabled{border-color:var(--line-soft,#1a1d20);background:var(--line-soft,#1a1d20);color:var(--muted,#8c9096);}.ds-btn-primary:focus-visible{outline:2px solid var(--accent,#a68cff);outline-offset:2px;}"
+    },
+    {
+      "name": "CTA Button",
+      "kind": "button",
+      "refersTo": "button-cta",
+      "description": "The big slanted one: one per screen.",
+      "html": "<button class=\"ds-btn-cta\">Start <svg viewBox=\"0 0 4 7\" height=\"0.8em\" shape-rendering=\"crispEdges\"><path fill=\"currentColor\" d=\"M0 0h1v7h-1zM1 1h1v5h-1zM2 2h1v3h-1zM3 3h1v1h-1z\"/></svg></button>",
+      "css": ".ds-btn-cta{font-family:'Silkscreen',monospace;font-size:12px;letter-spacing:1px;text-transform:uppercase;border-radius:0;min-height:44px;padding:0 16px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;min-height:72px;padding:0 32px;border:0;background:var(--accent,#a68cff);color:var(--accent-text,#060708);font-weight:700;font-size:20px;letter-spacing:2px;clip-path:polygon(16px 0,100% 0,calc(100% - 16px) 100%,0 100%);}.ds-btn-cta:active{filter:brightness(0.9);}.ds-btn-cta:focus-visible{outline:2px solid var(--accent,#a68cff);outline-offset:2px;}"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Quiet destructive action, confirmed first.",
+      "html": "<button class=\"ds-btn-danger\">Withdraw</button>",
+      "css": ".ds-btn-danger{font-family:'Silkscreen',monospace;font-size:12px;letter-spacing:1px;text-transform:uppercase;border-radius:0;min-height:44px;padding:0 16px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--danger,#ff4d3d);background:transparent;color:var(--danger,#ff4d3d);}.ds-btn-danger:hover{background:var(--danger-tint,#170a09);}.ds-btn-danger:focus-visible{outline:2px solid var(--accent,#a68cff);outline-offset:2px;}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Square field, Geist Pixel value.",
+      "html": "<input class=\"ds-input\" placeholder=\"New player\">",
+      "css": ".ds-input{min-height:48px;padding:0 12px;border:1px solid var(--border,#2b2f33);border-radius:0;background:var(--panel,#0b0d0f);color:var(--text,#f2ede4);font-family:'Geist Pixel',monospace;font-size:24px;}.ds-input::placeholder{color:var(--muted,#8c9096);}.ds-input:focus-visible{outline:2px solid var(--accent,#a68cff);outline-offset:2px;}"
+    },
+    {
+      "name": "Status Pill",
+      "kind": "chip",
+      "refersTo": "status-ok",
+      "description": "A readout: tint, line, square dot.",
+      "html": "<span class=\"ds-status ds-ok\">Board online</span> <span class=\"ds-status ds-warn\">Board stopped</span> <span class=\"ds-status ds-danger\">Board offline</span>",
+      "css": ".ds-status{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px;border:1px solid var(--border,#2b2f33);background:var(--panel,#0b0d0f);color:var(--muted,#8c9096);font-family:'Silkscreen',monospace;font-size:13px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}.ds-status::before{content:'';width:9px;height:9px;background:currentColor;}.ds-ok{border-color:var(--ok-line,#1f4a35);background:var(--ok-tint,#0a1611);color:var(--ok,#5cffa0);}.ds-warn{border-color:var(--warn-line,#5a4318);background:var(--warn-tint,#140f06);color:var(--warn,#ffb23d);}.ds-danger{border-color:var(--danger-line,#5a2420);background:var(--danger-tint,#170a09);color:var(--danger,#ff4d3d);}"
+    },
+    {
+      "name": "Back Link",
+      "kind": "nav",
+      "refersTo": "back",
+      "description": "Pixel arrow plus grey label.",
+      "html": "<a class=\"ds-back\" href=\"#\"><svg viewBox=\"0 0 7 5\" height=\"0.7em\" shape-rendering=\"crispEdges\"><path fill=\"currentColor\" d=\"M2 0h1v1h-1zM1 1h1v1h-1zM0 2h7v1h-7zM1 3h1v1h-1zM2 4h1v1h-1z\"/></svg>Players</a>",
+      "css": ".ds-back{display:inline-flex;align-items:center;gap:10px;min-height:44px;color:var(--muted,#8c9096);font-family:'Silkscreen',monospace;font-size:12px;letter-spacing:1px;text-transform:uppercase;text-decoration:none;}.ds-back:hover{color:var(--accent,#a68cff);}.ds-back:focus-visible{outline:2px solid var(--accent,#a68cff);outline-offset:2px;}"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Flat container: one tone up, 1px line.",
+      "html": "<div class=\"ds-panel\"><div class=\"ds-label\">Stations</div><div class=\"ds-body\">Station 1 · free</div></div>",
+      "css": ".ds-panel{padding:16px;border:1px solid var(--border,#2b2f33);background:var(--panel,#0b0d0f);border-radius:0;}.ds-label{font-family:'Silkscreen',monospace;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--muted,#8c9096);margin-bottom:8px;}.ds-body{font-family:'Geist Pixel',monospace;font-size:22px;color:var(--text,#f2ede4);}"
+    },
+    {
+      "name": "Octagon Avatar",
+      "kind": "custom",
+      "refersTo": "avatar",
+      "description": "Initials on a muted ground, cut corners.",
+      "html": "<span class=\"ds-avatar\">SE</span>",
+      "css": ".ds-avatar{display:inline-flex;width:64px;height:64px;align-items:center;justify-content:center;background:var(--avatar-1,#4b3a7a);color:var(--text,#f2ede4);font-family:'Silkscreen',monospace;font-size:20px;clip-path:polygon(12.5% 0,87.5% 0,100% 12.5%,100% 87.5%,87.5% 100%,12.5% 100%,0 87.5%,0 12.5%);}"
+    },
+    {
+      "name": "Score Readout",
+      "kind": "custom",
+      "refersTo": "display",
+      "description": "The active player's remaining score.",
+      "html": "<div class=\"ds-score\"><span class=\"ds-score-name\">Ann</span><span class=\"ds-score-num\">141</span></div>",
+      "css": ".ds-score{display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid var(--accent-line,#3a3150);background:var(--accent-tint,#120f1a);}.ds-score-name{font-family:'Silkscreen',monospace;font-size:26px;letter-spacing:2px;text-transform:uppercase;color:var(--text,#f2ede4);}.ds-score-num{font-family:'Geist Pixel',monospace;font-size:120px;line-height:0.8;color:var(--accent,#a68cff);}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The 90s Anime Future-Retro Scoreboard",
+    "overview": "A darts evening shown the way a 90s anime shows a command room: dark grounds, terse readouts in capitals, one signal colour that says *this one, now*. It's a flavour, not a costume. The system takes that genre's discipline (hard edges, bracketed big moments, status in square-dot readouts) and none of its props. The pixel type gives the scoreboard its character, and the remaining score is always the loudest thing on the screen.\n\nFunction comes first. Every surface is read somewhere hard: a station from 2–3 m by touch, the projector from across the room, admin and stats one-handed on a phone. When character and legibility pull apart, legibility wins and the character waits. Density stays low on station and projector and is moderate in admin. Decoration is rare and always earns its place.\n\nThe palette is near-black and nearly monochrome: warm phosphor text on command black, layered in five greys. Mecha Violet is the only accent. Status gets its own three colours, which are used for nothing else.",
+    "keyCharacteristics": [
+      "Dark only, near-black grounds, depth from tonal layers and 1px lines, never shadows.",
+      "Two pixel fonts: Silkscreen for words in capitals, Geist Pixel for numbers and running text.",
+      "No rounded corners anywhere. Hard edges, cut-corner octagons, slanted CTAs.",
+      "One accent (Mecha Violet) marks the active player, the selection and the primary action.",
+      "Big moments (game shot, champion) get violet corner brackets. Nothing else does.",
+      "Every font is bundled, and nothing loads from the internet."
+    ],
+    "rules": [
+      {
+        "name": "The One Signal Rule",
+        "body": "Mecha Violet is the only accent. If two things on a screen are violet, they must mean the same thing: active, selected or primary.",
+        "section": "colors"
+      },
+      {
+        "name": "The Status Lights Rule",
+        "body": "Green, amber and red mean status and nothing else. A status always shows as a tint plus line plus colour, never as a bare coloured word.",
+        "section": "colors"
+      },
+      {
+        "name": "The Role-Token Rule",
+        "body": "Every colour is a role variable on `:root` (`styles/theme.css`). Components never use a hex value directly, so a theme can swap them in one place.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two-Voice Rule",
+        "body": "Words in Silkscreen capitals, numbers in Geist Pixel. A score is never set in Silkscreen, and a label is never in Geist Pixel.",
+        "section": "typography"
+      },
+      {
+        "name": "The Stored-Name Rule",
+        "body": "Names show in capitals through `text-transform`. The stored name never changes.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tight-Numbers Rule",
+        "body": "Big numbers sit at line-height 0.8–0.85 so they pack like a scoreboard, not like text.",
+        "section": "typography"
+      },
+      {
+        "name": "The Fit-The-Room Rule",
+        "body": "Projector pages never scroll and never reflow. They scale.",
+        "section": "layout"
+      },
+      {
+        "name": "The No-Shadow Rule",
+        "body": "Separation is a step in tone or a 1px line. A `box-shadow` is only used as an inset 1px ring for the selected state.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** use a role token from `styles/theme.css` for every colour (`bg-surface`, `text-accent`, `var(--line-soft)`).",
+      "**Do** set words in Silkscreen capitals and numbers in Geist Pixel.",
+      "**Do** keep every corner square. Use the slant only on a screen's one CTA, the octagon only for avatars and the brackets only for game shot and the champion.",
+      "**Do** show status as a pill with a square dot: tint, line and colour together.",
+      "**Do** keep touch targets at least 44px (48–64px on the station kiosk).",
+      "**Do** size projector pages in `--px` mockup units so they scale and never scroll.",
+      "**Do** keep the remaining score the largest thing on any scoreboard."
+    ],
+    "donts": [
+      "**Don't** round corners or add shadows.",
+      "**Don't** add a second accent colour or use the status colours for decoration.",
+      "**Don't** add scanlines, CRT glow, glitch effects, kanji, warning stripes or hex grids. The anime HUD is a flavour, not a costume.",
+      "**Don't** load fonts, icons or images from the internet. Bundle them.",
+      "**Don't** trade legibility at 2–3 m or across the room for character.",
+      "**Don't** add a light theme or theme switching by hand. Themes come only by swapping the role tokens."
+    ]
+  }
+}
