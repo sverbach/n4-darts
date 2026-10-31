@@ -4,9 +4,9 @@
 
 ```mermaid
 flowchart TB
-    subgraph lan["Room network (no internet needed)"]
+    subgraph lan["LAN"]
         subgraph server["Linux server with Docker"]
-            container["n4-darts container<br/>Node 24, port 3000"]
+            container["n4-darts container<br/>"]
             volume[("Volume n4-data<br/>/data: SQLite, backups/")]
             container --- volume
         end
@@ -43,15 +43,15 @@ The container runs `server` with the built `web` files and `engine`; `/data` hol
 
 ### The container
 
-- **Image:** `ghcr.io/sverbach/n4-darts:latest`, built by CI from the `Dockerfile` (a build stage with pnpm, then `node:24-alpine` running `packages/server/dist/main.js` as user `node`).
+- **Image:** `ghcr.io/sverbach/n4-darts:latest`, built by CI from the `Dockerfile`
 - **Configuration** (environment, see `docker-compose.yml`):
 
-| Variable | Default | What |
-|---|---|---|
-| `PORT` | `3000` | HTTP port inside the container (`N4_PORT` maps it on the host). |
-| `DATA_DIR` | `/data` | Database and `backups/`. |
-| `STATIONS` | `1=http://localhost:3180` | Seeds the stations on the very first start (`number=Board Manager address`, comma-separated). Afterwards stations are managed in `/admin` and this is ignored (ADMIN-04). |
-| `ADMIN_PIN` | empty | The shared PIN for `/admin`. Empty leaves it open, with a warning (ADMIN-01). |
+| Variable    | Default                   | What                                                                                                                                                                      |
+| ----------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PORT`      | `3000`                    | HTTP port inside the container (`N4_PORT` maps it on the host).                                                                                                           |
+| `DATA_DIR`  | `/data`                   | Database and `backups/`.                                                                                                                                                  |
+| `STATIONS`  | `1=http://localhost:3180` | Seeds the stations on the very first start (`number=Board Manager address`, comma-separated). Afterwards stations are managed in `/admin` and this is ignored (ADMIN-04). |
+| `ADMIN_PIN` | empty                     | The shared PIN for `/admin`. Empty leaves it open, with a warning (ADMIN-01).                                                                                             |
 
 - **Update:** `docker compose pull && docker compose up -d` (OPS-05).
 - **Restore:** stop the server, put a backup file in place of the database, start again (OPS-02).

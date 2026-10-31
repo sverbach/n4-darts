@@ -16,13 +16,13 @@ flowchart LR
         end
     end
 
-    subgraph container["Server: one Docker container"]
-        web["web<br/>React app, served as files"]
-        server["server<br/>Fastify, HTTP + SSE"]
+    subgraph container["Server: monolith"]
+        web["web<br/>SPA"]
+        server["server<br/>HTTP + SSE"]
         engine["engine<br/>game rules, checkouts, dart stats"]
     end
 
-    db[("SQLite + backups<br/>data volume")]
+    db[("database + backups")]
 
     kiosk & phone & projector & visitor -- "loads" --> web
     kiosk & phone & projector & visitor -- "HTTP, live via SSE" --> server
@@ -38,15 +38,16 @@ The rules are pure and shared (engine), everything with state or I/O sits in one
 
 **Contained building blocks**
 
-| Block | What it is | Clusters |
-|---|---|---|
-| **engine** (`packages/engine`) | Pure functions with no I/O: X01 rules as a fold over a match's events, checkout routes, and per-match dart stats. Used by the server and bundled into the web app (ADR 0006). | Match play (rules), Stats (calculations) |
-| **server** (`packages/server`) | One process that holds everything else: board connections, stations, players, matches, tournaments, scheduling, stats, live views, access and operations. It serves the web app's files too. | All |
-| **web** (`packages/web`) | The browser app for every page. It talks to the server only over HTTP and SSE, and shares types with it through `@n4/server/api`. | Match play (at the board), Live views, the organiser's side of Organise, Stats pages |
-| **SQLite + backups** | One database file on the data volume: matches as event logs (ADR 0002), players with photos, tournaments, stations. Daily copies in `backups/`. | Kept by Operations, used by all |
-| **Board Manager** | Autodarts' software on each station laptop. External; only its local API is used (ADR 0001, `docs/board-manager-api.md`). | Dart detection (the far side) |
+| Block                          | What it is                                                                                                                                                                                   | Clusters                                                                             |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| **engine** (`packages/engine`) | Pure functions with no I/O: X01 rules as a fold over a match's events, checkout routes, and per-match dart stats. Used by the server and bundled into the web app (ADR 0006).                | Match play (rules), Stats (calculations)                                             |
+| **server** (`packages/server`) | One process that holds everything else: board connections, stations, players, matches, tournaments, scheduling, stats, live views, access and operations. It serves the web app's files too. | All                                                                                  |
+| **web** (`packages/web`)       | The browser app for every page. It talks to the server only over HTTP and SSE, and shares types with it through `@n4/server/api`.                                                            | Match play (at the board), Live views, the organiser's side of Organise, Stats pages |
+| **SQLite + backups**           | One database file on the data volume: matches as event logs (ADR 0002), players with photos, tournaments, stations. Daily copies in `backups/`.                                              | Kept by Operations, used by all                                                      |
+| **Board Manager**              | Autodarts' software on each station laptop. External; only its local API is used (ADR 0001, `docs/board-manager-api.md`).                                                                    | Dart detection (the far side)                                                        |
 
 For development only:
+
 - **board-sim** (`tools/board-sim`) speaks the Board Manager's protocol, so everything runs and is tested without a real board (Q-14). The server's tests use it.
 - **e2e** (`packages/e2e`) starts the server on simulators and drives the web app in a browser with Playwright.
 
@@ -162,38 +163,38 @@ flowchart TB
     live --> diagnostics
 ```
 
-| Module | Cluster | What it does |
-|---|---|---|
-| `board/gateway.ts` | Dart detection | One connection per Board Manager. Turns its state snapshots into dart, takeout and board events, sends start, stop, calibrate and reset, and reconnects by itself. Knows nothing about games. |
-| `station.ts` | Match play | One station: its match in progress, fed by the gateway and the players' commands at the board. Folds the match's log with the engine and appends to it. |
-| `stations.ts`, `stationAdmin.ts` | Stations | The list of stations, starting and restarting each one's gateway when its board address changes, and the organiser's station pages. |
-| `players.ts` | Players | The player list, photos, archiving, and `matchPlayer` (name and photo for any view). |
-| `matches.ts` | Matches | The organiser's matches: put one on a station, the history, the detail of one match, and corrections. Offers `ResultGuard` for whoever builds on results. |
-| `tournaments.ts`, `tournament/`, `tournamentView.ts`, `estimate.ts` | Tournaments | Drafting, starting, withdrawals, late players, result changes and ending. `tournament/` is the pure part: groups, tables, knockout and the whole plan from config, entrants and results. `tournamentView.ts` puts together what /admin shows of the tournament's own progress. `estimate.ts` is the duration estimate. |
-| `scheduler.ts` | Scheduling | The queue, and a tick that gives free stations their next match. Carries out pause, pin, hold, send back and play now with Tournaments. `withQueue` adds the queue to the tournament's view. |
-| `ratings.ts` | Ratings | A player's rating (RATING-01). |
-| `stats.ts` | Stats | Profiles, leaderboard and awards, from the engine's per-match stats. |
-| `live.ts`, `display.ts` | Live views | `live.ts`: one change feed and the SSE streams that resend a view when it changed. `display.ts`: the projector's view. |
-| `admin.ts` | Access | The PIN and its cookie in front of `/api/admin`. |
-| `diagnostics.ts`, `backups.ts` | Operations | Timings and counters for the diagnostics page; the daily backups. |
-| `db.ts`, `api.ts`, `app.ts`, `main.ts` | Shared | Storage for all clusters; the types the web app shares; wiring the modules into routes; reading the server's configuration and starting it. |
+| Module                                                              | Cluster        | What it does                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `board/gateway.ts`                                                  | Dart detection | One connection per Board Manager. Turns its state snapshots into dart, takeout and board events, sends start, stop, calibrate and reset, and reconnects by itself. Knows nothing about games.                                                                                                                          |
+| `station.ts`                                                        | Match play     | One station: its match in progress, fed by the gateway and the players' commands at the board. Folds the match's log with the engine and appends to it.                                                                                                                                                                |
+| `stations.ts`, `stationAdmin.ts`                                    | Stations       | The list of stations, starting and restarting each one's gateway when its board address changes, and the organiser's station pages.                                                                                                                                                                                    |
+| `players.ts`                                                        | Players        | The player list, photos, archiving, and `matchPlayer` (name and photo for any view).                                                                                                                                                                                                                                   |
+| `matches.ts`                                                        | Matches        | The organiser's matches: put one on a station, the history, the detail of one match, and corrections. Offers `ResultGuard` for whoever builds on results.                                                                                                                                                              |
+| `tournaments.ts`, `tournament/`, `tournamentView.ts`, `estimate.ts` | Tournaments    | Drafting, starting, withdrawals, late players, result changes and ending. `tournament/` is the pure part: groups, tables, knockout and the whole plan from config, entrants and results. `tournamentView.ts` puts together what /admin shows of the tournament's own progress. `estimate.ts` is the duration estimate. |
+| `scheduler.ts`                                                      | Scheduling     | The queue, and a tick that gives free stations their next match. Carries out pause, pin, hold, send back and play now with Tournaments. `withQueue` adds the queue to the tournament's view.                                                                                                                           |
+| `ratings.ts`                                                        | Ratings        | A player's rating (RATING-01).                                                                                                                                                                                                                                                                                         |
+| `stats.ts`                                                          | Stats          | Profiles, leaderboard and awards, from the engine's per-match stats.                                                                                                                                                                                                                                                   |
+| `live.ts`, `display.ts`                                             | Live views     | `live.ts`: one change feed and the SSE streams that resend a view when it changed. `display.ts`: the projector's view.                                                                                                                                                                                                 |
+| `admin.ts`                                                          | Access         | The PIN and its cookie in front of `/api/admin`.                                                                                                                                                                                                                                                                       |
+| `diagnostics.ts`, `backups.ts`                                      | Operations     | Timings and counters for the diagnostics page; the daily backups.                                                                                                                                                                                                                                                      |
+| `db.ts`, `api.ts`, `app.ts`, `main.ts`                              | Shared         | Storage for all clusters; the types the web app shares; wiring the modules into routes; reading the server's configuration and starting it.                                                                                                                                                                            |
 
 ### White box: web app
 
 Every page is one route in `App.tsx`. Pages that follow something live use `useLive` (SSE), and the station uses `useStation` on top of it.
 
-| Page | Route | Cluster | Main files |
-|---|---|---|---|
-| Home | `/` | – | `App.tsx` |
-| Station | `/station/n` | Match play, Matches (quick match), Players (add on the spot), Dart detection (board menu) | `StationPage.tsx`, `MatchSetup.tsx`, `SegmentPicker.tsx`, `BoardMenu.tsx`, `useStation.ts` |
-| Watch | `/watch/n` | Live views | `WatchPage.tsx` |
-| Display | `/display` | Live views | `DisplayPage.tsx` |
-| Players and profile | `/players`, `/players/:id` | Stats | `StatsPages.tsx`, `Heatmap.tsx` |
-| Admin: tournament | `/admin` | Tournaments, Scheduling | `TournamentAdmin.tsx`, `TournamentRun.tsx` |
-| Admin: players | `/admin/players` | Players | `PlayersAdmin.tsx`, `PhotoEditor.tsx` |
-| Admin: matches | `/admin/matches` | Matches | `MatchesAdmin.tsx`, `MatchHistory.tsx` |
-| Admin: stations | `/admin/stations` | Stations | `StationsAdmin.tsx` |
-| Admin: diagnostics | `/admin/diagnostics` | Operations | `DiagnosticsAdmin.tsx` |
+| Page                | Route                      | Cluster                                                                                   | Main files                                                                                 |
+| ------------------- | -------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Home                | `/`                        | –                                                                                         | `App.tsx`                                                                                  |
+| Station             | `/station/n`               | Match play, Matches (quick match), Players (add on the spot), Dart detection (board menu) | `StationPage.tsx`, `MatchSetup.tsx`, `SegmentPicker.tsx`, `BoardMenu.tsx`, `useStation.ts` |
+| Watch               | `/watch/n`                 | Live views                                                                                | `WatchPage.tsx`                                                                            |
+| Display             | `/display`                 | Live views                                                                                | `DisplayPage.tsx`                                                                          |
+| Players and profile | `/players`, `/players/:id` | Stats                                                                                     | `StatsPages.tsx`, `Heatmap.tsx`                                                            |
+| Admin: tournament   | `/admin`                   | Tournaments, Scheduling                                                                   | `TournamentAdmin.tsx`, `TournamentRun.tsx`                                                 |
+| Admin: players      | `/admin/players`           | Players                                                                                   | `PlayersAdmin.tsx`, `PhotoEditor.tsx`                                                      |
+| Admin: matches      | `/admin/matches`           | Matches                                                                                   | `MatchesAdmin.tsx`, `MatchHistory.tsx`                                                     |
+| Admin: stations     | `/admin/stations`          | Stations                                                                                  | `StationsAdmin.tsx`                                                                        |
+| Admin: diagnostics  | `/admin/diagnostics`       | Operations                                                                                | `DiagnosticsAdmin.tsx`                                                                     |
 
 Shared: `Avatar.tsx`, `Logo.tsx`, `PixelIcon.tsx`, `Progress.tsx` and `styles/` (the design system), `adminApi.ts` (requests from the admin pages; the PIN prompt is in `AdminPage.tsx`), `darts.ts` (dart labels such as `T20`).
 
