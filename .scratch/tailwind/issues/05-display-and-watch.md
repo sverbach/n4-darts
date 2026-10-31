@@ -1,6 +1,6 @@
 # The projector pages in Tailwind
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 03
 
@@ -25,3 +25,13 @@ Move the projector's styles (`display.css`: `/display` and `/watch`) into Tailwi
 - **Docs:** `docs/architecture/08-crosscutting-concepts.md` (8.6, "Styles") no longer lists `display.css`.
 
 ## Comments
+
+2026-10-31: Confirmed by the user ("go straight through 03–08").
+
+2026-10-31: Built. `display.css` and `scoreboard.css` are gone.
+- **`--px` sizes:** projector-unit utilities, defined once in `app.css` with Tailwind's functional `@utility` (`text-pu-*`, `tracking-pu-*`, `gap-pu-*`, `p*-pu-*`, `m*-pu-*`, `w-`/`h-`/`min-w-`/`min-h-pu-*`, `top`/`right`/`bottom`/`left-pu-*`, `border-pu-*`, `avatar-pu-*`): `gap-pu-16` is `calc(var(--px) * 16)`. Readable, and they work wherever a piece is rendered. Checked first that Tailwind 4.3 takes `gap-x-pu-16` next to its own `gap-x-*`. Grid columns in `--px` stay arbitrary values.
+- **Shared pieces get a size:** `PlayerCards` and `MatchOver` take `size` (`station` / `projector`), `MatchCard` and `Awards` take `projector`. Station classes come from the station's rules, projector classes from the `.watch` / `.display` rules. On /admin, `MatchCard` and `Awards` keep their classes for `admin.css` (its rules are scoped to `.admin`) until ticket 07. `Progress`'s base rule (in `display.css`) is now its utilities; admin's override still applies.
+- **Deliberate difference (3+ players, `/watch` only, not in the screenshots):** today's cascade let some station rules beat the `.watch` ones by specificity (e.g. the active player's name on `/watch` took the station's 15 / 26 px instead of 22 projector px). The projector size now uses the `.watch` values throughout. Checked by hand: a three-player match on the station (phone, kiosk) and `/watch` (1080p) looks as intended.
+- **Leak kept on purpose:** the projector's leaderboard and group tables had a 10 px gap between avatar and name, not 14 projector px: `admin.css`'s unscoped `.table-player { gap: 10px }` always won there. The visual suite caught it; it's `gap-2.5` now, with a comment.
+- **Lesson:** two utilities for the same property on one element (`border-solid` + `border-dashed`, `text-left` + `text-right`) don't resolve by class order. States set their own value instead (the dart tiles, the table cells; also fixed in the station's tiles).
+- Visual suite: all 66 at zero tolerance. All checks pass. CSS 91.71 → 80.98 kB (gzip 24.63 → 23.60 kB).

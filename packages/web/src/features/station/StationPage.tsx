@@ -23,7 +23,7 @@ const SECONDARY = "kiosk:min-h-20 kiosk:text-[16px] kiosk:tracking-[2px]";
 const MOVE = "min-h-12 w-12 bg-transparent p-0 text-[21px] kiosk:min-h-16 kiosk:w-16";
 /** A dart tile; its border, background and colour come with its state. */
 const DART =
-  "flex min-h-[76px] flex-col items-stretch justify-between border border-solid px-2.5 py-2 text-left normal-case kiosk:min-h-[104px] kiosk:flex-row kiosk:items-end kiosk:px-4 kiosk:py-3";
+  "flex min-h-[76px] flex-col items-stretch justify-between border px-2.5 py-2 text-left normal-case kiosk:min-h-[104px] kiosk:flex-row kiosk:items-end kiosk:px-4 kiosk:py-3";
 /** "REMOVE DARTS" between two rules. */
 const VISIT_STATUS =
   "m-0 flex min-h-11 items-center gap-3 font-pixel text-[14px] uppercase tracking-[2px] before:h-px before:flex-1 before:content-[''] after:h-px after:flex-1 after:content-[''] kiosk:min-h-10 kiosk:gap-3.5 kiosk:text-[18px] kiosk:tracking-[3px]";
@@ -414,7 +414,7 @@ function VisitPanel(props: ScoreboardProps) {
           // Thrown after the visit was over: counts for nothing, crossed out.
           const className = dart.ignored
             ? `${DART} border-dashed border-faint bg-transparent text-muted`
-            : `${DART} ${visit?.bust ? "border-danger-line" : "border-border"} bg-surface ${dart === bustDart ? "text-danger" : "text-text"}`;
+            : `${DART} border-solid ${visit?.bust ? "border-danger-line" : "border-border"} bg-surface ${dart === bustDart ? "text-danger" : "text-text"}`;
           const content = (
             <>
               <span className="label kiosk:self-start">

@@ -13,14 +13,34 @@ const place = (from: number, to: number) => (from === to ? `${from}` : `${from}�
 const today = () =>
   new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
+/** A column of a heading and its cards or table. */
+const SECTION = "flex flex-col gap-pu-14";
+const H2 = "font-normal text-muted text-pu-18 tracking-pu-3";
+const H2_ACCENT = "font-normal text-accent text-pu-18 tracking-pu-3";
+/** The group tables and the leaderboard. */
+const TABLE = "w-full border-collapse border border-border border-solid bg-panel avatar-pu-44";
+const CELL =
+  "border-0 border-b border-solid px-pu-10 whitespace-nowrap first:pl-pu-22 last:pr-pu-22";
+/** A header cell: right-aligned and grey unless `look` says otherwise; the first is left-aligned. */
+const th = (look = "text-right text-muted first:text-left") =>
+  `${CELL} h-pu-50 border-border font-normal font-pixel text-pu-13 uppercase ${look}`;
+/** A body cell: its size and colour come with it; right-aligned unless it's the player. */
+const td = (extra: string) =>
+  `${CELL} h-pu-72 border-line-soft ${extra.includes("text-left") ? "" : "text-right first:text-left"} ${extra}`;
+/** The gap is 10 real pixels, not projector units: admin.css's `.table-player` always won here. */
+const TABLE_PLAYER =
+  "inline-flex items-center gap-2.5 font-pixel text-pu-20 uppercase tracking-pu-2";
+/** A free station: why it's free. */
+const IDLE = { muted: "text-muted", warn: "text-warn", danger: "text-danger" };
+
 /** The projector: the tournament with live station scores, or the stations and the leaderboard. */
 export function DisplayPage() {
   const { view, connected } = useLive<DisplayView>("/api/display/live");
 
   return (
-    <main className="display">
+    <main className="flex h-screen flex-col gap-pu-30 overflow-hidden px-pu-56 pt-pu-36 pb-pu-44 text-pu-30 [--px:calc(min(100vw,177.78vh)/1920)]">
       {!view ? (
-        <p className="display-wait">{connected ? "Loading…" : "Connecting…"}</p>
+        <p className="m-auto text-muted text-pu-40">{connected ? "Loading…" : "Connecting…"}</p>
       ) : view.tournament?.phase === "finished" ? (
         <Finished view={view} />
       ) : view.tournament ? (
@@ -28,7 +48,9 @@ export function DisplayPage() {
       ) : (
         <Idle view={view} />
       )}
-      {view && !connected && <p className="status status-danger display-offline">Server offline</p>}
+      {view && !connected && (
+        <p className="status status-danger fixed right-pu-24 bottom-pu-16 m-0">Server offline</p>
+      )}
     </main>
   );
 }
@@ -36,11 +58,13 @@ export function DisplayPage() {
 function Header(props: { title: string; detail: string; played?: number; total?: number }) {
   const { title, detail, played, total } = props;
   return (
-    <header className="display-header">
-      <Logo width="4.8em" />
+    <header className="flex items-center gap-pu-32 border-0 border-border border-b border-solid pb-pu-24">
+      <Logo width="4.8em" className="flex-none" />
       <div>
-        <h1>{title}</h1>
-        <p>{detail}</p>
+        <h1 className="text-pu-40 tracking-pu-4">{title}</h1>
+        <p className="mt-pu-6 mb-0 font-pixel text-muted text-pu-18 uppercase tracking-pu-2">
+          {detail}
+        </p>
       </div>
       {total !== undefined && played !== undefined && total > 0 && (
         <Progress played={played} total={total} />
@@ -60,26 +84,30 @@ function Running({ view }: { view: DisplayView }) {
         played={t.played}
         total={t.total}
       />
-      <div className={`display-split ${knockout ? "knockout" : ""}`}>
-        <Fit className="display-side">
-          <section className="display-section">
-            <h2>Now playing</h2>
+      <div
+        className={`grid min-h-0 flex-1 ${knockout ? "grid-cols-[calc(560*var(--px))_minmax(0,1fr)] gap-pu-48" : "grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-pu-40"}`}
+      >
+        <Fit>
+          <section className={SECTION}>
+            <h2 className={H2}>Now playing</h2>
             {view.stations.map((s) => (
               <StationCard key={s.id} station={s} />
             ))}
           </section>
           {view.upNext.length > 0 && (
-            <section className="display-section">
-              <h2>Up next</h2>
+            <section className={SECTION}>
+              <h2 className={H2}>Up next</h2>
               {view.upNext.map((m) => (
                 <div
                   key={`${m.label}-${m.players.map((p) => p.id).join()}`}
-                  className="display-next"
+                  className="avatar-pu-40 flex items-center gap-pu-16 border border-line-soft border-solid px-pu-22 py-pu-14 font-pixel text-pu-20 uppercase tracking-pu-2"
                 >
-                  <span className="display-next-label">{m.label}</span>
+                  <span className="w-pu-220 whitespace-nowrap text-accent text-pu-14 tracking-pu-1">
+                    {m.label}
+                  </span>
                   {m.players.map((p, i) => (
-                    <span key={p.id} className="display-next-player">
-                      {i > 0 && <span className="display-vs">vs</span>}
+                    <span key={p.id} className="inline-flex items-center gap-pu-16">
+                      {i > 0 && <span className="text-muted text-pu-15">vs</span>}
                       <Avatar player={p} />
                       <span>{p.name}</span>
                     </span>
@@ -89,9 +117,7 @@ function Running({ view }: { view: DisplayView }) {
             </section>
           )}
         </Fit>
-        <Fit className="display-main">
-          {knockout ? <Bracket view={view} /> : <Groups view={view} />}
-        </Fit>
+        <Fit>{knockout ? <Bracket view={view} /> : <Groups view={view} />}</Fit>
       </div>
     </>
   );
@@ -103,34 +129,55 @@ function Finished({ view }: { view: DisplayView }) {
   return (
     <>
       <Header title={t.name} detail={t.endedEarly ? "Ended early" : "Finished"} />
-      <Fit className="display-finished">
+      <Fit
+        className="flex-1"
+        inner="grid h-full grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,1fr)] gap-pu-48"
+      >
         {champion && (
-          <section className="display-champion" aria-label="Champion">
-            <span className="display-champion-title">Champion</span>
-            <span className="avatar-frame">
+          <section
+            className="avatar-pu-268 flex flex-col items-center justify-center gap-pu-28 border-2 border-accent border-solid bg-panel p-pu-40"
+            aria-label="Champion"
+          >
+            <span className="font-pixel text-accent text-pu-22 uppercase tracking-pu-8">
+              Champion
+            </span>
+            <span className="avatar-frame text-pu-26">
               <Avatar player={champion} large />
             </span>
-            <p>{champion.name}</p>
+            <p className="m-0 text-center font-bold font-pixel text-pu-64 uppercase tracking-pu-8">
+              {champion.name}
+            </p>
           </section>
         )}
         {view.placings && (
-          <section className="display-section">
-            <h2>Final placings</h2>
-            <ol className="display-placings">
+          <section className={SECTION}>
+            <h2 className={H2}>Final placings</h2>
+            <ol className="avatar-pu-56 m-0 list-none border-0 border-border border-t border-solid p-0">
               {view.placings.map((p) => (
-                <li key={p.id} className={p.from === 1 ? "first" : ""}>
-                  <span className="placing-place">{place(p.from, p.to)}</span>
+                <li
+                  key={p.id}
+                  className="flex h-pu-96 items-center gap-pu-22 border-0 border-line-soft border-b border-solid"
+                >
+                  <span
+                    className={`w-pu-90 text-pu-56 ${p.from === 1 ? "text-accent" : "text-muted"}`}
+                  >
+                    {place(p.from, p.to)}
+                  </span>
                   <Avatar player={p} />
-                  <span className="placing-name">{p.name}</span>
+                  <span
+                    className={`font-pixel text-pu-28 uppercase tracking-pu-3 ${p.from === 1 ? "text-accent" : ""}`}
+                  >
+                    {p.name}
+                  </span>
                 </li>
               ))}
             </ol>
           </section>
         )}
         {view.awards && view.awards.length > 0 && (
-          <section className="display-section">
-            <h2>Awards</h2>
-            <Awards awards={view.awards} />
+          <section className={SECTION}>
+            <h2 className={H2}>Awards</h2>
+            <Awards awards={view.awards} projector />
           </section>
         )}
       </Fit>
@@ -142,28 +189,30 @@ function Idle({ view }: { view: DisplayView }) {
   const cards = view.stations.map((s) => <StationCard key={s.id} station={s} large />);
   return (
     <>
-      <header className="display-header idle">
-        <Logo width="7.2em" />
-        <span className="label">Darts evening · {today()}</span>
+      <header className="flex items-center justify-between gap-pu-32">
+        <Logo width="7.2em" className="flex-none" />
+        <span className="font-pixel text-muted text-pu-18 uppercase tracking-pu-3">
+          Darts evening · {today()}
+        </span>
       </header>
       {view.leaderboard.length === 0 ? (
-        <Fit className="display-idle">
-          <section className="display-section display-cards-wide">
-            <h2>Stations</h2>
+        <Fit className="flex-1">
+          <section className="grid grid-cols-[repeat(auto-fill,minmax(calc(560*var(--px)),1fr))] gap-pu-14">
+            <h2 className={`${H2} col-span-full`}>Stations</h2>
             {cards}
           </section>
         </Fit>
       ) : (
-        <div className="display-split idle">
-          <Fit className="display-side">
-            <section className="display-section">
-              <h2>Stations</h2>
+        <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] gap-pu-40">
+          <Fit>
+            <section className={SECTION}>
+              <h2 className={H2}>Stations</h2>
               {cards}
             </section>
           </Fit>
-          <Fit className="display-main">
-            <section className="display-section">
-              <h2>Leaderboard</h2>
+          <Fit>
+            <section className={SECTION}>
+              <h2 className={H2}>Leaderboard</h2>
               <Leaderboard rows={view.leaderboard} />
             </section>
           </Fit>
@@ -175,31 +224,35 @@ function Idle({ view }: { view: DisplayView }) {
 
 function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
   return (
-    <table className="display-table">
+    <table className={TABLE}>
       <thead>
         <tr>
-          <th>#</th>
-          <th className="name">Player</th>
-          <th className="accent">Rating</th>
-          <th>M</th>
-          <th>180s</th>
-          <th>High out</th>
+          <th className={th()}>#</th>
+          <th className={th("w-full text-left text-muted")}>Player</th>
+          <th className={th("text-right text-accent")}>Rating</th>
+          <th className={th()}>M</th>
+          <th className={th()}>180s</th>
+          <th className={th()}>High out</th>
         </tr>
       </thead>
       <tbody>
         {rows.map((row, i) => (
           <tr key={row.playerId}>
-            <td className={`rank ${i < 3 ? "top" : ""}`}>{i + 1}</td>
-            <td className="name">
-              <span className="table-player">
+            <td className={td(`font-pixel text-pu-15 ${i < 3 ? "text-accent" : "text-muted"}`)}>
+              {i + 1}
+            </td>
+            <td className={td("w-full text-left text-pu-34")}>
+              <span className={TABLE_PLAYER}>
                 <Avatar player={{ id: row.playerId, name: row.name, photo: row.photo }} />
                 {row.name}
               </span>
             </td>
-            <td className="big">{row.rating === null ? "–" : row.rating.toFixed(1)}</td>
-            <td className="muted">{row.matches}</td>
-            <td>{row.s180}</td>
-            <td>{row.highestCheckout ?? "–"}</td>
+            <td className={td("text-accent text-pu-40")}>
+              {row.rating === null ? "–" : row.rating.toFixed(1)}
+            </td>
+            <td className={td("text-muted text-pu-34")}>{row.matches}</td>
+            <td className={td("text-pu-34")}>{row.s180}</td>
+            <td className={td("text-pu-34")}>{row.highestCheckout ?? "–"}</td>
           </tr>
         ))}
       </tbody>
@@ -209,43 +262,47 @@ function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
 
 function Groups({ view }: { view: DisplayView }) {
   return (
-    <div className="display-groups">
+    <div className="flex flex-col gap-pu-28">
       {view.groups.map((group) => (
-        <section key={group.name} className="display-section">
-          <h2 className="accent">{group.name}</h2>
-          <table className="display-table">
+        <section key={group.name} className={SECTION}>
+          <h2 className={H2_ACCENT}>{group.name}</h2>
+          <table className={TABLE}>
             <thead>
               <tr>
-                <th>#</th>
-                <th className="name">Player</th>
-                <th>P</th>
-                <th>W</th>
-                <th>L</th>
-                <th>Legs</th>
-                <th>+/−</th>
-                <th className="accent">Pts</th>
-                <th>Avg</th>
+                <th className={th()}>#</th>
+                <th className={th("w-full text-left text-muted")}>Player</th>
+                <th className={th()}>P</th>
+                <th className={th()}>W</th>
+                <th className={th()}>L</th>
+                <th className={th()}>Legs</th>
+                <th className={th()}>+/−</th>
+                <th className={th("text-right text-accent")}>Pts</th>
+                <th className={th()}>Avg</th>
               </tr>
             </thead>
             <tbody>
               {group.table.map((row, i) => (
                 <tr key={row.playerId}>
-                  <td className="rank">{i + 1}</td>
-                  <td className="name">
-                    <span className="table-player">
+                  <td className={td("font-pixel text-muted text-pu-15")}>{i + 1}</td>
+                  <td className={td("w-full text-left text-pu-34")}>
+                    <span className={TABLE_PLAYER}>
                       <Avatar player={{ id: row.playerId, name: row.name, photo: row.photo }} />
                       {row.name}
                     </span>
                   </td>
-                  <td>{row.played}</td>
-                  <td>{row.won}</td>
-                  <td>{row.lost}</td>
-                  <td className="muted">
+                  <td className={td("text-pu-34")}>{row.played}</td>
+                  <td className={td("text-pu-34")}>{row.won}</td>
+                  <td className={td("text-pu-34")}>{row.lost}</td>
+                  <td className={td("text-muted text-pu-34")}>
                     {row.legsFor}–{row.legsAgainst}
                   </td>
-                  <td>{row.legDiff > 0 ? `+${row.legDiff}` : row.legDiff}</td>
-                  <td className="big">{row.points}</td>
-                  <td className="muted">{row.average === null ? "–" : row.average.toFixed(1)}</td>
+                  <td className={td("text-pu-34")}>
+                    {row.legDiff > 0 ? `+${row.legDiff}` : row.legDiff}
+                  </td>
+                  <td className={td("text-accent text-pu-40")}>{row.points}</td>
+                  <td className={td("text-muted text-pu-34")}>
+                    {row.average === null ? "–" : row.average.toFixed(1)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -265,20 +322,20 @@ function Bracket({ view }: { view: DisplayView }) {
     { title: "Losers bracket", columns: losers },
   ].filter((row) => row.columns.length > 0);
   return (
-    <div className="display-bracket">
+    <div className="flex flex-col gap-pu-26">
       {rows.map((row) => (
-        <section key={row.title} className="display-section">
-          <h2 className="accent">{row.title}</h2>
-          <div className="bracket">
+        <section key={row.title} className={SECTION}>
+          <h2 className={H2_ACCENT}>{row.title}</h2>
+          <div className="flex gap-pu-28">
             {row.columns.map((column) => (
               <div
                 key={`${column.section}-${column.name}`}
-                className={`bracket-round ${column.section}`}
+                className="flex w-pu-330 min-w-0 flex-col gap-pu-14"
               >
-                <h3>{column.name}</h3>
-                <div className="bracket-matches">
+                <h3 className="text-muted text-pu-13 tracking-pu-2">{column.name}</h3>
+                <div className="flex flex-1 flex-col justify-around gap-pu-14">
                   {column.matches.map((m) => (
-                    <MatchCard key={m.slot} match={m} />
+                    <MatchCard key={m.slot} match={m} projector />
                   ))}
                 </div>
               </div>
@@ -298,75 +355,99 @@ function StationCard({ station, large }: { station: DisplayStation; large?: bool
     : !station.boardOnline
       ? { text: "Board offline", tone: "danger" }
       : { text: "Free", tone: "muted" };
-  const tone = !match && idle.tone !== "muted" ? idle.tone : "";
+  const border =
+    !match && idle.tone === "warn"
+      ? "border-warn-line"
+      : !match && idle.tone === "danger"
+        ? "border-danger-line"
+        : "border-border";
+  const card = `flex border border-solid ${border} bg-panel text-text no-underline hover:text-accent`;
+  const name = `font-pixel text-accent uppercase tracking-pu-2 ${large ? "text-pu-24" : "text-pu-22"}`;
 
   if (match?.phase === "notStarted" || !match) {
     return (
       <a
-        className={`display-card compact ${tone} ${large ? "large" : ""}`}
+        className={`${card} flex-row items-center justify-between gap-pu-16 ${large ? "px-pu-24 py-pu-22" : "px-pu-22 py-pu-16"}`}
         href={`/watch/${station.id}`}
       >
-        <span className="display-card-name">{station.name}</span>
+        <span className={name}>{station.name}</span>
         {match ? (
-          <span className="display-card-next">
-            <span className="display-card-note">Next · </span>
+          <span className="font-pixel text-pu-20 uppercase tracking-pu-2">
+            <span className="text-muted text-pu-15">Next · </span>
             {match.players.map((p, i) => (
               <span key={p.id}>
-                {i > 0 && <span className="display-vs"> vs </span>}
+                {i > 0 && <span className="text-accent"> vs </span>}
                 {p.name}
               </span>
             ))}
           </span>
         ) : (
-          <span className={`display-card-idle ${idle.tone}`}>{idle.text}</span>
+          <span
+            className={`inline-flex items-center gap-pu-10 font-pixel text-pu-18 uppercase tracking-pu-2 before:h-pu-10 before:w-pu-10 before:bg-current before:content-[''] ${IDLE[idle.tone as keyof typeof IDLE]}`}
+          >
+            {idle.text}
+          </span>
         )}
       </a>
     );
   }
   return (
-    <a className={`display-card ${large ? "large" : ""}`} href={`/watch/${station.id}`}>
-      <div className="display-card-head">
-        <span className="display-card-name">{station.name}</span>
-        {match.label && <span className="display-card-label">{match.label}</span>}
+    <a className={`${card} flex-col`} href={`/watch/${station.id}`}>
+      <div className="flex items-center justify-between gap-pu-16 border-0 border-line-soft border-b border-solid px-pu-22 py-pu-12">
+        <span className={name}>{station.name}</span>
+        {match.label && (
+          <span className="font-pixel text-muted text-pu-15 uppercase tracking-pu-2">
+            {match.label}
+          </span>
+        )}
       </div>
-      <Score card={match} />
+      <Score card={match} large={large ?? false} />
     </a>
   );
 }
 
-function Score({ card }: { card: ScoreCard }) {
+function Score({ card, large }: { card: ScoreCard; large: boolean }) {
   const total = card.visit.reduce((sum, d) => sum + (d.ignored ? 0 : d.score), 0);
   return (
     <>
       {card.players.map((p, i) => (
         <div
           key={p.id}
-          className={`display-score ${card.throwing === i ? "is-throwing" : ""} ${card.winner === i ? "is-won" : ""}`}
+          className={`grid items-center gap-pu-16 border-0 border-line-soft border-b border-solid ${large ? "avatar-pu-52 h-pu-76 grid-cols-[calc(56*var(--px))_minmax(0,1fr)_calc(120*var(--px))_calc(140*var(--px))] px-pu-24" : "avatar-pu-46 h-pu-68 grid-cols-[calc(48*var(--px))_minmax(0,1fr)_calc(100*var(--px))_calc(120*var(--px))] px-pu-22"} ${card.throwing === i ? "bg-accent-tint" : ""} ${card.winner === i ? "text-ok" : card.throwing === i ? "text-accent" : ""}`}
         >
           <Avatar player={p} />
-          <span className="display-score-name">{p.name}</span>
-          <span className="display-score-legs">
+          <span
+            className={`overflow-hidden text-ellipsis whitespace-nowrap font-pixel uppercase tracking-pu-2 ${large ? "text-pu-24" : "text-pu-22"}`}
+          >
+            {p.name}
+          </span>
+          <span className="text-right font-pixel text-muted text-pu-14 uppercase">
             {card.legsToWin > 1 ? `Legs ${p.legsWon}` : ""}
           </span>
-          <span className="display-score-remaining">{card.winner === i ? "Won" : p.remaining}</span>
+          <span className={`text-right leading-[0.8] ${large ? "text-pu-68" : "text-pu-60"}`}>
+            {card.winner === i ? "Won" : p.remaining}
+          </span>
         </div>
       ))}
       {card.throwing !== null && (
-        <div className="display-visit">
-          <span className="display-visit-title">Visit</span>
+        <div className="flex items-center gap-pu-10 px-pu-22 py-pu-12">
+          <span className="mr-pu-6 font-pixel text-muted text-pu-13 uppercase">Visit</span>
           {[0, 1, 2].map((i) => {
             const dart = card.visit[i];
             return (
               <span
                 key={`dart-${i}`}
-                className={`display-dart ${dart ? (dart.ignored ? "ignored" : "") : "empty"}`}
+                className={`inline-flex h-pu-46 min-w-pu-88 items-center justify-center border text-pu-34 ${dart ? `border-border border-solid bg-surface ${dart.ignored ? "text-muted line-through" : ""}` : "border-faint border-dashed bg-transparent text-faint"}`}
               >
                 {dart ? dartLabel(dart.segment) : "—"}
               </span>
             );
           })}
-          <span className="display-visit-total">
-            Total <span>{String(total).padStart(3, "0")}</span>
+          <span className="ml-auto font-pixel text-muted text-pu-13 uppercase">
+            Total{" "}
+            <span className="align-middle font-text text-pu-44 text-text">
+              {String(total).padStart(3, "0")}
+            </span>
           </span>
         </div>
       )}
@@ -375,16 +456,25 @@ function Score({ card }: { card: ScoreCard }) {
 }
 
 /** Shrinks its content to fit the box, so nothing on the projector needs scrolling. */
-function Fit({ className, children }: { className: string; children: ReactNode }) {
+function Fit({
+  className = "",
+  inner = "flex flex-col gap-pu-28",
+  children,
+}: {
+  className?: string;
+  /** The content's layout: a column by default. */
+  inner?: string;
+  children: ReactNode;
+}) {
   const outer = useRef<HTMLDivElement>(null);
-  const inner = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
 
   const measure = useCallback(() => {
-    if (!outer.current || !inner.current) return;
+    if (!outer.current || !innerRef.current) return;
     // The transform doesn't change layout sizes, so these are the unscaled ones.
-    const height = inner.current.scrollHeight;
-    const width = inner.current.scrollWidth;
+    const height = innerRef.current.scrollHeight;
+    const width = innerRef.current.scrollWidth;
     setScale(Math.min(1, outer.current.clientHeight / height, outer.current.clientWidth / width));
   }, []);
   // Every render (new data) and every resize of the box.
@@ -396,8 +486,12 @@ function Fit({ className, children }: { className: string; children: ReactNode }
   }, [measure]);
 
   return (
-    <div ref={outer} className={`fit ${className}`}>
-      <div ref={inner} className="fit-inner" style={{ transform: `scale(${scale})` }}>
+    <div ref={outer} className={`min-h-0 min-w-0 overflow-hidden ${className}`}>
+      <div
+        ref={innerRef}
+        className={`origin-top-left ${inner}`}
+        style={{ transform: `scale(${scale})` }}
+      >
         {children}
       </div>
     </div>

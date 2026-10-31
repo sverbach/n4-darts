@@ -523,3 +523,90 @@
     transform: translateX(-100%);
   }
 }
+
+/*
+ * Projector units: `--px` is one pixel of the mockup on /display (1920 × 1080) and /watch
+ * (1280 × 720), so every screen shows the same layout. `text-pu-22` is a 22-pixel font in the
+ * mockup, `gap-pu-16` a 16-pixel gap, `avatar-pu-46` a 46-pixel avatar, and so on.
+ */
+@utility text-pu-* {
+  font-size: calc(var(--px) * --value(integer));
+}
+@utility tracking-pu-* {
+  letter-spacing: calc(var(--px) * --value(integer));
+}
+@utility gap-pu-* {
+  gap: calc(var(--px) * --value(integer));
+}
+@utility gap-x-pu-* {
+  column-gap: calc(var(--px) * --value(integer));
+}
+@utility gap-y-pu-* {
+  row-gap: calc(var(--px) * --value(integer));
+}
+@utility p-pu-* {
+  padding: calc(var(--px) * --value(integer));
+}
+@utility px-pu-* {
+  padding-inline: calc(var(--px) * --value(integer));
+}
+@utility py-pu-* {
+  padding-block: calc(var(--px) * --value(integer));
+}
+@utility pt-pu-* {
+  padding-top: calc(var(--px) * --value(integer));
+}
+@utility pr-pu-* {
+  padding-right: calc(var(--px) * --value(integer));
+}
+@utility pb-pu-* {
+  padding-bottom: calc(var(--px) * --value(integer));
+}
+@utility pl-pu-* {
+  padding-left: calc(var(--px) * --value(integer));
+}
+@utility m-pu-* {
+  margin: calc(var(--px) * --value(integer));
+}
+@utility mt-pu-* {
+  margin-top: calc(var(--px) * --value(integer));
+}
+@utility mr-pu-* {
+  margin-right: calc(var(--px) * --value(integer));
+}
+@utility mb-pu-* {
+  margin-bottom: calc(var(--px) * --value(integer));
+}
+@utility ml-pu-* {
+  margin-left: calc(var(--px) * --value(integer));
+}
+@utility w-pu-* {
+  width: calc(var(--px) * --value(integer));
+}
+@utility h-pu-* {
+  height: calc(var(--px) * --value(integer));
+}
+@utility min-w-pu-* {
+  min-width: calc(var(--px) * --value(integer));
+}
+@utility min-h-pu-* {
+  min-height: calc(var(--px) * --value(integer));
+}
+@utility top-pu-* {
+  top: calc(var(--px) * --value(integer));
+}
+@utility right-pu-* {
+  right: calc(var(--px) * --value(integer));
+}
+@utility bottom-pu-* {
+  bottom: calc(var(--px) * --value(integer));
+}
+@utility left-pu-* {
+  left: calc(var(--px) * --value(integer));
+}
+@utility border-pu-* {
+  border-width: calc(var(--px) * --value(integer));
+}
+@utility avatar-pu-* {
+  --avatar: calc(var(--px) * --value(integer));
+}
