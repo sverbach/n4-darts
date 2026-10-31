@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import type { DisplayView, TournamentAdminView } from "./api.ts";
 import { buildApp } from "./app.ts";
 import { type Db, openDb } from "./db.ts";
-import { PAUSED } from "./scheduler.ts";
-import { createStation, type Station } from "./station.ts";
+import { PAUSED } from "./scheduling/scheduler.ts";
+import { createStation, type Station } from "./stations/station.ts";
 
 let db: Db;
 let app: ReturnType<typeof buildApp> | undefined;

@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { type Db, openDb } from "./db.ts";
-import { createScheduler, type Scheduler } from "./scheduler.ts";
-import { createStation, type Station } from "./station.ts";
-import { fixedDirectory } from "./stations.ts";
-import { createTournaments, type Tournaments } from "./tournaments.ts";
+import { createScheduler, type Scheduler } from "./scheduling/scheduler.ts";
+import { createStation, type Station } from "./stations/station.ts";
+import { fixedDirectory } from "./stations/stations.ts";
+import { createTournaments, type Tournaments } from "./tournaments/tournaments.ts";
 
 let db: Db;
 let scheduler: Scheduler | undefined;

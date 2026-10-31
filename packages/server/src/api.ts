@@ -1,8 +1,8 @@
 // Types shared with the web app. Type-only: nothing here may pull in Node modules.
 
 import type { MatchState, Segment, X01Settings } from "@n4/engine";
-import type { TableRow } from "./tournament/groups.ts";
-import type { Placing, TournamentConfig } from "./tournament/types.ts";
+import type { TableRow } from "./tournaments/plan/groups.ts";
+import type { Placing, TournamentConfig } from "./tournaments/plan/types.ts";
 
 export type { Placing, TableRow, TournamentConfig };
 

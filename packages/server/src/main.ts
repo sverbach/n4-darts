@@ -2,9 +2,9 @@ import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildApp } from "./app.ts";
-import { startBackups } from "./backups.ts";
 import { openDb } from "./db.ts";
-import { createStationRegistry } from "./stations.ts";
+import { startBackups } from "./operations/backups.ts";
+import { createStationRegistry } from "./stations/stations.ts";
 
 const port = Number(process.env.PORT ?? 3000);
 const webDir = process.env.WEB_DIR ?? fileURLToPath(new URL("../../web/dist", import.meta.url));

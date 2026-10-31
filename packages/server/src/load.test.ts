@@ -15,7 +15,7 @@ import type { StationView } from "./api.ts";
 import { buildApp } from "./app.ts";
 import { type Db, openDb } from "./db.ts";
 import { seedHistory } from "./seed.ts";
-import { startStation } from "./stations.ts";
+import { startStation } from "./stations/stations.ts";
 
 /** Enough to show growth; more would take the test past 30 s. */
 const DARTS = 600;

@@ -3,8 +3,8 @@
 import { DatabaseSync } from "node:sqlite";
 import type { MatchEvent, X01Settings } from "@n4/engine";
 import type { Player, PlayerInput } from "./api.ts";
-import { diagnostics } from "./diagnostics.ts";
-import type { Entrant, Placing, TournamentConfig } from "./tournament/types.ts";
+import { diagnostics } from "./operations/diagnostics.ts";
+import type { Entrant, Placing, TournamentConfig } from "./tournaments/plan/types.ts";
 
 export interface MatchRecord {
   id: string;

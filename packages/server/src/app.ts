@@ -1,25 +1,25 @@
 import { existsSync } from "node:fs";
 import fastifyStatic from "@fastify/static";
 import Fastify from "fastify";
-import { registerAdmin } from "./admin.ts";
+import { registerAdmin } from "./access/admin.ts";
 import type { Db } from "./db.ts";
-import { diagnostics } from "./diagnostics.ts";
-import { displayView } from "./display.ts";
-import { createChangeFeed, streamView } from "./live.ts";
-import { registerMatches } from "./matches.ts";
-import { registerPlayers } from "./players.ts";
-import { ratingOf } from "./ratings.ts";
-import { createScheduler, type SchedulerOptions, withQueue } from "./scheduler.ts";
-import { CommandError, type Station, type StationCommand } from "./station.ts";
-import { registerStationAdmin } from "./stationAdmin.ts";
+import { displayView } from "./live/display.ts";
+import { createChangeFeed, streamView } from "./live/live.ts";
+import { registerMatches } from "./matches/matches.ts";
+import { diagnostics } from "./operations/diagnostics.ts";
+import { registerPlayers } from "./players/players.ts";
+import { ratingOf } from "./ratings/ratings.ts";
+import { createScheduler, type SchedulerOptions, withQueue } from "./scheduling/scheduler.ts";
+import { CommandError, type Station, type StationCommand } from "./stations/station.ts";
+import { registerStationAdmin } from "./stations/stationAdmin.ts";
 import {
   fixedDirectory,
   isRegistry,
   type StationDirectory,
   type StationRegistry,
-} from "./stations.ts";
-import { createStats, registerStats } from "./stats.ts";
-import { createTournaments, registerTournaments } from "./tournaments.ts";
+} from "./stations/stations.ts";
+import { createStats, registerStats } from "./stats/stats.ts";
+import { createTournaments, registerTournaments } from "./tournaments/tournaments.ts";
 
 export interface AppOptions {
   /** Directory with the built web app; served at `/` when it exists. */

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { describe, expect, it } from "vitest";
 import { openDb } from "./db.ts";
-import { defaultTournamentConfig } from "./tournament/types.ts";
+import { defaultTournamentConfig } from "./tournaments/plan/types.ts";
 
 describe("database", () => {
   it("drops the walking skeleton's matches but keeps players", () => {

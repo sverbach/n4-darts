@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DisplayView, StationView, TournamentAdminView } from "./api.ts";
 import { buildApp } from "./app.ts";
 import { openDb } from "./db.ts";
-import { startStation } from "./stations.ts";
+import { startStation } from "./stations/stations.ts";
 
 let sims: BoardSim[] = [];
 let stopServer: (() => Promise<void>) | undefined;
