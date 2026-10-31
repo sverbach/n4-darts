@@ -181,7 +181,7 @@ flowchart TB
 
 ### White box: web app
 
-Every page is one route in `App.tsx`, and each page is a feature folder under `packages/web/src/features/`. A feature never imports from another feature: whatever two features use lives in `components/` (UI) or `lib/` (everything else). `admin/` and its tabs count as one feature. Pages that follow something live use `useLive` (SSE), and the station and watch pages use `useStation` on top of it.
+Every page is one route in `App.tsx`, and each page is a feature folder under `packages/web/src/features/`. A feature never imports from another feature: whatever two features use lives in `components/` (UI) or `lib/` (everything else). `admin/` and its tabs count as one feature. The linter enforces this: `noRestrictedImports` in `biome.json`, with one override for the files directly in a feature and one for a folder inside it (the admin tabs); a deeper folder needs a third. Pages that follow something live use `useLive` (SSE), and the station and watch pages use `useStation` on top of it.
 
 | Folder                        | Route                      | Cluster                                                                                   | Files                                      |
 | ----------------------------- | -------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------ |

@@ -23,3 +23,4 @@ What the design has to live with. They come from the room, the boards and the pe
 - **TypeScript end to end** (ADR 0006), a pnpm workspace with one package per part (section 5).
 - **Terms** follow [`GLOSSARY.md`](../../GLOSSARY.md); **decisions** that are hard to reverse get an ADR in [`docs/adr/`](../adr/).
 - **Diagrams** in the docs are Mermaid code blocks.
+- **Web features don't import each other.** Each page is a folder under `packages/web/src/features/`; what two of them use lives in `components/` or `lib/`. `pnpm lint` fails otherwise (section 5.2).

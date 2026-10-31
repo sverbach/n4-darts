@@ -1,6 +1,6 @@
 # The linter stops a feature from importing another feature
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 01
 
@@ -20,3 +20,13 @@ Make the spec's rule hold by itself: a file in `packages/web/src/features/<a>/` 
 - **Architecture docs updated:** `docs/architecture/05-building-block-view.md` (5.2, the web white box) states the rule and that the linter enforces it; `docs/architecture/02-architecture-constraints.md` (2.3 Conventions) gets a line for it.
 
 ## Comments
+
+2026-10-31: Confirmed by the user as written.
+
+2026-10-31: Built. Two `overrides` in `biome.json`, no path alias needed:
+- Files directly in a feature (`features/*/*`): banned `../**` except `../../**`, plus `../../features/**`.
+- Files one folder deeper (`features/*/*/*`, the admin tabs): banned `../../**` except `../../../**`, plus `../../../features/**`. `../AdminPage.tsx` and `../matches/…` stay allowed, so admin and its tabs are one feature.
+- Message: "A feature never imports from another feature (docs/architecture/05-building-block-view.md, 5.2). Shared between features? Move it to components/ or lib/."
+- Proven with probe files at both depths (imports and re-exports): every cross-feature path was flagged, and `components/`, `lib/`, own-folder and within-admin imports passed. `pnpm lint` failed on the probe and passed after removing it. A deeper folder in a feature would need a third override; noted in 5.2.
+- Also restored `main.tsx`'s import order, which ticket 01's import rewrite had changed (no effect, but it wasn't meant to change).
+- All checks pass. Docs: 5.2 states the rule is linted; 2.3 Conventions has a line for it.

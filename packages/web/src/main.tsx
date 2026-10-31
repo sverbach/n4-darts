@@ -3,8 +3,8 @@ import "@fontsource/silkscreen/700.css";
 import "@fontsource/geist-pixel/400.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./styles.css";
 import { App } from "./App.tsx";
+import "./styles.css";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("#root missing from index.html");
