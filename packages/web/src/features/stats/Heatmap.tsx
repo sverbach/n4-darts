@@ -28,6 +28,13 @@ function at(radius: number, angle: number) {
   return `${(radius * Math.cos(a)).toFixed(4)} ${(-radius * Math.sin(a)).toFixed(4)}`;
 }
 
+/** The board's lines between fields, and its fields: singles and rings alternate by segment. */
+const LINE = "stroke-bg [stroke-width:0.004]";
+const FILL = {
+  single: ["fill-surface", "fill-line-soft"],
+  ring: ["fill-accent-line", "fill-border"],
+};
+
 /** The part of segment `index` between two radii. */
 function wedge(index: number, inner: number, outer: number) {
   const from = 90 - index * 18 + 9;
@@ -49,23 +56,30 @@ function Board() {
     { inner: RINGS.doubleInner, outer: RINGS.doubleOuter, ring: true },
   ];
   return (
-    <g className="board">
-      <circle r={RINGS.doubleOuter} className="board-edge" />
+    <g>
+      <circle r={RINGS.doubleOuter} className={`fill-bg ${LINE}`} />
       {ORDER.map((number, i) =>
         bands.map(({ inner, outer, ring }) => (
           <path
             key={`${number}-${inner}`}
             d={wedge(i, inner, outer)}
-            className={`${ring ? "board-ring" : "single"} ${i % 2 === 0 ? "a" : "b"}`}
+            className={`${LINE} ${FILL[ring ? "ring" : "single"][i % 2]}`}
           />
         )),
       )}
-      <circle r={RINGS.outerBull} className="board-ring b" />
-      <circle r={RINGS.bull} className="board-ring a" />
+      <circle r={RINGS.outerBull} className={`fill-border ${LINE}`} />
+      <circle r={RINGS.bull} className={`fill-accent-line ${LINE}`} />
       {ORDER.map((number, i) => {
         const [x, y] = at(NUMBERS_AT, 90 - i * 18).split(" ");
         return (
-          <text key={number} x={x} y={y} className="board-number" textAnchor="middle" dy="0.35em">
+          <text
+            key={number}
+            x={x}
+            y={y}
+            className="fill-muted font-text text-[0.09px]"
+            textAnchor="middle"
+            dy="0.35em"
+          >
             {number}
           </text>
         );
@@ -80,11 +94,12 @@ export function Heatmap({ points }: { points: Point[] }) {
   const shown = points.filter((p) => Math.hypot(p.x, p.y) <= CUT_OFF);
   const size = CUT_OFF + 0.05;
   return (
-    <figure className="heatmap">
+    <figure className="m-0 flex flex-col items-center gap-2 border border-border border-solid bg-panel p-3">
       <svg
         viewBox={`${-size} ${-size} ${size * 2} ${size * 2}`}
         role="img"
         aria-label={`Where the last ${points.length} darts landed`}
+        className="block h-auto w-full max-w-[420px]"
       >
         <defs>
           <filter id="heat-blur" x="-50%" y="-50%" width="200%" height="200%">
@@ -92,16 +107,16 @@ export function Heatmap({ points }: { points: Point[] }) {
           </filter>
         </defs>
         <Board />
-        <g className="heat" filter="url(#heat-blur)">
+        <g filter="url(#heat-blur)">
           {shown.map((p, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: darts are just positions; two can share one.
-            <circle key={i} cx={p.x} cy={-p.y} r={0.07} />
+            <circle key={i} cx={p.x} cy={-p.y} r={0.07} className="fill-warn opacity-35" />
           ))}
         </g>
-        <g className="heat-dots">
+        <g>
           {shown.map((p, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: as above.
-            <circle key={i} cx={p.x} cy={-p.y} r={0.007} />
+            <circle key={i} cx={p.x} cy={-p.y} r={0.007} className="fill-text opacity-70" />
           ))}
         </g>
       </svg>

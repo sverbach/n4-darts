@@ -29,9 +29,9 @@ export function Logo({ width, className }: { width?: string; className?: string 
  * animation (styles/app.css): the strip is 64 frames wide and moves one frame at a time.
  * Its colours are baked in, so it doesn't follow the theme's text colour.
  */
-export function SparkleLogo() {
+export function SparkleLogo({ className = "" }: { className?: string }) {
   return (
-    <div className="logo-sparkle aspect-[76/39] overflow-hidden" role="img" aria-label="n4-darts">
+    <div className={`aspect-[76/39] overflow-hidden ${className}`} role="img" aria-label="n4-darts">
       <img
         src={sparkleSheet}
         alt=""
