@@ -197,7 +197,7 @@ Shared:
 
 - **`components/`**: the design system's pieces (`Avatar`, `Logo`, `PixelIcon`, `Progress`), and the match pieces more than one page shows: `PlayerCards` and `MatchOver` (station, watch), `PlayerPicker` (station, tournament draft), `SegmentPicker` (station, match corrections), `BoardMenu` (station, admin stations and matches), `Awards` and `MatchCard` (tournament, display).
 - **`lib/`**: `useLive`, `useStation`, `usePlayers`, `api.ts` (requests to the server), `darts.ts` (dart labels such as `T20`) and `labels.ts` (rules and legs).
-- **`styles/`** and **`assets/`**: the design system's sheets and the logo.
+- **`styles/`** and **`assets/`**: the design system (`theme.css`: the colour tokens and Tailwind's theme on them; `app.css`: element defaults, shared utilities, the logo's keyframes, projector units) and the logo.
 
 ### Observations
 

@@ -19,7 +19,7 @@ export function MatchesAdmin() {
   if (openId) return <MatchDetailView id={openId} onBack={() => setOpenId(null)} />;
 
   return (
-    <div className="matches-admin">
+    <div>
       {error && (
         <p className="error" role="alert">
           {error}

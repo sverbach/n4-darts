@@ -1,6 +1,6 @@
 # Only the theme and a small app.css left
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 04, 05, 06, 07
 
@@ -20,3 +20,9 @@ Finish the migration (`../spec.md`): no page sheets left, preflight in its final
 - **Docs:** `docs/architecture/08-crosscutting-concepts.md` (8.6) describes the styling as it now is: Tailwind on the tokens' theme, Biome-sorted classes, what lives in `app.css`, projector scaling on `--px`. `docs/architecture/05-building-block-view.md` (5.2, web shared) lists `styles/` as it now is. `README.md` if it mentions the sheets.
 
 ## Comments
+
+- `styles/` is `theme.css` (the former `tokens.css` merged in, then Tailwind's theme) and `app.css`. `styles.css` imports `tailwindcss` in full, preflight included.
+- Preflight moved four things, all fixed so the visual suite passes at zero tolerance (66 screenshots): the sparkle logo's strip got `max-width: 100%` (now `max-w-none`); links lost their underline (the base layer underlines them again); and paragraphs that relied on the browser's 1em margin got `my-[1em]` (the heatmap's note, the station's "Tap a dart to correct it", the diagnostics page).
+- `box-sizing` and the body margin left `app.css`: preflight sets both.
+- Unstyled leftovers removed: `matches-admin`, `pick-name`, `avatar-initials`, `logo`. Kept on purpose, as hooks for arbitrary variants: `pixel-icon`, `avatar`, `scoreboard`.
+- CSS bundle: 85.50 kB before the migration, 71.67 kB (22.26 kB gzip) now; preflight adds about 4 kB.

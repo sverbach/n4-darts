@@ -33,7 +33,7 @@ export function Avatar(props: {
   }
   return (
     <span className={className} style={{ background: colour(player.id) }} aria-hidden>
-      <span className="avatar-initials font-pixel text-[length:calc(var(--size)*0.32)] uppercase leading-none">
+      <span className="font-pixel text-[length:calc(var(--size)*0.32)] uppercase leading-none">
         {initials(player.name)}
       </span>
     </span>

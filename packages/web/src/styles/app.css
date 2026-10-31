@@ -7,12 +7,7 @@
  */
 
 @layer base {
-  * {
-    box-sizing: border-box;
-  }
-
   body {
-    margin: 0;
     background: var(--bg);
     color: var(--text);
     font-family: var(--font-text);
@@ -72,8 +67,10 @@
     }
   }
 
+  /* Underlined, as browsers do (Tailwind's reset takes it away). */
   a {
     color: var(--text);
+    text-decoration: underline;
   }
 
   a:hover {

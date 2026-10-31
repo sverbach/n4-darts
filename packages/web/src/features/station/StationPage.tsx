@@ -459,7 +459,7 @@ function VisitPanel(props: ScoreboardProps) {
         </p>
       )}
       {visit && onDart && (
-        <p className="label kiosk:hidden text-center">Tap a dart to correct it</p>
+        <p className="label my-[1em] kiosk:hidden text-center">Tap a dart to correct it</p>
       )}
     </section>
   );

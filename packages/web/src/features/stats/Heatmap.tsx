@@ -90,7 +90,7 @@ function Board() {
 
 /** The board with the darts on it, or a note when there are too few. */
 export function Heatmap({ points }: { points: Point[] }) {
-  if (points.length < ENOUGH) return <p className="hint">Not enough darts yet</p>;
+  if (points.length < ENOUGH) return <p className="hint my-[1em]">Not enough darts yet</p>;
   const shown = points.filter((p) => Math.hypot(p.x, p.y) <= CUT_OFF);
   const size = CUT_OFF + 0.05;
   return (

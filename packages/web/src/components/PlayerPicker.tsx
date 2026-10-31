@@ -64,7 +64,7 @@ export function PlayerPicker(props: {
                 className="kiosk:min-h-[60px] gap-2 kiosk:gap-3 kiosk:pr-4 pr-3 kiosk:pl-2 pl-1.5 kiosk:text-[16px] text-[12px] [--avatar:28px] kiosk:[--avatar:40px] aria-pressed:pr-2.5 kiosk:aria-pressed:pr-3.5"
               >
                 <Avatar player={p} />
-                <span className="pick-name">{p.name}</span>
+                <span>{p.name}</span>
                 {position >= 0 && (
                   <span className="inline-grid h-5 kiosk:h-[26px] kiosk:min-w-[26px] min-w-5 place-items-center bg-accent font-bold kiosk:text-[13px] text-[11px] text-accent-text">
                     {position + 1}

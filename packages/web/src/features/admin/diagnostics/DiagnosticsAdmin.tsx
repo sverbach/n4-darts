@@ -68,7 +68,7 @@ export function DiagnosticsAdmin() {
     };
   }, []);
 
-  if (!view) return <p className="hint">{error ?? "Loading…"}</p>;
+  if (!view) return <p className="hint my-[1em]">{error ?? "Loading…"}</p>;
   const loop = view.eventLoop;
   return (
     <div className="flex flex-col gap-6">
@@ -77,7 +77,7 @@ export function DiagnosticsAdmin() {
           {error}
         </p>
       )}
-      <p className="hint">
+      <p className="hint my-[1em]">
         Server running since {new Date(view.startedAt).toLocaleString()}. Refreshes every 2 seconds;
         the timings are only collected while this page is open.
       </p>
@@ -116,7 +116,7 @@ export function DiagnosticsAdmin() {
 
       <Section title="Darts" hint="Board message to the station's screens">
         {view.darts.length === 0 ? (
-          <p className="hint">No darts since the server started.</p>
+          <p className="hint my-[1em]">No darts since the server started.</p>
         ) : (
           <Table head={["Station", "Dart", "Time", "When"]}>
             {view.darts.map((d) => (
@@ -135,7 +135,7 @@ export function DiagnosticsAdmin() {
 
       <Section title="Boards">
         {view.boards.length === 0 ? (
-          <p className="hint">No stations.</p>
+          <p className="hint my-[1em]">No stations.</p>
         ) : (
           <Table head={["Station", "Board", "Reconnects", "Last message", "Last command"]}>
             {view.boards.map((b) => (
@@ -172,7 +172,7 @@ export function DiagnosticsAdmin() {
 
       <Section title="Live streams" hint={`${view.streams.length} open`}>
         {view.streams.length === 0 ? (
-          <p className="hint">No screens connected.</p>
+          <p className="hint my-[1em]">No screens connected.</p>
         ) : (
           <Table head={["Kind", "Client", "Open", "Updates", "Browser"]}>
             {view.streams.map((s, i) => (
@@ -196,7 +196,7 @@ export function DiagnosticsAdmin() {
 
       <Section title="Views" hint="Computing each stream's view, last minute">
         {view.views.length === 0 ? (
-          <p className="hint">Nothing computed in the last minute.</p>
+          <p className="hint my-[1em]">Nothing computed in the last minute.</p>
         ) : (
           <Table head={["Kind", "Per minute", "Average", "Longest"]}>
             {view.views.map((v) => (
@@ -234,7 +234,7 @@ export function DiagnosticsAdmin() {
       </Section>
 
       <Section title="This page's request">
-        <p>
+        <p className="my-[1em]">
           {view.request.proxied ? (
             <span className={badge("warn")}>Through a proxy</span>
           ) : (

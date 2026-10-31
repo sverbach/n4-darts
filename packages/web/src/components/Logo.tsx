@@ -10,7 +10,7 @@ export function Logo({ width, className }: { width?: string; className?: string 
   return (
     <a href="/">
       <svg
-        className={`logo block h-auto text-text ${className ?? ""}`}
+        className={`block h-auto text-text ${className ?? ""}`}
         viewBox="0 0 72 33"
         shapeRendering="crispEdges"
         style={width ? { width } : undefined}
@@ -36,7 +36,7 @@ export function SparkleLogo({ className = "" }: { className?: string }) {
         src={sparkleSheet}
         alt=""
         draggable={false}
-        className="block h-full w-[6400%] animate-[logo-sparkle_5.12s_steps(64)_infinite] [image-rendering:pixelated] motion-reduce:animate-none"
+        className="block h-full w-[6400%] max-w-none animate-[logo-sparkle_5.12s_steps(64)_infinite] [image-rendering:pixelated] motion-reduce:animate-none"
       />
     </div>
   );

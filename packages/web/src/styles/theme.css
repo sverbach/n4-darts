@@ -1,12 +1,60 @@
 /*
- * Tailwind's theme: the design tokens (tokens.css) as utilities, so components use roles
- * (`bg-surface`, `text-accent`, `font-pixel`) and a theme still only redefines tokens.css
- * (docs/architecture/08-crosscutting-concepts.md, 8.6). Tailwind's own colours, fonts and
- * breakpoints are cleared: only ours exist. `inline`: colour utilities use the tokens' variables.
+ * The theme. Design tokens first: every colour in the app, named by its role, so a theme swaps
+ * them in one place. Then Tailwind's theme on top of them, so components use roles (`bg-surface`,
+ * `text-accent`, `font-pixel`). Tailwind's own colours, fonts and breakpoints are cleared: only
+ * ours exist. `inline`: colour utilities use the tokens' variables
+ * (docs/architecture/08-crosscutting-concepts.md, 8.6).
  */
 
-/* Silkscreen for labels, names and buttons; Geist Pixel for numbers and running text. Defined here,
-   not in tokens.css: as theme values they're also the `--font-pixel` / `--font-text` the sheets use. */
+:root {
+  /* Grounds, darkest first. */
+  --bg: #060708;
+  --panel: #0b0d0f;
+  --surface: #0f1215;
+  --line-soft: #1a1d20;
+  --border: #2b2f33;
+
+  --text: #f2ede4;
+  --muted: #8c9096;
+  --faint: #3a3f44;
+
+  --accent: #a68cff;
+  --accent-text: #060708;
+  --accent-tint: #120f1a;
+  --accent-line: #3a3150;
+
+  /* Dims the page behind a dialog (the photo editor). */
+  --scrim: rgb(2 3 3 / 0.85);
+
+  --ok: #5cffa0;
+  --ok-tint: #0a1611;
+  --ok-line: #1f4a35;
+  --warn: #ffb23d;
+  --warn-tint: #140f06;
+  --warn-line: #5a4318;
+  --danger: #ff4d3d;
+  --danger-tint: #170a09;
+  --danger-line: #5a2420;
+  --danger-faint: #6e4440;
+
+  /* Initials avatars: muted, so light text reads on all of them. */
+  --avatar-1: #4b3a7a;
+  --avatar-2: #1f5249;
+  --avatar-3: #6a3f1f;
+  --avatar-4: #2a4a72;
+  --avatar-5: #5a2645;
+  --avatar-6: #4a5a22;
+  --avatar-7: #6b2e2e;
+  --avatar-8: #3a4048;
+  --avatar-9: #2e5a5a;
+
+  /* The fonts are below, in Tailwind's theme: --font-pixel and --font-text. */
+
+  color-scheme: dark;
+}
+
+/* Silkscreen for labels, names and buttons; Geist Pixel for numbers and running text. As theme
+   values they are also the `--font-pixel` / `--font-text` variables plain CSS uses. */
 @theme {
   --font-*: initial;
   --font-pixel: "Silkscreen", monospace;
