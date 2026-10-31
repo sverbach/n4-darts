@@ -683,8 +683,11 @@ export function openDb(path: string): Db {
       deleteMatchStmt.run(id);
     },
     append(matchId, event, at) {
+      const t0 = performance.now(); // [DEBUG-wal]
       insertEvent.run(matchId, matchId, JSON.stringify(event), at ?? null);
       clearLegMinutes.run(matchId);
+      const probe = globalThis as { walWrites?: [number, number][]; walDart?: number }; // [DEBUG-wal]
+      probe.walWrites?.push([probe.walDart ?? 0, performance.now() - t0]); // [DEBUG-wal]
     },
     setLegMinutes(id, minutes) {
       updateLegMinutes.run(JSON.stringify(minutes), id);

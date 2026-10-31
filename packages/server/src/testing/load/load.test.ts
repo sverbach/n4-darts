@@ -191,9 +191,12 @@ async function playLongMatch(db: Db, base: string) {
 
   const times: number[] = [];
   let changes = 0;
+  const probe = globalThis as { walWrites?: [number, number][]; walDart?: number }; // [DEBUG-wal]
+  probe.walWrites = []; // [DEBUG-wal]
   for (let n = 0; n < DARTS && current.match?.state.phase !== "matchWon"; n++) {
     const from = station.messages.length;
     const darts = dartsIn(current);
+    probe.walDart = n + 1; // [DEBUG-wal]
     const thrownAt = performance.now();
     board.throwDart(nextDart(current));
     const got = await station.waitFor((v) => dartsIn(v) === darts + 1, from);
@@ -217,7 +220,15 @@ async function playLongMatch(db: Db, base: string) {
   const won = current.match?.state.phase === "matchWon";
   const legs = current.match?.state.players.map((p) => p.legsWon).join("–");
   const legsToWin = current.match?.settings.legsToWin;
+  const slowWrites = [...probe.walWrites] // [DEBUG-wal]
+    .sort((a, b) => b[1] - a[1]) // [DEBUG-wal]
+    .slice(0, 5) // [DEBUG-wal]
+    .map(([dart, ms]) => `#${dart} ${ms.toFixed(1)}`) // [DEBUG-wal]
+    .join(", "); // [DEBUG-wal]
+  const sortedWrites = probe.walWrites.map((w) => w[1]).sort((a, b) => a - b); // [DEBUG-wal]
+  probe.walWrites = undefined; // [DEBUG-wal]
   return {
+    walReport: `[DEBUG-wal] ${sortedWrites.length} writes, median ${median(sortedWrites).toFixed(2)} ms; slowest writes ${slowWrites}`, // [DEBUG-wal]
     times,
     changes,
     writes,
@@ -230,7 +241,7 @@ async function playLongMatch(db: Db, base: string) {
 
 function check(result: Awaited<ReturnType<typeof playLongMatch>>) {
   const { times, changes, writes, messages, won, darts } = result;
-  const log = `\n${report(times)}\nlegs ${result.legs}, writes ${writes}, changes ${changes}, messages per stream ${messages.join(" / ")}`;
+  const log = `\n${report(times)}\n${result.walReport}\nlegs ${result.legs}, writes ${writes}, changes ${changes}, messages per stream ${messages.join(" / ")}`;
 
   // Work per dart: one write per dart or takeout (plus the winner, if the match ended), and at
   // most one message per stream for each.
