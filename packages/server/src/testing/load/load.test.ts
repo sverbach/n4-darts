@@ -226,7 +226,7 @@ async function playLongMatch(db: Db, base: string) {
     .map(([dart, ms]) => `#${dart} ${ms.toFixed(1)}`) // [DEBUG-wal]
     .join(", "); // [DEBUG-wal]
   const sortedWrites = probe.walWrites.map((w) => w[1]).sort((a, b) => a - b); // [DEBUG-wal]
-  probe.walWrites = undefined; // [DEBUG-wal]
+  delete probe.walWrites; // [DEBUG-wal]
   return {
     walReport: `[DEBUG-wal] ${sortedWrites.length} writes, median ${median(sortedWrites).toFixed(2)} ms; slowest writes ${slowWrites}`, // [DEBUG-wal]
     times,
