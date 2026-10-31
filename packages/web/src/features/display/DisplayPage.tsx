@@ -159,7 +159,7 @@ function Finished({ view }: { view: DisplayView }) {
                   className="flex h-pu-96 items-center gap-pu-22 border-0 border-line-soft border-b border-solid"
                 >
                   <span
-                    className={`w-pu-90 text-pu-56 ${p.from === 1 ? "text-accent" : "text-muted"}`}
+                    className={`w-pu-160 whitespace-nowrap text-pu-56 ${p.from === 1 ? "text-accent" : "text-muted"}`}
                   >
                     {place(p.from, p.to)}
                   </span>

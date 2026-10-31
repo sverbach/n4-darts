@@ -154,8 +154,8 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
           </tbody>
         </table>
       </div>
-      {/* Meant for phones only, but always shown: the old sheets let it through on wide screens too (kept as is). */}
-      <span className="label flex justify-center gap-2 [&>.pixel-icon:first-child]:[transform:scaleX(-1)]">
+      {/* Phones only: from the kiosk width up the whole table fits. */}
+      <span className="label flex kiosk:hidden justify-center gap-2 [&>.pixel-icon:first-child]:[transform:scaleX(-1)]">
         <PixelIcon name="caret" /> Swipe table for more <PixelIcon name="caret" />
       </span>
     </>

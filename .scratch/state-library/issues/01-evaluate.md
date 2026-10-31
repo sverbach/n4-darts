@@ -39,3 +39,5 @@ An analysis, no code changes: would introducing a small client-side state librar
 2026-10-31: Confirmed by the user.
 
 2026-10-31: Done: `../analysis.md`. Recommendation: no state library. The pain is in server data that's fetched once instead of followed live (admin player list, match history, Home's stations), not in client state; a client store fixes none of it, TanStack Query (12.1 kB gzip) would add a second model for server data next to SSE. Proposed follow-up ticket written out in the analysis ("Every admin list updates by itself"), not created yet: for the user to decide. Library sizes measured by bundling a minimal use of each with the project's Vite.
+
+2026-10-31: The user agrees: no state library. The follow-up (every list live, one pattern everywhere) is `.scratch/live-lists/`.
