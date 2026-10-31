@@ -43,7 +43,8 @@ export function displayView(
   tournaments: Tournaments | undefined,
   stats?: Stats,
 ): DisplayView {
-  const admin = tournaments?.view();
+  const view = tournaments?.view();
+  const admin = view && stats ? stats.withAwards(view) : view;
   const progress = admin?.tournament?.status === "draft" ? null : (admin?.progress ?? null);
   return {
     tournament:

@@ -45,7 +45,7 @@ export function buildApp(options: AppOptions = {}) {
     registerPlayers(app, options.db);
     registerStats(app, stats);
   }
-  const tournaments = options.db ? createTournaments(options.db, stations, stats) : undefined;
+  const tournaments = options.db ? createTournaments(options.db, stations) : undefined;
   const feed = options.db ? createChangeFeed(options.db, stations) : undefined;
   if (feed) app.addHook("onClose", async () => feed.close());
   registerMatches(app, stations, options.db, tournaments?.resultGuard, feed);
@@ -53,8 +53,11 @@ export function buildApp(options: AppOptions = {}) {
   if (options.db && tournaments && feed) {
     const db = options.db;
     registerTournaments(app, tournaments);
+    // The tournament as /admin shows it, with the awards Stats gives a finished one.
+    const tournament = () => (stats ? stats.withAwards(tournaments.view()) : tournaments.view());
+    app.get("/api/admin/tournament", async () => tournament());
     app.get("/api/admin/tournament/live", (request, reply) =>
-      streamView(request, reply, feed.subscribe, () => tournaments.view(), {
+      streamView(request, reply, feed.subscribe, tournament, {
         kind: "admin tournament",
       }),
     );

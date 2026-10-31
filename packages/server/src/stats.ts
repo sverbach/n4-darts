@@ -4,7 +4,13 @@
 
 import { matchState, matchStats, type PlayerMatchStats, threeDartAverage } from "@n4/engine";
 import type { FastifyInstance } from "fastify";
-import type { Award, LeaderboardRow, PlayerProfile, StatTotals } from "./api.ts";
+import type {
+  Award,
+  LeaderboardRow,
+  PlayerProfile,
+  StatTotals,
+  TournamentAdminView,
+} from "./api.ts";
 import type { Db, MatchRecord, StoredEvent } from "./db.ts";
 import { RATING_MATCHES } from "./ratings.ts";
 
@@ -249,7 +255,14 @@ export function createStats(db: Db) {
     return result;
   }
 
-  return { ofMatch, leaderboard, profile, awards };
+  /** A tournament's view with its awards filled in, once it has finished with a champion. */
+  function withAwards(view: TournamentAdminView): TournamentAdminView {
+    const { tournament, progress } = view;
+    if (tournament?.status !== "finished" || !progress?.placings) return view;
+    return { ...view, progress: { ...progress, awards: awards(tournament.id) } };
+  }
+
+  return { ofMatch, leaderboard, profile, awards, withAwards };
 }
 
 export type Stats = ReturnType<typeof createStats>;

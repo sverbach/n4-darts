@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { type BoardSim, createBoardSim } from "@n4/board-sim";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { StationView, TournamentAdminView } from "./api.ts";
+import type { DisplayView, StationView, TournamentAdminView } from "./api.ts";
 import { buildApp } from "./app.ts";
 import { openDb } from "./db.ts";
 import { startStation } from "./stations.ts";
@@ -118,5 +118,12 @@ describe("a tournament plays itself", () => {
       [3, 4],
       [3, 4],
     ]);
+
+    // The awards reach /admin and the projector (from Stats, not the tournament).
+    const admin = (await server.app.inject("/api/admin/tournament")).json() as TournamentAdminView;
+    const kinds = admin.progress?.awards?.map((a) => a.kind);
+    expect(kinds).toEqual(["bestAverage", "highestCheckout", "bestLeg"]);
+    const display = (await server.app.inject("/api/display")).json() as DisplayView;
+    expect(display.awards).toEqual(admin.progress?.awards);
   });
 });

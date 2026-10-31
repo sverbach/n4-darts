@@ -10,7 +10,6 @@ import { estimateMinutes, legMinutes } from "./estimate.ts";
 import type { ResultGuard } from "./matches.ts";
 import { ratingOf } from "./ratings.ts";
 import type { StationDirectory } from "./stations.ts";
-import type { Stats } from "./stats.ts";
 import { snakeGroups } from "./tournament/groups.ts";
 import { configProblems, type MatchPhase, type Plan, plan } from "./tournament/plan.ts";
 import {
@@ -92,7 +91,7 @@ function resultOf(match: MatchRecord, events: ReturnType<Db["events"]>): Result 
 const sameSet = (a: string[], b: string[]) =>
   a.length === b.length && a.every((x) => b.includes(x));
 
-export function createTournaments(db: Db, stations: StationDirectory, stats?: Stats) {
+export function createTournaments(db: Db, stations: StationDirectory) {
   const listeners = new Set<() => void>();
   /** Tells the scheduler that something changed. */
   const changed = () => {
@@ -333,13 +332,7 @@ export function createTournaments(db: Db, stations: StationDirectory, stats?: St
       progress:
         status === "draft"
           ? null
-          : progressView(
-              db,
-              stations,
-              db.getTournament(id) ?? tournament,
-              currentPlan(tournament),
-              stats,
-            ),
+          : progressView(db, stations, db.getTournament(id) ?? tournament, currentPlan(tournament)),
     };
   }
 
@@ -629,7 +622,6 @@ export function registerTournaments(app: FastifyInstance, tournaments: Tournamen
     }
   }
 
-  app.get("/api/admin/tournament", async () => tournaments.view());
   app.post<{ Body: TournamentInput }>("/api/admin/tournament", async (request, reply) =>
     attempt(reply, () => reply.code(201).send(tournaments.create(request.body ?? {}))),
   );
