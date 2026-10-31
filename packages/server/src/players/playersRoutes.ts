@@ -3,6 +3,8 @@
 
 import type { FastifyInstance, FastifyReply } from "fastify";
 import type { AdminPlayer } from "../api.ts";
+import type { Db } from "../db.ts";
+import { ratingOf } from "../ratings/ratings.ts";
 import { MAX_PHOTO_BYTES, PlayerError, type Players } from "./players.ts";
 
 const STATUS = { invalid: 400, taken: 409, missing: 404, "in-use": 409 } as const;
@@ -19,12 +21,7 @@ async function attempt<T>(reply: FastifyReply, change: () => T): Promise<T | Fas
   }
 }
 
-/** `ratingOf` is handed in: the organiser's list shows the rating, but it's Ratings' to compute. */
-export function registerPlayers(
-  app: FastifyInstance,
-  players: Players,
-  ratingOf: (playerId: string) => number | null,
-) {
+export function registerPlayers(app: FastifyInstance, players: Players, db: Db) {
   app.get("/api/players", async () => players.list());
 
   app.post<{ Body: { name?: unknown } }>("/api/players", async (request, reply) =>
@@ -34,7 +31,7 @@ export function registerPlayers(
   app.get(
     "/api/admin/players",
     async (): Promise<AdminPlayer[]> =>
-      players.listAll().map((p) => ({ ...p, rating: ratingOf(p.id) })),
+      players.listAll().map((p) => ({ ...p, rating: ratingOf(db, p.id) })),
   );
 
   app.post<{ Body: { name?: unknown } }>("/api/admin/players", async (request, reply) =>

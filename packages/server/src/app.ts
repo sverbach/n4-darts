@@ -15,7 +15,6 @@ import { registerMatches } from "./matches/matchesRoutes.ts";
 import { registerDiagnostics } from "./operations/operationsRoutes.ts";
 import { createPlayers } from "./players/players.ts";
 import { registerPlayers } from "./players/playersRoutes.ts";
-import { ratingOf } from "./ratings/ratings.ts";
 import { createScheduler, type SchedulerOptions, withQueue } from "./scheduling/scheduler.ts";
 import type { Station } from "./stations/station.ts";
 import {
@@ -54,7 +53,7 @@ export function buildApp(options: AppOptions = {}) {
 
   const stats = db ? createStats(db) : undefined;
   if (db && stats) {
-    registerPlayers(app, createPlayers(db), (id) => ratingOf(db, id));
+    registerPlayers(app, createPlayers(db), db);
     registerStats(app, stats);
   }
 
