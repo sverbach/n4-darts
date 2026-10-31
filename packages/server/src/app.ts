@@ -38,6 +38,8 @@ export interface AppOptions {
   db?: Db;
   /** Runs the tournament scheduler (main does; tests that need it pass fast timings). */
   scheduler?: SchedulerOptions;
+  /** How often an open /admin diagnostics page is updated; tests shorten it. */
+  diagnosticsRefreshMs?: number;
   /** Shared PIN for /admin; without one /admin is open. */
   adminPin?: string | undefined;
 }
@@ -87,7 +89,7 @@ export function buildApp(options: AppOptions = {}) {
     }
   }
 
-  registerDiagnostics(app, stations);
+  registerDiagnostics(app, stations, options.diagnosticsRefreshMs);
 
   if (options.webDir && existsSync(options.webDir)) {
     app.register(fastifyStatic, { root: options.webDir });

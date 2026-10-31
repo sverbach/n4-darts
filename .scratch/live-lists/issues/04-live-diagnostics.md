@@ -1,6 +1,6 @@
 # Diagnostics pushed, not polled
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 /admin diagnostics polls `/api/admin/diagnostics` every 2 seconds (`DiagnosticsAdmin.tsx`, a hand-written `setTimeout` loop). It's the last screen with its own way of staying fresh (`../spec.md`).
@@ -24,3 +24,14 @@ Type: task
 ## Comments
 
 2026-10-31: Confirmed by the user, with no grace period; not loading the server matters more.
+
+2026-10-31: Built.
+- Server: `/api/admin/diagnostics/live` in `operationsRoutes.ts`. One timer for all open pages (started by the first, stopped with the last); `diagnostics.view(boards)` runs once per tick and the same JSON goes to every page, with that page's own request (`requestInfo`, worked out once when it connects) put in front. Sent only when it differs.
+- The recorder's two-minute idle window is gone: `diagnostics.watch()` returns a `stop`, and the event-loop monitor and view/write timings run while at least one page watches. No grace period.
+- `openEventStream` (in `liveRoutes.ts`) holds the SSE headers and keep-alive, shared by `streamView` and the diagnostics stream. New stream kind `diagnostics`, so the page lists itself.
+- The one-shot `GET /api/admin/diagnostics` stays for scripts and tests; it no longer switches the timings on.
+- `buildApp` takes `diagnosticsRefreshMs` (default 2000) so tests can tick faster.
+- Tests: the stream (first view, next tick, each viewer's own request); two pages, one `view` call per tick; timings stop once both close; the recorder keeps collecting until the last of several watchers stops.
+- Web: `DiagnosticsAdmin` reads the stream with `useLive`; the polling loop is gone.
+- Docs: 8.x diagnostics paragraph. Q-17's wording ("costs next to nothing when nobody looks") still holds, unchanged.
+- Visual suite: `admin-diagnostics-phone` and `-kiosk` retaken: the page now lists its own stream (kind `diagnostics`) under "Live streams" instead of "No screens connected". Stable over two further runs.

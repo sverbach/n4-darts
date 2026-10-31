@@ -1,15 +1,13 @@
 // Diagnostics (diagnostics ticket 01): whether the server keeps up during an evening, so a slow
 // evening can be explained from data. Counting open streams and timing darts is always on (an
 // increment and a timestamp); the event-loop monitor and the view and write timings only run
-// while someone has had the page open in the last two minutes.
+// while the page is open (`watch`), and stop as soon as the last one closes.
 
 import type { IncomingHttpHeaders } from "node:http";
 import { monitorEventLoopDelay, performance } from "node:perf_hooks";
 import type { BoardDiagnostics, DiagnosticsView, StreamKind } from "../api.ts";
 
 const MINUTE_MS = 60_000;
-/** The page polls; after this long without a poll, the costlier collectors stop. */
-const IDLE_MS = 2 * MINUTE_MS;
 const LAST_DARTS = 20;
 /** The event-loop monitor's sampling interval; each sample includes it, so it's taken off. */
 const RESOLUTION_MS = 10;
@@ -55,9 +53,8 @@ class Window {
 
 export function createDiagnostics() {
   const startedAt = Date.now();
-  let viewedAt = Number.NEGATIVE_INFINITY;
-  let idleTimer: ReturnType<typeof setTimeout> | undefined;
-  const active = () => performance.now() - viewedAt < IDLE_MS;
+  let watchers = 0;
+  const active = () => watchers > 0;
 
   // The event loop: delays over the last full minute, or since the page was opened.
   const loop = monitorEventLoopDelay({ resolution: RESOLUTION_MS });
@@ -77,18 +74,9 @@ export function createDiagnostics() {
   const writes = new Window();
   const darts: DiagnosticsView["darts"] = [];
 
-  function wake() {
-    if (!active()) {
-      loop.reset();
-      loop.enable();
-      loopSince = performance.now();
-      lastMinute = null;
-    }
-    viewedAt = performance.now();
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => loop.disable(), IDLE_MS);
-    idleTimer.unref();
-    if (performance.now() - loopSince >= MINUTE_MS) {
+  /** After a full minute, keeps that minute's numbers and starts the next. */
+  function rollMinute() {
+    if (active() && performance.now() - loopSince >= MINUTE_MS) {
       lastMinute = loopNow();
       loop.reset();
       loopSince = performance.now();
@@ -96,6 +84,22 @@ export function createDiagnostics() {
   }
 
   return {
+    /** The page is open: the costlier collectors run until every returned `stop` is called. */
+    watch() {
+      if (watchers++ === 0) {
+        loop.reset();
+        loop.enable();
+        loopSince = performance.now();
+        lastMinute = null;
+      }
+      let stopped = false;
+      return function stop() {
+        if (stopped) return;
+        stopped = true;
+        if (--watchers === 0) loop.disable();
+      };
+    },
+
     /** A live stream opened; call `update` with how long each view took, `close` when it ends. */
     openStream(
       kind: StreamKind,
@@ -146,23 +150,10 @@ export function createDiagnostics() {
       darts.length = Math.min(darts.length, LAST_DARTS);
     },
 
-    view(
-      request: { ip: string; headers: IncomingHttpHeaders },
-      boards: BoardDiagnostics[],
-    ): DiagnosticsView {
-      wake();
+    /** What the page shows, the same for every viewer (their own request is `requestInfo`). */
+    view(boards: BoardDiagnostics[]): Omit<DiagnosticsView, "request"> {
+      rollMinute();
       const now = Date.now();
-      const header = (name: string) => {
-        const value = request.headers[name];
-        return Array.isArray(value) ? value.join(", ") : (value ?? null);
-      };
-      const proxyHeaders = Object.fromEntries(
-        Object.keys(request.headers)
-          .filter(
-            (name) => name.startsWith("x-forwarded-") || name === "via" || name === "x-real-ip",
-          )
-          .map((name) => [name, header(name) as string]),
-      );
       return {
         startedAt: new Date(startedAt).toISOString(),
         eventLoop: lastMinute ?? loopNow(),
@@ -188,12 +179,27 @@ export function createDiagnostics() {
         })(),
         boards,
         darts,
-        request: {
-          client: request.ip,
-          host: header("host"),
-          proxied: Object.keys(proxyHeaders).length > 0,
-          headers: proxyHeaders,
-        },
+      };
+    },
+
+    /** The viewer's own request: where it came from, and through which proxy. */
+    requestInfo(request: { ip: string; headers: IncomingHttpHeaders }): DiagnosticsView["request"] {
+      const header = (name: string) => {
+        const value = request.headers[name];
+        return Array.isArray(value) ? value.join(", ") : (value ?? null);
+      };
+      const proxyHeaders = Object.fromEntries(
+        Object.keys(request.headers)
+          .filter(
+            (name) => name.startsWith("x-forwarded-") || name === "via" || name === "x-real-ip",
+          )
+          .map((name) => [name, header(name) as string]),
+      );
+      return {
+        client: request.ip,
+        host: header("host"),
+        proxied: Object.keys(proxyHeaders).length > 0,
+        headers: proxyHeaders,
       };
     },
   };

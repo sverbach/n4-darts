@@ -49,4 +49,4 @@ Pages and their layouts are described in `docs/ui-pages.md`.
 ## 8.8 Operations
 
 - **Backups:** at start if the newest is over a day old, then daily; the newest 30 are kept in `DATA_DIR/backups` (OPS-01).
-- **Diagnostics:** `/admin/diagnostics` shows event-loop delay, open live connections, view and write timings, board connections and the board-to-screen time of the last 20 darts. Counting is always on and costs next to nothing; the heavier timings only run while someone has had the page open in the last two minutes (OPS-03, Q-17).
+- **Diagnostics:** `/admin/diagnostics` shows event-loop delay, open live connections, view and write timings, board connections and the board-to-screen time of the last 20 darts. Counting is always on and costs next to nothing; the heavier timings only run while the page is open, and stop the moment the last one closes (OPS-03, Q-17). The page is a stream pushed every 2 seconds by one shared timer: the view is computed once per tick and sent to every open page, so a second viewer adds no work.

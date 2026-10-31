@@ -1,9 +1,7 @@
 import type { DiagnosticsView } from "@n4/server/api";
-import { type ReactNode, useEffect, useState } from "react";
+import type { ReactNode } from "react";
+import { useLive } from "../../../lib/useLive.ts";
 import { badge, RULED, SECTION_HEAD } from "../ui.ts";
-
-/** How often the page asks again. */
-const REFRESH_MS = 2000;
 
 const ms = (value: number | null) =>
   value === null ? "–" : value < 10 ? `${value.toFixed(1)} ms` : `${Math.round(value)} ms`;
@@ -42,31 +40,13 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
 
 /** Whether the server keeps up: event loop, live streams, views, database, boards and darts. */
 export function DiagnosticsAdmin() {
-  const [view, setView] = useState<DiagnosticsView | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let stopped = false;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const load = async () => {
-      try {
-        const res = await fetch("/api/admin/diagnostics");
-        if (!res.ok) throw new Error(String(res.status));
-        if (!stopped) {
-          setView(await res.json());
-          setError(null);
-        }
-      } catch {
-        if (!stopped) setError("Server not reachable");
-      }
-      if (!stopped) timer = setTimeout(load, REFRESH_MS);
-    };
-    void load();
-    return () => {
-      stopped = true;
-      clearTimeout(timer);
-    };
-  }, []);
+  // Pushed by the server every 2 seconds while the page is open; closing it stops the costlier timings.
+  const { view, connected, failed } = useLive<DiagnosticsView>("/api/admin/diagnostics/live");
+  const error = failed
+    ? "Couldn't load diagnostics"
+    : view && !connected
+      ? "Server not reachable"
+      : null;
 
   if (!view) return <p className="hint my-[1em]">{error ?? "Loading…"}</p>;
   const loop = view.eventLoop;
