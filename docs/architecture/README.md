@@ -11,7 +11,7 @@ Status: **draft** (2026-10-31), for review. It describes the system as built and
 | 3 | [Context and scope](03-context-and-scope.md) | Who and what n4-darts talks to, in business and technical terms |
 | 4 | [Solution strategy](04-solution-strategy.md) | The few ideas the design rests on, and the stack |
 | 5 | [Building block view](05-building-block-view.md) | The parts that run (level 1), and inside the server and the web app (level 2) |
-| 6 | [Runtime view](06-runtime-view.md) | A player throws a dart, corrects a detection, starts a quick match |
+| 6 | [Runtime view](06-runtime-view.md) | Throwing a dart, correcting a detection, starting a quick match, restarting detection, an outage, a deployment |
 | 7 | [Deployment view](07-deployment-view.md) | The room: server, laptops, network, image and volume |
 | 8 | [Cross-cutting concepts](08-crosscutting-concepts.md) | Event log, live updates, access, offline, design system, testing, operations |
 | 9 | [Architecture decisions](09-architecture-decisions.md) | The ADRs and the decision log |
