@@ -84,7 +84,7 @@ One SQLite file on the data volume (`packages/server/src/db.ts`):
 
 ### White box: server
 
-Modules in `packages/server/src`, one folder per cluster. Only dependencies between clusters are drawn. Every module uses `db.ts` and `api.ts`, and `app.ts` wires them all together, so those three are left out of the diagram.
+Modules in `packages/server/src`, one folder per cluster. Components depend on each other in one direction only: the linter fails on any import cycle, type-only imports included (`noImportCycles` in `biome.json`). Only dependencies between clusters are drawn. Every module uses `db.ts` and `api.ts`, and `app.ts` wires them all together, so those three are left out of the diagram.
 
 ```mermaid
 flowchart TB

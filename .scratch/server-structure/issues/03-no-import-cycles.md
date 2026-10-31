@@ -1,6 +1,6 @@
 # The linter keeps imports free of cycles
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 01
 
@@ -20,3 +20,10 @@ Server components depend on each other, but one way only (the one-way-dependenci
 - **Architecture docs updated:** `docs/architecture/02-architecture-constraints.md` (2.3 Conventions) and `docs/architecture/05-building-block-view.md` (5.2, white box server) say dependencies are one-way and that the linter enforces it.
 
 ## Comments
+
+2026-10-31: Confirmed by the user as written.
+
+2026-10-31: Built. `biome.json`: `suspicious/noImportCycles` at `error` with `ignoreTypes: false`.
+- Biome ignores `import type` loops by default (`ignoreTypes` defaults to true, since the compiler removes them). Counting them passes on today's code, so the stricter setting is on: a type-only loop is still a two-way dependency between components.
+- Proven both ways with `players.ts` importing from `matches.ts` (which imports `players.ts`): a value import and an `import type` both fail `pnpm lint`; removed, it passes.
+- All checks pass. Docs: 2.3 Conventions and 5.2 (white box server) say dependencies are one-way and the linter enforces it.
