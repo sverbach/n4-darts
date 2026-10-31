@@ -1,6 +1,6 @@
 # 6. Runtime view
 
-Three scenarios. The participants are kept high level: the **station screen** is the kiosk browser (or any device on `/station/n`), **n4-darts** is the server with its database, the **board** is Autodarts' Board Manager, and **other screens** are everything else following along (`/watch/n`, `/display`, `/admin`).
+Three scenarios. The participants are kept high level: the **station screen** is the kiosk browser (or any device on `/station/n`), **n4-darts** is the server with its database, the **board** is Autodarts' Board Manager. Other screens following along (`/watch/n`, `/display`, `/admin`) get the same updates as the station screen and are left out.
 
 ## 6.1 A player throws a dart in an active match
 
@@ -10,20 +10,17 @@ sequenceDiagram
     participant B as Board (Autodarts)
     participant N as n4-darts
     participant S as Station screen
-    participant O as Other screens
 
     P->>B: throws a dart
     B->>N: new state snapshot (WebSocket)
     N->>N: diff with the last snapshot: a new dart
     N->>N: append the dart to the match's log, recompute the score
     N-->>S: new station view (SSE)
-    N-->>O: new views (SSE)
-    Note over P,O: after three darts, a bust or a checkout: "remove darts"
+    Note over P,S: after three darts, a bust or a checkout: "remove darts"
     P->>B: takes the darts out
     B->>N: snapshot: takeout finished
     N->>N: append, end the visit, next player
     N-->>S: next player's turn
-    N-->>O: next player's turn
 ```
 
 - The darts count for whoever's visit it is; nobody at the board has to press anything (PLAY-05).
@@ -38,7 +35,6 @@ sequenceDiagram
     actor P as Player
     participant S as Station screen
     participant N as n4-darts
-    participant O as Other screens
 
     P->>S: taps the wrong dart of the current visit
     S->>S: opens the segment picker
@@ -46,7 +42,6 @@ sequenceDiagram
     S->>N: correctDart (dart, segment)
     N->>N: append the correction to the log, recompute the score
     N-->>S: corrected view (SSE)
-    N-->>O: corrected views (SSE)
 ```
 
 - The correction is appended; the original detection stays in the log and the dart stays marked as corrected (PLAY-09, ADR 0002).
@@ -61,7 +56,6 @@ sequenceDiagram
     participant S as Station screen
     participant N as n4-darts
     participant B as Board (Autodarts)
-    participant O as Other screens
 
     P->>S: "New match" on a free station
     S->>N: player list
@@ -70,13 +64,11 @@ sequenceDiagram
     S->>N: quickMatch (players, settings)
     N->>N: create the match on the station, not started yet
     N-->>S: settle the throwing order
-    N-->>O: station busy
     P->>S: reorder or shuffle, then "Start"
     S->>N: setOrder, startMatch
     N->>B: reset the board
     N->>N: append "match started" to the new log
     N-->>S: first player to throw
-    N-->>O: match on
 ```
 
 - No PIN and no organiser needed: quick matches and new players are open at the station (MATCH-01, PLAYER-04, ADMIN-02).
