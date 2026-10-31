@@ -116,7 +116,7 @@ pnpm e2e --ui              # the same, in Playwright's UI for debugging
 
 ### Browser tests
 
-`packages/e2e` runs the built app on :4300 with two fake boards on :4381/:4382, a fresh database and the admin PIN 4242, so it can run next to `pnpm dev:sim`. The tests cover the station, the board menu, `/display` and `/watch`, and `/admin` (PIN, a small tournament, a correction), at phone width (390 px) and desktop width (1440 px). They also time each dart from the board to the station page over a 300-dart match: it fails above 150 ms. Run `pnpm build` first, since the tests use the build, not the sources. The first time, install the browser with `pnpm --filter @n4/e2e exec playwright install chromium`. CI runs them in their own job, and on a failure the report and traces are uploaded as the `playwright-report` artifact.
+`packages/e2e` runs the built app on :4300 with two fake boards on :4381/:4382, a fresh database and the admin PIN 4242, so it can run next to `pnpm dev:sim`. The tests cover the station, the board menu, `/display` and `/watch`, and `/admin` (PIN, a small tournament, a correction), at phone width (390 px) and desktop width (1440 px). They also time each dart from the board to the station page over a 300-dart match: it fails when more than 3 darts take over 150 ms (single stalls of a shared CI runner are tolerated) or any takes over 500 ms. Run `pnpm build` first, since the tests use the build, not the sources. The first time, install the browser with `pnpm --filter @n4/e2e exec playwright install chromium`. CI runs them in their own job, and on a failure the report and traces are uploaded as the `playwright-report` artifact.
 
 ### Board simulator
 

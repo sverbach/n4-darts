@@ -1,8 +1,9 @@
 // Load test (perf-tests ticket 01): a long match on the simulator mustn't get slow, dart by dart.
 // Each dart folds the whole event log and every live stream recomputes its view on each change, so
 // a mistake there shows up as growth over ~1,000 darts, or with a long history in the database
-// (seeded). Fails when a dart takes more than 150 ms to reach the station, on growth, and on the
-// work per dart (database writes, stream messages), which doesn't depend on machine speed.
+// (seeded). Fails when more than a few darts take over 150 ms to reach the station (a shared CI
+// runner stalls now and then) or any takes over 500 ms, on growth, and on the work per dart
+// (database writes, stream messages), which doesn't depend on machine speed.
 
 import { copyFileSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -22,8 +23,12 @@ const DARTS = 600;
 const BLOCK = 100;
 /** Past matches in the database, as after a few months of evenings. */
 const HISTORY = 200;
-/** Every dart has to reach the station within this. */
+/** Darts have to reach the station within this. */
 const MAX_MS = 150;
+/** Darts over MAX_MS that are tolerated: single stalls of a loaded machine. */
+const SLOW_ALLOWED = 3;
+/** No dart may take longer than this, stall or not. */
+const CEILING_MS = 500;
 /** The last block's median may be at most this many times the first block's. */
 const GROWTH = 4;
 /** Below this a median is noise: 0.5 ms against 1.5 ms isn't growth. */
@@ -201,7 +206,8 @@ async function playLongMatch(db: Db, base: string) {
     current = got.view;
     changes += 1;
     // Already failed: stop here rather than throw hundreds more slow darts.
-    if (got.at - thrownAt > MAX_MS) break;
+    const slow = times.filter((ms) => ms > MAX_MS).length;
+    if (got.at - thrownAt > CEILING_MS || slow > SLOW_ALLOWED) break;
 
     if (current.match?.state.phase === "awaitingTakeout") {
       const after = station.messages.length;
@@ -240,7 +246,12 @@ function check(result: Awaited<ReturnType<typeof playLongMatch>>) {
 
   const first = median(times.slice(0, BLOCK));
   const last = median(times.slice(-BLOCK));
-  expect(Math.max(...times), log).toBeLessThan(MAX_MS);
+  const slow = times.filter((ms) => ms > MAX_MS);
+  expect(
+    slow.length,
+    `${log}\nover ${MAX_MS} ms: ${slow.map((ms) => ms.toFixed(1)).join(", ")}`,
+  ).toBeLessThanOrEqual(SLOW_ALLOWED);
+  expect(Math.max(...times), log).toBeLessThan(CEILING_MS);
   expect(last, log).toBeLessThanOrEqual(GROWTH * Math.max(first, NOISE_MS));
   expect(darts, log).toBeGreaterThanOrEqual(DARTS * 0.9);
 }

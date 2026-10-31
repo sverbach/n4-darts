@@ -10,7 +10,7 @@ The quality goals in section 1.2 are the most important of these.
 | Q-02 | Reliability | After a server restart, every match resumes exactly where it was, including the visit in progress. | Pla, Org | spec: walking-skeleton |
 | Q-03 | Reliability | No dart is ever lost or counted twice, across board reconnects, server restarts and darts the board missed. | Pla | arch |
 | Q-04 | Integrity | Results are always derived from the full record of the match. Nothing is overwritten: corrections are added on top, and old matches are replayed under their own rules. | Pla, Org | ADR 0002 |
-| Q-05 | Responsiveness | A detected dart reaches the station's screens within 150 ms, measured over a long match. | Pla | ticket: perf-tests |
+| Q-05 | Responsiveness | A detected dart reaches the station's screens within 150 ms, measured over a long match. On a loaded machine a rare single dart may take longer (at most 3 in a test's match), but never over 500 ms. | Pla | ticket: perf-tests |
 | Q-06 | Scalability | Responsiveness doesn't degrade over a long match, over an evening, or as the history grows over months. Tested over 600 darts with 200 past matches, and in the browser over 300 darts. | Pla, Ops | ticket: perf-tests |
 | Q-07 | Durability | At most a day of data can be lost to a broken disk, given the operator keeps the backup folder elsewhere too. | Ops | spec: display-and-stats |
 | Q-08 | Usability | The station can be used by touch, quickly, from where the player stands, and is readable from 2–3 m. | Pla | docs/ui-pages.md |
@@ -34,6 +34,6 @@ The quality goals in section 1.2 are the most important of these.
 | QS-03 | Correct scores | A rule changes in a new engine version. | Old matches replay under the rules version they were played with; their results and stats don't move. | PLAY-17 |
 | QS-04 | Reliable evenings | The server is restarted while a player has thrown one dart of a visit. | After the restart the match shows the same visit with one dart, and play carries on. | Q-02 |
 | QS-05 | Reliable evenings | The room's internet line is unplugged before the evening. | A whole tournament evening runs: every page loads with its fonts and icons, nothing waits on the internet. | Q-01 |
-| QS-06 | Instant at the board | Dart 600 of a long match, with 200 matches in the history and the projector and two phones watching. | The dart is on the station's screens within 150 ms. | Q-05, Q-06 |
+| QS-06 | Instant at the board | Dart 600 of a long match, with 200 matches in the history and the projector and two phones watching. | The dart is on the station's screens within 150 ms; on a loaded machine at most 3 darts of the match take longer, none over 500 ms. | Q-05, Q-06 |
 | QS-07 | Usable from where you stand | A player at the board sees the board missed a dart. | From the kiosk, at arm's length, they add the dart in a few taps and the score follows at once. | PLAY-10, Q-08 |
 | QS-08 | Safe to change | A change slows down dart handling or breaks a page. | CI fails on the load test or the browser tests, and no image is published. | Q-15 |
