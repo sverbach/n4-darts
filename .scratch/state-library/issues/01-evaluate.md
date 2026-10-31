@@ -1,6 +1,6 @@
 # Would a small state library improve the web app?
 
-Status: needs-triage
+Status: done
 Type: research
 
 An analysis, no code changes: would introducing a small client-side state library (e.g. [Zustand](https://zustand.docs.pmnd.rs)) make `packages/web` easier to understand and change, or would it add a layer for nothing? The answer goes into `analysis.md` next to this ticket, with a recommendation the user decides on.
@@ -35,3 +35,7 @@ An analysis, no code changes: would introducing a small client-side state librar
 - No changes outside `.scratch/state-library/`.
 
 ## Comments
+
+2026-10-31: Confirmed by the user.
+
+2026-10-31: Done: `../analysis.md`. Recommendation: no state library. The pain is in server data that's fetched once instead of followed live (admin player list, match history, Home's stations), not in client state; a client store fixes none of it, TanStack Query (12.1 kB gzip) would add a second model for server data next to SSE. Proposed follow-up ticket written out in the analysis ("Every admin list updates by itself"), not created yet: for the user to decide. Library sizes measured by bundling a minimal use of each with the project's Vite.
