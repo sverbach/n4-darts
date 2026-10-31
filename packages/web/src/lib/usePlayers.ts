@@ -1,16 +1,12 @@
 import type { Player } from "@n4/server/api";
-import { useCallback, useEffect, useState } from "react";
+import { useLive } from "./useLive.ts";
 
-/** Active players, plus a way to add one (open to stations, docs/adr/0004). */
+/**
+ * Active players, followed live, plus a way to add one (open to stations, docs/adr/0004). A new
+ * player arrives through the stream, here and in every other open list.
+ */
 export function usePlayers() {
-  const [players, setPlayers] = useState<Player[] | null>(null);
-  const load = useCallback(async () => {
-    const res = await fetch("/api/players").catch(() => null);
-    if (res?.ok) setPlayers(await res.json());
-  }, []);
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const { view: players } = useLive<Player[]>("/api/players/live");
 
   /** Resolves to the new player, or an error message. */
   const add = async (name: string): Promise<Player | string> => {
@@ -22,7 +18,6 @@ export function usePlayers() {
     if (!res) return "Server not reachable";
     const body = await res.json().catch(() => ({}));
     if (!res.ok) return (body as { error?: string }).error ?? "Couldn't add player";
-    await load();
     return body as Player;
   };
 

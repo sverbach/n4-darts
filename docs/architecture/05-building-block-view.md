@@ -196,7 +196,7 @@ Every page is one route in `App.tsx`'s route table ([wouter](https://github.com/
 Shared:
 
 - **`components/`**: the design system's pieces (`Avatar`, `Logo`, `PixelIcon`, `Progress`), and the match pieces more than one page shows: `PlayerCards` and `MatchOver` (station, watch), `PlayerPicker` (station, tournament draft), `SegmentPicker` (station, match corrections), `BoardMenu` (station, admin stations and matches), `Awards` and `MatchCard` (tournament, display).
-- **`lib/`**: `useLive`, `useStation`, `usePlayers`, `api.ts` (requests to the server), `darts.ts` (dart labels such as `T20`) and `labels.ts` (rules and legs).
+- **`lib/`**: `useLive`, `useStation`, `usePlayers` (the live player list, for pickers), `api.ts` (requests to the server), `darts.ts` (dart labels such as `T20`) and `labels.ts` (rules and legs).
 - **`styles/`** and **`assets/`**: the design system (`theme.css`: the colour tokens and Tailwind's theme on them; `app.css`: element defaults, shared utilities, the logo's keyframes, projector units) and the logo.
 
 ### Observations

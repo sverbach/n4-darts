@@ -52,15 +52,16 @@ export function buildApp(options: AppOptions = {}) {
   app.get("/api/health", async () => ({ ok: true }));
   registerAdmin(app, createAccess(options.adminPin));
 
+  const feed = db ? createChangeFeed(db, stations) : undefined;
+  if (feed) app.addHook("onClose", async () => feed.close());
+
   const stats = db ? createStats(db) : undefined;
-  if (db && stats) {
-    registerPlayers(app, createPlayers(db), (id) => ratingOf(db, id));
+  if (db && stats && feed) {
+    registerPlayers(app, createPlayers(db), (id) => ratingOf(db, id), feed);
     registerStats(app, stats);
   }
 
   const tournaments = db ? createTournaments(db, stations) : undefined;
-  const feed = db ? createChangeFeed(db, stations) : undefined;
-  if (feed) app.addHook("onClose", async () => feed.close());
 
   registerStations(app, stations, feed);
   if (isRegistry(stations)) registerStationAdmin(app, stations, feed);

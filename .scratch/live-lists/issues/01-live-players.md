@@ -1,6 +1,6 @@
 # Players live, in /admin and in every picker
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 `PlayersAdmin.tsx` fetches `/api/admin/players` once and again after its own changes; `lib/usePlayers.ts` fetches `/api/players` once per component. A player added at a station only shows in /admin, or in another open picker, after a reload (`../spec.md`).
@@ -22,3 +22,5 @@ Type: task
 ## Comments
 
 2026-10-31: Confirmed by the user.
+
+2026-10-31: Built. `/api/players/live` and `/api/admin/players/live` (behind the PIN) in `playersRoutes.ts`, on the change feed with `streamView`; new stream kinds `players` and `admin players` for diagnostics. `usePlayers` and `PlayersAdmin` read them with `useLive` and no longer reload after a change; `PhotoEditor` lost its `onChanged`. The one-shot `GET /api/players` and `/api/admin/players` stay: the browser tests' fixtures and the server tests use them. Server test: both lists follow an add at a station and an archive in /admin; PIN test covers the admin stream. Browser test (`live.spec.ts`): a player added at station 1 shows in /admin and at station 2, and a rename in /admin reaches station 2. Visual suite unchanged.

@@ -1,6 +1,13 @@
 import Fastify from "fastify";
 import { afterEach, describe, expect, it } from "vitest";
-import type { DisplayView, MatchDetail, StationView, TournamentAdminView } from "../api.ts";
+import type {
+  AdminPlayer,
+  DisplayView,
+  MatchDetail,
+  Player,
+  StationView,
+  TournamentAdminView,
+} from "../api.ts";
 import { buildApp } from "../app.ts";
 import { type Db, openDb } from "../db.ts";
 import { createStation, type Station } from "../stations/station.ts";
@@ -135,11 +142,34 @@ describe("live streams", () => {
     expect((await list.next())[0]?.match?.players).toHaveLength(2);
   });
 
+  it("pushes both player lists when a player is added at a station or renamed in /admin", async () => {
+    const { app } = setup();
+    const base = await listen(app);
+    const list = await open<Player[]>(`${base}/api/players/live`);
+    const admin = await open<AdminPlayer[]>(`${base}/api/admin/players/live`);
+    expect((await list.next()).map((p) => p.name)).toEqual(["ann", "bob"]);
+    expect((await admin.next()).map((p) => p.name)).toEqual(["ann", "bob"]);
+
+    await app.inject({ method: "POST", url: "/api/players", payload: { name: "Cid" } });
+    expect((await list.next()).map((p) => p.name)).toEqual(["ann", "bob", "Cid"]);
+    expect((await admin.next()).map((p) => p.name)).toEqual(["ann", "bob", "Cid"]);
+
+    await app.inject({
+      method: "PATCH",
+      url: "/api/admin/players/ann",
+      payload: { archived: true },
+    });
+    expect((await list.next()).map((p) => p.name)).toEqual(["bob", "Cid"]);
+    expect((await admin.next()).find((p) => p.id === "ann")?.archived).toBe(true);
+  });
+
   it("refuses the admin streams without the PIN; the display stream is public", async () => {
     const { app } = setup("1234");
     const base = await listen(app);
     expect((await fetch(`${base}/api/admin/tournament/live`)).status).toBe(401);
     expect((await fetch(`${base}/api/admin/matches/x/live`)).status).toBe(401);
+    expect((await fetch(`${base}/api/admin/players/live`)).status).toBe(401);
+    expect((await open(`${base}/api/players/live`)).status).toBe(200);
     expect((await open(`${base}/api/display/live`)).status).toBe(200);
   });
 

@@ -21,3 +21,37 @@ test("/display and /watch/1 follow the same match live", async ({ browser, page,
   await expect(watch.getByText("236", { exact: true })).toBeVisible();
   await watch.close();
 });
+
+test("a player added at one station shows in /admin and at the other station", async ({
+  browser,
+  page,
+  n4,
+}) => {
+  const name = `Zed ${Date.now() % 100000}`;
+  await n4.login(page);
+  await page.goto("/admin/players");
+  const other = await browser.newPage({ viewport: page.viewportSize() });
+  await other.goto("/station/2");
+  const station = await browser.newPage({ viewport: page.viewportSize() });
+  await station.goto("/station/1");
+  await expect(other.getByRole("button", { name: /Ann/ })).toBeVisible();
+
+  await station.getByLabel("New player").fill(name);
+  await station.getByRole("button", { name: "Add" }).click();
+
+  await expect(page.getByText(name, { exact: true })).toBeVisible();
+  await expect(other.getByRole("button", { name: new RegExp(name) })).toBeVisible();
+
+  // Renamed in /admin: the stations follow.
+  const players = (await (await n4.api.get("/api/admin/players")).json()) as {
+    id: string;
+    name: string;
+  }[];
+  const id = players.find((p) => p.name === name)?.id as string;
+  await n4.api.patch(`/api/admin/players/${id}`, { data: { name: `${name}b` } });
+  await expect(other.getByRole("button", { name: new RegExp(`${name}b`) })).toBeVisible();
+
+  await n4.api.delete(`/api/admin/players/${id}`);
+  await other.close();
+  await station.close();
+});

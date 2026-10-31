@@ -1,8 +1,9 @@
 import type { AdminPlayer } from "@n4/server/api";
-import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { Avatar } from "../../../components/Avatar.tsx";
 import { PixelIcon } from "../../../components/PixelIcon.tsx";
 import { request } from "../../../lib/api.ts";
+import { useLive } from "../../../lib/useLive.ts";
 import { PhotoEditor } from "./PhotoEditor.tsx";
 
 /** The player lists: active, and archived (in a collapsible panel). */
@@ -12,24 +13,15 @@ const ROW =
   "flex min-h-[76px] flex-wrap items-center gap-x-4 gap-y-3 border-0 border-line-soft border-b border-solid py-2.5 [--avatar:52px]";
 
 export function PlayersAdmin() {
-  const [players, setPlayers] = useState<AdminPlayer[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // Live: changes from here, from a station or from another device all come through the stream.
+  const { view: players, failed } = useLive<AdminPlayer[]>("/api/admin/players/live");
+  const [changeError, setChangeError] = useState<string | null>(null);
+  const error = changeError ?? (failed ? "Couldn't load players" : null);
 
-  const load = useCallback(async () => {
-    const res = await fetch("/api/admin/players").catch(() => null);
-    if (!res?.ok) return setError("Couldn't load players");
-    setPlayers(await res.json());
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  /** Runs a change, shows its error if any, and reloads the list. Resolves to success. */
+  /** Runs a change and shows its error if any. Resolves to success. */
   const change = async (method: string, url: string, body?: object) => {
     const message = await request(method, url, body);
-    setError(message);
-    await load();
+    setChangeError(message);
     return message === null;
   };
 
@@ -51,7 +43,7 @@ export function PlayersAdmin() {
           {active.length === 0 && <p className="hint">No players yet.</p>}
           <ul className={`${LIST} p-0`}>
             {active.map((p) => (
-              <PlayerRow key={p.id} player={p} change={change} reload={load} />
+              <PlayerRow key={p.id} player={p} change={change} />
             ))}
           </ul>
           {archived.length > 0 && (
@@ -61,7 +53,7 @@ export function PlayersAdmin() {
               </summary>
               <ul className={`${LIST} px-4 pt-0 pb-2`}>
                 {archived.map((p) => (
-                  <PlayerRow key={p.id} player={p} change={change} reload={load} />
+                  <PlayerRow key={p.id} player={p} change={change} />
                 ))}
               </ul>
             </details>
@@ -99,8 +91,8 @@ function AddPlayer({ onAdd }: { onAdd: (name: string) => Promise<boolean> }) {
 
 type Change = (method: string, url: string, body?: object) => Promise<boolean>;
 
-function PlayerRow(props: { player: AdminPlayer; change: Change; reload(): void }) {
-  const { player, change, reload } = props;
+function PlayerRow(props: { player: AdminPlayer; change: Change }) {
+  const { player, change } = props;
   const [renaming, setRenaming] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState(false);
   const [name, setName] = useState(player.name);
@@ -155,9 +147,7 @@ function PlayerRow(props: { player: AdminPlayer; change: Change; reload(): void 
           <PixelIcon name="dots" />
         </span>
       </button>
-      {editingPhoto && (
-        <PhotoEditor player={player} onClose={() => setEditingPhoto(false)} onChanged={reload} />
-      )}
+      {editingPhoto && <PhotoEditor player={player} onClose={() => setEditingPhoto(false)} />}
       <div className="flex min-w-0 flex-[1_1_160px] flex-col gap-1">
         <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[16px] uppercase tracking-[1px]">
           {player.name}

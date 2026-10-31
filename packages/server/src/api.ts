@@ -337,7 +337,9 @@ export type StreamKind =
   | "admin tournament"
   | "stations"
   | "admin stations"
-  | "match detail";
+  | "match detail"
+  | "players"
+  | "admin players";
 
 /** One board connection, for /admin diagnostics. */
 export interface BoardDiagnostics {

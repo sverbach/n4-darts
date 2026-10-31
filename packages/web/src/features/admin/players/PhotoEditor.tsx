@@ -19,8 +19,8 @@ const ACTIONS = "flex flex-wrap items-center justify-end gap-2.5 [&_button]:min-
 const ACTIONS_CTA = "primary cta text-[14px]!";
 
 /** Pick a photo (camera or gallery), crop it to a square, upload it; or remove the current one. */
-export function PhotoEditor(props: { player: AdminPlayer; onClose(): void; onChanged(): void }) {
-  const { player, onClose, onChanged } = props;
+export function PhotoEditor(props: { player: AdminPlayer; onClose(): void }) {
+  const { player, onClose } = props;
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [crop, setCrop] = useState<Crop>({ zoom: 1, x: 0, y: 0 });
   const [error, setError] = useState<string | null>(null);
@@ -123,7 +123,6 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void; onCha
       const body = (await res?.json().catch(() => ({}))) as { error?: string } | undefined;
       return setError(body?.error ?? "Couldn't save the photo");
     }
-    onChanged();
     onClose();
   };
 
@@ -133,7 +132,6 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void; onCha
       () => null,
     );
     if (!res?.ok) return setError("Couldn't remove the photo");
-    onChanged();
     onClose();
   };
 
