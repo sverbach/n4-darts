@@ -5,6 +5,12 @@ import { PixelIcon } from "../../../components/PixelIcon.tsx";
 import { request } from "../../../lib/api.ts";
 import { PhotoEditor } from "./PhotoEditor.tsx";
 
+/** The player lists: active, and archived (in a collapsible panel). */
+const LIST = "m-0 list-none border-0 border-border border-t border-solid";
+/** A player: the photo button, name and rating, and actions; wrapping on a phone. */
+const ROW =
+  "flex min-h-[76px] flex-wrap items-center gap-x-4 gap-y-3 border-0 border-line-soft border-b border-solid py-2.5 [--avatar:52px]";
+
 export function PlayersAdmin() {
   const [players, setPlayers] = useState<AdminPlayer[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +37,7 @@ export function PlayersAdmin() {
   const archived = players?.filter((p) => p.archived) ?? [];
 
   return (
-    <div className="players-admin">
+    <div>
       <AddPlayer onAdd={(name) => change("POST", "/api/admin/players", { name })} />
       {error && (
         <p className="error" role="alert">
@@ -43,17 +49,17 @@ export function PlayersAdmin() {
       ) : (
         <>
           {active.length === 0 && <p className="hint">No players yet.</p>}
-          <ul className="player-list">
+          <ul className={`${LIST} p-0`}>
             {active.map((p) => (
               <PlayerRow key={p.id} player={p} change={change} reload={load} />
             ))}
           </ul>
           {archived.length > 0 && (
-            <details className="archived">
-              <summary>
+            <details className="border border-border border-solid bg-panel">
+              <summary className="min-h-[52px] px-4">
                 <PixelIcon name="caret" /> Archived ({archived.length})
               </summary>
-              <ul className="player-list">
+              <ul className={`${LIST} px-4 pt-0 pb-2`}>
                 {archived.map((p) => (
                   <PlayerRow key={p.id} player={p} change={change} reload={load} />
                 ))}
@@ -73,7 +79,10 @@ function AddPlayer({ onAdd }: { onAdd: (name: string) => Promise<boolean> }) {
     if (await onAdd(name)) setName("");
   };
   return (
-    <form className="inline-form add-player" onSubmit={submit}>
+    <form
+      className="inline-form max-w-[460px] [&_button]:min-h-[52px] [&_input]:min-h-[52px]"
+      onSubmit={submit}
+    >
       <input
         aria-label="New player"
         placeholder="New player name"
@@ -103,9 +112,12 @@ function PlayerRow(props: { player: AdminPlayer; change: Change; reload(): void 
       if (await change("PATCH", url, { name })) setRenaming(false);
     };
     return (
-      <li className="player-row">
+      <li className={ROW}>
         <Avatar player={player} />
-        <form className="inline-form rename" onSubmit={submit}>
+        <form
+          className="inline-form max-w-[560px] flex-[1_1_280px] flex-wrap [&_input]:flex-[1_1_200px] [&_input]:border-2 [&_input]:border-accent"
+          onSubmit={submit}
+        >
           <input
             aria-label="Name"
             value={name}
@@ -131,31 +143,33 @@ function PlayerRow(props: { player: AdminPlayer; change: Change; reload(): void 
   }
 
   return (
-    <li className="player-row">
+    <li className={ROW}>
       <button
         type="button"
-        className="avatar-button"
+        className="relative min-h-0 border-0 bg-transparent p-0"
         aria-label={`Photo of ${player.name}`}
         onClick={() => setEditingPhoto(true)}
       >
         <Avatar player={player} />
-        <span className="avatar-badge">
+        <span className="absolute -right-1 -bottom-1 flex size-[18px] items-center justify-center bg-accent text-accent-text [&_.pixel-icon]:h-auto [&_.pixel-icon]:w-3">
           <PixelIcon name="dots" />
         </span>
       </button>
       {editingPhoto && (
         <PhotoEditor player={player} onClose={() => setEditingPhoto(false)} onChanged={reload} />
       )}
-      <div className="player-row-text">
-        <span className="player-row-name">{player.name}</span>
+      <div className="flex min-w-0 flex-[1_1_160px] flex-col gap-1">
+        <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[16px] uppercase tracking-[1px]">
+          {player.name}
+        </span>
         <span className="label" title="3-dart average, last 10 matches">
           Rating{" "}
-          <span className="player-row-rating">
+          <span className="text-text">
             {player.rating === null ? "–" : player.rating.toFixed(1)}
           </span>
         </span>
       </div>
-      <div className="player-row-actions">
+      <div className="ml-auto flex flex-wrap gap-2">
         <button type="button" onClick={() => setRenaming(true)}>
           Rename
         </button>

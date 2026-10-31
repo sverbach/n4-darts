@@ -12,7 +12,23 @@ import { MatchCard, STATUS } from "../../../components/MatchCard.tsx";
 import { PixelIcon } from "../../../components/PixelIcon.tsx";
 import { Progress } from "../../../components/Progress.tsx";
 import { usePlayers } from "../../../lib/usePlayers.ts";
-import { COUNT, EVEN_COLUMNS, MAIN, SECTION } from "../ui.ts";
+import {
+  badge,
+  CARD_DETAIL,
+  CARD_LIST,
+  CARD_MAIN,
+  CARD_NAME,
+  COUNT,
+  cardActions,
+  cardRow,
+  cardTitle,
+  EVEN_COLUMNS,
+  MAIN,
+  runState,
+  SECTION,
+  STATUS_SMALL,
+  TABLE_PANEL,
+} from "../ui.ts";
 
 type Send = (method: string, url: string, body?: object) => Promise<boolean>;
 
@@ -29,23 +45,29 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
 
   const base = "/api/admin/tournament";
   return (
-    <div className="tournament-run">
-      <header className="run-header">
-        <div>
+    <div className="flex flex-col gap-8">
+      <header className="flex flex-wrap items-end justify-between gap-5">
+        <div className="flex flex-col gap-2">
           {live ? (
-            <span className="run-state running">Running</span>
+            <span className={runState(true)}>Running</span>
           ) : (
-            <span className="run-state">{progress.endedEarly ? "Ended early" : "Finished"}</span>
+            <span className={runState(false)}>
+              {progress.endedEarly ? "Ended early" : "Finished"}
+            </span>
           )}
           <h1>{tournament.name}</h1>
-          <p className="hint">
+          <p className="hint m-0">
             {live && `${PHASES[progress.phase]} · `}
             {progress.played} of {progress.total} matches played
             {progress.expectedEnd && ` · ends around ${time(progress.expectedEnd)}`}
           </p>
         </div>
         {live ? (
-          <Progress played={progress.played} total={progress.total} />
+          <Progress
+            played={progress.played}
+            total={progress.total}
+            className="m-0! w-[min(320px,100%)]! [--px:1px]"
+          />
         ) : (
           <button type="button" className="primary cta" onClick={onNew}>
             New tournament <PixelIcon name="arrow" height="0.9em" />
@@ -59,24 +81,33 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
             <section className={SECTION}>
               <h2>Final placings</h2>
               {champion && (
-                <div className="champion-card">
+                <div className="relative flex items-center gap-5 border-2 border-accent border-solid bg-accent-tint px-5 kiosk:py-[22px] py-[18px] [--avatar:64px] kiosk:[--avatar:88px] [&_.pixel-icon]:h-9 [&_.pixel-icon]:text-accent">
                   <Avatar player={champion} large />
-                  <div>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                     <span className="match-label">Champion</span>
-                    <span className="champion-name">{champion.name}</span>
+                    <span className="wrap-anywhere font-bold font-pixel kiosk:text-[30px] text-[22px] uppercase tracking-[3px]">
+                      {champion.name}
+                    </span>
                   </div>
                   <PixelIcon name="trophy" label="Champion" />
-                  <span className="champion-place">1</span>
+                  <span className="absolute -top-0.5 -right-0.5 bg-accent px-2.5 py-1 font-bold font-pixel text-[12px] text-accent-text">
+                    1
+                  </span>
                 </div>
               )}
-              <ol className="placings">
+              <ol className="m-0 list-none border-0 border-border border-t border-solid p-0">
                 {progress.placings
                   .filter((p) => p !== champion)
                   .map((p) => (
-                    <li key={p.id}>
-                      <span className="placing-place">{place(p.from, p.to)}</span>
+                    <li
+                      key={p.id}
+                      className="flex min-h-[60px] items-center gap-4 border-0 border-line-soft border-b border-solid [--avatar:36px]"
+                    >
+                      <span className="w-14 text-[32px] text-muted">{place(p.from, p.to)}</span>
                       <Avatar player={p} />
-                      <span className="placing-name">{p.name}</span>
+                      <span className="font-pixel text-[16px] uppercase tracking-[1px]">
+                        {p.name}
+                      </span>
                     </li>
                   ))}
               </ol>
@@ -96,7 +127,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
           <div className={MAIN}>
             <section className={SECTION}>
               <h2>Stations</h2>
-              <ul className="card-list">
+              <ul className={CARD_LIST}>
                 {progress.stations.map((s) => (
                   <StationRow key={s.id} station={s} send={send} base={base} />
                 ))}
@@ -109,7 +140,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
               {progress.queue.length === 0 ? (
                 <p className="hint">Nothing waiting.</p>
               ) : (
-                <ul className="card-list">
+                <ul className={CARD_LIST}>
                   {progress.queue.map((q) => (
                     <QueueRow
                       key={q.matchId}
@@ -138,12 +169,12 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
 
       <section className={SECTION}>
         <h2>Groups</h2>
-        <div className="group-grid">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,480px),1fr))] gap-x-6 gap-y-[18px]">
           {progress.groups.map((group) => (
-            <div key={group.name} className="group-block">
+            <div key={group.name} className="flex min-w-0 flex-col gap-2">
               {progress.groups.length > 1 && <span className="match-label">{group.name}</span>}
-              <div className="table-scroll table-panel">
-                <table className="group-table">
+              <div className={`table-scroll ${TABLE_PANEL}`}>
+                <table className="group-table [--avatar:30px] [&_td:first-child]:pl-3.5 [&_td:first-child]:text-left [&_td:last-child]:pr-3.5 [&_td]:h-[52px] [&_td]:text-[24px] [&_th:first-child]:pl-3.5 [&_th:first-child]:text-left [&_th:last-child]:pr-3.5">
                   <thead>
                     <tr>
                       <th>#</th>
@@ -153,16 +184,16 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                       <th>L</th>
                       <th>Legs</th>
                       <th>+/−</th>
-                      <th className="accent">Pts</th>
+                      <th className="text-accent!">Pts</th>
                       <th>Avg</th>
                     </tr>
                   </thead>
                   <tbody>
                     {group.table.map((row, i) => (
                       <tr key={row.playerId}>
-                        <td className="rank">{i + 1}</td>
+                        <td className="font-pixel text-[12px]! text-muted">{i + 1}</td>
                         <td className="name">
-                          <span className="table-player">
+                          <span className="inline-flex items-center gap-2.5">
                             <Avatar
                               player={{ id: row.playerId, name: row.name, photo: row.photo }}
                             />
@@ -172,12 +203,12 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                         <td>{row.played}</td>
                         <td>{row.won}</td>
                         <td>{row.lost}</td>
-                        <td className="muted">
+                        <td className="text-muted">
                           {row.legsFor}:{row.legsAgainst}
                         </td>
                         <td>{row.legDiff > 0 ? `+${row.legDiff}` : row.legDiff}</td>
                         <td className="points">{row.points}</td>
-                        <td className="muted">
+                        <td className="text-muted">
                           {row.average === null ? "–" : row.average.toFixed(1)}
                         </td>
                       </tr>
@@ -185,17 +216,21 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                   </tbody>
                 </table>
               </div>
-              <details className="fixtures">
-                <summary>
+              <details className="border border-line-soft border-solid">
+                <summary className="px-3.5">
                   <PixelIcon name="caret" /> Matches ({group.fixtures.length})
                 </summary>
                 <ul>
                   {group.fixtures.map((f) => (
                     <li key={f.slot}>
-                      <span className="fixture-players">
-                        {f.players[0]} <span className="vs">vs</span> {f.players[1]}
+                      <span className="font-pixel text-[13px] uppercase">
+                        {f.players[0]} <span className="text-muted">vs</span> {f.players[1]}
                       </span>
-                      <span className={`fixture-result ${f.legs ? "" : "pending"}`}>
+                      <span
+                        className={
+                          f.legs ? "text-[24px]" : "font-pixel text-[11px] text-muted uppercase"
+                        }
+                      >
                         {fixtureResult(f)}
                       </span>
                     </li>
@@ -208,10 +243,10 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
       </section>
 
       {live && (
-        <div className="run-end">
+        <div className="border-0 border-border border-t border-solid pt-6">
           <button
             type="button"
-            className="danger"
+            className="danger min-h-[52px] px-6"
             onClick={() => {
               if (
                 confirm(
@@ -241,16 +276,16 @@ function BracketRows({ bracket }: { bracket: TournamentProgress["bracket"] }) {
   return (
     <>
       {rows.map((row) => (
-        <div key={row.title} className="bracket-row">
+        <div key={row.title} className="flex flex-col gap-2.5">
           {row.title && <span className="match-label">{row.title}</span>}
-          <div className="bracket">
+          <div className="flex gap-6 overflow-x-auto pb-2">
             {row.columns.map((column) => (
               <div
                 key={`${column.section}-${column.name}`}
-                className={`bracket-round ${column.section}`}
+                className="flex w-[260px] flex-none flex-col gap-3"
               >
-                <h3>{column.name}</h3>
-                <div className="bracket-matches">
+                <h3 className="text-[11px]">{column.name}</h3>
+                <div className="flex flex-1 flex-col justify-around gap-3">
                   {column.matches.map((m) => (
                     <MatchCard key={m.slot} match={m} />
                   ))}
@@ -278,24 +313,24 @@ function StationRow(props: { station: TournamentStationView; send: Send; base: s
       ? ["Board online", "ok"]
       : ["Board offline", "danger"];
   return (
-    <li className="card-row">
-      <div className="card-row-main">
-        <div className="card-row-title">
-          <span className="card-row-name">{station.name}</span>
-          <span className={`status small status-${tone}`}>{status}</span>
+    <li className={cardRow()}>
+      <div className={CARD_MAIN}>
+        <div className={cardTitle()}>
+          <span className={CARD_NAME}>{station.name}</span>
+          <span className={`status status-${tone} ${STATUS_SMALL}`}>{status}</span>
         </div>
         {match ? (
-          <span className="card-row-detail">
+          <span className={CARD_DETAIL}>
             {match.label && <span className="match-label">{match.label}</span>}{" "}
             {match.players.join(" vs ")}: {match.summary}
           </span>
         ) : (
-          <span className="card-row-detail hint">
+          <span className={`${CARD_DETAIL} hint`}>
             {station.paused ? "Paused for the tournament" : "Free"}
           </span>
         )}
       </div>
-      <div className="card-row-actions">
+      <div className={cardActions()}>
         <button
           type="button"
           onClick={() =>
@@ -336,25 +371,32 @@ function QueueRow(props: {
   // Play now: a free station, or one whose match hasn't started (that one goes back).
   const open = stations.filter((s) => !s.match?.started);
   const pinnedTo = stations.find((s) => s.id === entry.pinnedStation);
-  const [badge, tone] = entry.held
+  const [label, tone] = entry.held
     ? ["Held", "warn"]
     : entry.ready
       ? ["Ready", "ok"]
       : ["Waiting for players", ""];
   return (
-    <li className="queue-row">
-      <div className="queue-row-head">
+    <li className="flex flex-col gap-3 border border-border border-solid bg-panel px-4 py-3.5">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="match-label">{entry.label}</span>
-        <span className="queue-players">{entry.players.map((p) => p.name).join(" vs ")}</span>
-        <span className={`badge ${tone}`}>{badge}</span>
-        {pinnedTo && <span className="badge">Only {pinnedTo.name}</span>}
+        <span className="mt-0 mr-auto mb-0 ml-2 font-pixel text-[15px] uppercase tracking-[1px]">
+          {entry.players.map((p) => p.name).join(" vs ")}
+        </span>
+        <span className={badge(tone as "" | "ok" | "warn")}>{label}</span>
+        {pinnedTo && <span className={badge()}>Only {pinnedTo.name}</span>}
       </div>
-      <div className="queue-actions">
-        <button type="button" onClick={() => send("POST", `${url}/hold`, { held: !entry.held })}>
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] kiosk:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] gap-2">
+        <button
+          type="button"
+          className="min-h-11 text-[11px]"
+          onClick={() => send("POST", `${url}/hold`, { held: !entry.held })}
+        >
           {entry.held ? "Release" : "Hold"}
         </button>
         <select
           aria-label={`Pin ${entry.label} to a station`}
+          className="min-h-11 text-[20px]"
           value={entry.pinnedStation ?? ""}
           onChange={(e) =>
             send("POST", `${url}/pin`, {
@@ -371,6 +413,8 @@ function QueueRow(props: {
         </select>
         <select
           aria-label={`Play ${entry.label} now`}
+          // On a phone "Play now on…" gets its own line.
+          className="col-span-full kiosk:col-auto min-h-11 text-[20px]"
           value=""
           onChange={(e) =>
             e.target.value && send("POST", `${url}/play-now`, { station: Number(e.target.value) })
@@ -406,17 +450,24 @@ function Roster(props: {
       <h2>
         Players <span className={COUNT}>({view.entrants.length})</span>
       </h2>
-      <ul className="roster">
+      <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-x-6 gap-y-0 border-0 border-border border-t border-solid p-0">
         {view.entrants.map((e) => (
-          <li key={e.playerId} className={e.withdrawn ? "withdrawn" : ""}>
+          <li
+            key={e.playerId}
+            className="flex min-h-14 items-center gap-3 border-0 border-line-soft border-b border-solid [--avatar:32px]"
+          >
             <Avatar player={{ id: e.playerId, name: e.name, photo: e.photo }} />
-            <span className="roster-name">{e.name}</span>
+            <span
+              className={`min-w-0 flex-1 font-pixel text-[14px] uppercase tracking-[1px] ${e.withdrawn ? "text-muted line-through" : ""}`}
+            >
+              {e.name}
+            </span>
             {e.withdrawn ? (
               <span className="label">Withdrawn</span>
             ) : (
               <button
                 type="button"
-                className="ghost"
+                className="ghost min-h-9 px-3 text-[10px]"
                 onClick={() => {
                   if (confirm(`Withdraw ${e.name}? Their remaining matches become walkovers.`)) {
                     void send("POST", `${base}/withdraw`, { playerId: e.playerId });
@@ -430,7 +481,7 @@ function Roster(props: {
         ))}
       </ul>
       {groupPhase && available.length > 0 && (
-        <div className="inline-form late-arrival">
+        <div className="inline-form max-w-[420px]">
           <select aria-label="Late arrival" value={late} onChange={(e) => setLate(e.target.value)}>
             <option value="">Late arrival…</option>
             {available.map((p) => (

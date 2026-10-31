@@ -1,6 +1,6 @@
 # The admin area in Tailwind
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 03
 
@@ -23,3 +23,11 @@ Move the organiser's area (`admin.css`, the largest sheet) into Tailwind classes
 - **Docs:** `docs/architecture/08-crosscutting-concepts.md` (8.6, "Styles") no longer lists `admin.css`.
 
 ## Comments
+
+- Done in two commits (shell, stations, matches, tournament draft; then the running tournament, diagnostics, players and the photo editor). `admin.css` is deleted; the visual suite passes at zero tolerance, all 66 screenshots.
+- Class lists the admin tabs share live in `features/admin/ui.ts` (sections, columns, cards, badges, the smaller status pill).
+- Overriding one of our own utilities (`primary`, `cta`, `status`, `error`) without a variant needs `!`, e.g. `px-5! text-[13px]!`: both sit in the utilities layer, and the order between them isn't the class order.
+- `MatchCard` and `Awards` now have an admin style next to the projector one; `Progress` takes a `className` (the running tournament's narrower bar).
+- On the projector, admin.css's `.table-player { gap: 10px }` used to leak in; kept as `gap-2.5` in `DisplayPage.tsx` with a comment, so nothing moved.
+- The photo editor's dimmed backdrop is a new token, `--scrim`, instead of a raw colour.
+- CSS bundle: 85.50 kB before the migration, 67.97 kB now.

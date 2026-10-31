@@ -108,8 +108,7 @@ export function AdminPage({ section }: { section: AdminSection }) {
           )}
         </div>
       </header>
-      {/* `admin`: a marker that admin.css still scopes its rules by. */}
-      <main className="admin mx-auto flex max-w-[1200px] flex-col gap-7 kiosk:gap-8 kiosk:px-8 px-4 kiosk:pt-10 pt-5 kiosk:pb-12 pb-7">
+      <main className="mx-auto flex max-w-[1200px] flex-col gap-7 kiosk:gap-8 kiosk:px-8 px-4 kiosk:pt-10 pt-5 kiosk:pb-12 pb-7">
         {error && (
           <p className="error" role="alert">
             {error}

@@ -14,6 +14,10 @@ interface Crop {
   y: number;
 }
 
+/** The editor's buttons, at the bottom right. */
+const ACTIONS = "flex flex-wrap items-center justify-end gap-2.5 [&_button]:min-h-[52px]";
+const ACTIONS_CTA = "primary cta text-[14px]!";
+
 /** Pick a photo (camera or gallery), crop it to a square, upload it; or remove the current one. */
 export function PhotoEditor(props: { player: AdminPlayer; onClose(): void; onChanged(): void }) {
   const { player, onClose, onChanged } = props;
@@ -134,12 +138,16 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void; onCha
   };
 
   return (
-    <div className="photo-overlay">
-      <div className="photo-editor" role="dialog" aria-label={`Photo of ${player.name}`}>
-        <div className="photo-editor-head">
+    <div className="fixed inset-0 z-20 flex items-center justify-center overflow-y-auto bg-scrim p-4">
+      <div
+        className="flex max-h-full w-full max-w-[560px] flex-col gap-5 overflow-y-auto border-2 border-accent border-solid bg-panel p-5"
+        role="dialog"
+        aria-label={`Photo of ${player.name}`}
+      >
+        <div className="flex items-center justify-between gap-3 border-0 border-border border-b border-solid pb-4">
           <div>
             <span className="match-label">Photo</span>
-            <h2>{player.name}</h2>
+            <h2 className="mt-1 text-[22px] tracking-[3px]">{player.name}</h2>
           </div>
           <button type="button" onClick={onClose}>
             Close ✕
@@ -161,7 +169,7 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void; onCha
         {image ? (
           <>
             <div
-              className="crop"
+              className="relative max-w-full cursor-grab touch-none self-center overflow-hidden bg-bg [clip-path:polygon(12.5%_0,87.5%_0,100%_12.5%,100%_87.5%,87.5%_100%,12.5%_100%,0_87.5%,0_12.5%)]"
               role="img"
               aria-label="Crop area: drag to move"
               style={{ width: VIEW, height: VIEW }}
@@ -175,6 +183,7 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void; onCha
                 src={image.src}
                 alt=""
                 draggable={false}
+                className="pointer-events-none absolute top-0 left-0 max-w-none select-none"
                 style={{
                   width: image.naturalWidth * scale,
                   height: image.naturalHeight * scale,
@@ -182,12 +191,21 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void; onCha
                 }}
               />
               {/* The octagon every avatar is cut to. */}
-              <svg className="crop-frame" viewBox="0 0 100 100" aria-hidden="true">
-                <polygon points="12.5,0.5 87.5,0.5 99.5,12.5 99.5,87.5 87.5,99.5 12.5,99.5 0.5,87.5 0.5,12.5" />
+              <svg
+                className="pointer-events-none absolute inset-0 h-full w-full"
+                viewBox="0 0 100 100"
+                aria-hidden="true"
+              >
+                <polygon
+                  points="12.5,0.5 87.5,0.5 99.5,12.5 99.5,87.5 87.5,99.5 12.5,99.5 0.5,87.5 0.5,12.5"
+                  className="fill-none stroke-accent [stroke-dasharray:3_2] [stroke-width:1]"
+                />
               </svg>
             </div>
-            <p className="hint">Drag to move, pinch, scroll or use the slider to zoom.</p>
-            <label className="zoom label">
+            <p className="hint m-0 text-center">
+              Drag to move, pinch, scroll or use the slider to zoom.
+            </p>
+            <label className="label flex items-center gap-3.5 [&_input]:h-11 [&_input]:flex-1 [&_span]:font-text [&_span]:text-[26px]">
               Zoom
               <span aria-hidden="true">−</span>
               <input
@@ -200,29 +218,29 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void; onCha
               />
               <span aria-hidden="true">+</span>
             </label>
-            <div className="photo-actions">
+            <div className={ACTIONS}>
               <button type="button" onClick={() => fileInput.current?.click()}>
                 Choose another
               </button>
-              <button type="button" className="primary cta" disabled={saving} onClick={save}>
+              <button type="button" className={ACTIONS_CTA} disabled={saving} onClick={save}>
                 {saving ? "Saving…" : "Save"}
               </button>
             </div>
           </>
         ) : (
           <>
-            <div className="photo-current">
+            <div className="flex justify-center py-3 [--avatar:160px]">
               <Avatar player={player} large />
             </div>
-            <div className="photo-actions">
+            <div className={ACTIONS}>
               {player.photo && (
-                <button type="button" className="danger" onClick={remove}>
+                <button type="button" className="danger mr-auto" onClick={remove}>
                   Remove photo
                 </button>
               )}
               <button
                 type="button"
-                className="primary cta"
+                className={ACTIONS_CTA}
                 onClick={() => fileInput.current?.click()}
               >
                 {player.photo ? "Change photo" : "Add photo"}

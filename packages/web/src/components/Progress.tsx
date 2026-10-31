@@ -1,11 +1,11 @@
 // The tournament's progress in the /display and admin headers.
 
 /** A square per match, filled once played. */
-export function Progress({ played, total }: { played: number; total: number }) {
+export function Progress(props: { played: number; total: number; className?: string }) {
+  const { played, total, className = "" } = props;
   return (
     <div
-      // `progress`: the admin header resizes it (and sets `--px` to 1px there).
-      className="progress ml-auto grid w-pu-360 gap-pu-6"
+      className={`ml-auto grid w-pu-360 gap-pu-6 ${className}`}
       style={{ gridTemplateColumns: `repeat(${total}, minmax(0, 1fr))` }}
       role="img"
       aria-label={`${played} of ${total} matches played`}

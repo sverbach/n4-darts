@@ -27,6 +27,7 @@
   --color-accent-text: var(--accent-text);
   --color-accent-tint: var(--accent-tint);
   --color-accent-line: var(--accent-line);
+  --color-scrim: var(--scrim);
   --color-ok: var(--ok);
   --color-ok-tint: var(--ok-tint);
   --color-ok-line: var(--ok-line);

@@ -1,6 +1,6 @@
 import type { DiagnosticsView } from "@n4/server/api";
 import { type ReactNode, useEffect, useState } from "react";
-import { RULED, SECTION_HEAD } from "../ui.ts";
+import { badge, RULED, SECTION_HEAD } from "../ui.ts";
 
 /** How often the page asks again. */
 const REFRESH_MS = 2000;
@@ -16,10 +16,16 @@ function duration(seconds: number) {
   return `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
 }
 
+/** How worrying a number is: green, amber, red. */
+const LEVEL: Record<string, string> = { ok: "text-ok", warn: "text-warn", danger: "text-danger" };
+/** A row of big numbers, each in a box. */
+const STATS =
+  "m-0 grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-2.5 [&>div]:flex [&>div]:flex-col [&>div]:gap-1.5 [&>div]:border [&>div]:border-border [&>div]:border-solid [&>div]:bg-panel [&>div]:px-4 [&>div]:py-3.5 [&_dd]:m-0 [&_dd]:text-[28px]";
+
 /** A value coloured by how worrying it is: fine, warn from `warn`, danger from `danger`. */
 function Level({ value, warn, danger }: { value: number | null; warn: number; danger: number }) {
   const level = value === null ? "" : value >= danger ? "danger" : value >= warn ? "warn" : "ok";
-  return <span className={`diag-value ${level}`}>{ms(value)}</span>;
+  return <span className={LEVEL[level]}>{ms(value)}</span>;
 }
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
@@ -65,7 +71,7 @@ export function DiagnosticsAdmin() {
   if (!view) return <p className="hint">{error ?? "Loading…"}</p>;
   const loop = view.eventLoop;
   return (
-    <div className="diagnostics">
+    <div className="flex flex-col gap-6">
       {error && (
         <p className="error" role="alert">
           {error}
@@ -86,7 +92,7 @@ export function DiagnosticsAdmin() {
               : `Last ${loop.seconds} s`
         }
       >
-        <dl className="diag-stats">
+        <dl className={STATS}>
           <div>
             <dt className="label">Median delay</dt>
             <dd>
@@ -120,7 +126,7 @@ export function DiagnosticsAdmin() {
                 <td>
                   <Level value={d.ms} warn={100} danger={500} />
                 </td>
-                <td className="muted">{new Date(d.at).toLocaleTimeString()}</td>
+                <td className="text-muted">{new Date(d.at).toLocaleTimeString()}</td>
               </tr>
             ))}
           </Table>
@@ -136,12 +142,12 @@ export function DiagnosticsAdmin() {
               <tr key={b.station}>
                 <td>{b.name}</td>
                 <td>
-                  <span className={`badge ${b.online ? "ok" : "warn"}`}>
+                  <span className={badge(b.online ? "ok" : "warn")}>
                     {b.online ? "Online" : "Offline"}
                   </span>
                 </td>
                 <td>{b.reconnects}</td>
-                <td className="muted">
+                <td className="text-muted">
                   {b.sinceMessageSeconds === null ? "–" : `${duration(b.sinceMessageSeconds)} ago`}
                 </td>
                 <td>
@@ -151,7 +157,7 @@ export function DiagnosticsAdmin() {
                       {b.lastCommand.ok ? (
                         <Level value={b.lastCommand.ms} warn={500} danger={2000} />
                       ) : (
-                        <span className="diag-value danger">failed</span>
+                        <span className="text-danger">failed</span>
                       )}
                     </>
                   ) : (
@@ -174,9 +180,12 @@ export function DiagnosticsAdmin() {
               <tr key={i}>
                 <td>{s.label ? `${s.kind} · ${s.label}` : s.kind}</td>
                 <td>{s.client}</td>
-                <td className="muted">{duration(s.openSeconds)}</td>
+                <td className="text-muted">{duration(s.openSeconds)}</td>
                 <td>{s.updates}</td>
-                <td className="muted diag-agent" title={s.userAgent}>
+                <td
+                  className="max-w-[260px] overflow-hidden text-ellipsis text-muted"
+                  title={s.userAgent}
+                >
                   {s.userAgent}
                 </td>
               </tr>
@@ -207,10 +216,10 @@ export function DiagnosticsAdmin() {
       </Section>
 
       <Section title="Database" hint="Last minute">
-        <dl className="diag-stats">
+        <dl className={STATS}>
           <div>
             <dt className="label">Writes</dt>
-            <dd className="diag-value">{view.database.writesPerMinute}</dd>
+            <dd>{view.database.writesPerMinute}</dd>
           </div>
           <div>
             <dt className="label">Slowest write</dt>
@@ -227,11 +236,11 @@ export function DiagnosticsAdmin() {
       <Section title="This page's request">
         <p>
           {view.request.proxied ? (
-            <span className="badge warn">Through a proxy</span>
+            <span className={badge("warn")}>Through a proxy</span>
           ) : (
-            <span className="badge ok">Direct</span>
+            <span className={badge("ok")}>Direct</span>
           )}{" "}
-          <span className="muted">
+          <span>
             from {view.request.client}
             {view.request.host && ` to ${view.request.host}`}
           </span>
@@ -254,11 +263,14 @@ export function DiagnosticsAdmin() {
 function Table({ head, children }: { head: string[]; children: ReactNode }) {
   return (
     <div className="table-scroll">
-      <table className="diag-table">
+      <table className="w-full border-collapse text-[15px] [&_td]:whitespace-nowrap [&_td]:border-0 [&_td]:border-line-soft [&_td]:border-t [&_td]:border-solid [&_td]:py-2 [&_td]:pr-3 [&_td]:pl-0">
         <thead>
           <tr>
             {head.map((h) => (
-              <th key={h} className="label">
+              <th
+                key={h}
+                className="label whitespace-nowrap pt-0 pr-3 pb-2 pl-0 text-left font-normal"
+              >
                 {h}
               </th>
             ))}

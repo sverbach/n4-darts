@@ -20,6 +20,9 @@
   --accent-tint: #120f1a;
   --accent-line: #3a3150;
 
+  /* Dims the page behind a dialog (the photo editor). */
+  --scrim: rgb(2 3 3 / 0.85);
+
   --ok: #5cffa0;
   --ok-tint: #0a1611;
   --ok-line: #1f4a35;

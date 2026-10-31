@@ -27,7 +27,7 @@ const th = (look = "text-right text-muted first:text-left") =>
 /** A body cell: its size and colour come with it; right-aligned unless it's the player. */
 const td = (extra: string) =>
   `${CELL} h-pu-72 border-line-soft ${extra.includes("text-left") ? "" : "text-right first:text-left"} ${extra}`;
-/** The gap is 10 real pixels, not projector units: admin.css's `.table-player` always won here. */
+/** The gap is 10 real pixels, not projector units: the old admin.css's `.table-player` always won here. */
 const TABLE_PLAYER =
   "inline-flex items-center gap-2.5 font-pixel text-pu-20 uppercase tracking-pu-2";
 /** A free station: why it's free. */
