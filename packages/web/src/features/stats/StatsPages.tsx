@@ -1,9 +1,9 @@
 import type { LeaderboardRow, PlayerProfile } from "@n4/server/api";
 import { type ReactNode, useEffect, useState } from "react";
-import { Avatar } from "./Avatar.tsx";
+import { Avatar } from "../../components/Avatar.tsx";
+import { Logo } from "../../components/Logo.tsx";
+import { PixelIcon } from "../../components/PixelIcon.tsx";
 import { Heatmap } from "./Heatmap.tsx";
-import { Logo } from "./Logo.tsx";
-import { PixelIcon } from "./PixelIcon.tsx";
 
 const avg = (value: number | null) => (value === null ? "–" : value.toFixed(1));
 const num = (value: number | null) => (value === null ? "–" : String(value));

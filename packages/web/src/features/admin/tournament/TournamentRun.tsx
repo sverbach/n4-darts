@@ -1,5 +1,4 @@
 import type {
-  Award,
   QueueEntryView,
   TournamentAdminView,
   TournamentMatchView,
@@ -7,10 +6,12 @@ import type {
   TournamentStationView,
 } from "@n4/server/api";
 import { useState } from "react";
-import { Avatar } from "./Avatar.tsx";
-import { usePlayers } from "./MatchSetup.tsx";
-import { PixelIcon } from "./PixelIcon.tsx";
-import { Progress } from "./Progress.tsx";
+import { Avatar } from "../../../components/Avatar.tsx";
+import { Awards } from "../../../components/Awards.tsx";
+import { MatchCard, STATUS } from "../../../components/MatchCard.tsx";
+import { PixelIcon } from "../../../components/PixelIcon.tsx";
+import { Progress } from "../../../components/Progress.tsx";
+import { usePlayers } from "../../../lib/usePlayers.ts";
 
 type Send = (method: string, url: string, body?: object) => Promise<boolean>;
 
@@ -262,66 +263,9 @@ function BracketRows({ bracket }: { bracket: TournamentProgress["bracket"] }) {
   );
 }
 
-const AWARDS: Record<Award["kind"], { title: string; format(value: number): string }> = {
-  bestAverage: { title: "Best match average", format: (v) => v.toFixed(1) },
-  highestCheckout: { title: "Highest checkout", format: String },
-  most180s: { title: "Most 180s", format: String },
-  bestLeg: { title: "Best leg", format: (v) => `${v} dart${v === 1 ? "" : "s"}` },
-};
-
-/** The evening's awards: what, the value, who. */
-export function Awards({ awards }: { awards: Award[] }) {
-  return (
-    <ul className="awards">
-      {awards.map((award) => (
-        <li key={award.kind}>
-          <span className="award-title">{AWARDS[award.kind].title}</span>
-          <span className="award-players">{award.players.join(", ")}</span>
-          <span className="award-value">{AWARDS[award.kind].format(award.value)}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-const STATUS: Record<TournamentMatchView["status"], string> = {
-  waiting: "",
-  queued: "Queued",
-  "on-station": "On a station",
-  playing: "Playing",
-  played: "",
-  walkover: "Walkover",
-};
-
 function fixtureResult(f: TournamentMatchView) {
   if (f.legs) return `${f.legs[0]}:${f.legs[1]}${f.status === "walkover" ? " (w/o)" : ""}`;
   return STATUS[f.status];
-}
-
-const SIDES = ["top", "bottom"] as const;
-
-export function MatchCard({ match }: { match: TournamentMatchView }) {
-  return (
-    <div className={`bracket-match ${match.status}`}>
-      <div className="bracket-label">{match.label}</div>
-      {SIDES.map((side, i) => {
-        const p = match.sides[i];
-        return (
-          <div
-            key={side}
-            className={`bracket-player ${p && match.winner === p.name ? "winner" : ""}`}
-          >
-            {p && <Avatar player={p} />}
-            <span className="bracket-name">{p?.name ?? "–"}</span>
-            {match.legs && <span className="bracket-legs">{match.legs[i]}</span>}
-          </div>
-        );
-      })}
-      {!match.legs && STATUS[match.status] && (
-        <div className="bracket-status">{STATUS[match.status]}</div>
-      )}
-    </div>
-  );
 }
 
 function StationRow(props: { station: TournamentStationView; send: Send; base: string }) {

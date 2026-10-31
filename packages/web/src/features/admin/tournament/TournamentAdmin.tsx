@@ -1,11 +1,11 @@
 import type { TournamentAdminView, TournamentConfig } from "@n4/server/api";
 import { useState } from "react";
-import { Avatar } from "./Avatar.tsx";
-import { request } from "./adminApi.ts";
-import { PlayerPicker } from "./MatchSetup.tsx";
-import { PixelIcon } from "./PixelIcon.tsx";
+import { Avatar } from "../../../components/Avatar.tsx";
+import { PixelIcon } from "../../../components/PixelIcon.tsx";
+import { PlayerPicker } from "../../../components/PlayerPicker.tsx";
+import { request } from "../../../lib/api.ts";
+import { useLive } from "../../../lib/useLive.ts";
 import { TournamentRun } from "./TournamentRun.tsx";
-import { useLive } from "./useLive.ts";
 
 /** "about 45 min", "about 2 h 30". */
 export function formatMinutes(minutes: number) {

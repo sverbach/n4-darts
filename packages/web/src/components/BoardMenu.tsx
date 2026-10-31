@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { request } from "./adminApi.ts";
+import { request } from "../lib/api.ts";
 
 /** "Board online", "Board stopped" (detection off), "Board offline" or "Server offline". */
 export function BoardStatus(props: { online: boolean; running: boolean; connected?: boolean }) {

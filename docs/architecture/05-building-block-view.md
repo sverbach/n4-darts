@@ -181,22 +181,26 @@ flowchart TB
 
 ### White box: web app
 
-Every page is one route in `App.tsx`. Pages that follow something live use `useLive` (SSE), and the station uses `useStation` on top of it.
+Every page is one route in `App.tsx`, and each page is a feature folder under `packages/web/src/features/`. A feature never imports from another feature: whatever two features use lives in `components/` (UI) or `lib/` (everything else). `admin/` and its tabs count as one feature. Pages that follow something live use `useLive` (SSE), and the station and watch pages use `useStation` on top of it.
 
-| Page                | Route                      | Cluster                                                                                   | Main files                                                                                 |
-| ------------------- | -------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Home                | `/`                        | –                                                                                         | `App.tsx`                                                                                  |
-| Station             | `/station/n`               | Match play, Matches (quick match), Players (add on the spot), Dart detection (board menu) | `StationPage.tsx`, `MatchSetup.tsx`, `SegmentPicker.tsx`, `BoardMenu.tsx`, `useStation.ts` |
-| Watch               | `/watch/n`                 | Live views                                                                                | `WatchPage.tsx`                                                                            |
-| Display             | `/display`                 | Live views                                                                                | `DisplayPage.tsx`                                                                          |
-| Players and profile | `/players`, `/players/:id` | Stats                                                                                     | `StatsPages.tsx`, `Heatmap.tsx`                                                            |
-| Admin: tournament   | `/admin`                   | Tournaments, Scheduling                                                                   | `TournamentAdmin.tsx`, `TournamentRun.tsx`                                                 |
-| Admin: players      | `/admin/players`           | Players                                                                                   | `PlayersAdmin.tsx`, `PhotoEditor.tsx`                                                      |
-| Admin: matches      | `/admin/matches`           | Matches                                                                                   | `MatchesAdmin.tsx`, `MatchHistory.tsx`                                                     |
-| Admin: stations     | `/admin/stations`          | Stations                                                                                  | `StationsAdmin.tsx`                                                                        |
-| Admin: diagnostics  | `/admin/diagnostics`       | Operations                                                                                | `DiagnosticsAdmin.tsx`                                                                     |
+| Folder                        | Route                      | Cluster                                                                                   | Files                                      |
+| ----------------------------- | -------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `features/station/`           | `/station/n`               | Match play, Matches (quick match), Players (add on the spot), Dart detection (board menu) | `StationPage.tsx`, `MatchSetup.tsx`        |
+| `features/watch/`             | `/watch/n`                 | Live views                                                                                | `WatchPage.tsx`                            |
+| `features/display/`           | `/display`                 | Live views                                                                                | `DisplayPage.tsx`                          |
+| `features/stats/`             | `/players`, `/players/:id` | Stats                                                                                     | `StatsPages.tsx`, `Heatmap.tsx`            |
+| `features/admin/`             | `/admin/*`                 | Access (the PIN prompt), the tabs below                                                   | `AdminPage.tsx`                            |
+| `features/admin/tournament/`  | `/admin`                   | Tournaments, Scheduling                                                                   | `TournamentAdmin.tsx`, `TournamentRun.tsx` |
+| `features/admin/players/`     | `/admin/players`           | Players                                                                                   | `PlayersAdmin.tsx`, `PhotoEditor.tsx`      |
+| `features/admin/matches/`     | `/admin/matches`           | Matches                                                                                   | `MatchesAdmin.tsx`, `MatchHistory.tsx`     |
+| `features/admin/stations/`    | `/admin/stations`          | Stations                                                                                  | `StationsAdmin.tsx`                        |
+| `features/admin/diagnostics/` | `/admin/diagnostics`       | Operations                                                                                | `DiagnosticsAdmin.tsx`                     |
 
-Shared: `Avatar.tsx`, `Logo.tsx`, `PixelIcon.tsx`, `Progress.tsx` and `styles/` (the design system), `adminApi.ts` (requests from the admin pages; the PIN prompt is in `AdminPage.tsx`), `darts.ts` (dart labels such as `T20`).
+Shared:
+
+- **`components/`**: the design system's pieces (`Avatar`, `Logo`, `PixelIcon`, `Progress`), and the match pieces more than one page shows: `PlayerCards` and `MatchOver` (station, watch), `PlayerPicker` (station, tournament draft), `SegmentPicker` (station, match corrections), `BoardMenu` (station, admin stations and matches), `Awards` and `MatchCard` (tournament, display).
+- **`lib/`**: `useLive`, `useStation`, `usePlayers`, `api.ts` (requests to the server), `darts.ts` (dart labels such as `T20`) and `labels.ts` (rules and legs).
+- **`styles/`** and **`assets/`**: the design system's sheets and the logo.
 
 ### Observations
 

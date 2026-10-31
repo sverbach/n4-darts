@@ -1,6 +1,6 @@
 import type { AdminPlayer } from "@n4/server/api";
 import { type PointerEvent, useEffect, useRef, useState } from "react";
-import { Avatar } from "./Avatar.tsx";
+import { Avatar } from "../../../components/Avatar.tsx";
 
 /** Size of the crop square on screen, and of the uploaded photo. */
 const VIEW = 280;

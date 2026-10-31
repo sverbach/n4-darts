@@ -1,12 +1,12 @@
 import type { AdminSession } from "@n4/server/api";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
-import { DiagnosticsAdmin } from "./DiagnosticsAdmin.tsx";
-import { Logo } from "./Logo.tsx";
-import { MatchesAdmin } from "./MatchesAdmin.tsx";
-import { PixelIcon } from "./PixelIcon.tsx";
-import { PlayersAdmin } from "./PlayersAdmin.tsx";
-import { StationsAdmin } from "./StationsAdmin.tsx";
-import { TournamentAdmin } from "./TournamentAdmin.tsx";
+import { Logo } from "../../components/Logo.tsx";
+import { PixelIcon } from "../../components/PixelIcon.tsx";
+import { DiagnosticsAdmin } from "./diagnostics/DiagnosticsAdmin.tsx";
+import { MatchesAdmin } from "./matches/MatchesAdmin.tsx";
+import { PlayersAdmin } from "./players/PlayersAdmin.tsx";
+import { StationsAdmin } from "./stations/StationsAdmin.tsx";
+import { TournamentAdmin } from "./tournament/TournamentAdmin.tsx";
 
 /** The tournament tab heads itself, by its state; the others get a title and a line. */
 const sections = {

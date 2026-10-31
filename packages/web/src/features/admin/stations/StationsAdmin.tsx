@@ -1,9 +1,9 @@
 import type { StationAdminView } from "@n4/server/api";
 import { type FormEvent, type ReactNode, useState } from "react";
-import { request } from "./adminApi.ts";
-import { BoardMenu } from "./BoardMenu.tsx";
-import { PixelIcon } from "./PixelIcon.tsx";
-import { useLive } from "./useLive.ts";
+import { BoardMenu } from "../../../components/BoardMenu.tsx";
+import { PixelIcon } from "../../../components/PixelIcon.tsx";
+import { request } from "../../../lib/api.ts";
+import { useLive } from "../../../lib/useLive.ts";
 
 export function StationsAdmin() {
   const live = useLive<StationAdminView[]>("/api/admin/stations/live");

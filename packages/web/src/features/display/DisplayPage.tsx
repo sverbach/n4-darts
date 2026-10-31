@@ -1,11 +1,12 @@
 import type { DisplayStation, DisplayView, LeaderboardRow, ScoreCard } from "@n4/server/api";
 import { type ReactNode, useCallback, useLayoutEffect, useRef, useState } from "react";
-import { Avatar } from "./Avatar.tsx";
-import { dartLabel } from "./darts.ts";
-import { Logo } from "./Logo.tsx";
-import { Progress } from "./Progress.tsx";
-import { Awards, MatchCard } from "./TournamentRun.tsx";
-import { useLive } from "./useLive.ts";
+import { Avatar } from "../../components/Avatar.tsx";
+import { Awards } from "../../components/Awards.tsx";
+import { Logo } from "../../components/Logo.tsx";
+import { MatchCard } from "../../components/MatchCard.tsx";
+import { Progress } from "../../components/Progress.tsx";
+import { dartLabel } from "../../lib/darts.ts";
+import { useLive } from "../../lib/useLive.ts";
 
 const PHASES = { groups: "Group phase", knockout: "Knockout", finished: "Finished" };
 const place = (from: number, to: number) => (from === to ? `${from}` : `${from}–${to}`);

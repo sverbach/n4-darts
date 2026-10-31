@@ -1,10 +1,11 @@
 import type { MatchView } from "@n4/server/api";
-import { Avatar } from "./Avatar.tsx";
-import { dartLabel } from "./darts.ts";
-import { Logo } from "./Logo.tsx";
-import { legsLabel } from "./MatchSetup.tsx";
-import { MatchOver, PlayerCards, rulesLabel } from "./StationPage.tsx";
-import { useStation } from "./useStation.ts";
+import { Avatar } from "../../components/Avatar.tsx";
+import { Logo } from "../../components/Logo.tsx";
+import { MatchOver } from "../../components/MatchOver.tsx";
+import { PlayerCards } from "../../components/PlayerCards.tsx";
+import { dartLabel } from "../../lib/darts.ts";
+import { legsLabel, rulesLabel } from "../../lib/labels.ts";
+import { useStation } from "../../lib/useStation.ts";
 
 /** A station's scoreboard for a TV or the projector: live, with nothing to press. */
 export function WatchPage({ id }: { id: number }) {

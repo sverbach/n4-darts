@@ -1,28 +1,18 @@
-import {
-  checkoutRoute,
-  type DartView,
-  MAX_PLAYERS,
-  MIN_PLAYERS,
-  type PlayerIndex,
-  type Segment,
-  type X01Settings,
-} from "@n4/engine";
+import { type DartView, MAX_PLAYERS, MIN_PLAYERS, type PlayerIndex } from "@n4/engine";
 import type { MatchView, StationCommand } from "@n4/server/api";
-import { Fragment, type ReactNode, useState } from "react";
-import { Avatar } from "./Avatar.tsx";
-import { BoardMenu, type MatchAction } from "./BoardMenu.tsx";
-import { dartLabel } from "./darts.ts";
-import { Logo } from "./Logo.tsx";
-import {
-  defaultSetupSettings,
-  legsLabel,
-  PlayerPicker,
-  SettingsFields,
-  type SetupSettings,
-} from "./MatchSetup.tsx";
-import { PixelIcon } from "./PixelIcon.tsx";
-import { SegmentPicker } from "./SegmentPicker.tsx";
-import { useStation } from "./useStation.ts";
+import { useState } from "react";
+import { Avatar } from "../../components/Avatar.tsx";
+import { BoardMenu, type MatchAction } from "../../components/BoardMenu.tsx";
+import { Logo } from "../../components/Logo.tsx";
+import { MatchOver } from "../../components/MatchOver.tsx";
+import { PixelIcon } from "../../components/PixelIcon.tsx";
+import { PlayerCards } from "../../components/PlayerCards.tsx";
+import { PlayerPicker } from "../../components/PlayerPicker.tsx";
+import { SegmentPicker } from "../../components/SegmentPicker.tsx";
+import { dartLabel } from "../../lib/darts.ts";
+import { legsLabel, rulesLabel } from "../../lib/labels.ts";
+import { useStation } from "../../lib/useStation.ts";
+import { defaultSetupSettings, SettingsFields, type SetupSettings } from "./MatchSetup.tsx";
 
 type Send = (command: StationCommand) => Promise<string | null>;
 
@@ -91,16 +81,6 @@ function matchAction(match: MatchView, send: Send): MatchAction | undefined {
       if (confirm(question)) void send({ type: "abandonMatch" });
     },
   };
-}
-
-const IN_RULES = { straight: "", double: "Double in", master: "Master in", bull: "Bull in" };
-const OUT_RULES = { straight: "Single out", double: "Double out", master: "Master out" };
-
-/** "501 · Double in · Double out". */
-export function rulesLabel(settings: X01Settings) {
-  return [settings.startScore, IN_RULES[settings.inRule], OUT_RULES[settings.outRule]]
-    .filter(Boolean)
-    .join(" · ");
 }
 
 /** The match label, rules, legs and which leg: "Group A … 501 · Double out · Best of 3 · Leg 2". */
@@ -317,45 +297,6 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
   );
 }
 
-/** "Game shot", the winner and the legs; `children` go below (the station's buttons). */
-export function MatchOver({ match, children }: { match: MatchView; children?: ReactNode }) {
-  const { state, players, settings } = match;
-  const winner = state.winner ?? 0;
-  const winnerPlayer = players[winner];
-  return (
-    <section className="match-over">
-      <h1 className="game-shot">Game shot</h1>
-      <div className="match-over-result">
-        {winnerPlayer && (
-          <span className="avatar-frame">
-            <Avatar player={winnerPlayer} large />
-          </span>
-        )}
-        <div className="match-over-text">
-          <p className="match-over-winner">{winnerPlayer?.name ?? "?"} wins</p>
-          {settings.legsToWin > 1 &&
-            (players.length === 2 ? (
-              <div className="legs-result">
-                {state.players.map((p, i) => (
-                  <Fragment key={players[i]?.id ?? i}>
-                    {i > 0 && <span className="legs-dash">–</span>}
-                    <div className={i === winner ? "won" : ""}>
-                      <span className="legs-number">{p.legsWon}</span>
-                      <span className="label">{players[i]?.name}</span>
-                    </div>
-                  </Fragment>
-                ))}
-              </div>
-            ) : (
-              <p className="label">{state.players[winner]?.legsWon} legs</p>
-            ))}
-        </div>
-      </div>
-      {children}
-    </section>
-  );
-}
-
 interface ScoreboardProps {
   match: MatchView;
   /** Darts can be tapped to correct them. */
@@ -373,76 +314,6 @@ export function Scoreboard(props: ScoreboardProps) {
       <PlayerCards match={props.match} hints={props.hints ?? false} />
       <VisitPanel {...props} />
     </>
-  );
-}
-
-/** The route to finish this visit for the thrower, or null when there's none to show. */
-function checkoutHint(match: MatchView): Segment[] | null {
-  const { state, settings } = match;
-  const thrower = state.players[state.currentPlayer];
-  if (state.phase !== "throwing" || !thrower?.isIn) return null;
-  const thrown = state.currentVisit?.darts.filter((d) => !d.ignored).length ?? 0;
-  return checkoutRoute(thrower.remaining, 3 - thrown, settings.outRule);
-}
-
-/**
- * A card per player: avatar, name, what's left, legs and last visit; the thrower's framed.
- * With `hints`, the thrower's card shows the checkout route on wide screens.
- */
-export function PlayerCards({ match, hints = false }: { match: MatchView; hints?: boolean }) {
-  const { state, players, settings } = match;
-  const leg = state.legs.at(-1);
-  const nameOf = (player: PlayerIndex) => players[player]?.name ?? "?";
-  const route = hints ? checkoutHint(match) : null;
-
-  const lastVisitOf = (player: PlayerIndex) => {
-    const last = leg?.visits.findLast((v) => v.player === player);
-    if (!last) return null;
-    return last.bust ? "Bust" : String(last.darts.reduce((sum, d) => sum + d.score, 0));
-  };
-
-  return (
-    <div className={`scoreboard ${players.length > 2 ? "many" : ""}`}>
-      {state.players.map((player, p) => {
-        const active = state.currentPlayer === p;
-        const last = lastVisitOf(p);
-        return (
-          <div key={players[p]?.id ?? p} className={`player ${active ? "active" : ""}`}>
-            {active && (
-              <span className="throwing">
-                <PixelIcon name="caret" /> Throwing
-              </span>
-            )}
-            {players[p] && <Avatar player={players[p]} large />}
-            <div className="player-name">{nameOf(p)}</div>
-            <div className="remaining">{player.remaining}</div>
-            {/* On every card, so the scores stay level whoever has a route. */}
-            {hints && (
-              <div className="checkout wide-only">
-                {(active ? (route ?? []) : []).map((segment, i) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: a route can repeat a field (T20 T20 Bull).
-                  <Fragment key={i}>
-                    {i > 0 && <span className="checkout-dot">·</span>}
-                    <span className={i === 0 ? "checkout-next" : undefined}>
-                      {dartLabel(segment)}
-                    </span>
-                  </Fragment>
-                ))}
-              </div>
-            )}
-            <div className="player-meta">
-              {!player.isIn ? (
-                <span className="not-in">Not in</span>
-              ) : (
-                [settings.legsToWin > 1 && `Legs ${player.legsWon}`, last && `Last ${last}`]
-                  .filter(Boolean)
-                  .join(" · ")
-              )}
-            </div>
-          </div>
-        );
-      })}
-    </div>
   );
 }
 

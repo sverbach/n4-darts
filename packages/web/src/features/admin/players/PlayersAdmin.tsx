@@ -1,9 +1,9 @@
 import type { AdminPlayer } from "@n4/server/api";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
-import { Avatar } from "./Avatar.tsx";
-import { request } from "./adminApi.ts";
+import { Avatar } from "../../../components/Avatar.tsx";
+import { PixelIcon } from "../../../components/PixelIcon.tsx";
+import { request } from "../../../lib/api.ts";
 import { PhotoEditor } from "./PhotoEditor.tsx";
-import { PixelIcon } from "./PixelIcon.tsx";
 
 export function PlayersAdmin() {
   const [players, setPlayers] = useState<AdminPlayer[] | null>(null);

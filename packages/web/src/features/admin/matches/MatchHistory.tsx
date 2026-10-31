@@ -1,11 +1,11 @@
 import type { DartView } from "@n4/engine";
 import type { MatchDetail, MatchSummary } from "@n4/server/api";
 import { useEffect, useState } from "react";
-import { dartLabel } from "./darts.ts";
-import { legsLabel } from "./MatchSetup.tsx";
-import { PixelIcon } from "./PixelIcon.tsx";
-import { SegmentPicker } from "./SegmentPicker.tsx";
-import { useLive } from "./useLive.ts";
+import { PixelIcon } from "../../../components/PixelIcon.tsx";
+import { SegmentPicker } from "../../../components/SegmentPicker.tsx";
+import { dartLabel } from "../../../lib/darts.ts";
+import { legsLabel } from "../../../lib/labels.ts";
+import { useLive } from "../../../lib/useLive.ts";
 
 const when = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "";

@@ -1,9 +1,9 @@
 import type { StationView } from "@n4/server/api";
 import { useState } from "react";
-import { request } from "./adminApi.ts";
-import { BoardStatus } from "./BoardMenu.tsx";
+import { BoardStatus } from "../../../components/BoardMenu.tsx";
+import { request } from "../../../lib/api.ts";
+import { useLive } from "../../../lib/useLive.ts";
 import { MatchDetailView, MatchHistory } from "./MatchHistory.tsx";
-import { useLive } from "./useLive.ts";
 
 export function MatchesAdmin() {
   const stations = useLive<StationView[]>("/api/stations/live").view;

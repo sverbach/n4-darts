@@ -1,12 +1,12 @@
 import type { StationView } from "@n4/server/api";
 import { useEffect, useState } from "react";
-import { AdminPage, isAdminSection } from "./AdminPage.tsx";
-import { DisplayPage } from "./DisplayPage.tsx";
-import { SparkleLogo } from "./Logo.tsx";
-import { PixelIcon } from "./PixelIcon.tsx";
-import { StationPage } from "./StationPage.tsx";
-import { LeaderboardPage, ProfilePage } from "./StatsPages.tsx";
-import { WatchPage } from "./WatchPage.tsx";
+import { SparkleLogo } from "./components/Logo.tsx";
+import { PixelIcon } from "./components/PixelIcon.tsx";
+import { AdminPage, isAdminSection } from "./features/admin/AdminPage.tsx";
+import { DisplayPage } from "./features/display/DisplayPage.tsx";
+import { StationPage } from "./features/station/StationPage.tsx";
+import { LeaderboardPage, ProfilePage } from "./features/stats/StatsPages.tsx";
+import { WatchPage } from "./features/watch/WatchPage.tsx";
 
 export function App() {
   const path = window.location.pathname;
