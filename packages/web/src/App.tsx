@@ -1,5 +1,6 @@
 import type { StationView } from "@n4/server/api";
 import { useEffect, useState } from "react";
+import { Route, Switch } from "wouter";
 import { SparkleLogo } from "./components/Logo.tsx";
 import { PixelIcon } from "./components/PixelIcon.tsx";
 import { AdminPage, isAdminSection } from "./features/admin/AdminPage.tsx";
@@ -8,23 +9,29 @@ import { StationPage } from "./features/station/StationPage.tsx";
 import { LeaderboardPage, ProfilePage } from "./features/stats/StatsPages.tsx";
 import { WatchPage } from "./features/watch/WatchPage.tsx";
 
-export function App() {
-  const path = window.location.pathname;
-  const station = /^\/station\/(\d+)\/?$/.exec(path);
-  if (station) return <StationPage id={Number(station[1])} />;
-  if (/^\/display\/?$/.test(path)) return <DisplayPage />;
-  if (/^\/players\/?$/.test(path)) return <LeaderboardPage />;
-  const player = /^\/players\/([^/]+)\/?$/.exec(path);
-  if (player) return <ProfilePage id={decodeURIComponent(player[1] as string)} />;
-  const watch = /^\/watch\/(\d+)\/?$/.exec(path);
-  if (watch) return <WatchPage id={Number(watch[1])} />;
-  const admin = /^\/admin(?:\/(\w+))?\/?$/.exec(path);
-  if (admin) {
-    const section = admin[1] ?? "tournament";
-    if (isAdminSection(section)) return <AdminPage section={section} />;
-  }
+/** A station number from the path; anything else isn't a station, so the page is home. */
+const isNumber = (id: string) => /^\d+$/.test(id);
 
-  return <Home />;
+export function App() {
+  return (
+    <Switch>
+      <Route path="/station/:id">
+        {({ id }) => (isNumber(id) ? <StationPage id={Number(id)} /> : <Home />)}
+      </Route>
+      <Route path="/watch/:id">
+        {({ id }) => (isNumber(id) ? <WatchPage id={Number(id)} /> : <Home />)}
+      </Route>
+      <Route path="/display" component={DisplayPage} />
+      <Route path="/players" component={LeaderboardPage} />
+      <Route path="/players/:id">{({ id }) => <ProfilePage id={id} />}</Route>
+      <Route path="/admin/:section?">
+        {({ section = "tournament" }) =>
+          isAdminSection(section) ? <AdminPage section={section} /> : <Home />
+        }
+      </Route>
+      <Route component={Home} />
+    </Switch>
+  );
 }
 
 function Home() {
