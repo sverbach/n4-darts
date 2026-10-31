@@ -8,7 +8,7 @@ The quality goals in section 1.2 are the most important of these.
 |---|---|---|---|---|
 | Q-01 | Availability | A full tournament evening runs with the internet unplugged. Nothing is loaded from outside the room at runtime. | Org, Ops | ADR 0005 |
 | Q-02 | Reliability | After a server restart, every match resumes exactly where it was, including the visit in progress. | Pla, Org | spec: walking-skeleton |
-| Q-03 | Reliability | No dart is ever lost or counted twice, across board reconnects, server restarts and darts the board missed. | Pla | arch |
+| Q-03 | Reliability | No dart is ever lost or counted twice, across board reconnects, server restarts and darts the board missed. Exception: a power cut or OS crash can lose the last write or two (SQLite `synchronous = normal`, chosen so a write never waits for a slow disk, Q-05); those darts are still on the board and can be added by hand. | Pla | arch, perf CI investigation 2026-10-31 |
 | Q-04 | Integrity | Results are always derived from the full record of the match. Nothing is overwritten: corrections are added on top, and old matches are replayed under their own rules. | Pla, Org | ADR 0002 |
 | Q-05 | Responsiveness | A detected dart reaches the station's screens within 150 ms, measured over a long match. On a loaded machine a rare single dart may take longer (at most 3 in a test's match), but never over 500 ms. | Pla | ticket: perf-tests |
 | Q-06 | Scalability | Responsiveness doesn't degrade over a long match, over an evening, or as the history grows over months. Tested over 600 darts with 200 past matches, and in the browser over 300 darts. | Pla, Ops | ticket: perf-tests |

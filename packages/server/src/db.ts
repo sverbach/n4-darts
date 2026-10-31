@@ -241,7 +241,11 @@ const nameKey = (name: string) => name.toLocaleLowerCase("und");
 /** Opens (and if needed creates) the database; `:memory:` for tests. */
 export function openDb(path: string): Db {
   const db = new DatabaseSync(path);
-  db.exec("pragma journal_mode = wal; pragma foreign_keys = on;");
+  // `synchronous = normal`: in WAL mode a write no longer waits for the disk to confirm it, only a
+  // checkpoint does. That wait blocks the one thread every dart goes through: on a slow disk a
+  // single write took up to 300 ms. A crash or restart of the server still loses nothing; a power
+  // cut or OS crash can lose the last write or two (Q-03).
+  db.exec("pragma journal_mode = wal; pragma synchronous = normal; pragma foreign_keys = on;");
   const { user_version: version } = db.prepare("pragma user_version").get() as {
     user_version: number;
   };
