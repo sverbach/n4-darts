@@ -56,7 +56,7 @@ export function SegmentPicker({ title, context, current, onPick, onCancel }: Pro
             Cancel
           </button>
         </div>
-        <div className="grid grid-cols-3 gap-2 kiosk:gap-3">
+        <div className="grid grid-cols-[repeat(3,1fr)] gap-2 kiosk:gap-3">
           {MULTIPLIERS.map((m) => (
             <button
               type="button"
@@ -69,7 +69,7 @@ export function SegmentPicker({ title, context, current, onPick, onCancel }: Pro
             </button>
           ))}
         </div>
-        <div className="grid grid-cols-4 kiosk:grid-cols-10 gap-2 kiosk:gap-2.5">
+        <div className="grid grid-cols-[repeat(4,1fr)] kiosk:grid-cols-[repeat(10,1fr)] gap-2 kiosk:gap-2.5">
           {NUMBERS.map((n) => (
             <button
               type="button"
@@ -81,7 +81,7 @@ export function SegmentPicker({ title, context, current, onPick, onCancel }: Pro
             </button>
           ))}
         </div>
-        <div className="grid grid-cols-3 gap-2 kiosk:gap-2.5">
+        <div className="grid grid-cols-[repeat(3,1fr)] gap-2 kiosk:gap-2.5">
           <button
             type="button"
             className={`${EXTRA} ${isCurrent({ number: 25, multiplier: 1 }) ? CURRENT : ""}`}

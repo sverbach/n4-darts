@@ -8,6 +8,7 @@ Move the projector's styles (`display.css`: `/display` and `/watch`) into Tailwi
 
 ## Steps
 
+- Also `styles/scoreboard.css` (moved out of `station.css` in ticket 04): the scoreboard cards (`PlayerCards`) and the game shot (`MatchOver`), shared by the station and `/watch`, together with the `.watch …` rules that adjust them; delete it too. Check a scoreboard of three or more players (`.many`) on both pages by hand: the visual suite only has two.
 - Rewrite the classes of `features/display/` and `features/watch/` as Tailwind utilities on the theme's roles (no raw colours or font names).
 - Anything that can't be a utility (keyframes, a selector that's clearer as CSS) goes to `styles/app.css`, with a line saying why.
 - Remove `display.css` and its import from `styles.css`.
