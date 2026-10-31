@@ -1,6 +1,6 @@
 # `useFetch` for one-shot reads, `fetch` only in `lib/`
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 01, 02, 03, 04
 
@@ -24,3 +24,13 @@ After 01–04, the hand-written fetches left are the stats pages (leaderboard, p
 ## Comments
 
 2026-10-31: Confirmed by the user.
+
+2026-10-31: Built.
+- `lib/api.ts`: `call<T>(method, url, body?)` resolves to `{ data }` or `{ error, status }` and never throws; a `Blob` body (the photo) goes as it is. `request()` is `call()` returning only the error.
+- `lib/useFetch.ts`: `useFetch<T>(url)` gives `data`, `loading`, `error`, `status` and `reload()`. Used by the leaderboard, the profile (404 still says "No such player") and the admin session (`reload` after login and logout).
+- Every other `fetch` moved behind `call` / `request`: the login and logout, the photo upload and removal, match corrections, `useStation`'s commands, `usePlayers`' add.
+- Lint: `noRestrictedGlobals` denies `fetch` and `EventSource` in `packages/web/src` outside `lib/` and tests; checked by hand that a `fetch` in a feature fails with the message.
+- Errors: the stats pages now say what went wrong in the error pill (`role="alert"`) instead of a fixed line; the admin session's failure shows as before.
+- Tests: `lib/api.test.ts` covers `call` (data, JSON and photo bodies, the server's message and status, a status without message, no server, 204). Not `useFetch` itself: the web package has no DOM test setup, and the hook is a thin wrapper around `call`; adding happy-dom or Testing Library for one hook didn't seem worth a new dependency. Say if you want it.
+- Docs: 8.3 describes the pattern; ADR 0007 (no client state library) and its row in 9.1; 5.2 `lib/`.
+- Left alone: a warning that was already there before this ticket, `playerCount` unused in `features/station/MatchSetup.tsx`.

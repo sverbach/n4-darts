@@ -74,6 +74,29 @@
     },
     {
       "includes": [
+        "packages/web/src/**",
+        "!packages/web/src/lib/**",
+        "!packages/web/src/**/*.test.ts",
+        "!packages/web/src/**/*.test.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedGlobals": {
+              "level": "error",
+              "options": {
+                "deniedGlobals": {
+                  "fetch": "Server data goes through lib/ (docs/architecture/08-crosscutting-concepts.md): useLive to follow a view, useFetch to read once, request() or call() for a change.",
+                  "EventSource": "Live views go through useLive in lib/ (docs/architecture/08-crosscutting-concepts.md)."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
         "packages/server/src/**",
         "!packages/server/src/**/*Routes.ts",
         "!packages/server/src/app.ts",

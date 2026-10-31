@@ -1,7 +1,9 @@
 import type { AdminSession } from "@n4/server/api";
-import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { Logo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
+import { call, request } from "../../lib/api.ts";
+import { useFetch } from "../../lib/useFetch.ts";
 import { DiagnosticsAdmin } from "./diagnostics/DiagnosticsAdmin.tsx";
 import { MatchesAdmin } from "./matches/MatchesAdmin.tsx";
 import { PlayersAdmin } from "./players/PlayersAdmin.tsx";
@@ -32,28 +34,14 @@ const ALERT = "error justify-center! border-0! border-b-2! border-danger!";
 export const isAdminSection = (value: string): value is AdminSection => value in sections;
 
 export function AdminPage({ section }: { section: AdminSection }) {
-  const [session, setSession] = useState<AdminSession | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const refresh = useCallback(async () => {
-    try {
-      const res = await fetch("/api/admin/session");
-      setSession(await res.json());
-    } catch {
-      setError("Server not reachable");
-    }
-  }, []);
-
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
+  const { data: session, error, reload: refresh } = useFetch<AdminSession>("/api/admin/session");
 
   const logout = async () => {
-    await fetch("/api/admin/logout", { method: "POST" });
+    await request("POST", "/api/admin/logout");
     await refresh();
   };
 
-  if (!session || !session.authenticated) {
+  if (!session?.authenticated) {
     return (
       <main className="flex min-h-[100dvh] flex-col">
         {error && (
@@ -142,13 +130,9 @@ function Login({ onDone }: { onDone: () => Promise<void> }) {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const res = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ pin }),
-    }).catch(() => null);
-    if (!res) return setError("Server not reachable");
-    if (!res.ok) {
+    const result = await call("POST", "/api/admin/login", { pin });
+    if (result.status === null) return setError(result.error);
+    if (result.error !== null) {
       setPin("");
       return setError("Wrong PIN");
     }

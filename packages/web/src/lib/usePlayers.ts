@@ -1,4 +1,5 @@
 import type { Player } from "@n4/server/api";
+import { call } from "./api.ts";
 import { useLive } from "./useLive.ts";
 
 /**
@@ -10,15 +11,8 @@ export function usePlayers() {
 
   /** Resolves to the new player, or an error message. */
   const add = async (name: string): Promise<Player | string> => {
-    const res = await fetch("/api/players", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name }),
-    }).catch(() => null);
-    if (!res) return "Server not reachable";
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) return (body as { error?: string }).error ?? "Couldn't add player";
-    return body as Player;
+    const result = await call<Player>("POST", "/api/players", { name });
+    return result.data ?? result.error ?? "Couldn't add player";
   };
 
   return { players, add };

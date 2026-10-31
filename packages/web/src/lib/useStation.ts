@@ -1,5 +1,6 @@
 import type { StationCommand, StationView } from "@n4/server/api";
 import { useCallback } from "react";
+import { request } from "./api.ts";
 import { useLive } from "./useLive.ts";
 
 export interface StationConnection {
@@ -16,20 +17,7 @@ export function useStation(id: number, options: { watch?: boolean } = {}): Stati
   const { view, connected } = useLive<StationView>(`/api/stations/${id}/live${query}`);
 
   const send = useCallback(
-    async (command: StationCommand) => {
-      try {
-        const res = await fetch(`/api/stations/${id}/commands`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(command),
-        });
-        if (res.ok) return null;
-        const body = await res.json().catch(() => ({}));
-        return (body as { error?: string }).error ?? `Server error ${res.status}`;
-      } catch {
-        return "Server not reachable";
-      }
-    },
+    (command: StationCommand) => request("POST", `/api/stations/${id}/commands`, command),
     [id],
   );
 

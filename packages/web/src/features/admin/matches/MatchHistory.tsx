@@ -1,8 +1,9 @@
 import type { DartView } from "@n4/engine";
 import type { MatchDetail, MatchSummary } from "@n4/server/api";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { PixelIcon } from "../../../components/PixelIcon.tsx";
 import { SegmentPicker } from "../../../components/SegmentPicker.tsx";
+import { request } from "../../../lib/api.ts";
 import { dartLabel } from "../../../lib/darts.ts";
 import { legsLabel } from "../../../lib/labels.ts";
 import { useLive } from "../../../lib/useLive.ts";
@@ -82,18 +83,9 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
   const [correcting, setCorrecting] = useState<DartView | null>(null);
 
   const correct = async (dartId: string, segment: DartView["segment"]) => {
-    const res = await fetch(`/api/admin/matches/${id}/corrections`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ dartId, segment }),
-    }).catch(() => null);
-    if (!res) return setError("Server not reachable");
-    if (!res.ok) {
-      // E.g. a tournament result a later match already depends on.
-      const body = (await res.json().catch(() => ({}))) as { error?: string };
-      return setError(body.error ?? "Correction failed");
-    }
-    setError(null); // The corrected match arrives through the live stream.
+    // Refused e.g. for a tournament result a later match already depends on. The corrected match
+    // arrives through the live stream.
+    setError(await request("POST", `/api/admin/matches/${id}/corrections`, { dartId, segment }));
   };
 
   const name = (i: number) => match?.players[i]?.name ?? "?";

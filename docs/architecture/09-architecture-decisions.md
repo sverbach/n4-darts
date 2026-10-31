@@ -12,6 +12,7 @@ The decisions that are hard to reverse, each with its context and consequences:
 | [0004](../adr/0004-no-logins-stations-are-urls.md) | No logins: stations are URLs, admin is behind a shared PIN |
 | [0005](../adr/0005-fully-offline.md) | Everything works with the internet unplugged |
 | [0006](../adr/0006-typescript-end-to-end.md) | TypeScript end to end, with the game engine as a shared package |
+| [0007](../adr/0007-no-client-state-library.md) | No client state library: server data is pushed live, or read once |
 
 ## 9.2 Decision log
 

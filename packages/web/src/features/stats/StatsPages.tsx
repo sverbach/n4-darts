@@ -3,6 +3,7 @@ import { type ReactNode, useEffect, useState } from "react";
 import { Avatar } from "../../components/Avatar.tsx";
 import { Logo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
+import { useFetch } from "../../lib/useFetch.ts";
 import { Heatmap } from "./Heatmap.tsx";
 
 const avg = (value: number | null) => (value === null ? "–" : value.toFixed(1));
@@ -58,21 +59,10 @@ function StatsFrame(props: { back: [string, string]; children: ReactNode }) {
   );
 }
 
-/** Loads JSON once; `undefined` while loading, `null` if it failed. */
-function useJson<T>(url: string) {
-  const [data, setData] = useState<T | null | undefined>(undefined);
-  useEffect(() => {
-    void (async () => {
-      const res = await fetch(url).catch(() => null);
-      setData(res?.ok ? await res.json() : null);
-    })();
-  }, [url]);
-  return data;
-}
-
 /** /players: everyone with a counted match, best rating first. */
 export function LeaderboardPage() {
-  const rows = useJson<LeaderboardRow[]>("/api/players/stats");
+  // Read once: the stats pages don't follow live, by design (VIEW-01).
+  const { data: rows, error } = useFetch<LeaderboardRow[]>("/api/players/stats");
   return (
     <StatsFrame back={["/", "n4-darts"]}>
       <div className="flex flex-col gap-2">
@@ -82,10 +72,12 @@ export function LeaderboardPage() {
           matches.
         </p>
       </div>
-      {rows === undefined ? (
+      {error ? (
+        <p className="error" role="alert">
+          Couldn't load the stats: {error}
+        </p>
+      ) : !rows ? (
         <p className="hint">Loading…</p>
-      ) : rows === null ? (
-        <p className="error">Couldn't load the stats</p>
       ) : rows.length === 0 ? (
         <p className="hint">No matches played yet.</p>
       ) : (
@@ -164,13 +156,19 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
 
 /** /players/<id>: one player's numbers, their average per evening, tournaments and matches. */
 export function ProfilePage({ id }: { id: string }) {
-  const profile = useJson<PlayerProfile>(`/api/players/${encodeURIComponent(id)}/stats`);
+  const {
+    data: profile,
+    error,
+    status,
+  } = useFetch<PlayerProfile>(`/api/players/${encodeURIComponent(id)}/stats`);
   return (
     <StatsFrame back={["/players", "Players"]}>
-      {profile === undefined ? (
+      {error ? (
+        <p className="error" role="alert">
+          {status === 404 ? "No such player" : `Couldn't load the stats: ${error}`}
+        </p>
+      ) : !profile ? (
         <p className="hint">Loading…</p>
-      ) : profile === null ? (
-        <p className="error">No such player</p>
       ) : (
         <Profile profile={profile} />
       )}

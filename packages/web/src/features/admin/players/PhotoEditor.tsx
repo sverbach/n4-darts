@@ -1,6 +1,7 @@
 import type { AdminPlayer } from "@n4/server/api";
 import { type PointerEvent, useEffect, useRef, useState } from "react";
 import { Avatar } from "../../../components/Avatar.tsx";
+import { request } from "../../../lib/api.ts";
 
 /** Size of the crop square on screen, and of the uploaded photo. */
 const VIEW = 280;
@@ -111,27 +112,18 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void }) {
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, "image/jpeg", 0.85),
     );
-    const res = blob
-      ? await fetch(`/api/admin/players/${player.id}/photo`, {
-          method: "PUT",
-          headers: { "content-type": "image/jpeg" },
-          body: blob,
-        }).catch(() => null)
-      : null;
+    const message = blob
+      ? await request("PUT", `/api/admin/players/${player.id}/photo`, blob)
+      : "Couldn't save the photo";
     setSaving(false);
-    if (!res?.ok) {
-      const body = (await res?.json().catch(() => ({}))) as { error?: string } | undefined;
-      return setError(body?.error ?? "Couldn't save the photo");
-    }
+    if (message) return setError(message);
     onClose();
   };
 
   const remove = async () => {
     if (!confirm(`Remove ${player.name}'s photo?`)) return;
-    const res = await fetch(`/api/admin/players/${player.id}/photo`, { method: "DELETE" }).catch(
-      () => null,
-    );
-    if (!res?.ok) return setError("Couldn't remove the photo");
+    const message = await request("DELETE", `/api/admin/players/${player.id}/photo`);
+    if (message) return setError(message);
     onClose();
   };
 
