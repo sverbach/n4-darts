@@ -1,6 +1,6 @@
 // Dart to screen (perf-tests ticket 02): with the station, /display and /watch/1 open, every dart
 // has to show on the station page within 150 ms, and it mustn't grow over the match (the same
-// rules as the server load test, packages/server/src/load.test.ts).
+// rules as the server load test, packages/server/src/testing/load/load.test.ts).
 
 import { board, expect, test } from "./fixtures.ts";
 

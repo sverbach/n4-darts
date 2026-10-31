@@ -3,10 +3,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { type BoardSim, createBoardSim } from "@n4/board-sim";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { DisplayView, StationView, TournamentAdminView } from "./api.ts";
-import { buildApp } from "./app.ts";
-import { openDb } from "./db.ts";
-import { startStation } from "./stations/stations.ts";
+import type { DisplayView, StationView, TournamentAdminView } from "../../api.ts";
+import { buildApp } from "../../app.ts";
+import { openDb } from "../../db.ts";
+import { startStation } from "../../stations/stations.ts";
 
 let sims: BoardSim[] = [];
 let stopServer: (() => Promise<void>) | undefined;

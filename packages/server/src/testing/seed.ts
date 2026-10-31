@@ -7,7 +7,7 @@ import {
   matchState,
   type Segment,
 } from "@n4/engine";
-import type { Db } from "./db.ts";
+import type { Db } from "../db.ts";
 
 /** A visit when no checkout is on: 66, so a 501 leg takes about 9 visits a player. */
 const PATTERN: Segment[] = [

@@ -1,6 +1,6 @@
 # Sort the server's cross-component tests by kind
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 01
 
@@ -23,3 +23,11 @@ Give the tests that aren't about one component their own place: `packages/server
 - **Architecture docs updated:** `docs/architecture/08-crosscutting-concepts.md` (8.7 Testability) says where each kind of test lives: unit and component tests next to their file, `testing/integration`, `testing/load`, `testing/e2e`, and the browser tests in `packages/e2e`.
 
 ## Comments
+
+2026-10-31: Confirmed by the user as written.
+
+2026-10-31: Built. Checked first: all four integration tests span several components (`app`: wiring and serving the web app; `overrides`: tournaments, scheduling, stations; `resultChanges`: matches and tournaments through the app; `withdrawals`: tournaments, scheduling, stations), so all four moved to `testing/integration/`. `load.test.ts` → `testing/load/`, `tournament.e2e.test.ts` → `testing/e2e/tournamentEvening.test.ts`, `seed.ts` → `testing/seed.ts`.
+- `pnpm test`: 455 tests in 30 files, as before; the load test and the evening run.
+- Added: `tsconfig.build.json` excludes `src/testing`, so `seed.ts` no longer ends up in `dist/` (tests were already excluded).
+- The comment in `packages/e2e/tests/latency.spec.ts` points at the new load test path.
+- All checks pass. `docs/architecture/08-crosscutting-concepts.md` (8.7) says where each kind of test lives.

@@ -37,6 +37,11 @@ Pages and their layouts are described in `docs/ui-pages.md`.
 - **Board simulator:** `tools/board-sim` speaks the Board Manager's protocol and can throw, revise, miss darts, take out, reset and go offline; the server's integration tests and a full tournament test run against it.
 - **Load test:** 600 darts with 200 past matches in the history must stay under the responsiveness budget (Q-05, Q-06).
 - **Browser tests:** Playwright drives the web app against the server on simulators, at phone and desktop width.
+- **Where tests live:**
+  - **Unit and component tests** sit next to the file they test (`players/players.test.ts`), also when they go through the whole app with `buildApp`.
+  - **`packages/server/src/testing/integration/`**: tests of several components working together (the app's wiring, organiser overrides, result changes, withdrawals).
+  - **`packages/server/src/testing/load/`**: the load test. **`testing/e2e/`**: a whole tournament evening on simulated boards, through a server restart. **`testing/seed.ts`**: a realistic match history for tests that need one.
+  - **`packages/e2e/`**: the browser tests.
 - **CI** runs all of it on every push; nothing ships that fails (Q-15).
 
 ## 8.8 Operations

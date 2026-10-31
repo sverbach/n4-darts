@@ -1,8 +1,8 @@
 import { matchState, type Segment } from "@n4/engine";
 import { afterEach, describe, expect, it } from "vitest";
-import type { TournamentAdminView } from "./api.ts";
-import { buildApp } from "./app.ts";
-import { type Db, type MatchRecord, openDb } from "./db.ts";
+import type { TournamentAdminView } from "../../api.ts";
+import { buildApp } from "../../app.ts";
+import { type Db, type MatchRecord, openDb } from "../../db.ts";
 
 let db: Db;
 afterEach(() => db?.close());

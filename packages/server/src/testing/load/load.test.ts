@@ -11,11 +11,11 @@ import { performance } from "node:perf_hooks";
 import { type BoardSim, createBoardSim } from "@n4/board-sim";
 import { checkoutRoute, type Segment } from "@n4/engine";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import type { StationView } from "./api.ts";
-import { buildApp } from "./app.ts";
-import { type Db, openDb } from "./db.ts";
-import { seedHistory } from "./seed.ts";
-import { startStation } from "./stations/stations.ts";
+import type { StationView } from "../../api.ts";
+import { buildApp } from "../../app.ts";
+import { type Db, openDb } from "../../db.ts";
+import { startStation } from "../../stations/stations.ts";
+import { seedHistory } from "../seed.ts";
 
 /** Enough to show growth; more would take the test past 30 s. */
 const DARTS = 600;
