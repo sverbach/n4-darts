@@ -3,7 +3,6 @@ import type { MatchView } from "@n4/server/api";
 import { Fragment } from "react";
 import { dartLabel } from "../lib/darts.ts";
 import { Avatar } from "./Avatar.tsx";
-import { PixelIcon } from "./PixelIcon.tsx";
 
 /** The route to finish this visit for the thrower, or null when there's none to show. */
 function checkoutHint(match: MatchView): Segment[] | null {
@@ -30,11 +29,9 @@ function cardStyle(size: CardsSize, many: boolean, active: boolean) {
       card: many
         ? `relative flex min-h-0 min-w-0 flex-col items-start justify-between gap-pu-10 border-solid p-pu-18 avatar-pu-64 ${frame}`
         : `relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)] grid-rows-[auto_auto_1fr] items-center gap-x-pu-18 gap-y-pu-6 border-solid px-pu-26 py-pu-22 avatar-pu-88 [grid-template-areas:'avatar_name'_'avatar_meta'_'score_score'] [&>.avatar]:[grid-area:avatar] ${frame}`,
-      name: `max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-pixel font-bold uppercase tracking-pu-3 ${many ? "text-pu-22" : "self-end text-pu-32 [grid-area:name]"} ${active ? "text-accent" : ""}`,
+      name: `max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-pixel font-bold uppercase tracking-pu-3 ${many ? "text-pu-22" : "self-end text-pu-32 [grid-area:name]"}`,
       remaining: `m-0 leading-[0.8] ${many ? "self-start text-pu-90" : "self-end text-pu-200 [grid-area:score]"} ${active ? "text-accent" : ""}`,
       meta: `min-h-[1em] font-pixel text-muted uppercase tracking-[1px] ${many ? "text-pu-12" : "self-start text-pu-14 [grid-area:meta]"}`,
-      // The thrower shows by the frame and colour; no tag on a TV.
-      throwing: null,
     };
   }
   return {
@@ -45,7 +42,7 @@ function cardStyle(size: CardsSize, many: boolean, active: boolean) {
       ? `relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 border-solid py-0 pr-3.5 pl-2.5 [grid-template-areas:'avatar_name_score'_'avatar_meta_score'] [&>.avatar]:[grid-area:avatar] ${active ? "min-h-[72px] [--avatar:48px]" : "min-h-16 [--avatar:40px]"} kiosk:flex kiosk:min-h-0 kiosk:flex-col kiosk:items-start kiosk:justify-between kiosk:gap-3.5 kiosk:p-5 kiosk:[--avatar:72px] ${frame}`
       : `relative flex min-w-0 flex-col items-start gap-2 border-solid px-3 pt-3.5 pb-3 [--avatar:64px] kiosk:grid kiosk:grid-cols-[auto_minmax(0,1fr)] kiosk:grid-rows-[auto_auto_1fr_auto] kiosk:items-center kiosk:gap-x-5 kiosk:gap-y-2 kiosk:px-7 kiosk:py-6 kiosk:[--avatar:112px] kiosk:[grid-template-areas:'avatar_name'_'avatar_meta'_'score_score'_'checkout_checkout'] kiosk:[&>.avatar]:[grid-area:avatar] ${frame}`,
     name: many
-      ? `max-w-full self-end overflow-hidden text-ellipsis whitespace-nowrap font-pixel uppercase tracking-[1px] [grid-area:name] ${active ? "text-[15px] text-accent" : "text-[14px]"} kiosk:self-auto kiosk:font-bold kiosk:text-[26px] kiosk:tracking-[2px]`
+      ? "max-w-full self-end overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[14px] uppercase tracking-[1px] [grid-area:name] kiosk:self-auto kiosk:font-bold kiosk:text-[26px] kiosk:tracking-[2px]"
       : "max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[16px] uppercase tracking-[1px] kiosk:self-end kiosk:font-bold kiosk:text-[36px] kiosk:tracking-[3px] kiosk:[grid-area:name]",
     remaining: many
       ? `leading-[0.8] [grid-area:score] ${active ? "text-[60px] text-accent" : "text-[48px]"} kiosk:m-0 kiosk:self-start kiosk:text-[length:clamp(64px,min(7vw,15vh),120px)]`
@@ -53,12 +50,12 @@ function cardStyle(size: CardsSize, many: boolean, active: boolean) {
     meta: many
       ? "min-h-[1em] self-start font-pixel text-[11px] text-muted uppercase tracking-[1px] [grid-area:meta] kiosk:self-auto kiosk:text-[13px]"
       : "min-h-[1em] font-pixel text-[11px] text-muted uppercase tracking-[1px] kiosk:self-start kiosk:text-[14px] kiosk:[grid-area:meta]",
-    throwing: `absolute top-0 right-0 items-center gap-1 bg-accent px-1.5 py-[3px] font-bold font-pixel text-[10px] text-accent-text uppercase tracking-[1px] kiosk:gap-1.5 ${many ? "hidden kiosk:inline-flex kiosk:px-2.5 kiosk:py-[5px] kiosk:text-[12px]" : "inline-flex kiosk:px-3 kiosk:py-1.5 kiosk:text-[14px]"}`,
   };
 }
 
 /**
- * A card per player: avatar, name, what's left, legs and last visit; the thrower's framed.
+ * A card per player: avatar, name, what's left, legs and last visit. The thrower's card is framed
+ * and their score violet: the one sign of whose turn it is (DESIGN.md).
  * With `hints`, the thrower's card shows the checkout route on wide screens.
  */
 export function PlayerCards({
@@ -91,11 +88,6 @@ export function PlayerCards({
         const style = cardStyle(size, many, active);
         return (
           <div key={players[p]?.id ?? p} className={style.card}>
-            {active && style.throwing && (
-              <span className={style.throwing}>
-                <PixelIcon name="caret" /> Throwing
-              </span>
-            )}
             {players[p] && <Avatar player={players[p]} large />}
             <div className={style.name}>{nameOf(p)}</div>
             <div className={style.remaining}>{player.remaining}</div>

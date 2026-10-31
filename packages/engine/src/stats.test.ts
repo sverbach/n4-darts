@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { defaultX01Settings, type MatchEvent, type X01Settings } from "./index.ts";
-import { dartStats, matchStats, threeDartAverage } from "./stats.ts";
+import { defaultX01Settings, type MatchEvent, matchState, type X01Settings } from "./index.ts";
+import { dartStats, matchStats, threeDartAverage, winningCheckout } from "./stats.ts";
 
 let nextId = 0;
 const seg = (name: string) => {
@@ -67,6 +67,34 @@ describe("dart stats", () => {
 
   it("is empty before the match starts", () => {
     expect(stats([])).toEqual([]);
+  });
+});
+
+describe("winning checkout", () => {
+  const checkout = (events: MatchEvent[], settings: Partial<X01Settings> = {}) =>
+    winningCheckout(matchState({ ...defaultX01Settings, ...settings }, events));
+
+  it("is the finishing dart and the score it finished from, before the takeout", () => {
+    const events = [start(), dart("S20"), dart("S10"), dart("D5")];
+    expect(checkout(events, { startScore: 40 })).toEqual({ segment: seg("D5"), points: 40 });
+  });
+
+  it("stays after the takeout, and ignores darts thrown after the checkout", () => {
+    const events = [start(), dart("T20"), takeout, dart("S1"), takeout, dart("D20"), dart("S5")];
+    expect(checkout([...events, takeout], { startScore: 100 })).toEqual({
+      segment: seg("D20"),
+      points: 40,
+    });
+  });
+
+  it("is the last leg's checkout in a longer match", () => {
+    const won = [dart("D20"), takeout];
+    const result = checkout([start(), ...won, ...won, ...won], { startScore: 40, legsToWin: 2 });
+    expect(result).toEqual({ segment: seg("D20"), points: 40 });
+  });
+
+  it("is null while nobody has won", () => {
+    expect(checkout([start(), dart("S20")])).toBeNull();
   });
 });
 

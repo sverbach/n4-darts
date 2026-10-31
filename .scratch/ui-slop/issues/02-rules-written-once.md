@@ -1,6 +1,6 @@
 # The match rules written once, one way
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 The rules appear as "101 · SINGLE OUT / FIRST TO 1 LEG" in the station's settings strip, again as "101, first to 1 leg." in the lineup subtitle (`features/station/StationPage.tsx:208-210`), and as "101 · FIRST TO 1 LEG" on watch, which drops the out rule (`station-lineup-kiosk`, `watch-visit-1080p`).
@@ -21,3 +21,5 @@ The rules appear as "101 · SINGLE OUT / FIRST TO 1 LEG" in the station's settin
 ## Comments
 
 2026-10-31: Confirmed by the user.
+
+2026-10-31: Built. `matchRulesLabel` in `lib/labels.ts` (with `labels.test.ts`) for the station strip, watch's bar (now with the out rule) and watch's "next" screen. The lineup subtitle lost the rules. Admin's match detail line is left for 07, where that screen is reworked.

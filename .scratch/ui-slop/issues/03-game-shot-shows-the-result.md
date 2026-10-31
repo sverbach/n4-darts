@@ -1,6 +1,6 @@
 # Game shot shows the result
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 02
 
@@ -26,3 +26,5 @@ Game shot is when the whole room looks up, but it shows only "GAME SHOT", the wi
 ## Comments
 
 2026-10-31: Confirmed by the user.
+
+2026-10-31: Built. Engine: `stateDartStats(state)` (what `dartStats` now uses) and `winningCheckout(state)`, with tests; the UI computes the average from the state it has, through the same function, so nothing is counted twice and the server view didn't change. Game shot shows the checkout ("41", "Checkout · D20") and the winner's 3-dart average; the legs score (winner's first, no names) when legs > 1, "n legs" with more than two players. The strip is hidden on game shot (station), the rules line on watch.

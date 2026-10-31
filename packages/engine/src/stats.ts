@@ -1,6 +1,12 @@
 // Points and darts per player, the raw material for 3-dart averages (ratings, group tables).
 
-import { type MatchEvent, matchState, type X01Settings } from "./x01.ts";
+import {
+  type MatchEvent,
+  type MatchState,
+  matchState,
+  type Segment,
+  type X01Settings,
+} from "./x01.ts";
 
 export interface DartStats {
   points: number;
@@ -12,7 +18,11 @@ export interface DartStats {
  * visit was over don't count; corrections apply.
  */
 export function dartStats(settings: X01Settings, events: MatchEvent[]): DartStats[] {
-  const state = matchState(settings, events);
+  return stateDartStats(matchState(settings, events));
+}
+
+/** `dartStats` from a match state, for the UI, which has the state but not the events. */
+export function stateDartStats(state: MatchState): DartStats[] {
   const totals = state.players.map(() => ({ points: 0, darts: 0 }));
   const visits = state.legs.flatMap((leg) => leg.visits);
   if (state.currentVisit) visits.push(state.currentVisit);
@@ -24,6 +34,18 @@ export function dartStats(settings: X01Settings, events: MatchEvent[]): DartStat
     if (!visit.bust) total.points += counted.reduce((sum, d) => sum + d.score, 0);
   }
   return totals;
+}
+
+/** The checkout that won the match: the finishing dart and the score it finished from. */
+export function winningCheckout(state: MatchState): { segment: Segment; points: number } | null {
+  if (state.winner === null) return null;
+  const visit = state.currentVisit?.checkout
+    ? state.currentVisit
+    : state.legs.at(-1)?.visits.findLast((v) => v.checkout);
+  const counted = visit?.darts.filter((d) => !d.ignored) ?? [];
+  const last = counted.at(-1);
+  if (!last) return null;
+  return { segment: last.segment, points: counted.reduce((sum, d) => sum + d.score, 0) };
 }
 
 /** Points per dart × 3 over all the given stats; null when there are no darts. */

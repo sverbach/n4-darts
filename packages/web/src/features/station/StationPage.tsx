@@ -1,4 +1,4 @@
-import { type DartView, MAX_PLAYERS, MIN_PLAYERS, type PlayerIndex } from "@n4/engine";
+import { type DartView, MIN_PLAYERS, type PlayerIndex } from "@n4/engine";
 import type { MatchView, StationCommand } from "@n4/server/api";
 import { useState } from "react";
 import { Avatar } from "../../components/Avatar.tsx";
@@ -10,7 +10,7 @@ import { PlayerCards } from "../../components/PlayerCards.tsx";
 import { PlayerPicker } from "../../components/PlayerPicker.tsx";
 import { SegmentPicker } from "../../components/SegmentPicker.tsx";
 import { dartLabel } from "../../lib/darts.ts";
-import { legsLabel, rulesLabel } from "../../lib/labels.ts";
+import { matchRulesLabel } from "../../lib/labels.ts";
 import { useStation } from "../../lib/useStation.ts";
 import { defaultSetupSettings, SettingsFields, type SetupSettings } from "./MatchSetup.tsx";
 
@@ -56,7 +56,8 @@ export function StationPage({ id }: { id: number }) {
           matchAction={match ? matchAction(match, run) : undefined}
         />
       </header>
-      {match && <SettingsStrip match={match} />}
+      {/* On game shot the result takes the rules' place. */}
+      {match && match.state.phase !== "matchWon" && <SettingsStrip match={match} />}
       <div className="flex flex-1 flex-col gap-4 kiosk:gap-5 p-4 kiosk:px-8 kiosk:pt-5 kiosk:pb-7">
         {error && (
           <p className="error" role="alert">
@@ -97,30 +98,17 @@ function matchAction(match: MatchView, send: Send): MatchAction | undefined {
   };
 }
 
-/** The match label, rules, legs and which leg: "Group A … 501 · Double out · Best of 3 · Leg 2". */
+/** The match label, the rules and which leg: "Group A … 501 · Double out · First to 2 legs · Leg 2". */
 function SettingsStrip({ match }: { match: MatchView }) {
   const { settings, state, label } = match;
-  const legs = legsLabel(settings.legsToWin);
   const leg = settings.legsToWin > 1 && state.legs.length > 0 ? ` · Leg ${state.legs.length}` : "";
   return (
     <div className="label flex flex-wrap justify-between gap-x-4 gap-y-1 border-0 border-line-soft border-b border-solid kiosk:px-8 px-4 kiosk:py-2.5 py-2">
-      {label ? (
-        <>
-          <span className="text-accent">{label}</span>
-          <span>
-            {rulesLabel(settings)} · {legs}
-            {leg}
-          </span>
-        </>
-      ) : (
-        <>
-          <span>{rulesLabel(settings)}</span>
-          <span>
-            {legs}
-            {leg}
-          </span>
-        </>
-      )}
+      {label && <span className="text-accent">{label}</span>}
+      <span>
+        {matchRulesLabel(settings)}
+        {leg}
+      </span>
     </div>
   );
 }
@@ -136,9 +124,7 @@ function QuickMatch({ send, notice }: { send: Send; notice: string | null }) {
       <section className="flex kiosk:min-w-0 kiosk:flex-[999_1_560px] flex-col gap-4 kiosk:gap-[18px]">
         <div>
           <h1 className="kiosk:text-[40px]">New match</h1>
-          <p className="hint m-0 mt-1.5">
-            Pick {MIN_PLAYERS}–{MAX_PLAYERS} players. You can change the order next.
-          </p>
+          <p className="hint m-0 mt-1.5">You can change the order next.</p>
         </div>
         <PlayerPicker title="Players" picked={picked} onChange={setPicked} />
       </section>
@@ -176,20 +162,12 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
     }
     void setOrder(next);
   };
-  const { startScore, legsToWin } = match.settings;
-
   return (
     <div className="mx-auto flex w-full max-w-[760px] flex-1 flex-col gap-5 kiosk:gap-7 kiosk:pt-7">
       <div className="flex flex-col gap-2">
         {match.label && <span className="match-label kiosk:text-[14px]">{match.label}</span>}
-        <h1 className="kiosk:text-[48px]">
-          {match.players.length === 2
-            ? match.players.map((p) => p.name).join(" vs ")
-            : "Next match"}
-        </h1>
-        <p className="hint m-0">
-          {startScore}, {legsLabel(legsToWin).toLowerCase()}. Top of the list throws first.
-        </p>
+        <h1 className="kiosk:text-[48px]">Throwing order</h1>
+        <p className="hint m-0">Top of the list throws first.</p>
       </div>
       <ol className="m-0 flex list-none flex-col gap-2 kiosk:gap-2.5 p-0">
         {match.players.map((p, i) => (
@@ -366,10 +344,7 @@ function VisitPanel(props: ScoreboardProps) {
       aria-label="Current visit"
     >
       <div className="label flex items-center justify-between gap-3">
-        <span>
-          Visit · {nameOf(visit?.player ?? state.currentPlayer)}
-          {visit && onDart && <span className="max-kiosk:hidden"> · Tap a dart to correct it</span>}
-        </span>
+        <span>Visit</span>
         {visit?.bust ? (
           <span className="font-bold kiosk:text-[28px] text-[20px] text-danger tracking-[3px]">
             Bust
@@ -444,6 +419,8 @@ function VisitPanel(props: ScoreboardProps) {
           );
         })}
       </div>
+      {/* One line under the darts: take them out, who throws (before the first dart), or how to
+          correct one. It keeps its height, so the board doesn't jump. */}
       {state.phase === "awaitingTakeout" ? (
         <p
           className={`${VISIT_STATUS} font-bold text-accent before:bg-accent-line after:bg-accent-line`}
@@ -455,11 +432,12 @@ function VisitPanel(props: ScoreboardProps) {
         <p
           className={`${VISIT_STATUS} font-normal text-muted before:bg-line-soft after:bg-line-soft`}
         >
-          {nameOf(state.currentPlayer)} to throw
+          {!visit?.darts.length
+            ? `${nameOf(state.currentPlayer)} to throw`
+            : onDart
+              ? "Tap a dart to correct it"
+              : ""}
         </p>
-      )}
-      {visit && onDart && (
-        <p className="label my-[1em] kiosk:hidden text-center">Tap a dart to correct it</p>
       )}
     </section>
   );

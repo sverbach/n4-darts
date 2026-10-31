@@ -16,7 +16,7 @@ test("End match from the board menu ends a running match", async ({ page, n4 }) 
 test("Cancel match from the board menu drops a match that hasn't started", async ({ page, n4 }) => {
   await n4.command(1, { type: "quickMatch", playerIds: [n4.players.Ann, n4.players.Bob] });
   await page.goto("/station/1");
-  await expect(page.getByRole("heading", { name: "Ann vs Bob" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Throwing order" })).toBeVisible();
 
   await page.getByRole("button", { name: "Board menu" }).click();
   await page.getByRole("menuitem", { name: "Cancel match" }).click();

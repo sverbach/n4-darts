@@ -61,11 +61,13 @@ This is the main screen for players: a kiosk at the board. The darts are detecte
 
 **Top bar (always):** the station name on the left, the board status plus menu (described under shared building blocks) on the right.
 
+**Settings strip (while a match is set up or running, not at game shot):** the match label (tournament matches), then every rule in one line, the same on every screen: "501 · Double out · First to 3 legs", plus "Leg 2" when legs > 1.
+
 The page body has four states.
 
 ### 1. No match: "New match" (quick match)
 - An optional notice line, e.g. "Match abandoned" or "Waiting for the tournament".
-- The hint "Pick 2–8 players. You can change the order next."
+- The hint "You can change the order next." (the picker counts the picks).
 - The player picker (players can add themselves here).
 - The match settings.
 - A primary "Continue" button, enabled once at least 2 players are picked.
@@ -74,8 +76,8 @@ The page body has four states.
 This screen comes after a quick match, or when the tournament puts a match on this station.
 - **Header:**
   - The match label, e.g. "Group A" or "WB Semi-final", if it's a tournament match.
-  - A title, "Ann vs Bob" or "Next match".
-  - The hint "501, best of 3. Top of the list throws first."
+  - The title "Throwing order".
+  - The hint "Top of the list throws first." (the rules are in the settings strip).
 - **Order list:** a numbered list (position, avatar, name) with ↑/↓ buttons to reorder.
 - **Buttons:** "Shuffle" and a primary "Start". "Cancel match" is in the ⋮ menu, only for non-tournament matches.
 
@@ -84,20 +86,22 @@ This is the central screen.
 - **Scoreboard:**
   - One column per player, laid out side by side for 2 players and more compact for 3–8.
   - Each column shows a large avatar, the name, a huge remaining score, and a meta line: "Legs 1", "Not in" (a double-in rule isn't met yet), "Last 60" or "Last Bust".
-  - The current player's column is highlighted.
+  - The current player's column is framed and their score is violet: the only sign of whose turn it is.
   - Desktop only: while the current player can finish this visit, a checkout route under their score, e.g. "T20 · T10 · D20", with the next field brighter. It follows the out rule and updates after each dart.
 - **Current visit** (up to 3 darts per turn):
   - Three dart slots (e.g. "T20", "S5", "D16"), with empty slots when fewer darts have landed.
   - The visit total, or "Bust".
-  - Below it, either "Remove darts" (prominent; the board waits for the darts to be pulled out) or "Ann to throw".
-  - The hint "Tap a dart to correct it". A tapped dart opens the segment picker.
+  - Below it, one line: "Remove darts" (prominent; the board waits for the darts to be pulled out), "Ann to throw" before the visit's first dart, or the hint "Tap a dart to correct it" once a dart is down. A tapped dart opens the segment picker.
   - While the player is throwing, the next empty slot shows "+ Add": for a dart the board missed. It opens the segment picker ("Add dart 3") and the dart counts as if the board had seen it.
   - The visit area has a bust style, and an ignored dart is greyed out (a dart thrown after a bust or checkout).
 - **Buttons:** "Undo" and a primary "Next player" (to skip ahead when the board misses the takeout).
 - **End match:** in the ⋮ menu, under "Match", with a confirmation. For a tournament match it notes "Goes back in the queue".
 
 ### 4. Match won
-- "Game shot", "Ann wins", and the legs result ("3 – 1") when legs > 1.
+- "Game shot", the winner's avatar in violet brackets and "Ann wins".
+- The legs result, winner's first ("3 – 1"), when legs > 1 (with more than two players: "3 legs").
+- How it was won: the checkout ("40", "Checkout · D20") and the winner's match 3-dart average.
+- The settings strip is hidden: the result takes its place.
 - Buttons: "Undo" and a primary "Done", which closes the match and returns to New match.
 
 ---
@@ -105,13 +109,13 @@ This is the central screen.
 ## `/watch/n`: Watch one station
 
 The same scoreboard as the station, for a projector or TV, with nothing clickable.
-- **Top bar:** the station name, the match label when there is one, and "Server offline" if disconnected.
+- **Top bar:** the station name, the match label when there is one, the rules line while the match runs, and "Server offline" if disconnected.
 - **States:**
   - "Connecting…".
   - A free station shows "Free" or the station notice.
   - "Next: Ann vs Bob" (not started).
-  - The scoreboard plus the current visit.
-  - Game shot / winner.
+  - The scoreboard plus the current visit (turn shown by the framed card and violet score only).
+  - Game shot, as on the station: winner, legs, checkout and average.
 
 It needs to fit a 720p screen without scrolling.
 

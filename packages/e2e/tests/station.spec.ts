@@ -8,7 +8,7 @@ test("a quick match on the station, from setup to Done", async ({ page, n4: _ })
   await page.getByRole("button", { name: /Ann/ }).click();
   await page.getByRole("button", { name: /Bob/ }).click();
   await page.getByRole("button", { name: "Continue" }).click();
-  await expect(page.getByRole("heading", { name: "Ann vs Bob" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Throwing order" })).toBeVisible();
   await page.getByRole("button", { name: "Start" }).click();
 
   const visit = page.getByRole("region", { name: "Current visit" });

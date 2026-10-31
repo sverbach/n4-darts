@@ -1,6 +1,6 @@
 # New match and lineup don't restate themselves
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 - New match: the subtitle "Pick 2–8 players" restates the "0 / 8 PICKED" counter (`features/station/StationPage.tsx:138-140`, `components/PlayerPicker.tsx:45-46`).
@@ -19,3 +19,5 @@ Type: task
 ## Comments
 
 2026-10-31: Confirmed by the user.
+
+2026-10-31: Built. New match hint: "You can change the order next."; lineup title "Throwing order". Browser tests updated.

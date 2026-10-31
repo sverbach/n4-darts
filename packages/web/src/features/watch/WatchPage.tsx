@@ -4,10 +4,10 @@ import { Logo } from "../../components/Logo.tsx";
 import { MatchOver } from "../../components/MatchOver.tsx";
 import { PlayerCards } from "../../components/PlayerCards.tsx";
 import { dartLabel } from "../../lib/darts.ts";
-import { legsLabel, rulesLabel } from "../../lib/labels.ts";
+import { matchRulesLabel } from "../../lib/labels.ts";
 import { useStation } from "../../lib/useStation.ts";
 
-/** The bar's small capitals: the match label and "501 · Best of 3 · Leg 2". */
+/** The bar's small capitals: the match label and "501 · Double out · First to 2 legs · Leg 2". */
 const SMALL = "whitespace-nowrap font-pixel text-muted text-pu-14 uppercase";
 /** "Free", "Connecting…" */
 const NOTE = "m-auto text-center font-pixel text-muted text-pu-40 uppercase tracking-pu-4";
@@ -33,7 +33,11 @@ export function WatchPage({ id }: { id: number }) {
             Server offline
           </span>
         ) : (
-          match && match.state.phase !== "notStarted" && <MatchLine match={match} />
+          // Not before the start (the rules are on the screen) nor at game shot (the result is).
+          match &&
+          (match.state.phase === "throwing" || match.state.phase === "awaitingTakeout") && (
+            <MatchLine match={match} />
+          )
         )}
       </header>
       {!view ? (
@@ -54,12 +58,12 @@ export function WatchPage({ id }: { id: number }) {
   );
 }
 
-/** "501 · Best of 3 · Leg 2" */
+/** "501 · Double out · First to 2 legs · Leg 2" */
 function MatchLine({ match }: { match: MatchView }) {
   const { settings, state } = match;
   return (
     <span className={`${SMALL} tracking-pu-1`}>
-      {settings.startScore} · {legsLabel(settings.legsToWin)}
+      {matchRulesLabel(settings)}
       {settings.legsToWin > 1 && (
         <>
           {" "}
@@ -88,7 +92,7 @@ function NextMatch({ match }: { match: MatchView }) {
         ))}
       </div>
       <span className="font-pixel text-muted text-pu-15 uppercase tracking-pu-2">
-        {rulesLabel(match.settings)} · {legsLabel(match.settings.legsToWin)} · Waiting to start
+        {matchRulesLabel(match.settings)} · Waiting to start
       </span>
     </div>
   );
@@ -109,8 +113,6 @@ function WatchVisit({ match }: { match: MatchView }) {
     >
       <span className="w-pu-120 font-pixel text-muted text-pu-14 uppercase leading-[1.6] tracking-[1px]">
         Visit
-        <br />
-        <span className="text-accent">{thrower}</span>
       </span>
       <div className="grid flex-1 grid-cols-3 gap-pu-12">
         {[0, 1, 2].map((i) => {
@@ -137,7 +139,11 @@ function WatchVisit({ match }: { match: MatchView }) {
           {visit?.bust ? "Bust" : String(total).padStart(3, "0")}
         </span>
         <span className={`${TOTAL_LABEL} text-accent`}>
-          {state.phase === "awaitingTakeout" ? "Remove darts" : `${thrower} to throw`}
+          {state.phase === "awaitingTakeout"
+            ? "Remove darts"
+            : !visit?.darts.length
+              ? `${thrower} to throw`
+              : ""}
         </span>
       </div>
     </section>
