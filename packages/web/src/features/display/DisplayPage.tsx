@@ -28,7 +28,7 @@ export function DisplayPage() {
       ) : (
         <Idle view={view} />
       )}
-      {view && !connected && <p className="status danger display-offline">Server offline</p>}
+      {view && !connected && <p className="status status-danger display-offline">Server offline</p>}
     </main>
   );
 }

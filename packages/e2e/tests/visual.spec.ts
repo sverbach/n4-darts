@@ -175,7 +175,8 @@ async function shoot(p: Page, name: string, sizes: Sizes, extra: Rule[] = []) {
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     });
     await freeze(p, [...STAMPS, ...extra]);
-    await expect(p).toHaveScreenshot(`${name}-${label}.png`, { fullPage: true });
+    // Soft: a run reports every screenshot that differs, not just the first.
+    await expect.soft(p).toHaveScreenshot(`${name}-${label}.png`, { fullPage: true });
   }
 }
 

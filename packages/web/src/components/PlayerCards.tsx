@@ -47,7 +47,7 @@ export function PlayerCards({ match, hints = false }: { match: MatchView; hints?
             <div className="remaining">{player.remaining}</div>
             {/* On every card, so the scores stay level whoever has a route. */}
             {hints && (
-              <div className="checkout wide-only">
+              <div className="checkout max-kiosk:hidden">
                 {(active ? (route ?? []) : []).map((segment, i) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: a route can repeat a field (T20 T20 Bull).
                   <Fragment key={i}>

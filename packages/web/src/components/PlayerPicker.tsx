@@ -37,12 +37,12 @@ export function PlayerPicker(props: {
   };
 
   return (
-    <div className="player-picker-wrap">
+    <div className="flex flex-col gap-3">
       {title && (
-        <div className="player-picker-head label">
+        <div className="label flex justify-between gap-3">
           <span>{title}</span>
           <span>
-            <span className="player-picker-count">{picked.length}</span>
+            <span className="text-text">{picked.length}</span>
             {Number.isFinite(max) && ` / ${max}`} picked
           </span>
         </div>
@@ -50,7 +50,7 @@ export function PlayerPicker(props: {
       {!players ? (
         <p className="hint">Loading players…</p>
       ) : (
-        <div className="player-picker">
+        <div className="flex flex-wrap gap-2 kiosk:gap-2.5">
           {players.length === 0 && <p className="hint left">No players yet: add the first one.</p>}
           {players.map((p) => {
             const position = picked.indexOf(p.id);
@@ -61,24 +61,32 @@ export function PlayerPicker(props: {
                 aria-pressed={position >= 0}
                 onClick={() => toggle(p.id)}
                 disabled={position < 0 && picked.length >= max}
+                className="kiosk:min-h-[60px] gap-2 kiosk:gap-3 kiosk:pr-4 pr-3 kiosk:pl-2 pl-1.5 kiosk:text-[16px] text-[12px] [--avatar:28px] kiosk:[--avatar:40px] aria-pressed:pr-2.5 kiosk:aria-pressed:pr-3.5"
               >
                 <Avatar player={p} />
                 <span className="pick-name">{p.name}</span>
-                {position >= 0 && <span className="pick-number">{position + 1}</span>}
+                {position >= 0 && (
+                  <span className="inline-grid h-5 kiosk:h-[26px] kiosk:min-w-[26px] min-w-5 place-items-center bg-accent font-bold kiosk:text-[13px] text-[11px] text-accent-text">
+                    {position + 1}
+                  </span>
+                )}
               </button>
             );
           })}
         </div>
       )}
-      <form className="inline-form" onSubmit={submit}>
+      <form className="inline-form kiosk:max-w-[560px]" onSubmit={submit}>
         <input
           aria-label="New player"
           placeholder="New player name"
           value={newName}
           required
           onChange={(e) => setNewName(e.target.value)}
+          className="kiosk:min-h-14"
         />
-        <button type="submit">+ Add</button>
+        <button type="submit" className="kiosk:min-h-14">
+          + Add
+        </button>
       </form>
       {error && (
         <p className="error" role="alert">

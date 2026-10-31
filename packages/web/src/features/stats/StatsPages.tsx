@@ -115,7 +115,7 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
           </tbody>
         </table>
       </div>
-      <span className="label narrow-only">
+      <span className="label narrow-only kiosk:hidden">
         <PixelIcon name="caret" /> Swipe table for more <PixelIcon name="caret" />
       </span>
     </>

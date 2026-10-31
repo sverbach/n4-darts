@@ -6,22 +6,22 @@ import { Router } from "wouter";
 import { App } from "./App.tsx";
 
 vi.mock("./features/station/StationPage.tsx", () => ({
-  StationPage: ({ id }: { id: number }) => `[station ${id}]`,
+  StationPage: ({ id }: { id: number }) => `@@station ${id}@@`,
 }));
 vi.mock("./features/watch/WatchPage.tsx", () => ({
-  WatchPage: ({ id }: { id: number }) => `[watch ${id}]`,
+  WatchPage: ({ id }: { id: number }) => `@@watch ${id}@@`,
 }));
-vi.mock("./features/display/DisplayPage.tsx", () => ({ DisplayPage: () => "[display]" }));
+vi.mock("./features/display/DisplayPage.tsx", () => ({ DisplayPage: () => "@@display@@" }));
 vi.mock("./features/stats/StatsPages.tsx", () => ({
-  LeaderboardPage: () => "[leaderboard]",
-  ProfilePage: ({ id }: { id: string }) => `[profile ${id}]`,
+  LeaderboardPage: () => "@@leaderboard@@",
+  ProfilePage: ({ id }: { id: string }) => `@@profile ${id}@@`,
 }));
 vi.mock("./features/admin/AdminPage.tsx", async (actual) => ({
   ...(await actual<typeof import("./features/admin/AdminPage.tsx")>()),
-  AdminPage: ({ section }: { section: string }) => `[admin ${section}]`,
+  AdminPage: ({ section }: { section: string }) => `@@admin ${section}@@`,
 }));
 
-/** What the app renders at `path`: a stub's marker, or "home". */
+/** What the app renders at `path`: a stub's marker (`@@…@@`, not brackets: classes have them), or "home". */
 function pageAt(path: string) {
   vi.stubGlobal("window", { location: { pathname: path } });
   const html = renderToString(
@@ -29,7 +29,7 @@ function pageAt(path: string) {
       <App />
     </Router>,
   );
-  const marker = /\[([^\]]+)\]/.exec(html);
+  const marker = /@@(.+?)@@/.exec(html);
   if (marker) return marker[1];
   return html.includes("Players and stats") ? "home" : html;
 }

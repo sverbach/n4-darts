@@ -26,13 +26,16 @@ export function Avatar(props: {
   large?: boolean;
 }) {
   const { player, large } = props;
-  const className = `avatar ${large ? "large" : ""}`;
+  // The size comes from `--avatar` on any parent (default 2em, 4em when large); the initials scale with it.
+  const className = `avatar ${large ? "large [--size:var(--avatar,4em)]" : "[--size:var(--avatar,2em)]"} inline-flex size-[var(--size)] flex-none items-center justify-center object-cover align-middle text-text [clip-path:polygon(12.5%_0,87.5%_0,100%_12.5%,100%_87.5%,87.5%_100%,12.5%_100%,0_87.5%,0_12.5%)]`;
   if (player.photo) {
     return <img className={className} src={photoUrl(player)} alt="" loading="lazy" />;
   }
   return (
     <span className={className} style={{ background: colour(player.id) }} aria-hidden>
-      <span className="avatar-initials">{initials(player.name)}</span>
+      <span className="avatar-initials font-pixel text-[length:calc(var(--size)*0.32)] uppercase leading-none">
+        {initials(player.name)}
+      </span>
     </span>
   );
 }

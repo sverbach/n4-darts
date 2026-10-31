@@ -31,7 +31,7 @@ export function StationPage({ id }: { id: number }) {
     <main className="station">
       <header className="station-bar">
         <div className="station-id">
-          <Logo width="86px" className="wide-only" />
+          <Logo width="86px" className="max-kiosk:hidden" />
           <span className="station-name">{view?.name ?? `Station ${id}`}</span>
         </div>
         <BoardMenu
@@ -332,7 +332,7 @@ function VisitPanel(props: ScoreboardProps) {
       <div className="visit-head label">
         <span>
           Visit · {nameOf(visit?.player ?? state.currentPlayer)}
-          {visit && onDart && <span className="wide-only"> · Tap a dart to correct it</span>}
+          {visit && onDart && <span className="max-kiosk:hidden"> · Tap a dart to correct it</span>}
         </span>
         {visit?.bust ? (
           <span className="visit-bust">Bust</span>
@@ -391,7 +391,7 @@ function VisitPanel(props: ScoreboardProps) {
       ) : (
         <p className="visit-status waiting">{nameOf(state.currentPlayer)} to throw</p>
       )}
-      {visit && onDart && <p className="label narrow-only">Tap a dart to correct it</p>}
+      {visit && onDart && <p className="label kiosk:hidden">Tap a dart to correct it</p>}
     </section>
   );
 }

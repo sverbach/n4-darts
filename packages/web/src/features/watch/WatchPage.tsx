@@ -21,7 +21,7 @@ export function WatchPage({ id }: { id: number }) {
           {match?.label && <span className="watch-label">· {match.label}</span>}
         </div>
         {!connected ? (
-          <span className="status danger">Server offline</span>
+          <span className="status status-danger">Server offline</span>
         ) : (
           match && match.state.phase !== "notStarted" && <MatchLine match={match} />
         )}

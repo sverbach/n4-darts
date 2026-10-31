@@ -27,13 +27,19 @@ export function PixelIcon(props: { name: PixelIconName; height?: string; label?:
   const style = height ? { height } : undefined;
   const path = <path fill="currentColor" d={d} />;
   return label ? (
-    <svg className="pixel-icon" viewBox={box} shapeRendering="crispEdges" style={style} role="img">
+    <svg
+      className="pixel-icon inline-block h-[1em] w-auto flex-none align-[-0.1em]"
+      viewBox={box}
+      shapeRendering="crispEdges"
+      style={style}
+      role="img"
+    >
       <title>{label}</title>
       {path}
     </svg>
   ) : (
     <svg
-      className="pixel-icon"
+      className="pixel-icon inline-block h-[1em] w-auto flex-none align-[-0.1em]"
       viewBox={box}
       shapeRendering="crispEdges"
       style={style}

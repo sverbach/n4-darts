@@ -314,7 +314,6 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  padding: 0 22px;
 }
 
 .next-player-up {
@@ -350,10 +349,7 @@
 
   .next-player {
     flex: 1;
-    min-height: 120px;
     gap: 6px;
-    padding: 0 32px;
-    clip-path: polygon(20px 0, 100% 0, calc(100% - 20px) 100%, 0 100%);
   }
 
   .next-player > span:first-child {

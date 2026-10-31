@@ -281,7 +281,7 @@ function StationRow(props: { station: TournamentStationView; send: Send; base: s
       <div className="card-row-main">
         <div className="card-row-title">
           <span className="card-row-name">{station.name}</span>
-          <span className={`status small ${tone}`}>{status}</span>
+          <span className={`status small status-${tone}`}>{status}</span>
         </div>
         {match ? (
           <span className="card-row-detail">

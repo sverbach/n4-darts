@@ -1,0 +1,525 @@
+/*
+ * The design system's base and shared pieces, in Tailwind (docs/architecture/08-crosscutting-concepts.md,
+ * 8.6). Element defaults are Tailwind's base layer: what a heading, a button or a field looks like
+ * before any class. The pieces used all over the app (labels, button variants, status pills,
+ * notices, panels) are utilities of their own, so they work with variants like `kiosk:` and the
+ * markup stays readable. Everything else is utilities in the markup.
+ */
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-text);
+    font-size: 20px;
+    line-height: 1.2;
+    -webkit-tap-highlight-color: transparent;
+
+    ::selection {
+      color: var(--accent-text);
+      background: var(--accent);
+    }
+  }
+
+  h1,
+  h2,
+  h3 {
+    margin: 0;
+    font-family: var(--font-pixel);
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+
+  h2 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  h3 {
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+
+  @media (min-width: 760px) {
+    body {
+      font-size: 22px;
+    }
+
+    h1 {
+      font-size: 36px;
+      letter-spacing: 3px;
+    }
+
+    h2 {
+      font-size: 18px;
+    }
+
+    h3 {
+      font-size: 13px;
+    }
+  }
+
+  a {
+    color: var(--text);
+  }
+
+  a:hover {
+    color: var(--accent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Buttons are secondary by default; `primary`, `cta`, `ghost` and `danger` below vary them. */
+
+  button,
+  input,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  button,
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--border);
+    border-radius: 0;
+    background: var(--surface);
+    color: var(--text);
+    font-family: var(--font-pixel);
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  button:disabled {
+    border-color: var(--line-soft);
+    background: transparent;
+    color: var(--faint);
+    cursor: default;
+  }
+
+  button[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: var(--accent-tint);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+
+  /* Fields */
+
+  input,
+  select {
+    min-height: 48px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 0;
+    background: var(--panel);
+    font-family: var(--font-text);
+    font-size: 24px;
+  }
+
+  input::placeholder {
+    color: var(--muted);
+  }
+
+  select {
+    appearance: none;
+    padding-right: 44px;
+    background-color: var(--surface);
+    /* A pixel chevron: four bars, narrowing downwards. */
+    background-image:
+      linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)),
+      linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent));
+    background-position:
+      calc(100% - 18px) calc(50% - 3px),
+      calc(100% - 20px) calc(50% - 1px),
+      calc(100% - 22px) calc(50% + 1px),
+      calc(100% - 24px) calc(50% + 3px);
+    background-size:
+      14px 2px,
+      10px 2px,
+      6px 2px,
+      2px 2px;
+    background-repeat: no-repeat;
+  }
+
+  input[type="range"] {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    accent-color: var(--accent);
+  }
+
+  /* Collapsible sections: a caret that turns. */
+
+  details > summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    list-style: none;
+    color: var(--muted);
+    font-family: var(--font-pixel);
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  details > summary .pixel-icon {
+    transition: transform 0.1s;
+  }
+
+  details[open] > summary .pixel-icon {
+    transform: rotate(90deg);
+  }
+}
+
+/* A small grey heading in capitals: "STATIONS", "MATCH SETTINGS". */
+@utility label {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+
+  @media (min-width: 760px) {
+    font-size: 13px;
+  }
+}
+
+@utility hint {
+  color: var(--muted);
+}
+
+/* "GROUP A", "WB SEMI-FINAL" */
+@utility match-label {
+  color: var(--accent);
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* Button variants: `primary` filled, `cta` the big slanted one, `ghost` and `danger` quiet. */
+
+@utility primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 700;
+
+  &:disabled {
+    border-color: var(--line-soft);
+    background: var(--line-soft);
+    color: var(--muted);
+  }
+}
+
+@utility cta {
+  min-height: 60px;
+  padding: 0 32px;
+  border: 0;
+  font-size: 15px;
+  clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+
+  @media (min-width: 760px) {
+    min-height: 72px;
+    font-size: 20px;
+    letter-spacing: 2px;
+    clip-path: polygon(16px 0, 100% 0, calc(100% - 16px) 100%, 0 100%);
+  }
+}
+
+@utility ghost {
+  background: transparent;
+  color: var(--muted);
+}
+
+@utility danger {
+  border-color: var(--danger);
+  background: transparent;
+  color: var(--danger);
+
+  &:disabled {
+    border-color: var(--danger-line);
+    color: var(--danger-faint);
+  }
+}
+
+/* Status pills: a tinted box with a square dot; `status-ok`, `-warn`, `-danger`, `-accent` tint it. */
+
+@utility status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted);
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  &::before {
+    content: "";
+    flex: none;
+    width: 7px;
+    height: 7px;
+    background: currentColor;
+  }
+
+  @media (min-width: 760px) {
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 13px;
+
+    &::before {
+      width: 9px;
+      height: 9px;
+    }
+  }
+}
+
+@utility status-ok {
+  border-color: var(--ok-line);
+  background: var(--ok-tint);
+  color: var(--ok);
+}
+
+@utility status-warn {
+  border-color: var(--warn-line);
+  background: var(--warn-tint);
+  color: var(--warn);
+}
+
+@utility status-danger {
+  border-color: var(--danger-line);
+  background: var(--danger-tint);
+  color: var(--danger);
+}
+
+@utility status-accent {
+  border-color: var(--accent-line);
+  background: var(--accent-tint);
+  color: var(--accent);
+}
+
+/* Errors and notices: a full-width pill. */
+
+@utility error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--danger-line);
+  background: var(--danger-tint);
+  color: var(--danger);
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+
+  &::before {
+    content: "";
+    flex: none;
+    width: 7px;
+    height: 7px;
+    background: currentColor;
+  }
+
+  @media (min-width: 760px) {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+}
+
+@utility notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--warn-line);
+  background: var(--warn-tint);
+  color: var(--warn);
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+
+  &::before {
+    content: "";
+    flex: none;
+    width: 7px;
+    height: 7px;
+    background: currentColor;
+  }
+
+  @media (min-width: 760px) {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+}
+
+/* Panels and tables */
+
+@utility panel {
+  padding: 16px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+
+@utility group-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  & th,
+  & td {
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--line-soft);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  & th {
+    border-bottom-color: var(--border);
+    color: var(--muted);
+    font-family: var(--font-pixel);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  & .name {
+    width: 100%;
+    font-family: var(--font-pixel);
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: normal;
+  }
+
+  & .points {
+    color: var(--accent);
+  }
+}
+
+@utility table-scroll {
+  overflow-x: auto;
+}
+
+/* "← PLAYERS" */
+@utility back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--muted);
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-decoration: none;
+  text-transform: uppercase;
+
+  &:is(button) {
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+}
+
+/* Match settings: labelled selects in a grid (the station's quick match, the tournament draft). */
+@utility settings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+
+  & label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: var(--muted);
+    font-family: var(--font-pixel);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  & select {
+    color: var(--text);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+}
+
+/* A row of a field and a button: "New player" + ADD. */
+@utility inline-form {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+
+  & input,
+  & select {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* Violet corner brackets around a big moment's avatar: game shot, the champion. */
+@utility avatar-frame {
+  position: relative;
+  display: inline-flex;
+  padding: 0.6em;
+  background:
+    linear-gradient(var(--accent), var(--accent)) left top / 1.2em 0.2em,
+    linear-gradient(var(--accent), var(--accent)) left top / 0.2em 1.2em,
+    linear-gradient(var(--accent), var(--accent)) right top / 1.2em 0.2em,
+    linear-gradient(var(--accent), var(--accent)) right top / 0.2em 1.2em,
+    linear-gradient(var(--accent), var(--accent)) left bottom / 1.2em 0.2em,
+    linear-gradient(var(--accent), var(--accent)) left bottom / 0.2em 1.2em,
+    linear-gradient(var(--accent), var(--accent)) right bottom / 1.2em 0.2em,
+    linear-gradient(var(--accent), var(--accent)) right bottom / 0.2em 1.2em;
+  background-repeat: no-repeat;
+}
+
+/* The animated logo (SparkleLogo): a strip of 64 frames moved one frame at a time. */
+@keyframes logo-sparkle {
+  to {
+    transform: translateX(-100%);
+  }
+}
