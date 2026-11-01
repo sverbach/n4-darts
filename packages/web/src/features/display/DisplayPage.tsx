@@ -137,20 +137,19 @@ function Finished({ view }: { view: DisplayView }) {
       <Fit
         className="flex flex-1 flex-col justify-center"
         // Top-aligned: the champion's panel is as tall as its content, not the screen.
-        inner="grid grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,1fr)] items-start gap-pu-48"
+        inner="grid grid-cols-[minmax(0,1.5fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] items-start gap-pu-48"
       >
         {champion && (
           <section
-            className="avatar-pu-268 flex flex-col items-center justify-center gap-pu-28 border-2 border-border border-solid bg-panel p-pu-40"
+            // The night's peak: louder than game shot, which comes after every match.
+            className="avatar-pu-360 flex flex-col items-center justify-center gap-pu-32 border border-border border-solid bg-panel px-pu-40 py-pu-48"
             aria-label="Champion"
           >
-            <span className="font-pixel text-muted text-pu-22 uppercase tracking-pu-8">
-              Champion
-            </span>
-            <span className="avatar-frame text-pu-26">
+            <h2 className="m-0 font-bold text-accent text-pu-72 tracking-pu-8">Champion</h2>
+            <span className="avatar-frame text-pu-36">
               <Avatar player={champion} large />
             </span>
-            <p className="m-0 text-center font-bold font-pixel text-pu-64 uppercase tracking-pu-8">
+            <p className="m-0 text-center font-bold font-pixel text-pu-96 uppercase tracking-pu-8">
               {champion.name}
             </p>
           </section>

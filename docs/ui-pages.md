@@ -140,7 +140,7 @@ A room-wide overview for 16:9. Everything scales to fit, with no scrolling. "Ser
 
 ### Finished tournament
 - A header with the name and "Finished" or "Ended early".
-- **Champion block:** a "Champion" label, a large avatar and the name.
+- **Champion block:** the evening's peak, wider than the other columns: "CHAMPION" in violet at headline size, a large avatar in the violet brackets and the name in big capitals.
 - **Final placings:** from second place on (the champion has the block), the place ("2", "3–4" for shared places) and the name.
 - **Awards list.**
 

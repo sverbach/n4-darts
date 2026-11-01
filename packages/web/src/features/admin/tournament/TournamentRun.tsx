@@ -96,7 +96,9 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                     <Avatar player={champion} large />
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                    <span className="match-label">Champion</span>
+                    <span className="font-bold font-pixel text-[16px] text-accent uppercase tracking-[2px]">
+                      Champion
+                    </span>
                     <span className="wrap-anywhere font-bold font-pixel kiosk:text-[28px] text-[22px] uppercase tracking-[3px]">
                       {champion.name}
                     </span>
