@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { followStream } from "./liveStream.ts";
 
 export interface Live<T> {
   /** The latest view the server pushed; null until the first one arrives. */
@@ -19,18 +20,12 @@ export function useLive<T>(url: string | null): Live<T> {
     if (!url) return;
     setView(null);
     setFailed(false);
-    const source = new EventSource(url);
-    source.onopen = () => setConnected(true);
-    source.onerror = () => {
-      setConnected(false);
-      // EventSource gives up (CLOSED) on an error status rather than a dropped connection.
-      if (source.readyState === EventSource.CLOSED) setFailed(true);
-    };
-    source.onmessage = (e) => {
-      setConnected(true);
-      setView(JSON.parse(e.data));
-    };
-    return () => source.close();
+    // Closes while the page is hidden (e.g. kept in the back/forward cache): see liveStream.ts.
+    return followStream(url, {
+      onView: (v) => setView(v as T),
+      onConnected: setConnected,
+      onFailed: () => setFailed(true),
+    });
   }, [url]);
 
   return { view, connected, failed };
