@@ -245,7 +245,7 @@ export function DiagnosticsAdmin() {
 function Table({ head, children }: { head: string[]; children: ReactNode }) {
   return (
     <div className="scroll-x [--fade-bg:var(--bg)]">
-      <table className="w-full border-collapse text-[15px] [&_td]:whitespace-nowrap [&_td]:border-0 [&_td]:border-line-soft [&_td]:border-t [&_td]:border-solid [&_td]:py-2 [&_td]:pr-3 [&_td]:pl-0">
+      <table className="w-full border-collapse text-[16px] [&_td]:whitespace-nowrap [&_td]:border-0 [&_td]:border-line-soft [&_td]:border-t [&_td]:border-solid [&_td]:py-2 [&_td]:pr-3 [&_td]:pl-0">
         <thead>
           <tr>
             {head.map((h) => (

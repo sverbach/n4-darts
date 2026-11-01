@@ -1,6 +1,6 @@
 # Every font size on the type scale, DESIGN.md tokens complete
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 The Impeccable detector flags 165 font sizes outside DESIGN.md. About 115 are false positives: the frontmatter lists only the kiosk sizes, while the prose documents the phone sizes (26/16/20/11px) and others. The real problems:
@@ -23,3 +23,5 @@ The Impeccable detector flags 165 font sizes outside DESIGN.md. About 115 are fa
 ## Comments
 
 2026-10-31: Confirmed by the user.
+
+2026-11-01: Built. The scale, per DESIGN.md's new Scale Rule: 11 · 12 · 13 · 16 · 18 · 20 · 22 · 24 · 26 · 28 · 32 · 36 · 40 · 48 · 56 · 72 · 96 · 160px, the score's clamps and the projector's `pu-*` units aside; nothing under 11. 42 sizes snapped (9, 10 → 11; 14 → 13; 15 → 16; 19 → 20; 21 → 22; 30 → 28; 34 → 32; 38 → 36; 44, 52 → 48; 60 → 56) plus the CTA's 15 → 16 in `app.css`. DESIGN.md's frontmatter now lists every step as a role token (phone and kiosk headline/title/body/label, button, field, stat values, dart, game shot title and legs, names and numbers); the sidecar should be refreshed with `/impeccable document` (left for 16). Two-voice slips: the segment picker's "25" is in Geist Pixel like 1–20; an award's unit ("darts") is a small Silkscreen label beside its number. `impeccable detect --json src` now reports one finding: Heatmap's `0.09px`, an SVG viewBox unit, not a CSS size (a false positive). Also: an odd last award takes the whole row in admin (it was an orphan on phones).

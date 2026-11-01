@@ -91,7 +91,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                   <Avatar player={champion} large />
                   <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                     <span className="match-label">Champion</span>
-                    <span className="wrap-anywhere font-bold font-pixel kiosk:text-[30px] text-[22px] uppercase tracking-[3px]">
+                    <span className="wrap-anywhere font-bold font-pixel kiosk:text-[28px] text-[22px] uppercase tracking-[3px]">
                       {champion.name}
                     </span>
                   </div>
@@ -400,7 +400,7 @@ function QueueRow(props: {
     <li className="flex flex-col gap-3 border border-border border-solid bg-panel p-4">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         {entry.label && <span className="match-label">{entry.label}</span>}
-        <span className="font-pixel text-[15px] uppercase tracking-[1px]">
+        <span className="font-pixel text-[16px] uppercase tracking-[1px]">
           {entry.players.map((p) => p.name).join(" vs ")}
         </span>
       </div>
@@ -470,7 +470,7 @@ function Roster(props: {
           >
             <Avatar player={{ id: e.playerId, name: e.name, photo: e.photo }} />
             <span
-              className={`min-w-0 flex-1 font-pixel text-[14px] uppercase tracking-[1px] ${e.withdrawn ? "text-muted line-through" : ""}`}
+              className={`min-w-0 flex-1 font-pixel text-[13px] uppercase tracking-[1px] ${e.withdrawn ? "text-muted line-through" : ""}`}
             >
               {e.name}
             </span>
@@ -479,7 +479,7 @@ function Roster(props: {
             ) : (
               <button
                 type="button"
-                className="ghost min-h-9 px-3 text-[10px]"
+                className="ghost min-h-9 px-3 text-[11px]"
                 onClick={() => {
                   if (confirm(`Withdraw ${e.name}? Their remaining matches become walkovers.`)) {
                     void send("POST", `${base}/withdraw`, { playerId: e.playerId });

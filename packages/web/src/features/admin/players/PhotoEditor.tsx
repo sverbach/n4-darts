@@ -17,7 +17,7 @@ interface Crop {
 
 /** The editor's buttons, at the bottom right. */
 const ACTIONS = "flex flex-wrap items-center justify-end gap-2.5 [&_button]:min-h-[52px]";
-const ACTIONS_CTA = "primary cta text-[14px]!";
+const ACTIONS_CTA = "primary cta text-[13px]!";
 
 /** Pick a photo (camera or gallery), crop it to a square, upload it; or remove the current one. */
 export function PhotoEditor(props: { player: AdminPlayer; onClose(): void }) {

@@ -245,7 +245,7 @@
   min-height: 60px;
   padding: 0 24px;
   border: 0;
-  font-size: 15px;
+  font-size: 16px;
   clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
 
   @media (min-width: 760px) {

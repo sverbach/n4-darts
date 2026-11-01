@@ -165,7 +165,7 @@ export function BoardMenu(props: {
                 {matchAction.label}
               </button>
               {matchAction.note && (
-                <span className="label kiosk:px-4 px-3 kiosk:pb-3 pb-2.5 kiosk:text-[11px] text-[10px]">
+                <span className="label kiosk:px-4 px-3 kiosk:pb-3 pb-2.5 kiosk:text-[11px] text-[11px]">
                   {matchAction.note}
                 </span>
               )}

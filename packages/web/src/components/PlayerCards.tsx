@@ -42,14 +42,14 @@ function cardStyle(size: CardsSize, many: boolean, active: boolean) {
       ? `relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 border-solid py-0 pr-3 pl-2.5 [grid-template-areas:'avatar_name_score'_'avatar_meta_score'] [&>.avatar]:[grid-area:avatar] ${active ? "min-h-[72px] [--avatar:48px]" : "min-h-16 [--avatar:40px]"} kiosk:flex kiosk:min-h-0 kiosk:flex-col kiosk:items-start kiosk:justify-between kiosk:gap-3 kiosk:p-6 kiosk:[--avatar:72px] ${frame}`
       : `relative flex min-w-0 flex-col items-start gap-2 border-solid px-3 pt-3 pb-3 [--avatar:64px] kiosk:grid kiosk:grid-cols-[auto_minmax(0,1fr)] kiosk:grid-rows-[auto_auto_1fr_auto] kiosk:items-center kiosk:gap-x-4 kiosk:gap-y-2 kiosk:px-6 kiosk:py-6 kiosk:[--avatar:112px] kiosk:[grid-template-areas:'avatar_name'_'avatar_meta'_'score_score'_'checkout_checkout'] kiosk:[&>.avatar]:[grid-area:avatar] ${frame}`,
     name: many
-      ? "max-w-full self-end overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[14px] uppercase tracking-[1px] [grid-area:name] kiosk:self-auto kiosk:font-bold kiosk:text-[26px] kiosk:tracking-[2px]"
+      ? "max-w-full self-end overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[13px] uppercase tracking-[1px] [grid-area:name] kiosk:self-auto kiosk:font-bold kiosk:text-[26px] kiosk:tracking-[2px]"
       : "max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[16px] uppercase tracking-[1px] kiosk:self-end kiosk:font-bold kiosk:text-[36px] kiosk:tracking-[3px] kiosk:[grid-area:name]",
     remaining: many
-      ? `leading-[0.8] [grid-area:score] ${active ? "text-[60px] text-accent" : "text-[48px]"} kiosk:m-0 kiosk:self-start kiosk:text-[length:clamp(64px,min(7vw,15vh),120px)]`
+      ? `leading-[0.8] [grid-area:score] ${active ? "text-[56px] text-accent" : "text-[48px]"} kiosk:m-0 kiosk:self-start kiosk:text-[length:clamp(64px,min(7vw,15vh),120px)]`
       : `text-[length:clamp(44px,17vw,72px)] leading-[0.8] ${active ? "text-accent" : ""} kiosk:mt-3 kiosk:self-end kiosk:text-[length:clamp(96px,min(15vw,32vh),280px)] kiosk:[grid-area:score]`,
     meta: many
       ? "min-h-[1em] self-start font-pixel text-[11px] text-muted uppercase tracking-[1px] [grid-area:meta] kiosk:self-auto kiosk:text-[13px]"
-      : "min-h-[1em] font-pixel text-[11px] text-muted uppercase tracking-[1px] kiosk:self-start kiosk:text-[14px] kiosk:[grid-area:meta]",
+      : "min-h-[1em] font-pixel text-[11px] text-muted uppercase tracking-[1px] kiosk:self-start kiosk:text-[13px] kiosk:[grid-area:meta]",
   };
 }
 

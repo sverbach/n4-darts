@@ -9,12 +9,12 @@ const STYLES = {
   station: {
     root: "flex flex-1 flex-col items-center gap-6 text-center kiosk:gap-6",
     title: "mt-auto text-[40px] text-accent tracking-[4px] kiosk:text-[72px] kiosk:tracking-[8px]",
-    frame: "avatar-frame text-[10px] [--avatar:120px] kiosk:text-[20px] kiosk:[--avatar:172px]",
+    frame: "avatar-frame text-[11px] [--avatar:120px] kiosk:text-[20px] kiosk:[--avatar:172px]",
     side: "flex flex-col items-center gap-4 kiosk:items-start kiosk:gap-6",
     winner:
-      "m-0 font-bold font-pixel text-[28px] uppercase tracking-[3px] kiosk:text-[44px] kiosk:tracking-[4px]",
+      "m-0 font-bold font-pixel text-[28px] uppercase tracking-[3px] kiosk:text-[48px] kiosk:tracking-[4px]",
     legs: "flex items-baseline gap-4 text-[96px] leading-[0.78] kiosk:gap-6 kiosk:text-[160px]",
-    dash: "text-[60px] text-faint kiosk:text-[96px]",
+    dash: "text-[56px] text-faint kiosk:text-[96px]",
     stats: "flex gap-6 kiosk:gap-6",
     value: "text-[40px] leading-[0.85] kiosk:text-[48px]",
     label: "label",

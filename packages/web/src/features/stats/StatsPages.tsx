@@ -35,7 +35,7 @@ const NUMBER = "text-[24px] kiosk:text-[26px]";
 const ROW =
   "flex min-h-16 items-center gap-3 border-0 border-line-soft border-b border-solid [&_.pixel-icon]:h-[22px] [&_.pixel-icon]:text-accent";
 const ROW_MAIN =
-  "flex min-w-0 flex-1 flex-col gap-1.5 font-pixel text-[13px] uppercase tracking-[1px] kiosk:text-[15px]";
+  "flex min-w-0 flex-1 flex-col gap-1.5 font-pixel text-[13px] uppercase tracking-[1px] kiosk:text-[16px]";
 const ROW_DATE = "text-[11px] text-muted tracking-normal kiosk:text-[12px]";
 const ROW_VALUE = "min-w-12 text-right text-[28px] kiosk:w-[60px] kiosk:text-[32px]";
 
@@ -119,7 +119,7 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
               <tr key={row.playerId}>
                 <td
                   className={td(
-                    `font-pixel kiosk:text-[14px] text-[12px] ${i < 3 ? "text-accent" : "text-muted"}`,
+                    `font-pixel kiosk:text-[13px] text-[12px] ${i < 3 ? "text-accent" : "text-muted"}`,
                   )}
                 >
                   {i + 1}
@@ -133,7 +133,7 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
                     {row.name}
                   </a>
                 </td>
-                <td className={td("kiosk:text-[32px] text-[30px] text-accent")}>
+                <td className={td("kiosk:text-[32px] text-[28px] text-accent")}>
                   {average(row.rating)}
                 </td>
                 <td className={td(NUMBER)}>{average(row.average)}</td>
@@ -187,7 +187,7 @@ function Profile({ profile }: { profile: PlayerProfile }) {
         <Avatar player={{ id: profile.playerId, name: profile.name, photo: profile.photo }} large />
       </span>
       <div className="flex min-w-0 flex-col gap-2">
-        <h1 className="wrap-anywhere kiosk:text-[56px] text-[34px] kiosk:tracking-[5px] tracking-[3px]">
+        <h1 className="wrap-anywhere kiosk:text-[56px] text-[32px] kiosk:tracking-[5px] tracking-[3px]">
           {profile.name}
         </h1>
         {(profile.rank !== null || profile.since) && (

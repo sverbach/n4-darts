@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 export const MENU =
   "absolute top-[calc(100%_+_8px)] right-0 z-10 flex w-[220px] flex-col border border-accent border-solid bg-surface kiosk:w-[280px]";
 export const MENU_ITEM =
-  "min-h-12 justify-start border-0 border-line-soft border-t border-solid bg-transparent px-3 text-left hover:bg-accent-tint focus-visible:bg-accent-tint kiosk:min-h-14 kiosk:px-4 kiosk:text-[14px]";
+  "min-h-12 justify-start border-0 border-line-soft border-t border-solid bg-transparent px-3 text-left hover:bg-accent-tint focus-visible:bg-accent-tint kiosk:min-h-14 kiosk:px-4 kiosk:text-[13px]";
 export const MENU_BUTTON =
   "kiosk:min-h-9 min-h-[30px] kiosk:min-w-9 min-w-[30px] bg-transparent p-0 font-text kiosk:text-[28px] text-[22px] tracking-normal aria-expanded:border-accent aria-expanded:bg-accent aria-expanded:text-accent-text";
 

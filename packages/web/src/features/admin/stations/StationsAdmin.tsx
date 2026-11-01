@@ -55,7 +55,7 @@ export function StationsAdmin() {
           placeholder={`Station ${Math.max(0, ...(stations ?? []).map((s) => s.id)) + 1}`}
           onSubmit={(name, boardUrl) => change("POST", "/api/admin/stations", { name, boardUrl })}
         >
-          <p className="hint m-0 text-[19px]">
+          <p className="hint m-0 text-[20px]">
             The address of the board's Board Manager on the local network, e.g.
             http://192.168.1.139:3180.
           </p>
@@ -186,7 +186,7 @@ function StationForm(props: {
           </button>
         </div>
       ) : (
-        <button type="submit" className="primary cta min-h-14! text-[14px]!">
+        <button type="submit" className="primary cta min-h-14! text-[13px]!">
           {props.submitLabel} <PixelIcon name="arrow" height="0.9em" />
         </button>
       )}

@@ -20,13 +20,13 @@ type Send = (command: StationCommand) => Promise<string | null>;
 const CONTROLS = "mt-auto grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-2 kiosk:gap-3";
 const SECONDARY = "kiosk:min-h-20 kiosk:text-[16px] kiosk:tracking-[2px]";
 /** The lineup's up and down buttons. */
-const MOVE = "min-h-12 w-12 bg-transparent p-0 text-[21px] kiosk:min-h-16 kiosk:w-16";
+const MOVE = "min-h-12 w-12 bg-transparent p-0 text-[22px] kiosk:min-h-16 kiosk:w-16";
 /** A dart tile; its border, background and colour come with its state. */
 const DART =
   "flex min-h-[76px] flex-col items-stretch justify-between border px-2.5 py-2 text-left normal-case kiosk:min-h-[104px] kiosk:flex-row kiosk:items-end kiosk:px-4 kiosk:py-3";
 /** "REMOVE DARTS" between two rules. */
 const VISIT_STATUS =
-  "m-0 flex min-h-11 items-center gap-3 font-pixel text-[14px] uppercase tracking-[2px] before:h-px before:flex-1 before:content-[''] after:h-px after:flex-1 after:content-[''] kiosk:min-h-10 kiosk:gap-3 kiosk:text-[18px] kiosk:tracking-[3px]";
+  "m-0 flex min-h-11 items-center gap-3 font-pixel text-[13px] uppercase tracking-[2px] before:h-px before:flex-1 before:content-[''] after:h-px after:flex-1 after:content-[''] kiosk:min-h-10 kiosk:gap-3 kiosk:text-[18px] kiosk:tracking-[3px]";
 
 export function StationPage({ id }: { id: number }) {
   const { view, connected, send } = useStation(id);
@@ -44,7 +44,7 @@ export function StationPage({ id }: { id: number }) {
       <header className="flex items-center justify-between gap-2 kiosk:gap-4 border-0 border-border border-b border-solid kiosk:px-6 px-4 kiosk:py-3 py-2.5">
         <div className="flex min-w-0 items-center gap-4">
           <Logo width="86px" className="max-kiosk:hidden" />
-          <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel kiosk:text-[20px] text-[14px] text-accent uppercase kiosk:tracking-[2px] tracking-[1px]">
+          <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel kiosk:text-[20px] text-[13px] text-accent uppercase kiosk:tracking-[2px] tracking-[1px]">
             {view?.name ?? `Station ${id}`}
           </span>
         </div>
@@ -166,7 +166,7 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
   return (
     <div className="mx-auto flex w-full max-w-[760px] flex-1 flex-col gap-4 kiosk:gap-6 kiosk:pt-6">
       <div className="flex flex-col gap-2">
-        {match.label && <span className="match-label kiosk:text-[14px]">{match.label}</span>}
+        {match.label && <span className="match-label kiosk:text-[13px]">{match.label}</span>}
         <h1 className="kiosk:text-[48px]">Throwing order</h1>
         <p className="hint m-0">Top of the list throws first.</p>
       </div>
@@ -176,7 +176,7 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
             key={p.id}
             className="flex kiosk:min-h-24 min-h-[72px] items-center gap-3 kiosk:gap-4 border border-border border-solid bg-surface kiosk:pr-3 pr-2.5 kiosk:pl-6 pl-3 [--avatar:48px] kiosk:[--avatar:64px]"
           >
-            <span className="kiosk:w-10 w-7 font-pixel kiosk:text-[20px] text-[14px] text-accent">
+            <span className="kiosk:w-10 w-7 font-pixel kiosk:text-[20px] text-[13px] text-accent">
               {String(i + 1).padStart(2, "0")}
             </span>
             <Avatar player={p} />
@@ -267,7 +267,7 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
           <span className="kiosk:text-[22px]">
             Next player <PixelIcon name="arrow" height="0.9em" />
           </span>
-          <span className="font-normal kiosk:text-[14px] text-[11px]">
+          <span className="font-normal kiosk:text-[13px] text-[11px]">
             Up: {match.players[upNext(match)]?.name}
           </span>
         </button>
@@ -397,7 +397,7 @@ function VisitPanel(props: ScoreboardProps) {
                 {dart.ignored ? "Ignored" : `D${i + 1}`}
               </span>
               <span
-                className={`font-text kiosk:text-[72px] text-[38px] kiosk:leading-[0.8] leading-[0.85] tracking-normal ${dart.ignored ? "line-through" : ""}`}
+                className={`font-text kiosk:text-[72px] text-[36px] kiosk:leading-[0.8] leading-[0.85] tracking-normal ${dart.ignored ? "line-through" : ""}`}
               >
                 {dartLabel(dart.segment)}
               </span>

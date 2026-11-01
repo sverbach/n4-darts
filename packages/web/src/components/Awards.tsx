@@ -1,10 +1,14 @@
 import type { Award } from "@n4/server/api";
 
-const AWARDS: Record<Award["kind"], { title: string; format(value: number): string }> = {
+/** Each award's title, its number, and a unit word where the number needs one. */
+const AWARDS: Record<
+  Award["kind"],
+  { title: string; format(value: number): string; unit?(value: number): string }
+> = {
   bestAverage: { title: "Best match average", format: (v) => v.toFixed(1) },
   highestCheckout: { title: "Highest checkout", format: String },
   most180s: { title: "Most 180s", format: String },
-  bestLeg: { title: "Best leg", format: (v) => `${v} dart${v === 1 ? "" : "s"}` },
+  bestLeg: { title: "Best leg", format: String, unit: (v) => (v === 1 ? "dart" : "darts") },
 };
 
 /** On the projector (`--px` units) and in /admin. */
@@ -17,11 +21,12 @@ const STYLES = {
     value: "text-accent text-pu-72 leading-[0.8] [grid-area:value]",
   },
   admin: {
-    list: "m-0 grid list-none grid-cols-2 gap-2.5 p-0",
+    // Two to a row; an odd last one takes the whole row.
+    list: "m-0 grid list-none grid-cols-2 gap-2.5 p-0 [&>li:last-child:nth-child(odd)]:col-span-full",
     item: "flex flex-col gap-2.5 border border-border border-solid bg-panel p-4",
     title: "font-pixel text-[11px] text-muted uppercase tracking-[1px]",
-    players: "order-3 font-pixel text-[14px] uppercase tracking-[1px]",
-    value: "order-2 text-[52px] text-accent leading-[0.85]",
+    players: "order-3 font-pixel text-[13px] uppercase tracking-[1px]",
+    value: "order-2 text-[48px] text-accent leading-[0.85]",
   },
 };
 
@@ -39,7 +44,15 @@ export function Awards({ awards, projector = false }: { awards: Award[]; project
               ? `${award.players.length} players`
               : award.players.join(", ")}
           </span>
-          <span className={p.value}>{AWARDS[award.kind].format(award.value)}</span>
+          {/* The number in the numbers' font, its unit as a label beside it. */}
+          <span className={p.value}>
+            {AWARDS[award.kind].format(award.value)}
+            {AWARDS[award.kind].unit && (
+              <span className="ml-[0.3em] font-pixel text-[0.25em] text-muted uppercase tracking-[1px]">
+                {AWARDS[award.kind].unit?.(award.value)}
+              </span>
+            )}
+          </span>
         </li>
       ))}
     </ul>

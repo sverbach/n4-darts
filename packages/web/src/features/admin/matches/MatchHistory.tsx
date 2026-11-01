@@ -196,7 +196,7 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
                             )}
                             <span>{dartLabel(dart.segment)}</span>
                             {added && (
-                              <small className="font-pixel text-[9px] text-muted uppercase">
+                              <small className="font-pixel text-[11px] text-muted uppercase">
                                 added
                               </small>
                             )}

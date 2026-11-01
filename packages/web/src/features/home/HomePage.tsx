@@ -9,7 +9,7 @@ import { useLive } from "../../lib/useLive.ts";
 const LIST = "flex min-w-0 flex-[1_1_420px] flex-col gap-2";
 /** The tiles' fill and frame, shared by a station's Watch link. */
 const FRAME = "border border-border border-solid bg-surface no-underline hover:border-accent-line";
-const TILE = `flex min-h-[60px] min-w-0 flex-1 items-center justify-between gap-4 ${FRAME} px-4 font-pixel text-[15px] uppercase tracking-[1px] kiosk:min-h-[72px] kiosk:px-6 kiosk:text-[18px] [&_.pixel-icon]:h-[21px] [&_.pixel-icon]:text-accent`;
+const TILE = `flex min-h-[60px] min-w-0 flex-1 items-center justify-between gap-4 ${FRAME} px-4 font-pixel text-[16px] uppercase tracking-[1px] kiosk:min-h-[72px] kiosk:px-6 kiosk:text-[18px] [&_.pixel-icon]:h-[21px] [&_.pixel-icon]:text-accent`;
 
 /** What a station is doing, from its live view: "Free", the match and its scores, or its notice. */
 function stationState(station: StationView) {

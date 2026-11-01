@@ -60,7 +60,7 @@ export function AdminPage({ section }: { section: AdminSection }) {
         <div className="mx-auto kiosk:flex grid max-w-[1200px] grid-cols-[minmax(0,1fr)_auto] items-center kiosk:gap-x-6 kiosk:gap-y-0 kiosk:px-6">
           <div className="flex kiosk:min-h-16 items-center gap-3 kiosk:gap-3 kiosk:p-0 px-4 py-2">
             <Logo width="72px" />
-            <span className="font-pixel kiosk:text-[14px] text-[13px] uppercase tracking-[1px]">
+            <span className="font-pixel kiosk:text-[13px] text-[13px] uppercase tracking-[1px]">
               Admin
             </span>
           </div>
@@ -73,7 +73,7 @@ export function AdminPage({ section }: { section: AdminSection }) {
                 key={key}
                 href={`/admin/${key}`}
                 aria-current={key === section ? "page" : undefined}
-                className="flex kiosk:min-h-16 min-h-[46px] flex-[1_0_auto] kiosk:flex-none items-center justify-center border-0 border-transparent border-b-2 border-solid kiosk:px-4 px-3 font-pixel kiosk:text-[12px] text-[10px] text-muted uppercase tracking-[1px] no-underline aria-[current=page]:border-accent aria-[current=page]:text-accent"
+                className="flex kiosk:min-h-16 min-h-[46px] flex-[1_0_auto] kiosk:flex-none items-center justify-center border-0 border-transparent border-b-2 border-solid kiosk:px-4 px-3 font-pixel kiosk:text-[12px] text-[11px] text-muted uppercase tracking-[1px] no-underline aria-[current=page]:border-accent aria-[current=page]:text-accent"
                 // On a phone the row scrolls: keep the current tab in sight.
                 ref={
                   key === section
@@ -175,7 +175,7 @@ function Login({ onDone }: { onDone: () => Promise<void> }) {
           required
           aria-invalid={error ? true : undefined}
           onChange={(e) => setPin(e.target.value)}
-          className="min-h-[76px] border-2 bg-bg text-center text-[52px] tracking-[20px] aria-invalid:border-danger"
+          className="min-h-[76px] border-2 bg-bg text-center text-[48px] tracking-[20px] aria-invalid:border-danger"
         />
         <button type="submit" className="primary cta min-h-16! text-[16px]!">
           Unlock <PixelIcon name="arrow" height="0.9em" />

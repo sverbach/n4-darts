@@ -40,7 +40,7 @@ export const CARD_MAIN = "flex min-w-0 flex-[1_1_260px] flex-col gap-1.5";
 /** The card's title line; `spread` puts its parts at both ends. */
 export const cardTitle = (spread = false) =>
   `flex flex-wrap items-center gap-x-3 gap-y-2 ${spread ? "justify-between" : ""}`;
-export const CARD_NAME = "font-pixel text-[15px] uppercase tracking-[1px] [&_a]:no-underline";
+export const CARD_NAME = "font-pixel text-[16px] uppercase tracking-[1px] [&_a]:no-underline";
 export const CARD_DETAIL = "wrap-anywhere";
 /** The card's buttons, small; at the end of the row unless `start`. */
 export const cardActions = (start = false) =>
@@ -48,9 +48,9 @@ export const cardActions = (start = false) =>
 
 /** A small tag: "Held", "Pinned", "Online". */
 export const badge = (tone: "" | "ok" | "warn" = "") =>
-  `inline-flex min-h-6 items-center border border-solid px-2 font-pixel text-[10px] uppercase ${tone === "ok" ? "border-ok-line text-ok" : tone === "warn" ? "border-warn-line text-warn" : "border-border text-muted"}`;
+  `inline-flex min-h-6 items-center border border-solid px-2 font-pixel text-[11px] uppercase ${tone === "ok" ? "border-ok-line text-ok" : tone === "warn" ? "border-warn-line text-warn" : "border-border text-muted"}`;
 /** The small status pill (`status status-…`), at a badge's size: the other of the two sizes. */
-export const STATUS_SMALL = "min-h-6! px-2! text-[10px]! before:size-1.5!";
+export const STATUS_SMALL = "min-h-6! px-2! text-[11px]! before:size-1.5!";
 
 /** A table in a framed panel. */
 export const TABLE_PANEL = "border border-border border-solid bg-panel";

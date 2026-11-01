@@ -38,21 +38,95 @@ typography:
     fontSize: "clamp(96px, min(15vw, 32vh), 280px)"
     fontWeight: 400
     lineHeight: 0.8
+  display-phone:
+    fontFamily: "Geist Pixel, monospace"
+    fontSize: "clamp(44px, 17vw, 72px)"
+    fontWeight: 400
+    lineHeight: 0.8
+  game-shot-legs:
+    fontFamily: "Geist Pixel, monospace"
+    fontSize: "160px"
+    fontWeight: 400
+    lineHeight: 0.78
+  game-shot-legs-phone:
+    fontFamily: "Geist Pixel, monospace"
+    fontSize: "96px"
+    fontWeight: 400
+    lineHeight: 0.78
+  game-shot-title:
+    fontFamily: "Silkscreen, monospace"
+    fontSize: "72px"
+    fontWeight: 700
+    lineHeight: 1.2
+    letterSpacing: "8px"
+  game-shot-title-phone:
+    fontFamily: "Silkscreen, monospace"
+    fontSize: "40px"
+    fontWeight: 700
+    lineHeight: 1.2
+    letterSpacing: "4px"
+  dart:
+    fontFamily: "Geist Pixel, monospace"
+    fontSize: "72px"
+    fontWeight: 400
+    lineHeight: 0.8
+  stat-value:
+    fontFamily: "Geist Pixel, monospace"
+    fontSize: "48px"
+    fontWeight: 400
+    lineHeight: 0.8
+  stat-value-medium:
+    fontFamily: "Geist Pixel, monospace"
+    fontSize: "40px"
+    fontWeight: 400
+    lineHeight: 0.85
+  stat-value-phone:
+    fontFamily: "Geist Pixel, monospace"
+    fontSize: "32px"
+    fontWeight: 400
+    lineHeight: 0.85
   headline:
     fontFamily: "Silkscreen, monospace"
     fontSize: "36px"
     fontWeight: 700
     lineHeight: 1.2
     letterSpacing: "3px"
+  headline-phone:
+    fontFamily: "Silkscreen, monospace"
+    fontSize: "26px"
+    fontWeight: 700
+    lineHeight: 1.2
+    letterSpacing: "2px"
   title:
     fontFamily: "Silkscreen, monospace"
     fontSize: "18px"
     fontWeight: 700
     lineHeight: 1.2
     letterSpacing: "1px"
+  title-phone:
+    fontFamily: "Silkscreen, monospace"
+    fontSize: "16px"
+    fontWeight: 700
+    lineHeight: 1.2
+    letterSpacing: "1px"
+  field:
+    fontFamily: "Geist Pixel, monospace"
+    fontSize: "24px"
+    fontWeight: 400
+    lineHeight: 1.2
+  number-large:
+    fontFamily: "Geist Pixel, monospace"
+    fontSize: "28px"
+    fontWeight: 400
+    lineHeight: 1.2
   body:
     fontFamily: "Geist Pixel, monospace"
     fontSize: "22px"
+    fontWeight: 400
+    lineHeight: 1.2
+  body-phone:
+    fontFamily: "Geist Pixel, monospace"
+    fontSize: "20px"
     fontWeight: 400
     lineHeight: 1.2
   label:
@@ -61,6 +135,63 @@ typography:
     fontWeight: 400
     lineHeight: 1.2
     letterSpacing: "1px"
+  button:
+    fontFamily: "Silkscreen, monospace"
+    fontSize: "12px"
+    fontWeight: 400
+    lineHeight: 1.2
+    letterSpacing: "1px"
+  label-phone:
+    fontFamily: "Silkscreen, monospace"
+    fontSize: "11px"
+    fontWeight: 400
+    lineHeight: 1.2
+    letterSpacing: "1px"
+  name-large:
+    fontFamily: "Silkscreen, monospace"
+    fontSize: "26px"
+    fontWeight: 400
+    lineHeight: 1.2
+  name:
+    fontFamily: "Silkscreen, monospace"
+    fontSize: "16px"
+    fontWeight: 400
+    lineHeight: 1.2
+  number:
+    fontFamily: "Geist Pixel, monospace"
+    fontSize: "24px"
+    fontWeight: 400
+    lineHeight: 1.2
+  number-xl:
+    fontFamily: "Geist Pixel, monospace"
+    fontSize: "32px"
+    fontWeight: 400
+    lineHeight: 1.2
+  number-2xl:
+    fontFamily: "Geist Pixel, monospace"
+    fontSize: "36px"
+    fontWeight: 400
+    lineHeight: 1.2
+  number-3xl:
+    fontFamily: "Geist Pixel, monospace"
+    fontSize: "56px"
+    fontWeight: 400
+    lineHeight: 1.2
+  cta:
+    fontFamily: "Silkscreen, monospace"
+    fontSize: "20px"
+    fontWeight: 400
+    lineHeight: 1.2
+  cta-phone:
+    fontFamily: "Silkscreen, monospace"
+    fontSize: "16px"
+    fontWeight: 400
+    lineHeight: 1.2
+  name-medium:
+    fontFamily: "Silkscreen, monospace"
+    fontSize: "22px"
+    fontWeight: 400
+    lineHeight: 1.2
 rounded:
   none: "0px"
 spacing:
@@ -207,6 +338,8 @@ Nine muted grounds (`avatar-1` to `avatar-9`) for initials avatars, chosen from 
 - **Label** (Silkscreen 400, 13px/11px, 1px tracking, capitals, Readout Grey): small headings ("STATIONS"), button text (12px), status pills, table headers, back links.
 
 ### Named Rules
+**The Scale Rule.** Every size is a step of one scale: 11 · 12 · 13 · 16 · 18 · 20 · 22 · 24 · 26 · 28 · 32 · 36 · 40 · 48 · 56 · 72 · 96 · 160px (the score's clamps aside, and the projector's `pu-*` units). Nothing under 11px.
+
 **The Two-Voice Rule.** Words in Silkscreen capitals, numbers in Geist Pixel. A score is never set in Silkscreen, and a label is never in Geist Pixel.
 
 **The Stored-Name Rule.** Names show in capitals through `text-transform`. The stored name never changes.

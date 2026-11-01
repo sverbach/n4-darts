@@ -26,7 +26,7 @@ const DRAFT_SETTINGS =
   "settings grid-cols-[repeat(auto-fill,minmax(160px,1fr))]! max-kiosk:[&>label:last-child:nth-child(odd)]:col-span-full";
 
 /** The seed list's up and down buttons. */
-const SEED_MOVE = "w-11 bg-transparent p-0 text-[21px]";
+const SEED_MOVE = "w-11 bg-transparent p-0 text-[22px]";
 
 /** "about 45 min", "about 2 h 30". */
 export function formatMinutes(minutes: number) {
@@ -355,7 +355,7 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <Avatar player={{ id: e.playerId, name: e.name, photo: e.photo }} />
-                  <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[14px] uppercase tracking-[1px]">
+                  <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[13px] uppercase tracking-[1px]">
                     {e.name}
                   </span>
                   <span className="text-[24px] text-muted">{average(e.rating)}</span>
