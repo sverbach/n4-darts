@@ -367,7 +367,7 @@ function VisitPanel(props: ScoreboardProps) {
               <button
                 type="button"
                 key={`add-${i}`}
-                className={`${DART} border-dashed ${visit?.bust ? "border-danger-line" : "border-line-soft"} bg-transparent text-faint hover:border-accent-line hover:text-accent focus-visible:border-accent-line focus-visible:text-accent`}
+                className={`${DART} border-dashed ${visit?.bust ? "border-danger-line" : "border-border"} bg-transparent text-faint hover:border-accent-line hover:text-accent focus-visible:border-accent-line focus-visible:text-accent`}
                 onClick={onAdd}
                 aria-label={`Add dart ${i + 1}`}
               >

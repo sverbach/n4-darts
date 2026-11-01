@@ -246,7 +246,7 @@ function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
               </span>
             </td>
             <td className={td("text-accent text-pu-40")}>{average(row.rating)}</td>
-            <td className={td("text-muted text-pu-34")}>{row.matches}</td>
+            <td className={td("text-pu-34")}>{row.matches}</td>
             <td className={td("text-pu-34")}>{row.s180}</td>
             <td className={td("text-pu-34")}>{count(row.highestCheckout)}</td>
           </tr>

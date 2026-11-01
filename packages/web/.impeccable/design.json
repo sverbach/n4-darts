@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-31T16:12:16.602788+00:00",
+  "generatedAt": "2026-11-01T09:02:39.553193+00:00",
   "title": "Design System: n4-darts",
   "extensions": {
     "colorMeta": {
@@ -188,23 +188,123 @@
     "typographyMeta": {
       "display": {
         "displayName": "Display",
-        "purpose": "The remaining score; leg counts on game shot."
+        "purpose": "The remaining score on the kiosk."
+      },
+      "display-phone": {
+        "displayName": "Display Phone",
+        "purpose": "The remaining score on the kiosk."
+      },
+      "game-shot-legs": {
+        "displayName": "Game Shot Legs",
+        "purpose": "Legs on game shot."
+      },
+      "game-shot-legs-phone": {
+        "displayName": "Game Shot Legs Phone",
+        "purpose": "Legs on game shot."
+      },
+      "game-shot-title": {
+        "displayName": "Game Shot Title",
+        "purpose": "\"Game shot\"."
+      },
+      "game-shot-title-phone": {
+        "displayName": "Game Shot Title Phone",
+        "purpose": "\"Game shot\"."
+      },
+      "dart": {
+        "displayName": "Dart",
+        "purpose": "Dart tiles."
+      },
+      "stat-value": {
+        "displayName": "Stat Value",
+        "purpose": "Profile stat values."
+      },
+      "stat-value-medium": {
+        "displayName": "Stat Value Medium",
+        "purpose": "A step of the type scale."
+      },
+      "stat-value-phone": {
+        "displayName": "Stat Value Phone",
+        "purpose": "Profile stat values."
       },
       "headline": {
         "displayName": "Headline",
+        "purpose": "Page titles."
+      },
+      "headline-phone": {
+        "displayName": "Headline Phone",
         "purpose": "Page titles."
       },
       "title": {
         "displayName": "Title",
         "purpose": "Section headings."
       },
+      "title-phone": {
+        "displayName": "Title Phone",
+        "purpose": "Section headings."
+      },
+      "field": {
+        "displayName": "Field",
+        "purpose": "Field values."
+      },
+      "number-large": {
+        "displayName": "Number Large",
+        "purpose": "A step of the type scale."
+      },
       "body": {
         "displayName": "Body",
-        "purpose": "Running text, numbers, field values."
+        "purpose": "Running text and values."
+      },
+      "body-phone": {
+        "displayName": "Body Phone",
+        "purpose": "Running text and values."
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Small headings, buttons, pills, table headers."
+        "purpose": "Small headings, pills, table heads."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Button text."
+      },
+      "label-phone": {
+        "displayName": "Label Phone",
+        "purpose": "Small headings, pills, table heads."
+      },
+      "name-large": {
+        "displayName": "Name Large",
+        "purpose": "A step of the type scale."
+      },
+      "name": {
+        "displayName": "Name",
+        "purpose": "A step of the type scale."
+      },
+      "number": {
+        "displayName": "Number",
+        "purpose": "A step of the type scale."
+      },
+      "number-xl": {
+        "displayName": "Number Xl",
+        "purpose": "A step of the type scale."
+      },
+      "number-2xl": {
+        "displayName": "Number 2Xl",
+        "purpose": "A step of the type scale."
+      },
+      "number-3xl": {
+        "displayName": "Number 3Xl",
+        "purpose": "A step of the type scale."
+      },
+      "cta": {
+        "displayName": "Cta",
+        "purpose": "A step of the type scale."
+      },
+      "cta-phone": {
+        "displayName": "Cta Phone",
+        "purpose": "A step of the type scale."
+      },
+      "name-medium": {
+        "displayName": "Name Medium",
+        "purpose": "A step of the type scale."
       }
     },
     "shadows": [
@@ -256,7 +356,7 @@
       "refersTo": "button-cta",
       "description": "The big slanted one: one per screen.",
       "html": "<button class=\"ds-btn-cta\">Start <svg viewBox=\"0 0 4 7\" height=\"0.8em\" shape-rendering=\"crispEdges\"><path fill=\"currentColor\" d=\"M0 0h1v7h-1zM1 1h1v5h-1zM2 2h1v3h-1zM3 3h1v1h-1z\"/></svg></button>",
-      "css": ".ds-btn-cta{font-family:'Silkscreen',monospace;font-size:12px;letter-spacing:1px;text-transform:uppercase;border-radius:0;min-height:44px;padding:0 16px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;min-height:72px;padding:0 32px;border:0;background:var(--accent,#a68cff);color:var(--accent-text,#060708);font-weight:700;font-size:20px;letter-spacing:2px;clip-path:polygon(16px 0,100% 0,calc(100% - 16px) 100%,0 100%);}.ds-btn-cta:active{filter:brightness(0.9);}.ds-btn-cta:focus-visible{outline:2px solid var(--accent,#a68cff);outline-offset:2px;}"
+      "css": ".ds-btn-cta{font-family:'Silkscreen',monospace;font-size:12px;letter-spacing:1px;text-transform:uppercase;border-radius:0;min-height:44px;padding:0 16px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;min-height:72px;padding:0 24px;border:0;background:var(--accent,#a68cff);color:var(--accent-text,#060708);font-weight:700;font-size:20px;letter-spacing:2px;clip-path:polygon(16px 0,100% 0,calc(100% - 16px) 100%,0 100%);}.ds-btn-cta:active{filter:brightness(0.9);}.ds-btn-cta:focus-visible{outline:2px solid var(--accent,#a68cff);outline-offset:2px;}"
     },
     {
       "name": "Danger Button",
@@ -343,6 +443,11 @@
         "section": "colors"
       },
       {
+        "name": "The Scale Rule",
+        "body": "Every size is a step of one scale: 11 · 12 · 13 · 16 · 18 · 20 · 22 · 24 · 26 · 28 · 32 · 36 · 40 · 48 · 56 · 72 · 96 · 160px (the score's clamps aside, and the projector's `pu-*` units). Nothing under 11px.",
+        "section": "typography"
+      },
+      {
         "name": "The Two-Voice Rule",
         "body": "Words in Silkscreen capitals, numbers in Geist Pixel. A score is never set in Silkscreen, and a label is never in Geist Pixel.",
         "section": "typography"
@@ -356,6 +461,11 @@
         "name": "The Tight-Numbers Rule",
         "body": "Big numbers sit at line-height 0.8–0.85 so they pack like a scoreboard, not like text.",
         "section": "typography"
+      },
+      {
+        "name": "The Largest-Step Rule",
+        "body": "Nothing is spaced wider than 24px; when a layout feels like it needs more, it needs less content or a rule, not more air.",
+        "section": "layout"
       },
       {
         "name": "The Fit-The-Room Rule",

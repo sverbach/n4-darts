@@ -208,7 +208,11 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
                       className={`min-w-[3em] text-right text-[28px] ${visit.bust ? "text-danger" : ""}`}
                     >
                       {visit.bust ? "Bust" : visit.darts.reduce((sum, d) => sum + d.score, 0)}
-                      {visit.checkout && " ✓"}
+                      {visit.checkout && (
+                        <span className="ml-2 align-middle font-pixel text-[11px] text-muted uppercase">
+                          Out
+                        </span>
+                      )}
                     </span>
                   </li>
                 ))}

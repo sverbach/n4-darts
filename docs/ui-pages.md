@@ -262,7 +262,7 @@ There's one tournament at a time, and the tab shows one of three states.
   - A back button "← Matches".
   - The title "Ann vs Bob" and the line "Ann won 2–1 · 501 · Double out · First to 2 legs · Station 1 · 20 Oct 2026, 21:14".
   - The hint "Tap a dart to correct it."
-  - Per leg, the heading "Leg 1 · Ann starts · Ann won" (who won the leg only when there was more than one) and a list of visits. Each visit shows the player name, the dart buttons and the visit score, with "Bust" or ✓ for a checkout.
+  - Per leg, the heading "Leg 1 · Ann starts · Ann won" (who won the leg only when there was more than one) and a list of visits. Each visit shows the player name, the dart buttons and the visit score, with "Bust", or "Out" after a checkout.
   - A corrected dart shows its original struck through, and a dart added by hand on the station is marked "added". Tapping a dart opens the segment picker.
 
 ### `/admin/diagnostics`

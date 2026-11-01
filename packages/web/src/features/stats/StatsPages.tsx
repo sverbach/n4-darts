@@ -137,8 +137,8 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
                   {average(row.rating)}
                 </td>
                 <td className={td(NUMBER)}>{average(row.average)}</td>
-                <td className={td(`text-muted ${NUMBER}`)}>{row.matches}</td>
-                <td className={td(`text-muted ${NUMBER}`)}>{row.matchesWon}</td>
+                <td className={td(NUMBER)}>{row.matches}</td>
+                <td className={td(NUMBER)}>{row.matchesWon}</td>
                 <td className={td(NUMBER)}>{row.s180}</td>
                 <td className={td(NUMBER)}>{count(row.highestCheckout)}</td>
               </tr>
