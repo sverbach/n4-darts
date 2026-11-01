@@ -38,7 +38,7 @@ n4-darts runs darts evenings: a few automatic dartboards (stations) play x01, wh
   - A Single/Double/Triple segmented control.
   - A grid of 1–20, plus 25/Bull and Miss buttons.
 - **Group table:** columns #, Player, P, W, L, (Legs), +/−, Pts, Avg.
-- **Bracket match card:** under its round's heading, only what the heading doesn't say ("2" under "Semi-final", nothing for the final), two player rows with the winner highlighted and legs won, and a status line when there's no result yet ("Queued", "On a station", "Playing", "Walkover").
+- **Bracket match card:** under its round's heading, only what the heading doesn't say ("2" under "Semi-final", nothing for the final), two player rows with legs won (the winner bold, the loser grey once decided), a violet frame while it's on a station, and "Walkover" when it was one. Where a match is (queued, on a station, playing) is said by the station cards, not the bracket.
 - **Awards list** (a tie of more than two shows "4 players", not the names):
   - Rows of title, value and player name(s).
   - The titles: Best match average, Highest checkout, Most 180s, Best leg ("n darts").
@@ -133,7 +133,7 @@ A room-wide overview for 16:9. Everything scales to fit, with no scrolling. "Ser
 - **Header:** the tournament name and the phase ("Group phase" or "Knockout"), with a progress square per match (the count is the squares' accessible label).
 - **Left column:**
   - "Now playing": the live station cards.
-  - "Up next": the next queued matches in the scheduler's order, "avatar Ann vs avatar Bob". In the group phase there's no "Group match n" label (the fixture number isn't the playing order); with several groups the group shows; knockout matches keep their label ("Semi-final 2").
+  - "Up next" (group phase only; in the knockout the bracket shows what's left): the next queued matches in the scheduler's order, "avatar Ann vs avatar Bob". In the group phase there's no "Group match n" label (the fixture number isn't the playing order); with several groups the group shows; knockout matches keep their label ("Semi-final 2").
 - **Right/main area:**
   - Group phase: the group tables, one per group (the group heading is shown only when there are several groups).
   - Knockout: the bracket. The winners bracket and final are on top, the losers bracket below. Columns are rounds, each holding bracket match cards.

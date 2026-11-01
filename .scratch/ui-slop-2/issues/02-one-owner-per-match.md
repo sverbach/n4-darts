@@ -1,6 +1,6 @@
 # Each match's state in one place on the knockout screens
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 On `/display` in the knockout (`display-knockout-*`) Ann vs Dee is station 1's "Next", the bracket's "On a station" and implied by Up next; Cid vs Bob is in Up next and in the bracket as "Queued". The bracket says "On a station" without naming it while the station card says "Next". Admin's knockout repeats the pairs across Stations, Queue and the bracket.
@@ -19,3 +19,5 @@ On `/display` in the knockout (`display-knockout-*`) Ann vs Dee is station 1's "
 ## Comments
 
 2026-11-01: Confirmed by the user ("go ahead with the ui-slop-2 tickets").
+
+2026-11-01: Built, with the reverse of the ticket's first option, chosen after comparing at 1080p: the station cards already own "what's on a station" (the waiting match, the live score), so the bracket owns the draw and the results and no longer repeats station state in its own words. The bracket card drops its "Queued" / "On a station" / "Playing" lines (only "Walkover" stays) and keeps its violet frame while live; /display drops Up next in the knockout phase (the bracket shows what's left; Up next stays in the group phase). Admin's bracket follows the same card, and its Stations and Queue sections own where matches are. No server change was needed. Also: the winner row is bold and the loser grey only once a match is decided.

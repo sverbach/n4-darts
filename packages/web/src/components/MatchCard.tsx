@@ -24,7 +24,7 @@ function cardStyle(match: TournamentMatchView, projector: boolean) {
         "border-0 border-line-soft border-b border-solid px-pu-14 py-pu-8 font-pixel text-muted text-pu-13 uppercase",
       status: `px-pu-14 py-pu-8 font-pixel text-pu-13 uppercase ${live ? "text-accent" : "text-muted"}`,
       player: (winner: boolean) =>
-        `flex h-pu-56 items-center gap-pu-12 border-0 border-line-soft border-b border-solid px-pu-14 avatar-pu-36 ${winner ? "font-bold" : "text-muted"}`,
+        `flex h-pu-56 items-center gap-pu-12 border-0 border-line-soft border-b border-solid px-pu-14 avatar-pu-36 ${match.winner ? (winner ? "font-bold" : "text-muted") : ""}`,
       name: "min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-pu-18 uppercase tracking-pu-2",
       legs: "text-pu-40",
     };
@@ -35,7 +35,7 @@ function cardStyle(match: TournamentMatchView, projector: boolean) {
       "border-0 border-line-soft border-b border-solid px-3 py-2 font-pixel text-[11px] text-muted uppercase",
     status: `px-3 py-2 font-pixel text-[11px] uppercase ${live ? "text-accent" : "text-muted"}`,
     player: (winner: boolean) =>
-      `flex min-h-[46px] items-center gap-2.5 border-0 border-line-soft border-b border-solid px-3 [--avatar:28px] ${winner ? "font-bold" : "text-muted"}`,
+      `flex min-h-[46px] items-center gap-2.5 border-0 border-line-soft border-b border-solid px-3 [--avatar:28px] ${match.winner ? (winner ? "font-bold" : "text-muted") : ""}`,
     name: "min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[13px] uppercase",
     legs: "text-[28px]",
   };
@@ -74,9 +74,9 @@ export function MatchCard({
           </div>
         );
       })}
-      {!match.legs && STATUS[match.status] && (
-        <div className={p.status}>{STATUS[match.status]}</div>
-      )}
+      {/* Where a match is (queued, on a station, playing) is the stations' to say; the card
+          shows the draw and the result, and a frame while it's live. */}
+      {match.status === "walkover" && <div className={p.status}>{STATUS.walkover}</div>}
     </div>
   );
 }

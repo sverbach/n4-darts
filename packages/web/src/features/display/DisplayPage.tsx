@@ -86,7 +86,8 @@ function Running({ view }: { view: DisplayView }) {
               <StationCard key={s.id} station={s} />
             ))}
           </section>
-          {view.upNext.length > 0 && (
+          {/* In the knockout the bracket shows what's left, so no list repeats it. */}
+          {!knockout && view.upNext.length > 0 && (
             <section className={SECTION}>
               <h2 className={H2}>Up next</h2>
               {view.upNext.map((m) => (
