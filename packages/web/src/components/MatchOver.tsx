@@ -32,16 +32,12 @@ const STYLES = {
     stats: "flex gap-pu-48",
     value: "text-pu-72 leading-[0.85]",
     label: "font-pixel text-muted text-pu-20 uppercase tracking-[1px]",
-    /** The room also wants to know against whom: "ANN 1 – 0 BOB". */
     versus: "m-0 flex items-baseline gap-pu-16 font-pixel text-pu-28 uppercase tracking-pu-3",
     versusLegs: "font-text text-pu-56 normal-case tracking-normal",
   },
 };
 
-/**
- * "Game shot", the winner, the legs (winner's first) and how it was won: the checkout and the
- * winner's 3-dart average. `children` go below (the station's buttons).
- */
+/** "Game shot", the winner and the legs; `children` go below (the station's buttons). */
 export function MatchOver({
   match,
   children,

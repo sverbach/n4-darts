@@ -17,7 +17,6 @@ const day = (iso: string | null) =>
 const time = (iso: string | null) =>
   iso ? new Date(iso).toLocaleTimeString(undefined, { timeStyle: "short" }) : "";
 
-/** "Ann won 2–1", for the detail's line. */
 function result(match: MatchSummary) {
   if (match.abandoned) return "Abandoned";
   const winner = match.players.find((p) => p.id === match.winner);
@@ -26,8 +25,6 @@ function result(match: MatchSummary) {
   return `${winner.name} won${legs}`;
 }
 
-/** The history's result column: the legs ("2–1"), as the players column names the winner. */
-/** The players' places, the winner first once there is one: "Bob vs Dee 1–0" reads as Bob's 1. */
 function winnerFirst(match: MatchSummary) {
   const order = match.players.map((_, i) => i);
   const w = match.players.findIndex((p) => p.id === match.winner);
@@ -40,7 +37,6 @@ function score(match: MatchSummary) {
   return legScore(winnerFirst(match).map((i) => match.legsWon[i] ?? 0));
 }
 
-/** The history by evening: the date once, then that evening's matches. */
 function byDay(matches: MatchSummary[]) {
   const days = new Map<string, MatchSummary[]>();
   for (const m of matches) days.set(day(m.closedAt), [...(days.get(day(m.closedAt)) ?? []), m]);
@@ -84,7 +80,6 @@ export function MatchHistory({ onOpen }: { onOpen(id: string): void }) {
                   onClick={() => onOpen(m.id)}
                   className="grid min-h-[60px] w-full grid-cols-[minmax(0,1fr)_auto] kiosk:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_120px_24px] items-center gap-x-4 gap-y-1.5 border-0 bg-transparent kiosk:px-6 px-4 kiosk:py-0 py-2.5 text-left font-text normal-case tracking-normal kiosk:[&_.pixel-icon]:block [&_.pixel-icon]:hidden kiosk:[&_.pixel-icon]:h-[14px] kiosk:[&_.pixel-icon]:text-muted"
                 >
-                  {/* The winner in full colour, the others grey: the result column only needs the legs. */}
                   <span className="font-pixel text-[13px] uppercase tracking-[1px]">
                     {winnerFirst(m).map((index, i) => {
                       const p = m.players[index];
@@ -168,7 +163,6 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
             >
               <summary className="bg-surface px-3 text-text">
                 <PixelIcon name="caret" /> Leg {legIndex + 1} · {name(leg.starter)} starts
-                {/* Who won each leg, unless it was the only one (the line above says it). */}
                 {leg.winner !== null && match.state.legs.length > 1 && ` · ${name(leg.winner)} won`}
               </summary>
               <ol className="m-0 list-none p-0">

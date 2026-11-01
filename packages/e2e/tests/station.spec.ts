@@ -65,7 +65,6 @@ test("the visit panel keeps its height through a visit, a takeout and a bust", a
   n4,
 }) => {
   const board1 = board(1);
-  // 40 single out: two T20s bust the second visit.
   await n4.quickMatch(1, ["Ann", "Bob"], { startScore: 40 });
   await page.goto("/station/1");
   const visit = page.getByRole("region", { name: "Current visit" });

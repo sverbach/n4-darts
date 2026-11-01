@@ -8,11 +8,9 @@ import { PixelIcon } from "../../components/PixelIcon.tsx";
 import { useLive } from "../../lib/useLive.ts";
 
 const LIST = "flex min-w-0 flex-[1_1_420px] flex-col gap-2";
-/** The tiles' fill and frame, shared by a station's Watch link. */
 const FRAME = "border border-border border-solid bg-surface no-underline hover:border-accent-line";
 const TILE = `flex min-h-[60px] min-w-0 flex-1 items-center justify-between gap-4 ${FRAME} px-4 font-pixel text-[16px] uppercase tracking-[1px] kiosk:min-h-[72px] kiosk:px-6 kiosk:text-[18px] [&_.pixel-icon]:h-[21px] [&_.pixel-icon]:text-muted`;
 
-/** What a station is doing, from its live view: "Free", the match and its scores, or its notice. */
 function stationState(station: StationView) {
   const match = station.match;
   if (!match) return station.notice ?? "Free";
@@ -25,7 +23,7 @@ function stationState(station: StationView) {
   return `${names} · ${state.players.map((p) => p.remaining).join(" – ")}`;
 }
 
-/** The start page: the stations, live (what each is doing, a new one from /admin), and the rest. */
+/** The start page: the stations (followed live, so one added in /admin shows up), and the rest. */
 export function HomePage() {
   const stations = useLive<StationView[]>("/api/stations/live").view ?? [];
 
@@ -43,18 +41,15 @@ export function HomePage() {
               <Link href={`/station/${s.id}`} className={TILE}>
                 <span className="flex min-w-0 flex-1 flex-col gap-1.5">
                   <span>{s.name}</span>
-                  {/* A match or a notice in words under the name; a free station is one line. */}
                   {(s.match || s.notice) && (
                     <span className="overflow-hidden text-ellipsis whitespace-nowrap font-text kiosk:text-[20px] text-[18px] text-muted uppercase tracking-normal">
                       {stationState(s)}
                     </span>
                   )}
                 </span>
-                {/* Free as the small pill admin uses, where the board status goes. */}
                 {!s.match && !s.notice && (
                   <span className="status min-h-6! px-2! text-[11px]! before:size-1.5!">Free</span>
                 )}
-                {/* Only a board that needs a look says so; a healthy one says nothing. */}
                 <BoardStatus online={s.boardOnline} running={s.boardRunning} quiet />
                 <PixelIcon name="arrow" />
               </Link>

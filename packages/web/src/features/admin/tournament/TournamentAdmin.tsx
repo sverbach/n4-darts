@@ -21,7 +21,6 @@ import {
 } from "../ui.ts";
 import { TournamentRun } from "./TournamentRun.tsx";
 
-/** The draft's selects: two to a row on a phone, where an odd last one takes the whole row. */
 const DRAFT_SETTINGS =
   "settings grid-cols-[repeat(auto-fill,minmax(160px,1fr))]! max-kiosk:[&>label:last-child:nth-child(odd)]:col-span-full";
 
@@ -200,7 +199,6 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
               picked={order}
               onChange={(playerIds) => patch({ playerIds })}
               max={Number.POSITIVE_INFINITY}
-              // The seeds set the order, not the picking.
               numbered={false}
             />
           </section>
@@ -413,7 +411,6 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
             </ul>
           ) : (
             view.estimateMinutes !== null && (
-              // An estimate, not a status: a plain line.
               <p className="m-0 text-[24px]">Takes {formatMinutes(view.estimateMinutes)}.</p>
             )
           )}
@@ -432,7 +429,6 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
               className={CONTROLS_CTA}
               disabled={view.problems.length > 0}
               onClick={() => send("POST", "/api/admin/tournament/start")}
-              // "Start" fits the button on a phone; the name says what starts.
               aria-label="Start tournament"
             >
               Start <PixelIcon name="arrow" height="0.9em" />

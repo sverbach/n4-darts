@@ -10,7 +10,6 @@ const MULTIPLIERS = [
 
 interface Props {
   title: string;
-  /** The dart in the title ("T20" in "Correct T20"), set in the numbers' font. */
   dart?: string;
   /** Above the title, e.g. "Ann · Dart 2". */
   context?: string;
@@ -50,7 +49,6 @@ export function SegmentPicker({ title, dart, context, current, onPick, onCancel 
             </h2>
             {context && <span className="label kiosk:text-[13px]">{context}</span>}
           </div>
-          {/* Leaving changes nothing, so it's quiet, not red. */}
           <button
             type="button"
             className="ghost kiosk:min-h-16 kiosk:px-6 kiosk:text-[16px]"
@@ -66,7 +64,6 @@ export function SegmentPicker({ title, dart, context, current, onPick, onCancel 
               key={m.value}
               aria-pressed={multiplier === m.value}
               onClick={() => setMultiplier(m.value)}
-              // Square, with the pressed state of every toggle; the slant is the CTA's alone.
               className="kiosk:min-h-20 min-h-14 kiosk:text-[20px] text-[13px] kiosk:tracking-[2px] aria-pressed:font-bold aria-pressed:text-accent"
             >
               {m.label}
@@ -88,7 +85,6 @@ export function SegmentPicker({ title, dart, context, current, onPick, onCancel 
         <div className="grid grid-cols-[repeat(3,1fr)] gap-2 kiosk:gap-2.5">
           <button
             type="button"
-            // A number, so in the numbers' font like 1–20 (DESIGN.md: the Two-Voice Rule).
             className={`kiosk:min-h-24 min-h-16 p-0 font-text kiosk:text-[56px] text-[36px] tracking-normal ${isCurrent({ number: 25, multiplier: 1 }) ? CURRENT : ""}`}
             onClick={() => onPick({ number: 25, multiplier: 1 })}
           >

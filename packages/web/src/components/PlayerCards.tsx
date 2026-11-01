@@ -30,8 +30,6 @@ function cardStyle(size: CardsSize, many: boolean, active: boolean) {
         ? `relative flex min-h-0 min-w-0 flex-col items-start justify-between gap-pu-10 border-solid p-pu-18 avatar-pu-64 ${frame}`
         : `relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)] grid-rows-[auto_auto_1fr] items-center gap-x-pu-18 gap-y-pu-6 border-solid px-pu-26 py-pu-22 avatar-pu-88 [grid-template-areas:'avatar_name'_'avatar_meta'_'score_score'] [&>.avatar]:[grid-area:avatar] ${frame}`,
       name: `max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-pixel font-bold uppercase tracking-pu-3 ${many ? "text-pu-22" : "self-end text-pu-32 [grid-area:name]"}`,
-      // Two players: the score row is a size container and the number fills it (125cqh is the
-      // row's height at line-height 0.8; 55cqw keeps three digits inside the card).
       scoreBox: many
         ? "self-start"
         : "flex min-h-0 items-start self-stretch [container-type:size] [grid-area:score]",
@@ -49,7 +47,6 @@ function cardStyle(size: CardsSize, many: boolean, active: boolean) {
     name: many
       ? "max-w-full self-end overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[13px] uppercase tracking-[1px] [grid-area:name] kiosk:self-auto kiosk:font-bold kiosk:text-[26px] kiosk:tracking-[2px]"
       : "max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[16px] uppercase tracking-[1px] kiosk:self-end kiosk:font-bold kiosk:text-[36px] kiosk:tracking-[3px] kiosk:[grid-area:name]",
-    // On the kiosk two players' score rows are size containers the number fills (see above).
     scoreBox: many
       ? "[grid-area:score] kiosk:self-start"
       : "kiosk:mt-3 kiosk:flex kiosk:min-h-0 kiosk:items-end kiosk:self-stretch kiosk:[container-type:size] kiosk:[grid-area:score]",
@@ -63,8 +60,7 @@ function cardStyle(size: CardsSize, many: boolean, active: boolean) {
 }
 
 /**
- * A card per player: avatar, name, what's left, legs and last visit. The thrower's card is framed
- * and their score violet: the one sign of whose turn it is (DESIGN.md).
+ * A card per player: avatar, name, what's left, legs and last visit; the thrower's framed.
  * With `hints`, the thrower's card shows the checkout route on wide screens.
  */
 export function PlayerCards({

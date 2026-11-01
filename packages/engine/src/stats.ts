@@ -21,7 +21,6 @@ export function dartStats(settings: X01Settings, events: MatchEvent[]): DartStat
   return stateDartStats(matchState(settings, events));
 }
 
-/** `dartStats` from a match state, for the UI, which has the state but not the events. */
 export function stateDartStats(state: MatchState): DartStats[] {
   const totals = state.players.map(() => ({ points: 0, darts: 0 }));
   const visits = state.legs.flatMap((leg) => leg.visits);
@@ -36,7 +35,6 @@ export function stateDartStats(state: MatchState): DartStats[] {
   return totals;
 }
 
-/** The checkout that won the match: the finishing dart and the score it finished from. */
 export function winningCheckout(state: MatchState): { segment: Segment; points: number } | null {
   if (state.winner === null) return null;
   const visit = state.currentVisit?.checkout

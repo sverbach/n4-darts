@@ -1,11 +1,6 @@
-// A page that's been left must not keep its streams: the back/forward cache keeps such pages
-// alive, and their open streams use up the browser's six connections to the host, so the next
-// page waits until one is evicted (seen in Brave: 27 s to over a minute after a few admin clicks).
-
 import { describe, expect, it } from "vitest";
 import { followStream, type StreamSource } from "./liveStream.ts";
 
-/** Stands in for EventSource: records what was opened and what is still open. */
 function fakeSources() {
   const all: FakeSource[] = [];
   class FakeSource implements StreamSource {

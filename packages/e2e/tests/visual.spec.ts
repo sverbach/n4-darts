@@ -29,7 +29,6 @@ const PROJECTOR = { width: 1920, height: 1080 };
 const SMALL_PROJECTOR = { width: 1280, height: 720 };
 const PAGES = { phone: PHONE, kiosk: KIOSK };
 const SCREENS = { ...PAGES, "1080p": PROJECTOR, "720p": SMALL_PROJECTOR };
-/** /watch is for big screens only (docs/ui-pages.md): no phone. */
 const BIG_SCREENS = { kiosk: KIOSK, "1080p": PROJECTOR, "720p": SMALL_PROJECTOR };
 
 /** The seeded players (playwright.visual.config.ts). */
@@ -224,7 +223,6 @@ test("the organiser's area", async () => {
   await expect(page.getByRole("menu")).toBeVisible();
   await shoot(page, "admin-stations-menu", PAGES);
 
-  // A history row: "Ann (won) vs Bob" to a screen reader.
   const row = (p: Page) => p.getByRole("button", { name: /^Ann.* vs Bob/ });
   await open(page, "/admin/matches", row);
   await shoot(page, "admin-matches", PAGES);

@@ -15,7 +15,6 @@ function duration(seconds: number) {
 }
 
 /** How worrying a number is: green, amber, red. */
-/** A timing's colour and word when it's not fine; a fine one is plain text. */
 const LEVEL: Record<string, { tone: string; word: string }> = {
   ok: { tone: "", word: "" },
   warn: { tone: "text-warn", word: "slow" },

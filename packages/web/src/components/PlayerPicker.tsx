@@ -12,7 +12,6 @@ export function PlayerPicker(props: {
   onChange(picked: string[]): void;
   title?: string;
   max?: number;
-  /** Number the picks in order (a match's throwing order); off where the order means nothing. */
   numbered?: boolean;
 }) {
   const { picked, onChange, title, max = MAX_PLAYERS, numbered = true } = props;

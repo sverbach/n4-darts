@@ -215,12 +215,11 @@
 
 @utility hint {
   color: var(--muted);
-  /* Page leads and hints wrap without a one-word last line, with room between lines. */
   line-height: 1.3;
   text-wrap: pretty;
 }
 
-/* "GROUP A", "WB SEMI-FINAL": a label, so grey (violet is for state). */
+/* "GROUP A", "WB SEMI-FINAL" */
 @utility match-label {
   color: var(--muted);
   font-family: var(--font-pixel);
@@ -439,15 +438,8 @@
   }
 }
 
-/*
- * A row that scrolls sideways (a wide table, the admin tabs, the bracket) shows that it does: a
- * soft light edge on the side with more, gone at the end. The covers scroll with the content
- * (`local`), the edges stay put (`scroll`), so an edge only shows where content is hidden. The
- * ground is `--fade-bg` (the panel unless set).
- */
 @utility scroll-x {
   overflow-x: auto;
-  /* The covers are solid over the edge's whole 24px, so it can't show through at rest. */
   background:
     linear-gradient(to right, var(--fade-bg, var(--panel)) 24px, transparent 32px) left / 32px 100%
     no-repeat local,

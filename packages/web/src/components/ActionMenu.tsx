@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 
-/** The menu under ⋮ and its items; the board menu uses the same look. */
 export const MENU =
   "absolute top-[calc(100%_+_8px)] right-0 z-10 flex w-[220px] flex-col border border-accent border-solid bg-surface kiosk:w-[280px]";
 export const MENU_ITEM =
@@ -10,12 +9,10 @@ export const MENU_BUTTON =
 
 export interface MenuItem {
   label: string;
-  /** Destructive: shown in red. */
   danger?: boolean;
   run(): void;
 }
 
-/** A ⋮ button with a menu of actions; closes on a pick, a tap outside or Escape. */
 export function ActionMenu(props: { label: string; items: MenuItem[] }) {
   const { label, items } = props;
   const [open, setOpen] = useState(false);

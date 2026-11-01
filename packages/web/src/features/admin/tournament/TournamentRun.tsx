@@ -50,7 +50,6 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
       <BracketRows bracket={progress.bracket} />
     </section>
   );
-  // The standings: beside the stations while it runs, at the foot once it's over.
   const groupsSection = (
     <section className={SECTION}>
       <h2>Groups</h2>
@@ -68,7 +67,6 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                     <th>P</th>
                     <th>W</th>
                     <th>L</th>
-                    {/* On a phone the table keeps what decides the order: P W L Pts. */}
                     <th className="max-kiosk:hidden">Legs</th>
                     <th className="max-kiosk:hidden">+/−</th>
                     <th>Pts</th>
@@ -139,7 +137,6 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
             {played(group.fixtures).length > 0 && (
               <details className="border border-line-soft border-solid">
                 <summary className="px-3">
-                  {/* What's still to play is in the queue; this lists what's been played. */}
                   <PixelIcon name="caret" /> Results ({played(group.fixtures).length})
                 </summary>
                 <ul>
@@ -179,7 +176,6 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
               </span>
             )}
           </div>
-          {/* While it runs, the squares count the matches; the line says the phase and the end. */}
           <p className="hint m-0">
             {live
               ? [
@@ -211,7 +207,6 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
               <h2>Final placings</h2>
               {champion && (
                 <div className="flex items-center gap-4 border border-border border-solid bg-panel px-6 kiosk:py-6 py-4 [--avatar:64px] kiosk:[--avatar:88px]">
-                  {/* The champion is a big moment: the violet brackets, as on the projector. */}
                   <span className="avatar-frame kiosk:text-[10px] text-[8px]">
                     <Avatar player={champion} large />
                   </span>
@@ -255,8 +250,6 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
       )}
 
       {live && (
-        // Stations top left, the queue on the right, the groups under the stations: no column
-        // ends half-way. On a phone: stations, queue, groups.
         <div className="grid kiosk:grid-cols-2 items-start gap-6 kiosk:[grid-template-areas:'stations_queue'_'groups_queue']">
           <div className="flex min-w-0 flex-col gap-6 kiosk:[grid-area:stations]">
             <section className={SECTION}>
@@ -280,7 +273,6 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
               {progress.queue.length === 0 ? (
                 <p className="hint">Nothing waiting.</p>
               ) : (
-                // Grouped by what each match waits for, so the cards don't each say it.
                 QUEUE_GROUPS.map(({ title, has }) => {
                   const entries = progress.queue.filter(has);
                   if (entries.length === 0) return null;
@@ -306,7 +298,6 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
               )}
             </section>
           </div>
-          {/* Under the stations: the groups while they play, the bracket once it's the knockout. */}
           <div className="min-w-0 kiosk:[grid-area:groups]">
             {progress.bracket.length > 0 ? bracketSection : groupsSection}
           </div>
@@ -353,7 +344,6 @@ function BracketRows({ bracket }: { bracket: TournamentProgress["bracket"] }) {
       {rows.map((row) => (
         <div key={row.title} className="flex flex-col gap-2.5">
           {row.title && <span className="match-label">{row.title}</span>}
-          {/* Rounds side by side on a wide screen, one under the other on a phone. */}
           <div className="kiosk:scroll-x flex kiosk:flex-row flex-col gap-6 kiosk:pb-2 kiosk:[--fade-bg:var(--bg)]">
             {row.columns.map((column) => (
               <div
@@ -375,7 +365,6 @@ function BracketRows({ bracket }: { bracket: TournamentProgress["bracket"] }) {
   );
 }
 
-/** The group's played fixtures: results and walkovers. */
 const played = (fixtures: TournamentMatchView[]) =>
   fixtures.filter((f) => f.legs || f.status === "walkover");
 
@@ -384,10 +373,6 @@ function fixtureResult(f: TournamentMatchView) {
   return STATUS[f.status];
 }
 
-/**
- * What's on a station, each name once: "ANN 141 · BOB 60" while it's on, "ANN VS BOB · waiting
- * to start" before, "ANN won" after. Names in Silkscreen capitals, scores in Geist Pixel.
- */
 function StationMatchLine({ match }: { match: NonNullable<TournamentStationView["match"]> }) {
   const name = "font-pixel text-[13px] uppercase tracking-[1px]";
   if (match.winner)
@@ -418,7 +403,6 @@ function StationMatchLine({ match }: { match: NonNullable<TournamentStationView[
 function StationRow(props: { station: TournamentStationView; send: Send; base: string }) {
   const { station, send, base } = props;
   const match = station.match;
-  // Only what needs the organiser: a paused station or a board that's gone. Ok says nothing.
   const status = station.paused
     ? { text: "Paused", tone: "warn" }
     : !station.boardOnline
@@ -439,7 +423,6 @@ function StationRow(props: { station: TournamentStationView; send: Send; base: s
             <StationMatchLine match={match} />
           </span>
         ) : (
-          // Free as the same pill everywhere; a paused station's pill is in its title already.
           !station.paused && <span className={`status ${STATUS_SMALL} self-start`}>Free</span>
         )}
       </div>
@@ -473,7 +456,6 @@ function StationRow(props: { station: TournamentStationView; send: Send; base: s
   );
 }
 
-/** The queue's groups, in this order: what each match is waiting for. */
 const QUEUE_GROUPS: { title: string; has(entry: QueueEntryView): boolean }[] = [
   { title: "Ready", has: (e) => !e.held && e.ready },
   { title: "Waiting for players", has: (e) => !e.held && !e.ready },
@@ -488,8 +470,7 @@ function QueueRow(props: {
 }) {
   const { entry, stations, send, base } = props;
   const url = `${base}/matches/${entry.matchId}`;
-  // Play now: on the station it's kept for, else the first one that's free or whose match hasn't
-  // started (that match goes back).
+  // Play now: a free station, or one whose match hasn't started (that one goes back).
   const open = stations.filter((s) => !s.match?.started);
   const target =
     open.find((s) => s.id === entry.pinnedStation) ??
@@ -502,7 +483,6 @@ function QueueRow(props: {
           {entry.players.map((p) => p.name).join(" vs ")}
         </span>
       </div>
-      {/* On a phone the station gets its own line, Hold and Play now share the next. */}
       <div className="grid grid-cols-2 kiosk:grid-cols-[auto_minmax(0,1fr)_auto] gap-2">
         <button
           type="button"
@@ -548,7 +528,6 @@ function QueueRow(props: {
   );
 }
 
-/** A player who arrives late joins during the group phase. */
 function LateArrival(props: { view: TournamentAdminView; send: Send; base: string }) {
   const { view, send, base } = props;
   const { players } = usePlayers();

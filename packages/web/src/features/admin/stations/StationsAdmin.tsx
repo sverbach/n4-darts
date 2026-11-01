@@ -52,7 +52,6 @@ export function StationsAdmin() {
         <h2>Add a station</h2>
         <StationForm
           submitLabel="Add station"
-          // The server names an unnamed station after its number: the next one.
           placeholder={`Station ${Math.max(0, ...(stations ?? []).map((s) => s.id)) + 1}`}
           onSubmit={(name, boardUrl) => change("POST", "/api/admin/stations", { name, boardUrl })}
         >

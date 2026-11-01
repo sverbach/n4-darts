@@ -41,10 +41,6 @@ function cardStyle(match: TournamentMatchView, projector: boolean) {
   };
 }
 
-/**
- * What the card's own label adds under its round's heading: "Semi-final 2" under "Semi-final" is
- * "2", "Final" under "Final" nothing.
- */
 const ownLabel = (label: string, round?: string) =>
   round && label.startsWith(round) ? label.slice(round.length).trim() : label;
 
@@ -54,7 +50,6 @@ export function MatchCard({
   projector = false,
 }: {
   match: TournamentMatchView;
-  /** The heading the card sits under; its label only says what the heading doesn't. */
   round?: string;
   projector?: boolean;
 }) {
@@ -74,8 +69,6 @@ export function MatchCard({
           </div>
         );
       })}
-      {/* Where a match is (queued, on a station, playing) is the stations' to say; the card
-          shows the draw and the result, and a frame while it's live. */}
       {match.status === "walkover" && <div className={p.status}>{STATUS.walkover}</div>}
     </div>
   );

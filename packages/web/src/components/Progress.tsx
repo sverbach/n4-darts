@@ -3,7 +3,6 @@
 /** A square per match, filled once played. */
 export function Progress(props: { played: number; total: number; className?: string }) {
   const { played, total, className = "" } = props;
-  // The squares and a count beside them, so the row reads without a legend.
   return (
     <div className={`ml-auto flex items-center gap-pu-16 ${className}`}>
       <div

@@ -16,7 +16,6 @@ export function rulesLabel(settings: X01Settings) {
     .join(" · ");
 }
 
-/** Every rule of a match in one line, the same on every screen: "501 · Double out · First to 3 legs". */
 export function matchRulesLabel(settings: X01Settings) {
   return `${rulesLabel(settings)} · ${legsLabel(settings.legsToWin)}`;
 }

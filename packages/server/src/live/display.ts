@@ -10,11 +10,6 @@ const UP_NEXT = 5;
 /** How many players the idle display ranks. */
 const LEADERBOARD = 10;
 
-/**
- * A queued match's label for "Up next". In the group phase the fixture number isn't the order the
- * matches are played in, so it goes ("Group match 4" → "", "Group B · match 2" → "Group B");
- * knockout labels stay.
- */
 export function upNextLabel(label: string) {
   return label.replace(/^Group match \d+$/, "").replace(/ · match \d+$/, "");
 }

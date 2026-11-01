@@ -20,7 +20,6 @@ export function useLive<T>(url: string | null): Live<T> {
     if (!url) return;
     setView(null);
     setFailed(false);
-    // Closes while the page is hidden (e.g. kept in the back/forward cache): see liveStream.ts.
     return followStream(url, {
       onView: (v) => setView(v as T),
       onConnected: setConnected,

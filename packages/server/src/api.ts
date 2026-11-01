@@ -181,9 +181,7 @@ export interface TournamentStationView {
     started: boolean;
     /** E.g. "Ann 121 · Bob 301", "Ann won". */
     summary: string;
-    /** What each player has left, in `players`' order, while the match is on; else null. */
     remaining: number[] | null;
-    /** The winner's name once the match is won. */
     winner: string | null;
   } | null;
 }

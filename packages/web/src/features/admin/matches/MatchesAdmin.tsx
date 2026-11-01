@@ -7,7 +7,6 @@ import { useLive } from "../../../lib/useLive.ts";
 import { CARD_NAME, cardActions, cardTitle, RULED, SECTION, STATUS_SMALL } from "../ui.ts";
 import { MatchDetailView, MatchHistory } from "./MatchHistory.tsx";
 
-/** The stations and the history; a match's detail replaces both, and the page's `head`. */
 export function MatchesAdmin({ head }: { head: ReactNode }) {
   const stations = useLive<StationView[]>("/api/stations/live").view;
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +69,6 @@ function StationRow(props: { station: StationView; onAbandon(): void; onOpen(): 
         />
       </div>
       <span className={`wrap-anywhere text-[26px] ${match ? "" : "hint"}`}>
-        {/* Names in capitals, as everywhere (DESIGN.md: the Stored-Name Rule). */}
         {match ? (
           <span className="uppercase">{matchSummary(match)}</span>
         ) : (

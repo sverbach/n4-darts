@@ -7,7 +7,6 @@ export const SECTION = "flex min-w-0 flex-col gap-3";
 export const RULED = `${SECTION} border-0 border-border border-t border-solid pt-6`;
 /** A section heading with something on its right ("Players (5)" · "Shuffle"). */
 export const SECTION_HEAD = "flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5";
-/** A count in a heading: "(5)". Grey: a count isn't a signal. */
 export const COUNT = "text-muted";
 
 /** Two columns on a wide screen: a wide main column and a narrower aside. */
@@ -49,12 +48,10 @@ export const cardActions = (start = false) =>
 /** A small tag: "Held", "Pinned", "Online". */
 export const badge = (tone: "" | "ok" | "warn" = "") =>
   `inline-flex min-h-6 items-center border border-solid px-2 font-pixel text-[11px] uppercase ${tone === "ok" ? "border-ok-line text-ok" : tone === "warn" ? "border-warn-line text-warn" : "border-border text-muted"}`;
-/** The small status pill (`status status-…`), at a badge's size: the other of the two sizes. */
 export const STATUS_SMALL = "min-h-6! px-2! text-[11px]! before:size-1.5!";
 
 /** A table in a framed panel. */
 export const TABLE_PANEL = "border border-border border-solid bg-panel";
 
-/** "Running", "Live", "Draft": a small status pill, green while it's on. */
 export const runState = (running: boolean) =>
   `status ${running ? "status-ok" : ""} ${STATUS_SMALL}`;

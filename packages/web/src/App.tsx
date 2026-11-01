@@ -11,7 +11,6 @@ import { useNavigationEffects } from "./lib/navigation.ts";
 const isNumber = (id: string) => /^\d+$/.test(id);
 
 export function App() {
-  // Links navigate without reloading the page (web-router 02); this does what a reload did.
   useNavigationEffects();
   return (
     <Switch>

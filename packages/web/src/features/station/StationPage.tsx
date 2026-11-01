@@ -56,7 +56,6 @@ export function StationPage({ id }: { id: number }) {
           matchAction={match ? matchAction(match, run) : undefined}
         />
       </header>
-      {/* On game shot the result takes the rules' place. */}
       {match && match.state.phase !== "matchWon" && <SettingsStrip match={match} />}
       <div className="flex flex-1 flex-col gap-4 kiosk:gap-4 p-4 kiosk:px-6 kiosk:pt-6 kiosk:pb-6">
         {error && (
@@ -98,7 +97,6 @@ function matchAction(match: MatchView, send: Send): MatchAction | undefined {
   };
 }
 
-/** The match label, the rules and which leg: "Group A … 501 · Double out · First to 2 legs · Leg 2". */
 function SettingsStrip({ match }: { match: MatchView }) {
   const { settings, state, label } = match;
   const leg = settings.legsToWin > 1 && state.legs.length > 0 ? ` · Leg ${state.legs.length}` : "";
@@ -133,7 +131,6 @@ function QuickMatch({ send, notice }: { send: Send; notice: string | null }) {
         <SettingsFields value={settings} onChange={setSettings} playerCount={picked.length} />
         <button
           type="button"
-          // Right under the settings on the kiosk; at the bottom of a phone's screen.
           className="primary cta kiosk:mt-2 max-kiosk:mt-auto"
           disabled={picked.length < MIN_PLAYERS}
           onClick={() => send({ type: "quickMatch", playerIds: picked, settings })}
@@ -267,7 +264,6 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
           <span className="kiosk:text-[22px]">
             Next player <PixelIcon name="arrow" height="0.9em" />
           </span>
-          {/* What a waiting player looks for: readable from the board. */}
           <span className="font-normal kiosk:text-[16px] text-[12px]">
             Up: {match.players[upNext(match)]?.name}
           </span>
@@ -346,12 +342,8 @@ function VisitPanel(props: ScoreboardProps) {
       className={`flex min-w-0 flex-col gap-2 kiosk:gap-3 border-solid p-3 kiosk:px-6 kiosk:py-4 ${visit?.bust ? "border border-danger bg-danger-tint outline-2 outline-danger outline-solid -outline-offset-3" : "border border-border bg-panel"}`}
       aria-label="Current visit"
     >
-      {/* A bust thickens the frame with an outline inside the border, which takes no space: the
-          panel keeps its height. */}
       <div className="label flex items-center justify-between gap-3">
         <span>Visit</span>
-        {/* Bust and the total share one cell and only one shows, so the header keeps the
-            taller one's height: no jump at a bust, at takeout or at the first dart. */}
         <span className="grid items-center justify-items-end">
           <span
             className={`font-bold kiosk:text-[28px] text-[20px] text-danger tracking-[3px] [grid-area:1/1] ${visit?.bust ? "" : "invisible"}`}
@@ -431,8 +423,6 @@ function VisitPanel(props: ScoreboardProps) {
           );
         })}
       </div>
-      {/* One line under the darts: take them out, who throws (before the first dart), or how to
-          correct one. It keeps its height, so the board doesn't jump. */}
       {state.phase === "awaitingTakeout" ? (
         <p
           className={`${VISIT_STATUS} font-bold text-accent before:bg-accent-line after:bg-accent-line`}

@@ -7,7 +7,6 @@ import { dartLabel } from "../../lib/darts.ts";
 import { matchRulesLabel } from "../../lib/labels.ts";
 import { useStation } from "../../lib/useStation.ts";
 
-/** The bar's small capitals: the match label and "501 · Double out · First to 2 legs · Leg 2". */
 const SMALL = "whitespace-nowrap font-pixel text-muted text-pu-20 uppercase";
 /** "Free", "Connecting…" */
 const NOTE = "m-auto text-center font-pixel text-muted text-pu-40 uppercase tracking-pu-4";
@@ -33,7 +32,6 @@ export function WatchPage({ id }: { id: number }) {
             Server offline
           </span>
         ) : (
-          // Not before the start (the rules are on the screen) nor at game shot (the result is).
           match &&
           (match.state.phase === "throwing" || match.state.phase === "awaitingTakeout") && (
             <MatchLine match={match} />
@@ -58,7 +56,6 @@ export function WatchPage({ id }: { id: number }) {
   );
 }
 
-/** "501 · Double out · First to 2 legs · Leg 2" */
 function MatchLine({ match }: { match: MatchView }) {
   const { settings, state } = match;
   return (
@@ -140,7 +137,6 @@ function WatchVisit({ match }: { match: MatchView }) {
         >
           {visit?.bust ? "Bust" : visit?.darts.length ? total : ""}
         </span>
-        {/* Violet only for "Remove darts": the one thing to do now. */}
         <span
           className={`${TOTAL_LABEL} ${state.phase === "awaitingTakeout" ? "text-accent" : "text-muted"}`}
         >

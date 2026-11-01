@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { request } from "../lib/api.ts";
 import { MENU_ITEM as ITEM, MENU, MENU_BUTTON } from "./ActionMenu.tsx";
 
-/** A section label in the menu: "Board", "Match". */
 const MENU_LABEL = "px-3 pt-2.5 pb-1.5 kiosk:px-4 kiosk:pt-3 kiosk:pb-2 kiosk:text-[12px]";
 
 /** "Board online", "Board stopped" (detection off), "Board offline" or "Server offline". */
@@ -10,7 +9,6 @@ export function BoardStatus(props: {
   online: boolean;
   running: boolean;
   connected?: boolean;
-  /** Say nothing while all is well (the organiser's lists). */
   quiet?: boolean;
   className?: string;
 }) {
@@ -56,7 +54,6 @@ export function BoardMenu(props: {
   online: boolean;
   running: boolean;
   connected?: boolean;
-  /** No pill while the board is online and detecting (the organiser's lists). */
   quiet?: boolean;
   matchAction?: MatchAction | undefined;
 }) {

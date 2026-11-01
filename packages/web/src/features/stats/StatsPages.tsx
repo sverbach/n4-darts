@@ -8,7 +8,6 @@ import { average, count, legScore, NONE, placing } from "../../lib/format.ts";
 import { useFetch } from "../../lib/useFetch.ts";
 import { Heatmap } from "./Heatmap.tsx";
 
-/** The matches the rating averages over (STATS, RATING-01). */
 const RATING_MATCHES = 10;
 const MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
 const pad2 = (n: number) => String(n).padStart(2, "0");
@@ -99,7 +98,6 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
             <th className={th("text-right text-muted")} title="3-dart average, last 10 matches">
               Rating
             </th>
-            {/* On a phone: #, player, rating, matches and highest checkout. */}
             <th className={`${th()} max-kiosk:hidden`} title="3-dart average, all matches">
               Avg
             </th>
@@ -179,7 +177,6 @@ function Profile({ profile }: { profile: PlayerProfile }) {
     whole === 0 ? "" : `${Math.round((part / whole) * 100)}%`;
   const hero = (
     <section className="flex items-center gap-4 kiosk:gap-6">
-      {/* The octagon alone: brackets are for big moments, violet for state (DESIGN.md). */}
       <span className="flex-none [--avatar:96px] kiosk:[--avatar:138px] [&_.avatar]:flex">
         <Avatar player={{ id: profile.playerId, name: profile.name, photo: profile.photo }} large />
       </span>
@@ -212,8 +209,6 @@ function Profile({ profile }: { profile: PlayerProfile }) {
   return (
     <>
       {hero}
-      {/* Each value once. Under 10 matches the rating is the all-time average, so that tile
-          goes; the best placing is in the tournaments list below. */}
       <div className="flex kiosk:grid kiosk:grid-cols-4 flex-col gap-6 kiosk:gap-4">
         <StatGroup
           title="Average"
@@ -272,7 +267,6 @@ function Profile({ profile }: { profile: PlayerProfile }) {
         />
       </div>
 
-      {/* On the tiles' four columns: the chart over three, the heatmap over one. */}
       {t.matches > 0 && (
         <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-4 kiosk:items-start gap-6 kiosk:gap-4 kiosk:[&>:first-child:not(:only-child)]:col-span-3 kiosk:[&>:only-child]:col-start-4">
           {profile.evenings.length > 0 && (
@@ -288,7 +282,6 @@ function Profile({ profile }: { profile: PlayerProfile }) {
         </div>
       )}
 
-      {/* Two lists, two of the tiles' columns each. */}
       <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-4 gap-6 kiosk:gap-4 kiosk:[&>*]:col-span-2 kiosk:[&>:only-child]:col-span-4">
         {profile.tournaments.length > 0 && (
           <section className={SECTION}>
@@ -314,7 +307,6 @@ function Profile({ profile }: { profile: PlayerProfile }) {
             <ul className="m-0 list-none border-0 border-border border-t border-solid p-0">
               {profile.recent.map((m) => (
                 <li key={m.matchId} className={ROW}>
-                  {/* Won or lost in words; the colours are for status only (DESIGN.md). */}
                   <span
                     className={`kiosk:w-[52px] w-11 font-pixel kiosk:text-[12px] text-[11px] uppercase ${m.won ? "text-text" : "text-muted"}`}
                   >
@@ -340,14 +332,9 @@ function Profile({ profile }: { profile: PlayerProfile }) {
 interface Stat {
   label: string;
   value: string;
-  /** What the number means, when the label alone doesn't say it. */
   sub?: string;
 }
 
-/**
- * A group of stat tiles. On a phone they share a row (two to a row with four); on a wide screen
- * they stack, stretched so every group's column ends level.
- */
 function StatGroup({ title, items }: { title: string; items: Stat[] }) {
   const columns =
     items.length === 4 ? "grid-cols-2" : items.length === 3 ? "grid-cols-3" : "grid-cols-2";
@@ -400,7 +387,6 @@ function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
   const wide = useWide();
   const points = evenings.flatMap((e) => (e.average === null ? [] : [{ ...e, value: e.average }]));
   if (points.length === 0) return null;
-  // One evening is a number, not a chart.
   if (points.length === 1) {
     const only = points[0] as (typeof points)[number];
     return (
@@ -438,7 +424,6 @@ function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
   const labelEvery = Math.ceil(points.length / (wide ? 8 : 4));
   const last = points.length - 1;
   const lastPoint = points[last] as (typeof points)[number];
-  // The last evening's value; its date is on the axis right below.
   const tag = lastPoint.value.toFixed(1);
   const tagWidth = tag.length * font * 0.5 + font;
   const tagX = Math.min(width - tagWidth - 4, Math.max(4, x(last) - tagWidth / 2));

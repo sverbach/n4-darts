@@ -1,6 +1,3 @@
-// Client-side navigation (web-router 02): links change the page without loading a document,
-// Back works, and only the current screen keeps live streams open.
-
 import { expect, test } from "./fixtures.ts";
 
 const AGENT = "n4-navigation-test";
@@ -23,7 +20,6 @@ test("links navigate without reloading, Back returns, old streams close", async 
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   }
 
-  // Only the players tab's stream is open now; the other tabs' closed as they went.
   await expect
     .poll(async () => {
       const view = await (await n4.api.get("/api/admin/diagnostics")).json();

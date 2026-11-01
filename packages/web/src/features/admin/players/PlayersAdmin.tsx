@@ -10,17 +10,13 @@ import { PhotoEditor } from "./PhotoEditor.tsx";
 
 /** The player lists: active, and archived (in a collapsible panel). */
 const LIST = "m-0 list-none border-0 border-border border-t border-solid";
-/** A player: the photo button, the name, the rating and the ⋮ menu. */
 const ROW =
   "flex min-h-[76px] items-center gap-4 border-0 border-line-soft border-b border-solid py-2.5 [--avatar:52px]";
-/** The rating column, under its one heading. */
 const RATING = "w-20 flex-none text-right";
-/** The lists' heading row: "Rating" over its column, once. */
 function ListHead() {
   return (
     <div className="label flex justify-end gap-4 pt-4 pb-2" title="3-dart average, last 10 matches">
       <span className={RATING}>Rating</span>
-      {/* Over the ⋮ column. */}
       <span className="w-11 flex-none" />
     </div>
   );

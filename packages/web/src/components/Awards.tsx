@@ -1,6 +1,5 @@
 import type { Award } from "@n4/server/api";
 
-/** Each award's title, its number, and a unit word where the number needs one. */
 const AWARDS: Record<
   Award["kind"],
   { title: string; format(value: number): string; unit?(value: number): string }
@@ -21,7 +20,6 @@ const STYLES = {
     value: "text-pu-72 leading-[0.8] [grid-area:value]",
   },
   admin: {
-    // Three to a row on the kiosk; on a phone two, an odd last one taking the whole row.
     list: "m-0 grid list-none grid-cols-2 gap-2.5 p-0 kiosk:grid-cols-3 max-kiosk:[&>li:last-child:nth-child(odd)]:col-span-full",
     item: "flex flex-col gap-2.5 border border-border border-solid bg-panel p-4",
     title: "font-pixel text-[11px] text-muted uppercase tracking-[1px]",
@@ -38,13 +36,11 @@ export function Awards({ awards, projector = false }: { awards: Award[]; project
       {awards.map((award) => (
         <li key={award.kind} className={p.item}>
           <span className={p.title}>{AWARDS[award.kind].title}</span>
-          {/* A tie of more than two would list most of the field: the count says it. */}
           <span className={p.players}>
             {award.players.length > 2
               ? `${award.players.length} players`
               : award.players.join(", ")}
           </span>
-          {/* The number in the numbers' font, its unit as a label beside it. */}
           <span className={p.value}>
             {AWARDS[award.kind].format(award.value)}
             {AWARDS[award.kind].unit && (

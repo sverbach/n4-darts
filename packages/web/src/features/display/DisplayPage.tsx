@@ -87,7 +87,6 @@ function Running({ view }: { view: DisplayView }) {
               <StationCard key={s.id} station={s} />
             ))}
           </section>
-          {/* In the knockout the bracket shows what's left, so no list repeats it. */}
           {!knockout && view.upNext.length > 0 && (
             <section className={SECTION}>
               <h2 className={H2}>Up next</h2>
@@ -113,10 +112,8 @@ function Running({ view }: { view: DisplayView }) {
             </section>
           )}
         </Fit>
-        {/* A small bracket grows to use its half of the screen. */}
         <Fit
           grow={knockout ? 1.6 : 1}
-          // Measured at its own width, so there's something to grow from.
           inner={knockout ? "flex w-max flex-col gap-pu-28" : undefined}
         >
           {knockout ? <Bracket view={view} /> : <Groups view={view} />}
@@ -129,20 +126,16 @@ function Running({ view }: { view: DisplayView }) {
 function Finished({ view }: { view: DisplayView }) {
   const t = view.tournament as NonNullable<DisplayView["tournament"]>;
   const champion = view.placings?.find((p) => p.from === 1);
-  // The champion has the big panel; the list carries on from second place.
   const rest = view.placings?.filter((p) => p !== champion) ?? [];
   return (
     <>
       <Header title={t.name} detail={t.endedEarly ? "Ended early" : "Finished"} />
-      {/* Centred in the frame: with a small field the lists are shorter than the screen. */}
       <Fit
         className="flex flex-1 flex-col justify-center"
-        // Top-aligned: the champion's panel is as tall as its content, not the screen.
         inner="grid grid-cols-[minmax(0,1.5fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] items-start gap-pu-48"
       >
         {champion && (
           <section
-            // The night's peak: louder than game shot, which comes after every match.
             className="avatar-pu-360 flex flex-col items-center justify-center gap-pu-32 border border-border border-solid bg-panel px-pu-40 py-pu-48"
             aria-label="Champion"
           >
@@ -312,7 +305,6 @@ function Bracket({ view }: { view: DisplayView }) {
   const top = view.bracket.filter((c) => c.section !== "losers");
   const losers = view.bracket.filter((c) => c.section === "losers");
   const rows = [
-    // Without a losers bracket the header's "Knockout" already names it.
     { title: losers.length > 0 ? "Winners bracket" : "", columns: top },
     { title: "Losers bracket", columns: losers },
   ].filter((row) => row.columns.length > 0);
@@ -377,7 +369,6 @@ function StationCard({ station, large }: { station: DisplayStation; large?: bool
             ))}
           </span>
         ) : (
-          // A real status pill (tint, line, square dot), at projector size.
           <span
             className={`status ${IDLE[idle.tone as keyof typeof IDLE]} min-h-pu-40! gap-pu-10! px-pu-16! text-pu-20! before:h-pu-10! before:w-pu-10!`}
           >
@@ -420,7 +411,6 @@ function Score({ card, large }: { card: ScoreCard; large: boolean }) {
           <span className="text-right font-pixel text-muted text-pu-20 uppercase">
             {card.legsToWin > 1 ? `Legs ${p.legsWon}` : ""}
           </span>
-          {/* The thrower's score is violet (the one turn signal); the winner's says so in words. */}
           <span
             className={`text-right leading-[0.8] ${large ? "text-pu-68" : "text-pu-60"} ${card.throwing === i ? "text-accent" : ""} ${card.winner === i ? "font-bold font-pixel" : ""}`}
           >
@@ -461,7 +451,6 @@ function Fit({
   children,
 }: {
   className?: string;
-  /** How far it may scale up to fill the box (1: only down). */
   grow?: number;
   /** The content's layout: a column by default. */
   inner?: string | undefined;
