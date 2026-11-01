@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { call } from "./api.ts";
+import { beginLoading } from "./loading.ts";
 
 export interface Fetched<T> {
   /** The answer; null while loading or after an error. */
@@ -36,10 +37,12 @@ export function useFetch<T>(url: string): Fetched<T> {
 
   useEffect(() => {
     const current = { stale: false };
+    const end = beginLoading();
     setState((s) => ({ ...s, loading: true }));
-    void load(current);
+    void load(current).finally(end);
     return () => {
       current.stale = true;
+      end();
     };
   }, [load]);
 

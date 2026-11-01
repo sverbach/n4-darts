@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { followStream } from "./liveStream.ts";
+import { beginLoading } from "./loading.ts";
 
 export interface Live<T> {
   /** The latest view the server pushed; null until the first one arrives. */
@@ -20,11 +21,22 @@ export function useLive<T>(url: string | null): Live<T> {
     if (!url) return;
     setView(null);
     setFailed(false);
-    return followStream(url, {
-      onView: (v) => setView(v as T),
+    const end = beginLoading();
+    const stop = followStream(url, {
+      onView: (v) => {
+        end();
+        setView(v as T);
+      },
       onConnected: setConnected,
-      onFailed: () => setFailed(true),
+      onFailed: () => {
+        end();
+        setFailed(true);
+      },
     });
+    return () => {
+      end();
+      stop();
+    };
   }, [url]);
 
   return { view, connected, failed };

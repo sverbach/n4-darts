@@ -416,6 +416,9 @@ A readout: a tinted box with a 1px line and a square dot in its own colour, Silk
 ### Scoreboard Player Card (signature)
 The remaining score in Display size, with the avatar and the name in Silkscreen capitals. The active player's score turns Mecha Violet, and that is the only signal for whose turn it is. Darts of the current visit show large in Geist Pixel, and an ignored dart is struck through.
 
+### Loading Bar
+A 3px Mecha Violet bar across the top of the window while a page waits for its data (nprogress, our own CSS: square, no glow, no spinner). It appears only when loading takes longer than 200ms, so fast loads on the LAN never flicker. Every page, kiosk and projector included.
+
 ### Progress Squares
 One square per tournament match in a fixed-width row, Mecha Violet when played and Frame Line when not.
 
