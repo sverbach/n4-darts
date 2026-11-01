@@ -55,6 +55,6 @@ export const STATUS_SMALL = "min-h-6! px-2! text-[11px]! before:size-1.5!";
 /** A table in a framed panel. */
 export const TABLE_PANEL = "border border-border border-solid bg-panel";
 
-/** "Running", "Live": a dot and a word; green while it's on. */
+/** "Running", "Live", "Draft": a small status pill, green while it's on. */
 export const runState = (running: boolean) =>
-  `inline-flex items-center gap-2 font-pixel text-[12px] uppercase before:size-2 before:bg-current before:content-[''] ${running ? "text-ok" : "text-muted"}`;
+  `status ${running ? "status-ok" : ""} ${STATUS_SMALL}`;

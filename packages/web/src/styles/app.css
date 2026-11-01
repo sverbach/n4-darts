@@ -215,6 +215,9 @@
 
 @utility hint {
   color: var(--muted);
+  /* Page leads and hints wrap without a one-word last line, with room between lines. */
+  line-height: 1.3;
+  text-wrap: pretty;
 }
 
 /* "GROUP A", "WB SEMI-FINAL": a label, so grey (violet is for state). */

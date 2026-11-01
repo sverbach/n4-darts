@@ -15,7 +15,12 @@ function duration(seconds: number) {
 }
 
 /** How worrying a number is: green, amber, red. */
-const LEVEL: Record<string, string> = { ok: "text-ok", warn: "text-warn", danger: "text-danger" };
+/** A timing's colour and word when it's not fine; a fine one is plain text. */
+const LEVEL: Record<string, { tone: string; word: string }> = {
+  ok: { tone: "", word: "" },
+  warn: { tone: "text-warn", word: "slow" },
+  danger: { tone: "text-danger", word: "too slow" },
+};
 /** A row of big numbers, each in a box. */
 const STATS =
   "m-0 grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-2.5 [&>div]:flex [&>div]:flex-col [&>div]:gap-1.5 [&>div]:border [&>div]:border-border [&>div]:border-solid [&>div]:bg-panel [&>div]:px-4 [&>div]:py-3 [&_dd]:m-0 [&_dd]:text-[28px]";
@@ -23,7 +28,13 @@ const STATS =
 /** A value coloured by how worrying it is: fine, warn from `warn`, danger from `danger`. */
 function Level({ value, warn, danger }: { value: number | null; warn: number; danger: number }) {
   const level = value === null ? "" : value >= danger ? "danger" : value >= warn ? "warn" : "ok";
-  return <span className={LEVEL[level]}>{ms(value)}</span>;
+  const { tone, word } = LEVEL[level] ?? { tone: "", word: "" };
+  return (
+    <span className={tone}>
+      {ms(value)}
+      {word && <span className="ml-2 font-pixel text-[11px] uppercase">{word}</span>}
+    </span>
+  );
 }
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {

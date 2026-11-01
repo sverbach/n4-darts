@@ -161,16 +161,16 @@ function Login({ onDone }: { onDone: () => Promise<void> }) {
         <Logo width="108px" className="mb-3 self-center" />
         <div className="mb-4 flex flex-col items-center gap-3">
           <h1 className="tracking-[5px]">Admin</h1>
-          <span className="label">Enter PIN to unlock</span>
         </div>
         <label className="label" htmlFor="admin-pin">
-          PIN
+          Enter the PIN to unlock
         </label>
         <input
           id="admin-pin"
           type="password"
           inputMode="numeric"
           autoComplete="current-password"
+          placeholder="••••"
           value={pin}
           required
           aria-invalid={error ? true : undefined}

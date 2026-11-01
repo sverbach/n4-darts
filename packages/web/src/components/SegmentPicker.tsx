@@ -10,6 +10,8 @@ const MULTIPLIERS = [
 
 interface Props {
   title: string;
+  /** The dart in the title ("T20" in "Correct T20"), set in the numbers' font. */
+  dart?: string;
   /** Above the title, e.g. "Ann · Dart 2". */
   context?: string;
   /** The dart's current value, marked in the grid. */
@@ -24,7 +26,8 @@ const CURRENT = "border-[3px] border-accent border-solid bg-accent-tint text-acc
 /** 25, Bull and Miss. */
 const EXTRA = "min-h-16 p-0 font-pixel text-[13px] tracking-[2px] kiosk:min-h-24 kiosk:text-[22px]";
 
-export function SegmentPicker({ title, context, current, onPick, onCancel }: Props) {
+export function SegmentPicker({ title, dart, context, current, onPick, onCancel }: Props) {
+  const name = dart ? `${title} ${dart}` : title;
   const start = current && current.number !== 25 && current.multiplier > 0 ? current.multiplier : 1;
   const [multiplier, setMultiplier] = useState<1 | 2 | 3>(start as 1 | 2 | 3);
   const isCurrent = (segment: Segment) =>
@@ -34,13 +37,16 @@ export function SegmentPicker({ title, context, current, onPick, onCancel }: Pro
     <div
       className="fixed inset-0 z-20 flex items-center justify-center overflow-y-auto border-[3px] border-accent border-solid bg-bg kiosk:p-6 p-4"
       role="dialog"
-      aria-label={title}
+      aria-label={name}
     >
       <div className="flex max-h-full w-full max-w-[1180px] flex-col gap-4 kiosk:gap-6">
         <div className="flex items-end justify-between gap-4 border-0 border-border border-b border-solid pb-3">
           <div className="flex flex-col gap-1.5">
             <h2 className="kiosk:text-[48px] text-[26px] kiosk:tracking-[3px] tracking-[2px]">
               {title}
+              {dart && (
+                <span className="ml-[0.4em] font-text normal-case tracking-normal">{dart}</span>
+              )}
             </h2>
             {context && <span className="label kiosk:text-[13px]">{context}</span>}
           </div>

@@ -381,7 +381,7 @@ Hard-edged and tactile: square, bordered, never smaller than a thumb.
 - **Shape:** square (0px), at least 44px high (60px CTA on phones, 72px on the kiosk), Silkscreen 12px in capitals.
 - **Default (secondary):** Cockpit Surface fill, Frame Line border, Phosphor Paper text.
 - **Primary:** Mecha Violet fill and border, Command Black text, bold. When disabled it drops to a Hairline fill with Readout Grey text.
-- **CTA:** primary colours, borderless, slanted, 15px text (20px with 2px tracking on the kiosk). One per screen.
+- **CTA:** primary colours, borderless, slanted, 16px text (20px with 2px tracking on the kiosk). One per screen.
 - **Ghost:** transparent, Readout Grey text.
 - **Danger:** transparent with an Alarm Red border and text. When disabled it uses the red line and faint colours.
 - **Pressed / toggled (`aria-pressed`):** violet border, violet tint, 1px violet inset ring.

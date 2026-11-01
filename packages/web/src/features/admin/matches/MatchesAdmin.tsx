@@ -69,7 +69,8 @@ function StationRow(props: { station: StationView; onAbandon(): void; onOpen(): 
         />
       </div>
       <span className={`wrap-anywhere text-[26px] ${match ? "" : "hint"}`}>
-        {match ? matchSummary(match) : "Free"}
+        {/* Names in capitals, as everywhere (DESIGN.md: the Stored-Name Rule). */}
+        {match ? <span className="uppercase">{matchSummary(match)}</span> : "Free"}
       </span>
       {match && (
         <div className={`${cardActions(true)} mt-auto`}>

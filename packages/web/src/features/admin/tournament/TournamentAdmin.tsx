@@ -413,9 +413,8 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
             </ul>
           ) : (
             view.estimateMinutes !== null && (
-              <p className="m-0 flex items-center gap-3 border border-ok-line border-solid bg-ok-tint p-4 text-[24px] text-text before:inline-block before:size-[9px] before:bg-ok before:align-[0.1em] before:content-['']">
-                Takes {formatMinutes(view.estimateMinutes)}.
-              </p>
+              // An estimate, not a status: a plain line.
+              <p className="m-0 text-[24px]">Takes {formatMinutes(view.estimateMinutes)}.</p>
             )
           )}
           <div className={CONTROLS}>

@@ -72,7 +72,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
           <Progress
             played={progress.played}
             total={progress.total}
-            className="m-0! w-[min(320px,100%)]! [--px:1px]"
+            className="m-0! [--px:1px] [&>div]:w-[min(260px,70vw)]!"
           />
         ) : (
           <button type="button" className="primary cta" onClick={onNew}>
@@ -346,7 +346,9 @@ function StationRow(props: { station: TournamentStationView; send: Send; base: s
         {match ? (
           <span className={CARD_DETAIL}>
             {match.label && <span className="match-label">{match.label}</span>}{" "}
-            {match.players.join(" vs ")}: {match.summary}
+            <span className="uppercase">
+              {match.players.join(" vs ")}: {match.summary}
+            </span>
           </span>
         ) : (
           <span className={`${CARD_DETAIL} hint`}>

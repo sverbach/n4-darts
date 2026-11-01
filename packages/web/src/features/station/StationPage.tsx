@@ -282,7 +282,8 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
 
       {correcting && (
         <SegmentPicker
-          title={`Correct ${dartLabel(correcting.segment)}`}
+          title="Correct"
+          dart={dartLabel(correcting.segment)}
           context={[thrower?.name, dartIndex >= 0 ? `Dart ${dartIndex + 1}` : null]
             .filter(Boolean)
             .join(" · ")}

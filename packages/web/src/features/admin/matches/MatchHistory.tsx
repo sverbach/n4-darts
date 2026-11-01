@@ -27,10 +27,17 @@ function result(match: MatchSummary) {
 }
 
 /** The history's result column: the legs ("2–1"), as the players column names the winner. */
+/** The players' places, the winner first once there is one: "Bob vs Dee 1–0" reads as Bob's 1. */
+function winnerFirst(match: MatchSummary) {
+  const order = match.players.map((_, i) => i);
+  const w = match.players.findIndex((p) => p.id === match.winner);
+  return w < 0 ? order : [w, ...order.filter((i) => i !== w)];
+}
+
 function score(match: MatchSummary) {
   if (match.abandoned) return "Abandoned";
   if (!match.winner) return match.closedAt ? "No winner (corrected)" : "In progress";
-  return legScore(match.legsWon);
+  return legScore(winnerFirst(match).map((i) => match.legsWon[i] ?? 0));
 }
 
 /** The history by evening: the date once, then that evening's matches. */
@@ -79,15 +86,19 @@ export function MatchHistory({ onOpen }: { onOpen(id: string): void }) {
                 >
                   {/* The winner in full colour, the others grey: the result column only needs the legs. */}
                   <span className="font-pixel text-[13px] uppercase tracking-[1px]">
-                    {m.players.map((p, i) => (
-                      <span key={p.id}>
-                        {i > 0 && <span className="text-muted"> vs </span>}
-                        <span className={m.winner && p.id !== m.winner ? "text-muted" : ""}>
-                          {p.name}
+                    {winnerFirst(m).map((index, i) => {
+                      const p = m.players[index];
+                      if (!p) return null;
+                      return (
+                        <span key={p.id}>
+                          {i > 0 && <span className="text-muted"> vs </span>}
+                          <span className={m.winner && p.id !== m.winner ? "text-muted" : ""}>
+                            {p.name}
+                          </span>
+                          {p.id === m.winner && <span className="sr-only"> (won)</span>}
                         </span>
-                        {p.id === m.winner && <span className="sr-only"> (won)</span>}
-                      </span>
-                    ))}
+                      );
+                    })}
                   </span>
                   <span
                     className={`kiosk:row-auto row-start-2 kiosk:text-[24px] text-[22px] ${m.abandoned || !m.winner ? "text-muted" : ""}`}
@@ -219,7 +230,8 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
       )}
       {correcting && (
         <SegmentPicker
-          title={`Correct ${dartLabel(correcting.segment)}`}
+          title="Correct"
+          dart={dartLabel(correcting.segment)}
           current={correcting.segment}
           onCancel={() => setCorrecting(null)}
           onPick={(segment) => {

@@ -3,7 +3,7 @@ import { board, expect, test } from "./fixtures.ts";
 
 test("the PIN screen unlocks /admin", async ({ page, n4: _ }) => {
   await page.goto("/admin");
-  await expect(page.getByText("Enter PIN to unlock")).toBeVisible();
+  await expect(page.getByText("Enter the PIN to unlock")).toBeVisible();
 
   await page.getByLabel("PIN").fill("0000");
   await page.getByRole("button", { name: "Unlock" }).click();

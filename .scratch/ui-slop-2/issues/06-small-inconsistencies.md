@@ -1,6 +1,6 @@
 # The re-critique's minor list
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 Small things from the re-critique; each is quick.
@@ -26,3 +26,20 @@ Small things from the re-critique; each is quick.
 ## Comments
 
 2026-11-01: Confirmed by the user ("go ahead with the ui-slop-2 tickets").
+
+2026-11-01: Built, item by item:
+- Names: the running summaries that showed mixed case (admin tournament station rows, the matches tab's station cards, Home's station line) are in capitals via `text-transform`. Sentences like the match detail's "Ann won …" stay sentences.
+- The segment picker takes the dart separately (`dart` prop): "CORRECT" in Silkscreen, "S20" in Geist Pixel; the dialog's name is unchanged ("Correct S20").
+- Profile tiles: the label at the top, the value right after it on a phone (bottom right on the kiosk), the sub-label at the foot, so values line up across a row.
+- The draft's estimate is a plain line, not a green notice.
+- Diagnostics: a fine timing is plain text; a slow one is amber with "slow", a very slow one red with "too slow" (not colour alone).
+- "Running" / "Finished" / "Draft" / "Live" are small status pills (`runState`). "Free" stays a plain word: it says what's on a station, not a status to act on.
+- History: the winner comes first ("Bob vs Dee 1–0" is Bob's 1), and the legs follow the same order.
+- /players: while a player has 10 matches or fewer, Avg is grey (with a title saying it equals the rating until then).
+- Progress squares show "6 / 9" beside them (/display and admin).
+- DESIGN.md: the CTA text is 16px (20 on the kiosk).
+- `hint`: line-height 1.3 and `text-wrap: pretty` (no one-word last lines in page leads).
+- Home's Watch link is Phosphor Paper, not grey.
+- PIN: one label, "Enter the PIN to unlock", and a "••••" placeholder; the field was already masked.
+
+Browser tests updated for the PIN label. Two server timing tests (load, restart scenario) failed once while the machine was busy and passed on the next two runs.

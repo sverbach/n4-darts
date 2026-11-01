@@ -208,7 +208,7 @@ test("before any tournament: three finished matches", async () => {
 test("the organiser's area", async () => {
   const anonymous = await browser.newPage();
   await anonymous.clock.setFixedTime(NOW);
-  await open(anonymous, "/admin", (p) => p.getByText("Enter PIN to unlock"));
+  await open(anonymous, "/admin", (p) => p.getByText("Enter the PIN to unlock"));
   await shoot(anonymous, "admin-pin", PAGES);
   await anonymous.close();
 

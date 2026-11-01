@@ -130,7 +130,7 @@ A room-wide overview for 16:9. Everything scales to fit, with no scrolling. "Ser
 - With no matches played at all, only the station cards show, full width.
 
 ### Running tournament
-- **Header:** the tournament name and the phase ("Group phase" or "Knockout"), with a progress square per match (the count is the squares' accessible label).
+- **Header:** the tournament name and the phase ("Group phase" or "Knockout"), with a progress square per match and the count beside them ("6 / 9").
 - **Left column:**
   - "Now playing": the live station cards.
   - "Up next" (group phase only; in the knockout the bracket shows what's left): the next queued matches in the scheduler's order, "avatar Ann vs avatar Bob". In the group phase there's no "Group match n" label (the fixture number isn't the playing order); with several groups the group shows; knockout matches keep their label ("Semi-final 2").
@@ -212,7 +212,7 @@ There's one tournament at a time, and the tab shows one of three states.
 - **Game:** Start, In, Out.
 - **Seeds:** the hint "By rating, the 3-dart average over the last 10 matches; new players last, in a random order. ↑/↓ to change.", then an ordered list of position, name and rating, with ↑/↓ buttons.
 - **Groups preview:** "Group A: Ann, Bob, …" (when there are several groups).
-- **Problems:** a list of blocking problems (e.g. not enough players). Without problems it shows the estimate "Takes about 2 h 30."
+- **Problems:** a list of blocking problems (e.g. not enough players). Without problems it shows the estimate as a plain line, "Takes about 2 h 30."
 - **Buttons:** "Discard" (danger) and a primary "Start" (named "Start tournament" for screen readers).
 
 **3. Running / finished**
@@ -257,7 +257,7 @@ There's one tournament at a time, and the tab shows one of three states.
 - **Stations:** a row per station with:
   - The name (a link), the board status only when it isn't fine, and the current match summary: "Ann 141 (1) · Bob 60 (0)", "Ann, Bob: waiting to start" or "Ann won". The station shows "Free" when idle.
   - Buttons: "Details" (opens the match detail) and "End match" or "Cancel match" (danger).
-- **History** (set off by a rule): finished matches grouped by evening, the date once as a heading. Each row shows the players (the winner in full colour, the others grey), the result as legs ("2–1", "Abandoned" or "No winner (corrected)") and the time. Tapping a row opens the match detail.
+- **History** (set off by a rule): finished matches grouped by evening, the date once as a heading. Each row shows the players (the winner first and in full colour, the others grey), the result as legs, the winner's first ("2–1", "Abandoned" or "No winner (corrected)") and the time. Tapping a row opens the match detail.
 - **Match detail** (replaces the page, its heading included; live):
   - A back button "← Matches".
   - The title "Ann vs Bob" and the line "Ann won 2–1 · 501 · Double out · First to 2 legs · Station 1 · 20 Oct 2026, 21:14".

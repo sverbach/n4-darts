@@ -130,7 +130,14 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
               <td className={td("kiosk:text-[32px] text-[28px] text-text")}>
                 {average(row.rating)}
               </td>
-              <td className={td(`max-kiosk:hidden ${NUMBER}`)}>{average(row.average)}</td>
+              <td
+                className={td(
+                  `max-kiosk:hidden ${NUMBER} ${row.matches <= 10 ? "text-muted" : ""}`,
+                )}
+                title={row.matches <= 10 ? "The same as the rating until 10 matches" : undefined}
+              >
+                {average(row.average)}
+              </td>
               <td className={td(NUMBER)}>{row.matches}</td>
               <td className={td(`max-kiosk:hidden ${NUMBER}`)}>{row.matchesWon}</td>
               <td className={td(`max-kiosk:hidden ${NUMBER}`)}>{row.s180}</td>
@@ -352,19 +359,19 @@ function StatGroup({ title, items }: { title: string; items: Stat[] }) {
           // sub-label on the left, the number on the right.
           <div
             key={item.label}
-            className="flex kiosk:min-h-0 min-h-[92px] kiosk:flex-1 kiosk:flex-row flex-col kiosk:items-end justify-between gap-2 border border-border border-solid bg-panel kiosk:px-4 px-3 kiosk:py-3 py-2"
+            className="flex kiosk:min-h-0 min-h-[92px] kiosk:flex-1 kiosk:flex-row flex-col kiosk:items-stretch kiosk:justify-between gap-2 border border-border border-solid bg-panel kiosk:px-4 px-3 kiosk:py-3 py-2"
           >
-            <dt className="kiosk:flex contents kiosk:flex-col kiosk:gap-1.5">
+            <dt className="kiosk:flex contents kiosk:flex-col kiosk:justify-between kiosk:gap-1.5">
               <span className="font-pixel kiosk:text-[12px] text-[11px] text-muted uppercase">
                 {item.label}
               </span>
               {item.sub && (
-                <span className="order-3 font-pixel text-[11px] text-muted uppercase">
+                <span className="order-3 kiosk:mt-0 mt-auto font-pixel text-[11px] text-muted uppercase">
                   {item.sub}
                 </span>
               )}
             </dt>
-            <dd className="order-2 m-0 kiosk:text-[48px] text-[32px] kiosk:leading-[0.8] leading-[0.85]">
+            <dd className="order-2 m-0 kiosk:self-end kiosk:text-[48px] text-[32px] kiosk:leading-[0.8] leading-[0.85]">
               {item.value}
             </dd>
           </div>

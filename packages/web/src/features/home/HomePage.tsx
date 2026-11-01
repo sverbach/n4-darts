@@ -42,7 +42,7 @@ export function HomePage() {
               <a href={`/station/${s.id}`} className={TILE}>
                 <span className="flex min-w-0 flex-1 flex-col gap-1.5">
                   <span>{s.name}</span>
-                  <span className="overflow-hidden text-ellipsis whitespace-nowrap font-text kiosk:text-[20px] text-[18px] text-muted normal-case tracking-normal">
+                  <span className="overflow-hidden text-ellipsis whitespace-nowrap font-text kiosk:text-[20px] text-[18px] text-muted uppercase tracking-normal">
                     {stationState(s)}
                   </span>
                 </span>
@@ -52,7 +52,7 @@ export function HomePage() {
               </a>
               <a
                 href={`/watch/${s.id}`}
-                className={`flex kiosk:w-[110px] w-[88px] items-center justify-center ${FRAME} font-pixel kiosk:text-[12px] text-[11px] text-muted uppercase tracking-[1px] hover:text-accent`}
+                className={`flex kiosk:w-[110px] w-[88px] items-center justify-center ${FRAME} font-pixel kiosk:text-[12px] text-[11px] text-text uppercase tracking-[1px] hover:text-accent`}
               >
                 Watch
               </a>
