@@ -38,19 +38,16 @@ export function SegmentPicker({ title, context, current, onPick, onCancel }: Pro
     >
       <div className="flex max-h-full w-full max-w-[1180px] flex-col gap-4 kiosk:gap-6">
         <div className="flex items-end justify-between gap-4 border-0 border-border border-b border-solid pb-3">
-          <div>
-            {context && (
-              <span className="mb-1.5 block font-pixel kiosk:text-[14px] text-[11px] text-accent uppercase tracking-[2px]">
-                {context}
-              </span>
-            )}
+          <div className="flex flex-col gap-1.5">
             <h2 className="kiosk:text-[48px] text-[26px] kiosk:tracking-[3px] tracking-[2px]">
               {title}
             </h2>
+            {context && <span className="label kiosk:text-[14px]">{context}</span>}
           </div>
+          {/* Leaving changes nothing, so it's quiet, not red. */}
           <button
             type="button"
-            className="danger kiosk:min-h-16 border-2 kiosk:px-6 kiosk:text-[16px]"
+            className="ghost kiosk:min-h-16 kiosk:px-6 kiosk:text-[16px]"
             onClick={onCancel}
           >
             Cancel
@@ -63,7 +60,8 @@ export function SegmentPicker({ title, context, current, onPick, onCancel }: Pro
               key={m.value}
               aria-pressed={multiplier === m.value}
               onClick={() => setMultiplier(m.value)}
-              className="kiosk:min-h-20 min-h-14 border-0 bg-line-soft kiosk:text-[20px] text-[13px] kiosk:tracking-[2px] [clip-path:polygon(12px_0,100%_0,calc(100%_-_12px)_100%,0_100%)] kiosk:[clip-path:polygon(16px_0,100%_0,calc(100%_-_16px)_100%,0_100%)] aria-pressed:bg-accent aria-pressed:font-bold aria-pressed:text-accent-text aria-pressed:shadow-none"
+              // Square, with the pressed state of every toggle; the slant is the CTA's alone.
+              className="kiosk:min-h-20 min-h-14 kiosk:text-[20px] text-[13px] kiosk:tracking-[2px] aria-pressed:font-bold aria-pressed:text-accent"
             >
               {m.label}
             </button>

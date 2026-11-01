@@ -7,8 +7,8 @@ export const SECTION = "flex min-w-0 flex-col gap-3";
 export const RULED = `${SECTION} border-0 border-border border-t border-solid pt-6`;
 /** A section heading with something on its right ("Players (5)" · "Shuffle"). */
 export const SECTION_HEAD = "flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5";
-/** A count in a heading: "(5)". */
-export const COUNT = "text-accent";
+/** A count in a heading: "(5)". Grey: a count isn't a signal. */
+export const COUNT = "text-muted";
 
 /** Two columns on a wide screen: a wide main column and a narrower aside. */
 export const COLUMNS = "flex flex-wrap items-start gap-x-6 gap-y-6";

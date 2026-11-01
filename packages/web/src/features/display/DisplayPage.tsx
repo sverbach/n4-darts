@@ -16,7 +16,6 @@ const today = () =>
 /** A column of a heading and its cards or table. */
 const SECTION = "flex flex-col gap-pu-14";
 const H2 = "font-normal text-muted text-pu-18 tracking-pu-3";
-const H2_ACCENT = "font-normal text-accent text-pu-18 tracking-pu-3";
 /** The group tables and the leaderboard. */
 const TABLE = "w-full border-collapse border border-border border-solid bg-panel avatar-pu-44";
 const CELL =
@@ -262,7 +261,7 @@ function Groups({ view }: { view: DisplayView }) {
     <div className="flex flex-col gap-pu-28">
       {view.groups.map((group) => (
         <section key={group.name} className={SECTION}>
-          <h2 className={H2_ACCENT}>{group.name}</h2>
+          <h2 className={H2}>{group.name}</h2>
           <table className={TABLE}>
             <thead>
               <tr>
@@ -320,7 +319,7 @@ function Bracket({ view }: { view: DisplayView }) {
     <div className="flex flex-col gap-pu-26">
       {rows.map((row) => (
         <section key={row.title} className={SECTION}>
-          <h2 className={H2_ACCENT}>{row.title}</h2>
+          <h2 className={H2}>{row.title}</h2>
           <div className="flex gap-pu-28">
             {row.columns.map((column) => (
               <div
@@ -409,7 +408,7 @@ function Score({ card, large }: { card: ScoreCard; large: boolean }) {
       {card.players.map((p, i) => (
         <div
           key={p.id}
-          className={`grid items-center gap-pu-16 border-0 border-line-soft border-b border-solid ${large ? "avatar-pu-52 h-pu-76 grid-cols-[calc(56*var(--px))_minmax(0,1fr)_calc(120*var(--px))_calc(140*var(--px))] px-pu-24" : "avatar-pu-46 h-pu-68 grid-cols-[calc(48*var(--px))_minmax(0,1fr)_calc(100*var(--px))_calc(120*var(--px))] px-pu-22"} ${card.throwing === i ? "bg-accent-tint" : ""} ${card.winner === i ? "text-ok" : card.throwing === i ? "text-accent" : ""}`}
+          className={`grid items-center gap-pu-16 border-0 border-line-soft border-b border-solid ${large ? "avatar-pu-52 h-pu-76 grid-cols-[calc(56*var(--px))_minmax(0,1fr)_calc(120*var(--px))_calc(140*var(--px))] px-pu-24" : "avatar-pu-46 h-pu-68 grid-cols-[calc(48*var(--px))_minmax(0,1fr)_calc(100*var(--px))_calc(120*var(--px))] px-pu-22"} ${card.throwing === i ? "bg-accent-tint" : ""}`}
         >
           <Avatar player={p} />
           <span
@@ -420,7 +419,10 @@ function Score({ card, large }: { card: ScoreCard; large: boolean }) {
           <span className="text-right font-pixel text-muted text-pu-14 uppercase">
             {card.legsToWin > 1 ? `Legs ${p.legsWon}` : ""}
           </span>
-          <span className={`text-right leading-[0.8] ${large ? "text-pu-68" : "text-pu-60"}`}>
+          {/* The thrower's score is violet (the one turn signal); the winner's says so in words. */}
+          <span
+            className={`text-right leading-[0.8] ${large ? "text-pu-68" : "text-pu-60"} ${card.throwing === i ? "text-accent" : ""} ${card.winner === i ? "font-bold font-pixel" : ""}`}
+          >
             {card.winner === i ? "Won" : p.remaining}
           </span>
         </div>
