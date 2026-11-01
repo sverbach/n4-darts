@@ -243,7 +243,7 @@
 
 @utility cta {
   min-height: 60px;
-  padding: 0 32px;
+  padding: 0 24px;
   border: 0;
   font-size: 15px;
   clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
@@ -299,7 +299,7 @@
 
   @media (min-width: 760px) {
     min-height: 36px;
-    padding: 0 14px;
+    padding: 0 12px;
     font-size: 13px;
 
     &::before {

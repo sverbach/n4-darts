@@ -26,7 +26,7 @@ const DART =
   "flex min-h-[76px] flex-col items-stretch justify-between border px-2.5 py-2 text-left normal-case kiosk:min-h-[104px] kiosk:flex-row kiosk:items-end kiosk:px-4 kiosk:py-3";
 /** "REMOVE DARTS" between two rules. */
 const VISIT_STATUS =
-  "m-0 flex min-h-11 items-center gap-3 font-pixel text-[14px] uppercase tracking-[2px] before:h-px before:flex-1 before:content-[''] after:h-px after:flex-1 after:content-[''] kiosk:min-h-10 kiosk:gap-3.5 kiosk:text-[18px] kiosk:tracking-[3px]";
+  "m-0 flex min-h-11 items-center gap-3 font-pixel text-[14px] uppercase tracking-[2px] before:h-px before:flex-1 before:content-[''] after:h-px after:flex-1 after:content-[''] kiosk:min-h-10 kiosk:gap-3 kiosk:text-[18px] kiosk:tracking-[3px]";
 
 export function StationPage({ id }: { id: number }) {
   const { view, connected, send } = useStation(id);
@@ -41,8 +41,8 @@ export function StationPage({ id }: { id: number }) {
   const match = view?.match ?? null;
   return (
     <main className="flex min-h-[100dvh] flex-col">
-      <header className="flex items-center justify-between gap-2 kiosk:gap-4 border-0 border-border border-b border-solid kiosk:px-8 px-4 kiosk:py-3.5 py-2.5">
-        <div className="flex min-w-0 items-center gap-5">
+      <header className="flex items-center justify-between gap-2 kiosk:gap-4 border-0 border-border border-b border-solid kiosk:px-6 px-4 kiosk:py-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-4">
           <Logo width="86px" className="max-kiosk:hidden" />
           <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel kiosk:text-[20px] text-[14px] text-accent uppercase kiosk:tracking-[2px] tracking-[1px]">
             {view?.name ?? `Station ${id}`}
@@ -58,7 +58,7 @@ export function StationPage({ id }: { id: number }) {
       </header>
       {/* On game shot the result takes the rules' place. */}
       {match && match.state.phase !== "matchWon" && <SettingsStrip match={match} />}
-      <div className="flex flex-1 flex-col gap-4 kiosk:gap-5 p-4 kiosk:px-8 kiosk:pt-5 kiosk:pb-7">
+      <div className="flex flex-1 flex-col gap-4 kiosk:gap-4 p-4 kiosk:px-6 kiosk:pt-6 kiosk:pb-6">
         {error && (
           <p className="error" role="alert">
             {error}
@@ -103,7 +103,7 @@ function SettingsStrip({ match }: { match: MatchView }) {
   const { settings, state, label } = match;
   const leg = settings.legsToWin > 1 && state.legs.length > 0 ? ` · Leg ${state.legs.length}` : "";
   return (
-    <div className="label flex flex-wrap justify-between gap-x-4 gap-y-1 border-0 border-line-soft border-b border-solid kiosk:px-8 px-4 kiosk:py-2.5 py-2">
+    <div className="label flex flex-wrap justify-between gap-x-4 gap-y-1.5 border-0 border-line-soft border-b border-solid kiosk:px-6 px-4 kiosk:py-2.5 py-2">
       {label && <span className="text-accent">{label}</span>}
       <span>
         {matchRulesLabel(settings)}
@@ -119,9 +119,9 @@ function QuickMatch({ send, notice }: { send: Send; notice: string | null }) {
   const [settings, setSettings] = useState<SetupSettings>(defaultSetupSettings);
 
   return (
-    <div className="flex flex-1 kiosk:flex-row flex-col kiosk:flex-wrap kiosk:items-stretch gap-5 kiosk:gap-x-10 kiosk:gap-y-7">
+    <div className="flex flex-1 kiosk:flex-row flex-col kiosk:flex-wrap kiosk:items-stretch gap-4 kiosk:gap-x-6 kiosk:gap-y-6">
       {notice && <p className="notice kiosk:basis-full">{notice}</p>}
-      <section className="flex kiosk:min-w-0 kiosk:flex-[999_1_560px] flex-col gap-4 kiosk:gap-[18px]">
+      <section className="flex kiosk:min-w-0 kiosk:flex-[999_1_560px] flex-col gap-4 kiosk:gap-4">
         <div>
           <h1 className="kiosk:text-[40px]">New match</h1>
           <p className="hint m-0 mt-1.5">You can change the order next.</p>
@@ -163,7 +163,7 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
     void setOrder(next);
   };
   return (
-    <div className="mx-auto flex w-full max-w-[760px] flex-1 flex-col gap-5 kiosk:gap-7 kiosk:pt-7">
+    <div className="mx-auto flex w-full max-w-[760px] flex-1 flex-col gap-4 kiosk:gap-6 kiosk:pt-6">
       <div className="flex flex-col gap-2">
         {match.label && <span className="match-label kiosk:text-[14px]">{match.label}</span>}
         <h1 className="kiosk:text-[48px]">Throwing order</h1>
@@ -173,7 +173,7 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
         {match.players.map((p, i) => (
           <li
             key={p.id}
-            className="flex kiosk:min-h-24 min-h-[72px] items-center gap-3 kiosk:gap-5 border border-border border-solid bg-surface kiosk:pr-3.5 pr-2.5 kiosk:pl-6 pl-3.5 [--avatar:48px] kiosk:[--avatar:64px]"
+            className="flex kiosk:min-h-24 min-h-[72px] items-center gap-3 kiosk:gap-4 border border-border border-solid bg-surface kiosk:pr-3 pr-2.5 kiosk:pl-6 pl-3 [--avatar:48px] kiosk:[--avatar:64px]"
           >
             <span className="kiosk:w-10 w-7 font-pixel kiosk:text-[20px] text-[14px] text-accent">
               {String(i + 1).padStart(2, "0")}
@@ -254,13 +254,13 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
   const dartIndex = correcting ? (visit?.darts.indexOf(correcting) ?? -1) : -1;
   const thrower = match.players[visit?.player ?? match.state.currentPlayer];
   return (
-    <section className="flex kiosk:grid flex-1 kiosk:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] kiosk:grid-rows-[1fr_auto] flex-col gap-4 kiosk:gap-x-4 kiosk:gap-y-5 kiosk:[&>.scoreboard]:col-span-full">
+    <section className="flex kiosk:grid flex-1 kiosk:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] kiosk:grid-rows-[1fr_auto] flex-col gap-4 kiosk:gap-x-4 kiosk:gap-y-4 kiosk:[&>.scoreboard]:col-span-full">
       <Scoreboard match={match} onDart={setCorrecting} onAdd={() => setAdding(true)} hints />
 
       <div className="kiosk:m-0 mt-auto kiosk:flex grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] kiosk:flex-col gap-2 kiosk:gap-3">
         <button
           type="button"
-          className="primary cta kiosk:flex-1 flex-col items-start gap-0.5 kiosk:gap-1.5"
+          className="primary cta kiosk:flex-1 flex-col items-start gap-1.5 kiosk:gap-1.5"
           onClick={() => send({ type: "nextPlayer" })}
         >
           <span className="kiosk:text-[22px]">
@@ -340,7 +340,7 @@ function VisitPanel(props: ScoreboardProps) {
 
   return (
     <section
-      className={`flex min-w-0 flex-col gap-2 kiosk:gap-3 border-solid p-3 kiosk:px-5 kiosk:py-[18px] ${visit?.bust ? "border-[3px] border-danger bg-danger-tint" : "border border-border bg-panel"}`}
+      className={`flex min-w-0 flex-col gap-2 kiosk:gap-3 border-solid p-3 kiosk:px-6 kiosk:py-4 ${visit?.bust ? "border-[3px] border-danger bg-danger-tint" : "border border-border bg-panel"}`}
       aria-label="Current visit"
     >
       <div className="label flex items-center justify-between gap-3">

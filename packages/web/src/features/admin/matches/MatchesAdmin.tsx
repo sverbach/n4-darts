@@ -3,7 +3,7 @@ import { type ReactNode, useState } from "react";
 import { BoardStatus } from "../../../components/BoardMenu.tsx";
 import { request } from "../../../lib/api.ts";
 import { useLive } from "../../../lib/useLive.ts";
-import { CARD_NAME, cardActions, cardTitle, RULED, SECTION } from "../ui.ts";
+import { CARD_NAME, cardActions, cardTitle, RULED, SECTION, STATUS_SMALL } from "../ui.ts";
 import { MatchDetailView, MatchHistory } from "./MatchHistory.tsx";
 
 /** The stations and the history; a match's detail replaces both, and the page's `head`. */
@@ -20,7 +20,7 @@ export function MatchesAdmin({ head }: { head: ReactNode }) {
   if (openId) return <MatchDetailView id={openId} onBack={() => setOpenId(null)} />;
 
   return (
-    <div className="flex flex-col gap-7 kiosk:gap-8">
+    <div className="flex flex-col gap-6 kiosk:gap-6">
       {head}
       {error && (
         <p className="error" role="alert">
@@ -56,7 +56,7 @@ function StationRow(props: { station: StationView; onAbandon(): void; onOpen(): 
   const { station, onAbandon, onOpen } = props;
   const { match } = station;
   return (
-    <li className="flex flex-col gap-3 border border-border border-solid bg-panel px-[18px] py-4">
+    <li className="flex flex-col gap-3 border border-border border-solid bg-panel p-4">
       <div className={cardTitle(true)}>
         <a className={CARD_NAME} href={`/station/${station.id}`}>
           {station.name}
@@ -65,7 +65,7 @@ function StationRow(props: { station: StationView; onAbandon(): void; onOpen(): 
           online={station.boardOnline}
           running={station.boardRunning}
           quiet
-          className="min-h-[26px]! px-2! text-[10px]!"
+          className={STATUS_SMALL}
         />
       </div>
       <span className={`wrap-anywhere text-[26px] ${match ? "" : "hint"}`}>

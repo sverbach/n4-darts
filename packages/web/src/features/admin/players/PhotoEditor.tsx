@@ -130,14 +130,14 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void }) {
   return (
     <div className="fixed inset-0 z-20 flex items-center justify-center overflow-y-auto bg-scrim p-4">
       <div
-        className="flex max-h-full w-full max-w-[560px] flex-col gap-5 overflow-y-auto border-2 border-accent border-solid bg-panel p-5"
+        className="flex max-h-full w-full max-w-[560px] flex-col gap-4 overflow-y-auto border-2 border-accent border-solid bg-panel p-6"
         role="dialog"
         aria-label={`Photo of ${player.name}`}
       >
         <div className="flex items-center justify-between gap-3 border-0 border-border border-b border-solid pb-4">
           <div>
             <span className="match-label">Photo</span>
-            <h2 className="mt-1 text-[22px] tracking-[3px]">{player.name}</h2>
+            <h2 className="mt-1.5 text-[22px] tracking-[3px]">{player.name}</h2>
           </div>
           <button type="button" onClick={onClose}>
             Close ✕
@@ -195,7 +195,7 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void }) {
             <p className="hint m-0 text-center">
               Drag to move, pinch, scroll or use the slider to zoom.
             </p>
-            <label className="label flex items-center gap-3.5 [&_input]:h-11 [&_input]:flex-1 [&_span]:font-text [&_span]:text-[26px]">
+            <label className="label flex items-center gap-3 [&_input]:h-11 [&_input]:flex-1 [&_span]:font-text [&_span]:text-[26px]">
               Zoom
               <span aria-hidden="true">−</span>
               <input

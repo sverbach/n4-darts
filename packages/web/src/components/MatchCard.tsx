@@ -32,8 +32,8 @@ function cardStyle(match: TournamentMatchView, projector: boolean) {
   return {
     card: `border border-solid bg-panel ${live ? "border-accent" : "border-border"}`,
     label:
-      "border-0 border-line-soft border-b border-solid px-3 py-[7px] font-pixel text-[11px] text-muted uppercase",
-    status: `px-3 py-[7px] font-pixel text-[11px] uppercase ${live ? "text-accent" : "text-muted"}`,
+      "border-0 border-line-soft border-b border-solid px-3 py-2 font-pixel text-[11px] text-muted uppercase",
+    status: `px-3 py-2 font-pixel text-[11px] uppercase ${live ? "text-accent" : "text-muted"}`,
     player: (winner: boolean) =>
       `flex min-h-[46px] items-center gap-2.5 border-0 border-line-soft border-b border-solid px-3 [--avatar:28px] ${winner ? "bg-accent-tint text-accent" : ""}`,
     name: "min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[13px] uppercase",

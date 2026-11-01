@@ -9,7 +9,7 @@ import { useLive } from "../../lib/useLive.ts";
 const LIST = "flex min-w-0 flex-[1_1_420px] flex-col gap-2";
 /** The tiles' fill and frame, shared by a station's Watch link. */
 const FRAME = "border border-border border-solid bg-surface no-underline hover:border-accent-line";
-const TILE = `flex min-h-[60px] min-w-0 flex-1 items-center justify-between gap-4 ${FRAME} px-4 font-pixel text-[15px] uppercase tracking-[1px] kiosk:min-h-[72px] kiosk:px-5 kiosk:text-[18px] [&_.pixel-icon]:h-[21px] [&_.pixel-icon]:text-accent`;
+const TILE = `flex min-h-[60px] min-w-0 flex-1 items-center justify-between gap-4 ${FRAME} px-4 font-pixel text-[15px] uppercase tracking-[1px] kiosk:min-h-[72px] kiosk:px-6 kiosk:text-[18px] [&_.pixel-icon]:h-[21px] [&_.pixel-icon]:text-accent`;
 
 /** What a station is doing, from its live view: "Free", the match and its scores, or its notice. */
 function stationState(station: StationView) {
@@ -29,18 +29,18 @@ export function HomePage() {
   const stations = useLive<StationView[]>("/api/stations/live").view ?? [];
 
   return (
-    <main className="mx-auto flex min-h-[100dvh] w-full max-w-[1000px] flex-col gap-7 kiosk:gap-14 kiosk:px-8 px-4 kiosk:pt-[72px] pt-10 kiosk:pb-8 pb-6">
+    <main className="mx-auto flex min-h-[100dvh] w-full max-w-[1000px] flex-col gap-6 kiosk:gap-6 kiosk:px-6 px-4 kiosk:pt-6 pt-6 kiosk:pb-6 pb-6">
       <h1 className="flex justify-center pt-2 pb-3">
         {/* 3× the sprite's 76 pixels, so the logo itself stays 216 px wide. */}
         <SparkleLogo className="kiosk:w-[304px] w-[228px] max-w-[63vw]" />
       </h1>
-      <div className="flex flex-wrap gap-x-8 gap-y-7">
+      <div className="flex flex-wrap gap-x-6 gap-y-6">
         <nav aria-label="Stations" className={LIST}>
           <span className="label">Stations</span>
           {stations.map((s) => (
             <div key={s.id} className="flex gap-2">
               <a href={`/station/${s.id}`} className={TILE}>
-                <span className="flex min-w-0 flex-1 flex-col gap-1">
+                <span className="flex min-w-0 flex-1 flex-col gap-1.5">
                   <span>{s.name}</span>
                   <span className="overflow-hidden text-ellipsis whitespace-nowrap font-text kiosk:text-[20px] text-[18px] text-muted normal-case tracking-normal">
                     {stationState(s)}

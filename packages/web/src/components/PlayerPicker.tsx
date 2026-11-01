@@ -63,7 +63,7 @@ export function PlayerPicker(props: {
                 aria-pressed={position >= 0}
                 onClick={() => toggle(p.id)}
                 disabled={position < 0 && picked.length >= max}
-                className="kiosk:min-h-[60px] gap-2 kiosk:gap-3 kiosk:pr-4 pr-3 kiosk:pl-2 pl-1.5 kiosk:text-[16px] text-[12px] [--avatar:28px] kiosk:[--avatar:40px] aria-pressed:pr-2.5 kiosk:aria-pressed:pr-3.5"
+                className="kiosk:min-h-[60px] gap-2 kiosk:gap-3 kiosk:pr-4 pr-3 kiosk:pl-2 pl-1.5 kiosk:text-[16px] text-[12px] [--avatar:28px] kiosk:[--avatar:40px] aria-pressed:pr-2.5 kiosk:aria-pressed:pr-3"
               >
                 <Avatar player={p} />
                 <span>{p.name}</span>

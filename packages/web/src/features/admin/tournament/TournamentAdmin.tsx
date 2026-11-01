@@ -69,7 +69,7 @@ export function TournamentAdmin() {
   const [creating, setCreating] = useState(false);
   const finished = view?.tournament?.status === "finished";
   return (
-    <div className="flex flex-col gap-7">
+    <div className="flex flex-col gap-6">
       {error && (
         <p className="error" role="alert">
           {error}
@@ -123,7 +123,7 @@ function CreateTournament({ send }: { send: Send }) {
             max={Number.POSITIVE_INFINITY}
           />
         </div>
-        <aside className="flex min-w-0 flex-[1_1_340px] flex-col gap-[18px] border border-border border-solid bg-panel p-6">
+        <aside className="flex min-w-0 flex-[1_1_340px] flex-col gap-4 border border-border border-solid bg-panel p-6">
           <span className="label">New tournament</span>
           <div className="flex items-baseline gap-3">
             <span className="text-[72px] text-accent leading-[0.8]">{picked.length}</span>
@@ -349,7 +349,7 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
               {view.entrants.map((e, i) => (
                 <li
                   key={e.playerId}
-                  className="flex min-h-14 items-center gap-3 border border-border border-solid bg-surface pr-1.5 pl-3.5 [--avatar:28px]"
+                  className="flex min-h-14 items-center gap-3 border border-border border-solid bg-surface pr-1.5 pl-3 [--avatar:28px]"
                 >
                   <span className="w-6 font-pixel text-[13px] text-accent">
                     {String(i + 1).padStart(2, "0")}
@@ -388,7 +388,7 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
               {view.groups.map((group, g) => (
                 <p
                   key={group.join()}
-                  className="m-0 border border-line-soft border-solid bg-panel px-3.5 py-3"
+                  className="m-0 border border-line-soft border-solid bg-panel px-3 py-3"
                 >
                   <span className="match-label">Group {groupName(g)}</span>{" "}
                   {group.map(nameOf).join(", ")}

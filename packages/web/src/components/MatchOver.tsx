@@ -15,7 +15,7 @@ const STYLES = {
       "m-0 font-bold font-pixel text-[28px] uppercase tracking-[3px] kiosk:text-[44px] kiosk:tracking-[4px]",
     legs: "flex items-baseline gap-4 text-[96px] leading-[0.78] kiosk:gap-6 kiosk:text-[160px]",
     dash: "text-[60px] text-faint kiosk:text-[96px]",
-    stats: "flex gap-8 kiosk:gap-12",
+    stats: "flex gap-6 kiosk:gap-6",
     value: "text-[40px] leading-[0.85] kiosk:text-[48px]",
     label: "label",
   },
@@ -58,7 +58,7 @@ export function MatchOver({
   return (
     <section className={style.root}>
       <h1 className={style.title}>Game shot</h1>
-      <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+      <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-6">
         {winnerPlayer && (
           <span className={style.frame}>
             <Avatar player={winnerPlayer} large />

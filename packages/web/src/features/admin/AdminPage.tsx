@@ -57,15 +57,15 @@ export function AdminPage({ section }: { section: AdminSection }) {
   return (
     <div>
       <header className="border-0 border-border border-b border-solid">
-        <div className="mx-auto kiosk:flex grid max-w-[1200px] grid-cols-[minmax(0,1fr)_auto] items-center kiosk:gap-x-8 kiosk:gap-y-0 kiosk:px-8">
-          <div className="flex kiosk:min-h-16 items-center gap-3 kiosk:gap-3.5 kiosk:p-0 px-4 py-2">
+        <div className="mx-auto kiosk:flex grid max-w-[1200px] grid-cols-[minmax(0,1fr)_auto] items-center kiosk:gap-x-6 kiosk:gap-y-0 kiosk:px-6">
+          <div className="flex kiosk:min-h-16 items-center gap-3 kiosk:gap-3 kiosk:p-0 px-4 py-2">
             <Logo width="72px" />
             <span className="font-pixel kiosk:text-[14px] text-[13px] uppercase tracking-[1px]">
               Admin
             </span>
           </div>
           <nav
-            className="scroll-x col-span-full row-start-2 flex min-w-0 kiosk:gap-1 border-0 border-border border-t kiosk:border-t-0 border-solid [--fade-bg:var(--bg)] [scrollbar-width:none]"
+            className="scroll-x col-span-full row-start-2 flex min-w-0 kiosk:gap-1.5 border-0 border-border border-t kiosk:border-t-0 border-solid [--fade-bg:var(--bg)] [scrollbar-width:none]"
             aria-label="Admin sections"
           >
             {Object.entries(sections).map(([key, { title }]) => (
@@ -96,7 +96,7 @@ export function AdminPage({ section }: { section: AdminSection }) {
           )}
         </div>
       </header>
-      <main className="mx-auto flex max-w-[1200px] flex-col gap-7 kiosk:gap-8 kiosk:px-8 px-4 kiosk:pt-10 pt-5 kiosk:pb-12 pb-7">
+      <main className="mx-auto flex max-w-[1200px] flex-col gap-6 kiosk:gap-6 kiosk:px-6 px-4 kiosk:pt-6 pt-6 kiosk:pb-6 pb-6">
         {error && (
           <p className="error" role="alert">
             {error}
@@ -155,7 +155,7 @@ function Login({ onDone }: { onDone: () => Promise<void> }) {
         </p>
       )}
       <form
-        className="m-auto flex w-[calc(100%_-_32px)] max-w-[440px] flex-col gap-3 border border-border border-solid bg-panel px-6 py-7"
+        className="m-auto flex w-[calc(100%_-_32px)] max-w-[440px] flex-col gap-3 border border-border border-solid bg-panel px-6 py-6"
         onSubmit={submit}
       >
         <Logo width="108px" className="mb-3 self-center" />

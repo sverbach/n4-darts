@@ -18,7 +18,7 @@ const STYLES = {
   },
   admin: {
     list: "m-0 grid list-none grid-cols-2 gap-2.5 p-0",
-    item: "flex flex-col gap-2.5 border border-border border-solid bg-panel p-[18px]",
+    item: "flex flex-col gap-2.5 border border-border border-solid bg-panel p-4",
     title: "font-pixel text-[11px] text-muted uppercase tracking-[1px]",
     players: "order-3 font-pixel text-[14px] uppercase tracking-[1px]",
     value: "order-2 text-[52px] text-accent leading-[0.85]",

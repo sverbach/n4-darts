@@ -43,8 +43,8 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
 
   const base = "/api/admin/tournament";
   return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-wrap items-end justify-between gap-5">
+    <div className="flex flex-col gap-6">
+      <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <h1>{tournament.name}</h1>
@@ -87,7 +87,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
             <section className={SECTION}>
               <h2>Final placings</h2>
               {champion && (
-                <div className="flex items-center gap-5 border-2 border-accent border-solid bg-accent-tint px-5 kiosk:py-[22px] py-[18px] [--avatar:64px] kiosk:[--avatar:88px]">
+                <div className="flex items-center gap-4 border-2 border-accent border-solid bg-accent-tint px-6 kiosk:py-6 py-4 [--avatar:64px] kiosk:[--avatar:88px]">
                   <Avatar player={champion} large />
                   <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                     <span className="match-label">Champion</span>
@@ -185,12 +185,12 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
 
       <section className={SECTION}>
         <h2>Groups</h2>
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,480px),1fr))] gap-x-6 gap-y-[18px]">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,480px),1fr))] gap-x-6 gap-y-4">
           {progress.groups.map((group) => (
             <div key={group.name} className="flex min-w-0 flex-col gap-2">
               {progress.groups.length > 1 && <span className="match-label">{group.name}</span>}
               <div className="scroll-x border border-border border-solid">
-                <table className="group-table [--avatar:30px] [&_td:first-child]:pl-3.5 [&_td:first-child]:text-left [&_td:last-child]:pr-3.5 [&_td]:h-[52px] [&_td]:text-[24px] [&_th:first-child]:pl-3.5 [&_th:first-child]:text-left [&_th:last-child]:pr-3.5">
+                <table className="group-table [--avatar:30px] [&_td:first-child]:pl-3 [&_td:first-child]:text-left [&_td:last-child]:pr-3 [&_td]:h-[52px] [&_td]:text-[24px] [&_th:first-child]:pl-3 [&_th:first-child]:text-left [&_th:last-child]:pr-3">
                   <thead>
                     <tr>
                       <th>#</th>
@@ -229,7 +229,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                 </table>
               </div>
               <details className="border border-line-soft border-solid">
-                <summary className="px-3.5">
+                <summary className="px-3">
                   <PixelIcon name="caret" /> Matches ({group.fixtures.length})
                 </summary>
                 <ul>
@@ -397,7 +397,7 @@ function QueueRow(props: {
     open.find((s) => s.id === entry.pinnedStation) ??
     (entry.pinnedStation === null ? open[0] : undefined);
   return (
-    <li className="flex flex-col gap-3 border border-border border-solid bg-panel px-4 py-3.5">
+    <li className="flex flex-col gap-3 border border-border border-solid bg-panel p-4">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         {entry.label && <span className="match-label">{entry.label}</span>}
         <span className="font-pixel text-[15px] uppercase tracking-[1px]">

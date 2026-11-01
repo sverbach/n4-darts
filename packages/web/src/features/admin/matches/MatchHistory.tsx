@@ -63,14 +63,14 @@ export function MatchHistory({ onOpen }: { onOpen(id: string): void }) {
   if (matches.length === 0) return <p className="hint">No finished matches yet.</p>;
   return (
     <div className={TABLE_PANEL}>
-      <div className="label kiosk:grid hidden min-h-11 grid-cols-[minmax(0,1fr)_auto] kiosk:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_120px_24px] items-center gap-x-4 gap-y-1 border-0 border-border border-b border-solid px-5 kiosk:[&>span:nth-child(3)]:text-right">
+      <div className="label kiosk:grid hidden min-h-11 grid-cols-[minmax(0,1fr)_auto] kiosk:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_120px_24px] items-center gap-x-4 gap-y-1.5 border-0 border-border border-b border-solid px-6 kiosk:[&>span:nth-child(3)]:text-right">
         <span>Players</span>
         <span>Result</span>
         <span>Time</span>
       </div>
       {byDay(matches).map(([date, list]) => (
         <section key={date} aria-label={date}>
-          <h3 className="m-0 border-0 border-line-soft border-b border-solid bg-surface kiosk:px-5 px-4 py-2">
+          <h3 className="m-0 border-0 border-line-soft border-b border-solid bg-surface kiosk:px-6 px-4 py-2">
             {date}
           </h3>
           <ul className="m-0 list-none p-0">
@@ -79,7 +79,7 @@ export function MatchHistory({ onOpen }: { onOpen(id: string): void }) {
                 <button
                   type="button"
                   onClick={() => onOpen(m.id)}
-                  className="grid min-h-[60px] w-full grid-cols-[minmax(0,1fr)_auto] kiosk:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_120px_24px] items-center gap-x-4 gap-y-1 border-0 bg-transparent kiosk:px-5 px-4 kiosk:py-0 py-2.5 text-left font-text normal-case tracking-normal kiosk:[&_.pixel-icon]:block [&_.pixel-icon]:hidden kiosk:[&_.pixel-icon]:h-[14px] kiosk:[&_.pixel-icon]:text-accent"
+                  className="grid min-h-[60px] w-full grid-cols-[minmax(0,1fr)_auto] kiosk:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_120px_24px] items-center gap-x-4 gap-y-1.5 border-0 bg-transparent kiosk:px-6 px-4 kiosk:py-0 py-2.5 text-left font-text normal-case tracking-normal kiosk:[&_.pixel-icon]:block [&_.pixel-icon]:hidden kiosk:[&_.pixel-icon]:h-[14px] kiosk:[&_.pixel-icon]:text-accent"
                 >
                   {/* The winner in full colour, the others grey: the result column only needs the legs. */}
                   <span className="font-pixel text-[13px] uppercase tracking-[1px]">
@@ -159,7 +159,7 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
               className="max-w-[760px]"
               open={legIndex === match.state.legs.length - 1}
             >
-              <summary className="bg-surface px-3.5 text-text">
+              <summary className="bg-surface px-3 text-text">
                 <PixelIcon name="caret" /> Leg {legIndex + 1} · {name(leg.starter)} starts
                 {/* Who won each leg, unless it was the only one (the line above says it). */}
                 {leg.winner !== null && match.state.legs.length > 1 && ` · ${name(leg.winner)} won`}

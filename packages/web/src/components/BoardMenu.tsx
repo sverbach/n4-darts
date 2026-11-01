@@ -3,7 +3,7 @@ import { request } from "../lib/api.ts";
 import { MENU_ITEM as ITEM, MENU, MENU_BUTTON } from "./ActionMenu.tsx";
 
 /** A section label in the menu: "Board", "Match". */
-const MENU_LABEL = "px-3.5 pt-2.5 pb-1.5 kiosk:px-4 kiosk:pt-3 kiosk:pb-2 kiosk:text-[12px]";
+const MENU_LABEL = "px-3 pt-2.5 pb-1.5 kiosk:px-4 kiosk:pt-3 kiosk:pb-2 kiosk:text-[12px]";
 
 /** "Board online", "Board stopped" (detection off), "Board offline" or "Server offline". */
 export function BoardStatus(props: {
@@ -102,7 +102,7 @@ export function BoardMenu(props: {
     <div className="relative flex items-center gap-1.5 kiosk:gap-2.5" ref={root}>
       {message ? (
         <span
-          className={`status kiosk:min-h-10 ${message.error ? "status-danger" : busy ? "status-accent" : "status-ok"}`}
+          className={`status ${message.error ? "status-danger" : busy ? "status-accent" : "status-ok"}`}
           role="status"
         >
           {message.text}
@@ -113,7 +113,6 @@ export function BoardMenu(props: {
           running={running}
           connected={connected ?? true}
           quiet={quiet ?? false}
-          className="kiosk:min-h-10"
         />
       )}
       <button
@@ -166,7 +165,7 @@ export function BoardMenu(props: {
                 {matchAction.label}
               </button>
               {matchAction.note && (
-                <span className="label kiosk:px-4 px-3.5 kiosk:pb-3 pb-2.5 kiosk:text-[11px] text-[10px]">
+                <span className="label kiosk:px-4 px-3 kiosk:pb-3 pb-2.5 kiosk:text-[11px] text-[10px]">
                   {matchAction.note}
                 </span>
               )}

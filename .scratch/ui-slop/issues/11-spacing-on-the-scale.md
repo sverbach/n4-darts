@@ -1,6 +1,6 @@
 # Spacing on the scale, equal insets, one pill height
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 The scale is 6 / 8 / 12 / 16 / 24 px (10 inside pills and notices, DESIGN.md). Off it:
@@ -28,3 +28,5 @@ The scale is 6 / 8 / 12 / 16 / 24 px (10 inside pills and notices, DESIGN.md). O
 ## Comments
 
 2026-10-31: Confirmed by the user. Largest spacing step 24 px.
+
+2026-11-01: Built. Every gap, padding and margin class in `packages/web/src` is on 6 / 8 / 10 / 12 / 16 / 24 (about 125 classes in 20 files, snapped by rule: under 6 → 6, 7 → 8, 14 → 12, 18 → 16, 20 → 16 for gaps and 24 for padding, 22 and anything over 24 → 24), page padding and section gaps included; in `app.css` the CTA's side padding 32 → 24 and the kiosk pill's 14 → 12. Remaining exceptions, documented in DESIGN.md: the select's 44px right padding (its chevron) and the projector's `pu-*` units. Admin cards: 16px all round everywhere (tournament stations and queue, matches, stations). Status pills: the default and `STATUS_SMALL` only (matches' own 26px variant went; the board menu's pill lost its kiosk 40px override, and the ⋮ button is 36px like the pill). Matches' Stations/History gap was done in 07 (a rule). DESIGN.md: the Largest-Step Rule, the two pill sizes.

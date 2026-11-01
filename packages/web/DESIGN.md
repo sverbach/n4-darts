@@ -219,7 +219,9 @@ There are two layouts and one breakpoint, **kiosk** at 760px. Phones get the sta
 
 Projector pages (`/display`, `/watch`) don't use the breakpoint. They lay out in mockup pixels through the `--px` unit (one pixel of a 1920×1080 or 1280×720 mockup), using `text-pu-*`, `gap-pu-*` and similar utilities, so every screen shows the same composition and nothing scrolls.
 
-Spacing works in a small rhythm: 6 / 8 / 12 / 16 / 24px, with 10px as the common inside gap of pills and notices. Match settings sit in a grid that fills by itself (`minmax(140px, 1fr)`). Tables run full width with the name column taking the slack and numbers right-aligned.
+Spacing works in a small rhythm: 6 / 8 / 12 / 16 / 24px, with 10px as the common inside gap of pills and notices. **24px is the largest step**, page padding and section gaps included; the only exceptions are the select's 44px right padding (room for its chevron) and the projector's `pu-*` units. Equivalent things get equal insets: every admin card is 16px all round. Match settings sit in a grid that fills by itself (`minmax(140px, 1fr)`). Tables run full width with the name column taking the slack and numbers right-aligned.
+
+**The Largest-Step Rule.** Nothing is spaced wider than 24px; when a layout feels like it needs more, it needs less content or a rule, not more air.
 
 **The Fit-The-Room Rule.** Projector pages never scroll and never reflow. They scale.
 
@@ -276,7 +278,7 @@ Hard-edged and tactile: square, bordered, never smaller than a thumb.
 - **Collapsible sections:** a Silkscreen summary row with a pixel caret that turns 90° when open (0.1s).
 
 ### Status Pill (signature)
-A readout: a tinted box with a 1px line and a square dot in its own colour, Silkscreen in capitals (11px/13px), 30px high on phones and 36px on the kiosk, never wrapping. It comes in ok, warn, danger and accent tints, plus neutral. Errors and notices are its full-width siblings, in red and amber.
+A readout: a tinted box with a 1px line and a square dot in its own colour, Silkscreen in capitals (11px/13px), never wrapping. Two sizes only: the default (30px high on phones, 36px on the kiosk; the ⋮ button beside it matches) and the small one in admin lists and tables (24px, `STATUS_SMALL`). It comes in ok, warn, danger and accent tints, plus neutral. Errors and notices are its full-width siblings, in red and amber.
 
 ### Scoreboard Player Card (signature)
 The remaining score in Display size, with the avatar and the name in Silkscreen capitals. The active player's score turns Mecha Violet, and that is the only signal for whose turn it is. Darts of the current visit show large in Geist Pixel, and an ignored dart is struck through.

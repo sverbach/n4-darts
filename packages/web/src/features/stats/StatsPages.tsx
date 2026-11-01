@@ -33,9 +33,9 @@ const td = (look: string) =>
 const NUMBER = "text-[24px] kiosk:text-[26px]";
 /** The profile's lists: tournaments and last matches. */
 const ROW =
-  "flex min-h-16 items-center gap-3.5 border-0 border-line-soft border-b border-solid [&_.pixel-icon]:h-[22px] [&_.pixel-icon]:text-accent";
+  "flex min-h-16 items-center gap-3 border-0 border-line-soft border-b border-solid [&_.pixel-icon]:h-[22px] [&_.pixel-icon]:text-accent";
 const ROW_MAIN =
-  "flex min-w-0 flex-1 flex-col gap-[3px] font-pixel text-[13px] uppercase tracking-[1px] kiosk:text-[15px]";
+  "flex min-w-0 flex-1 flex-col gap-1.5 font-pixel text-[13px] uppercase tracking-[1px] kiosk:text-[15px]";
 const ROW_DATE = "text-[11px] text-muted tracking-normal kiosk:text-[12px]";
 const ROW_VALUE = "min-w-12 text-right text-[28px] kiosk:w-[60px] kiosk:text-[32px]";
 
@@ -45,14 +45,14 @@ function StatsFrame(props: { back: [string, string]; children: ReactNode }) {
   return (
     <div className="min-h-[100dvh]">
       <header className="border-0 border-border border-b border-solid">
-        <div className="mx-auto flex max-w-[1200px] items-center justify-between kiosk:px-8 px-4 kiosk:py-3 py-2">
+        <div className="mx-auto flex max-w-[1200px] items-center justify-between kiosk:px-6 px-4 kiosk:py-3 py-2">
           <a className="back" href={href}>
             <PixelIcon name="back" height="0.7em" /> {text}
           </a>
           <Logo width="72px" />
         </div>
       </header>
-      <main className="mx-auto flex max-w-[1200px] flex-col gap-6 kiosk:gap-9 kiosk:px-8 px-4 kiosk:pt-10 pt-6 kiosk:pb-12 pb-10">
+      <main className="mx-auto flex max-w-[1200px] flex-col gap-6 kiosk:gap-6 kiosk:px-6 px-4 kiosk:pt-6 pt-6 kiosk:pb-6 pb-6">
         {props.children}
       </main>
     </div>
@@ -127,7 +127,7 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
                 <td className={td(`w-full text-left ${NUMBER}`)}>
                   <a
                     href={`/players/${row.playerId}`}
-                    className="inline-flex min-h-11 items-center gap-3 kiosk:gap-3.5 font-pixel kiosk:text-[16px] text-[13px] uppercase tracking-[1px] no-underline"
+                    className="inline-flex min-h-11 items-center gap-3 kiosk:gap-3 font-pixel kiosk:text-[16px] text-[13px] uppercase tracking-[1px] no-underline"
                   >
                     <Avatar player={{ id: row.playerId, name: row.name, photo: row.photo }} />
                     {row.name}
@@ -181,7 +181,7 @@ function Profile({ profile }: { profile: PlayerProfile }) {
   const percent = (part: number, whole: number) =>
     whole === 0 ? "" : `${Math.round((part / whole) * 100)}%`;
   const hero = (
-    <section className="flex items-center gap-5 kiosk:gap-8">
+    <section className="flex items-center gap-4 kiosk:gap-6">
       {/* The photo in a framed square with a corner block. */}
       <span className="relative flex-none border-[3px] border-accent border-solid kiosk:p-2 p-1.5 [--avatar:96px] kiosk:[--avatar:138px] after:absolute after:-right-[3px] after:-bottom-[3px] after:size-3.5 kiosk:after:size-[18px] after:bg-accent after:content-[''] [&_.avatar]:flex">
         <Avatar player={{ id: profile.playerId, name: profile.name, photo: profile.photo }} large />
@@ -276,7 +276,7 @@ function Profile({ profile }: { profile: PlayerProfile }) {
       </div>
 
       {t.matches > 0 && (
-        <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] kiosk:items-start gap-6 kiosk:gap-8 kiosk:[&>:only-child]:col-start-2">
+        <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] kiosk:items-start gap-6 kiosk:gap-6 kiosk:[&>:only-child]:col-start-2">
           {profile.evenings.length > 0 && (
             <section className={SECTION}>
               <h2 className="label font-normal">Average per evening</h2>
@@ -290,7 +290,7 @@ function Profile({ profile }: { profile: PlayerProfile }) {
         </div>
       )}
 
-      <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-2 gap-6 kiosk:gap-8">
+      <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-2 gap-6 kiosk:gap-6">
         {profile.tournaments.length > 0 && (
           <section className={SECTION}>
             <h2 className="label font-normal">Tournaments</h2>
@@ -363,7 +363,7 @@ function StatGroup({ title, items }: { title: string; items: Stat[] }) {
             key={item.label}
             className="flex kiosk:min-h-0 min-h-[92px] kiosk:flex-1 kiosk:flex-row flex-col kiosk:items-end justify-between gap-2 border border-border border-solid bg-panel kiosk:px-4 px-3 kiosk:py-3 py-2"
           >
-            <dt className="kiosk:flex contents kiosk:flex-col kiosk:gap-1">
+            <dt className="kiosk:flex contents kiosk:flex-col kiosk:gap-1.5">
               <span className="font-pixel kiosk:text-[12px] text-[11px] text-muted uppercase">
                 {item.label}
               </span>
@@ -435,7 +435,7 @@ function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
   const tagX = Math.min(width - tagWidth - 4, Math.max(4, x(last) - tagWidth / 2));
 
   return (
-    <figure className="m-0 border border-border border-solid bg-panel px-0 pt-3 pb-1">
+    <figure className="m-0 border border-border border-solid bg-panel px-0 pt-3 pb-1.5">
       <svg
         viewBox={`0 0 ${width} ${height}`}
         role="img"

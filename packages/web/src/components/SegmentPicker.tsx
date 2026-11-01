@@ -32,12 +32,12 @@ export function SegmentPicker({ title, context, current, onPick, onCancel }: Pro
 
   return (
     <div
-      className="fixed inset-0 z-20 flex items-center justify-center overflow-y-auto border-[3px] border-accent border-solid bg-bg kiosk:p-8 p-4"
+      className="fixed inset-0 z-20 flex items-center justify-center overflow-y-auto border-[3px] border-accent border-solid bg-bg kiosk:p-6 p-4"
       role="dialog"
       aria-label={title}
     >
       <div className="flex max-h-full w-full max-w-[1180px] flex-col gap-4 kiosk:gap-6">
-        <div className="flex items-end justify-between gap-4 border-0 border-border border-b border-solid pb-3.5">
+        <div className="flex items-end justify-between gap-4 border-0 border-border border-b border-solid pb-3">
           <div>
             {context && (
               <span className="mb-1.5 block font-pixel kiosk:text-[14px] text-[11px] text-accent uppercase tracking-[2px]">
@@ -50,7 +50,7 @@ export function SegmentPicker({ title, context, current, onPick, onCancel }: Pro
           </div>
           <button
             type="button"
-            className="danger kiosk:min-h-16 border-2 kiosk:px-7 kiosk:text-[16px]"
+            className="danger kiosk:min-h-16 border-2 kiosk:px-6 kiosk:text-[16px]"
             onClick={onCancel}
           >
             Cancel

@@ -47,7 +47,7 @@ export function StationsAdmin() {
           </ul>
         )}
       </div>
-      <section className="flex min-w-0 flex-[1_1_340px] flex-col gap-3.5 border border-border border-solid bg-panel p-[22px]">
+      <section className="flex min-w-0 flex-[1_1_340px] flex-col gap-3 border border-border border-solid bg-panel p-6">
         <h2>Add a station</h2>
         <StationForm
           submitLabel="Add station"
@@ -152,7 +152,7 @@ function StationForm(props: {
   };
 
   return (
-    <form className="flex flex-col gap-3.5" onSubmit={submit}>
+    <form className="flex flex-col gap-3" onSubmit={submit}>
       <div
         className={`grid gap-3 ${props.initial ? "grid-cols-[repeat(auto-fit,minmax(200px,1fr))]" : "grid-cols-[1fr]"}`}
       >
