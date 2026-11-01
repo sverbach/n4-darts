@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-01T09:02:39.553193+00:00",
+  "generatedAt": "2026-11-01T10:04:12.114143+00:00",
   "title": "Design System: n4-darts",
   "extensions": {
     "colorMeta": {
@@ -429,7 +429,7 @@
     "rules": [
       {
         "name": "The One Signal Rule",
-        "body": "Mecha Violet is the only accent. If two things on a screen are violet, they must mean the same thing: active, selected or primary.",
+        "body": "Mecha Violet is the only accent, and it's for state only: active, selected or primary. If two things on a screen are violet, they must mean the same thing. A station name, a rank, a points column or a label is never violet.",
         "section": "colors"
       },
       {
@@ -469,7 +469,7 @@
       },
       {
         "name": "The Fit-The-Room Rule",
-        "body": "Projector pages never scroll and never reflow. They scale.",
+        "body": "Projector pages never scroll and never reflow. They scale, and no text on them is under 20 mockup px (avatar initials aside).",
         "section": "layout"
       },
       {
