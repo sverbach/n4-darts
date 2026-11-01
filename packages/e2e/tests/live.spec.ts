@@ -81,3 +81,15 @@ test("a station added in /admin shows on an open home page", async ({ page, n4 }
   await n4.api.delete("/api/admin/stations/9");
   await expect(page.getByRole("link", { name: /Station Nine/ })).toHaveCount(0);
 });
+
+test("an open home page shows what each station is doing", async ({ page, n4 }) => {
+  await page.goto("/");
+  const station = page.getByRole("link", { name: /^Station 1/ });
+  await expect(station).toContainText("Free");
+
+  await n4.quickMatch(1, ["Ann", "Bob"]);
+  await expect(station).toContainText("Ann vs Bob · 301 – 301");
+
+  await n4.command(1, { type: "abandonMatch" });
+  await expect(station).toContainText("Free");
+});

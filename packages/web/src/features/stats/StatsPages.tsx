@@ -6,6 +6,8 @@ import { PixelIcon } from "../../components/PixelIcon.tsx";
 import { useFetch } from "../../lib/useFetch.ts";
 import { Heatmap } from "./Heatmap.tsx";
 
+/** The matches the rating averages over (STATS, RATING-01). */
+const RATING_MATCHES = 10;
 const avg = (value: number | null) => (value === null ? "–" : value.toFixed(1));
 const num = (value: number | null) => (value === null ? "–" : String(value));
 const place = (from: number, to: number) => (from === to ? `${from}` : `${from}–${to}`);
@@ -64,7 +66,7 @@ export function LeaderboardPage() {
   // Read once: the stats pages don't follow live, by design (VIEW-01).
   const { data: rows, error } = useFetch<LeaderboardRow[]>("/api/players/stats");
   return (
-    <StatsFrame back={["/", "n4-darts"]}>
+    <StatsFrame back={["/", "Home"]}>
       <div className="flex flex-col gap-2">
         <h1 className="kiosk:text-[40px]">Players</h1>
         <p className="hint m-0">
@@ -179,7 +181,7 @@ export function ProfilePage({ id }: { id: string }) {
 function Profile({ profile }: { profile: PlayerProfile }) {
   const t = profile.totals;
   const percent = (part: number, whole: number) =>
-    whole === 0 ? "" : ` (${Math.round((part / whole) * 100)}%)`;
+    whole === 0 ? "" : `${Math.round((part / whole) * 100)}%`;
   const hero = (
     <section className="flex items-center gap-5 kiosk:gap-8">
       {/* The photo in a framed square with a corner block. */}
@@ -187,17 +189,18 @@ function Profile({ profile }: { profile: PlayerProfile }) {
         <Avatar player={{ id: profile.playerId, name: profile.name, photo: profile.photo }} large />
       </span>
       <div className="flex min-w-0 flex-col gap-2">
-        {profile.rank !== null && (
-          <span className="font-pixel kiosk:text-[13px] text-[11px] text-accent uppercase tracking-[2px]">
-            Rank #{profile.rank}
-          </span>
-        )}
         <h1 className="wrap-anywhere kiosk:text-[56px] text-[34px] kiosk:tracking-[5px] tracking-[3px]">
           {profile.name}
         </h1>
-        {profile.since && (
+        {(profile.rank !== null || profile.since) && (
           <span className="label">
-            {t.matches} match{t.matches === 1 ? "" : "es"} · since {monthOf(profile.since)}
+            {[
+              profile.rank !== null && `Rank #${profile.rank}`,
+              profile.since &&
+                `${t.matches} match${t.matches === 1 ? "" : "es"} · since ${monthOf(profile.since)}`,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
           </span>
         )}
       </div>
@@ -214,12 +217,20 @@ function Profile({ profile }: { profile: PlayerProfile }) {
   return (
     <>
       {hero}
-      <div className="flex kiosk:grid kiosk:grid-cols-4 flex-col gap-5">
+      {/* Each value once. Under 10 matches the rating is the all-time average, so that tile
+          goes; the best placing is in the tournaments list below. */}
+      <div className="flex kiosk:grid kiosk:grid-cols-4 flex-col gap-6 kiosk:gap-4">
         <StatGroup
           title="Average"
           items={[
-            { label: "Rating", value: avg(profile.rating), sub: "Last 10 matches", accent: true },
-            { label: "3-dart avg", value: avg(t.average), sub: "All time" },
+            {
+              label: "Rating",
+              value: avg(profile.rating),
+              sub: t.matches > RATING_MATCHES ? "Last 10 matches" : "All matches",
+            },
+            ...(t.matches > RATING_MATCHES
+              ? [{ label: "3-dart avg", value: avg(t.average), sub: "All time" }]
+              : []),
             { label: "First 9", value: avg(t.first9Average), sub: "First 3 visits" },
           ]}
         />
@@ -229,22 +240,23 @@ function Profile({ profile }: { profile: PlayerProfile }) {
             {
               label: "Checkout %",
               value: t.checkoutPercent === null ? "–" : `${t.checkoutPercent.toFixed(0)}%`,
-              sub: t.checkoutPercent === null ? "Double out only" : `Of ${t.checkoutAttempts}`,
+              sub:
+                t.checkoutPercent === null ? "Double out only" : `Of ${t.checkoutAttempts} darts`,
             },
-            { label: "Highest", value: num(t.highestCheckout), sub: "Checkout", accent: true },
+            { label: "Highest", value: num(t.highestCheckout) },
             {
               label: "Best leg",
               value: num(t.bestLeg),
-              sub: t.bestLeg === 1 ? "Dart" : "Darts",
+              sub: t.bestLeg === null ? "" : t.bestLeg === 1 ? "Dart" : "Darts",
             },
           ]}
         />
         <StatGroup
           title="Scoring"
           items={[
-            { label: "180", value: String(t.s180), sub: "Times", accent: true },
-            { label: "140+", value: String(t.s140), sub: "Times" },
-            { label: "100+", value: String(t.s100), sub: "Times" },
+            { label: "180s", value: String(t.s180) },
+            { label: "140+", value: String(t.s140) },
+            { label: "100+", value: String(t.s100) },
           ]}
         />
         <StatGroup
@@ -253,21 +265,13 @@ function Profile({ profile }: { profile: PlayerProfile }) {
             {
               label: "Matches won",
               value: String(t.matchesWon),
-              sub: `Of ${t.matches}${percent(t.matchesWon, t.matches)}`,
+              sub: percent(t.matchesWon, t.matches),
             },
             { label: "Legs won", value: String(t.legsWon), sub: `Of ${t.legs}` },
             {
-              label: "Tournaments",
+              label: "Tournaments won",
               value: String(profile.tournamentsWon),
-              sub: `Won of ${profile.tournaments.length}`,
-              accent: true,
-            },
-            {
-              label: "Best placing",
-              value: profile.bestPlacing
-                ? place(profile.bestPlacing.from, profile.bestPlacing.to)
-                : "–",
-              sub: profile.bestPlacing?.tournament ?? "",
+              sub: `Of ${profile.tournaments.length}`,
             },
           ]}
         />
@@ -300,9 +304,7 @@ function Profile({ profile }: { profile: PlayerProfile }) {
                     <span className={ROW_DATE}>{date(tournament.date)}</span>
                   </div>
                   {tournament.from === 1 && <PixelIcon name="trophy" label="Won" />}
-                  <span className={`${ROW_VALUE} ${tournament.from === 1 ? "text-accent" : ""}`}>
-                    {place(tournament.from, tournament.to)}
-                  </span>
+                  <span className={ROW_VALUE}>{place(tournament.from, tournament.to)}</span>
                 </li>
               ))}
             </ul>
@@ -315,8 +317,9 @@ function Profile({ profile }: { profile: PlayerProfile }) {
             <ul className="m-0 list-none border-0 border-border border-t border-solid p-0">
               {profile.recent.map((m) => (
                 <li key={m.matchId} className={ROW}>
+                  {/* Won or lost in words; the colours are for status only (DESIGN.md). */}
                   <span
-                    className={`kiosk:w-[52px] w-11 font-pixel kiosk:text-[12px] text-[11px] uppercase ${m.won ? "text-ok" : "text-danger"}`}
+                    className={`kiosk:w-[52px] w-11 font-pixel kiosk:text-[12px] text-[11px] uppercase ${m.won ? "text-text" : "text-muted"}`}
                   >
                     {m.won ? "Won" : "Lost"}
                   </span>
@@ -340,33 +343,39 @@ function Profile({ profile }: { profile: PlayerProfile }) {
 interface Stat {
   label: string;
   value: string;
-  sub: string;
-  accent?: boolean;
+  /** What the number means, when the label alone doesn't say it. */
+  sub?: string;
 }
 
+/**
+ * A group of stat tiles. On a phone they share a row (two to a row with four); on a wide screen
+ * they stack, stretched so every group's column ends level.
+ */
 function StatGroup({ title, items }: { title: string; items: Stat[] }) {
+  const columns =
+    items.length === 4 ? "grid-cols-2" : items.length === 3 ? "grid-cols-3" : "grid-cols-2";
   return (
     <section className="flex flex-col gap-2">
       <h2 className="label">{title}</h2>
-      <dl className="m-0 kiosk:flex grid grid-cols-2 kiosk:flex-col gap-2 kiosk:gap-2.5">
+      <dl className={`m-0 grid ${columns} kiosk:flex kiosk:flex-1 kiosk:flex-col gap-2`}>
         {items.map((item) => (
           // On a phone: the label, the number, the sub-label below it. On a wide screen: label and
           // sub-label on the left, the number on the right.
           <div
             key={item.label}
-            className="flex kiosk:min-h-0 min-h-[92px] kiosk:flex-row flex-col kiosk:items-end justify-between gap-1.5 border border-border border-solid bg-panel kiosk:px-4 px-3 kiosk:py-3.5 py-2.5"
+            className="flex kiosk:min-h-0 min-h-[92px] kiosk:flex-1 kiosk:flex-row flex-col kiosk:items-end justify-between gap-2 border border-border border-solid bg-panel kiosk:px-4 px-3 kiosk:py-3 py-2"
           >
             <dt className="kiosk:flex contents kiosk:flex-col kiosk:gap-1">
               <span className="font-pixel kiosk:text-[12px] text-[11px] text-muted uppercase">
                 {item.label}
               </span>
-              <span className="order-3 font-pixel kiosk:text-faint text-[11px] text-muted uppercase">
-                {item.sub}
-              </span>
+              {item.sub && (
+                <span className="order-3 font-pixel text-[11px] text-muted uppercase">
+                  {item.sub}
+                </span>
+              )}
             </dt>
-            <dd
-              className={`order-2 m-0 kiosk:text-[48px] text-[40px] kiosk:leading-[0.8] leading-[0.85] ${item.accent ? "text-accent" : ""}`}
-            >
+            <dd className="order-2 m-0 kiosk:text-[48px] text-[32px] kiosk:leading-[0.8] leading-[0.85]">
               {item.value}
             </dd>
           </div>
@@ -422,7 +431,8 @@ function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
   const labelEvery = Math.ceil(points.length / (wide ? 8 : 4));
   const last = points.length - 1;
   const lastPoint = points[last] as (typeof points)[number];
-  const tag = `${shortDay(lastPoint.day)} · ${lastPoint.value.toFixed(1)}`;
+  // The last evening's value; its date is on the axis right below.
+  const tag = lastPoint.value.toFixed(1);
   const tagWidth = tag.length * font * 0.5 + font;
   const tagX = Math.min(width - tagWidth - 4, Math.max(4, x(last) - tagWidth / 2));
 
@@ -470,7 +480,12 @@ function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
                 </title>
               </rect>
               {((i % labelEvery === 0 && last - i >= labelEvery / 2) || i === last) && (
-                <text x={x(i)} y={height - font * 0.6} className="fill-muted" textAnchor="middle">
+                <text
+                  x={x(i)}
+                  y={height - font * 0.6}
+                  className="fill-muted uppercase"
+                  textAnchor="middle"
+                >
                   {shortDay(p.day)}
                 </text>
               )}

@@ -1,6 +1,6 @@
 # Profile, players and Home without repeats
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 `features/stats/StatsPages.tsx`, `features/home/HomePage.tsx` (`profile-*`, `players-*`, `home-*`):
@@ -23,3 +23,5 @@ Type: task
 ## Comments
 
 2026-10-31: Confirmed by the user.
+
+2026-11-01: Built. Profile: rank moved from a label above the name into the line below it ("Rank #1 · 1 match · since Nov 2026"; the label above the heading was the pattern the detector flagged); the 3-dart avg tile shows only from 11 matches on (before, it equals the rating, whose sub-label then reads "All matches"); Matches won's sub-label is the percentage only; Best placing went (it's in the tournaments list), so every group has three cards; Scoring's "Times" and Highest's "Checkout" sub-labels went; the chart's tag shows the value only (the date is on the axis) and the axis is in capitals. Also from 14 for this page: no accent tiles (the rating stays first, in Phosphor Paper), sub-labels in Readout Grey instead of Dead Pixel, Won/Lost in words in full colour and grey, the tournaments placing no longer violet. Stats header back link reads "← Home". Admin stations show the name only, and the add form's placeholder is the next free number. Home's footer (brand and tagline) went; "Display (projector)" is "Projector".

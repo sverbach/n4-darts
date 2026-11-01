@@ -51,6 +51,8 @@ export function StationsAdmin() {
         <h2>Add a station</h2>
         <StationForm
           submitLabel="Add station"
+          // The server names an unnamed station after its number: the next one.
+          placeholder={`Station ${Math.max(0, ...(stations ?? []).map((s) => s.id)) + 1}`}
           onSubmit={(name, boardUrl) => change("POST", "/api/admin/stations", { name, boardUrl })}
         >
           <p className="hint m-0 text-[19px]">
@@ -85,7 +87,7 @@ function StationRow({ station, change }: { station: StationAdminView; change: Ch
     return (
       <li className={cardRow(true)}>
         <div className={cardTitle(true)}>
-          <span className={CARD_NAME}>{station.id}. Edit station</span>
+          <span className={CARD_NAME}>Edit {station.name}</span>
           {menu}
         </div>
         <StationForm
@@ -105,7 +107,7 @@ function StationRow({ station, change }: { station: StationAdminView; change: Ch
     <li className={cardRow()}>
       <div className={CARD_MAIN}>
         <a className={CARD_NAME} href={`/station/${station.id}`}>
-          {station.id}. {station.name}
+          {station.name}
         </a>
         <code className="wrap-anywhere font-text text-[22px] text-muted">{station.boardUrl}</code>
       </div>
@@ -133,6 +135,7 @@ function StationRow({ station, change }: { station: StationAdminView; change: Ch
 function StationForm(props: {
   initial?: StationAdminView;
   submitLabel: string;
+  placeholder?: string;
   onSubmit(name: string, boardUrl: string): Promise<boolean>;
   onCancel?(): void;
   children?: ReactNode;
@@ -155,7 +158,11 @@ function StationForm(props: {
       >
         <label className={FIELD_SMALL}>
           {props.initial ? "Name" : "Name (optional)"}
-          <input placeholder="Station 4" value={name} onChange={(e) => setName(e.target.value)} />
+          <input
+            placeholder={props.initial?.name ?? props.placeholder}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </label>
         <label className={FIELD_SMALL}>
           Board address

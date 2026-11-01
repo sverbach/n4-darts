@@ -47,11 +47,9 @@ n4-darts runs darts evenings: a few automatic dartboards (stations) play x01, wh
 
 ## `/`: Home
 
-A title and a list of links:
-- Each station, with a small "Watch" link beside it.
-- "Players and stats".
-- "Display (projector)".
-- "Admin".
+The animated logo, then two lists of links:
+- **Stations** (live): each station's name and what it's doing ("Free", "Ann vs Bob · 61 – 101", "Ann vs Bob · waiting to start", "Ann won", or its notice), a status pill only when the board needs a look, and a "Watch" link beside it in the same frame.
+- **More:** "Players and stats", "Projector", "Admin".
 
 ---
 
@@ -157,7 +155,7 @@ The layout must cope with 1–3+ stations and 2–8 players per match.
 
 ## `/players`: Leaderboard (stats)
 
-- A back link "← n4-darts" and the title "Players".
+- A back link "← Home" (the logo is at the top right) and the title "Players".
 - A table of everyone who has played a counted match, sorted by rating:
   - Columns: #, Player (avatar plus name, linking to the profile), Rating (3-dart average over the last 10 matches), Avg (all time), M (matches), W (wins), 180s, HC (highest checkout).
   - The table scrolls horizontally on a phone.
@@ -165,16 +163,17 @@ The layout must cope with 1–3+ stations and 2–8 players per match.
 
 ## `/players/:id`: Player profile
 
-- A back link "← Players", then a large avatar and the name.
-- **Four stat groups** (cards of label and value):
-  - **Average:** Rating (last 10), 3-dart average, First 9 (the average over the first three visits of each leg).
-  - **Checkouts:** Checkout % ("38% of 21"), Highest checkout, Best leg ("15 darts").
-  - **Scoring:** 180, 140+, 100+ counts.
-  - **Results:** Matches won ("12 of 20 (60%)"), Legs won, Tournaments won ("1 of 4"), Best placing.
-- **"Average per evening":** a small line chart (an SVG) with dates on the x axis, the average on the y axis, and a tooltip on each dot.
+- A back link "← Players", then a large avatar, the name and one line below it: "Rank #3 · 20 matches · since Jul 2026".
+- **Four stat groups** (cards of label and value, each value once; a sub-label only where the label alone doesn't say it; no accent colour):
+  - **Average:** Rating ("Last 10 matches"), 3-dart avg ("All time", only from 11 matches on: before that it equals the rating, which then reads "All matches"), First 9 (the average over the first three visits of each leg).
+  - **Checkouts:** Checkout % ("Of 21 darts"), Highest, Best leg ("Darts").
+  - **Scoring:** 180s, 140+, 100+.
+  - **Results:** Matches won ("60%"), Legs won ("Of 41"), Tournaments won ("Of 4"). The best placing is in the tournaments list.
+  - On a phone a group's cards share a row; on desktop they stack in four columns that end level.
+- **"Average per evening":** a small line chart (an SVG) with dates on the x axis (in capitals), the average on the y axis, a tooltip on each dot, and the last evening's value tagged.
 - **"Where the darts land":** a drawn dartboard with a soft glowing dot for each of the player's last 500 board-detected darts, captioned "Last 500 darts" (or the real number). Misses off the board show outside it. With fewer than 30 darts it says "Not enough darts yet". Next to the average chart on desktop, below it on phones.
 - **"Tournaments":** a list of the name, date and placing, with 🏆 for a win.
-- **"Last matches":** a list of "Won 2–1 vs Bob", the date and the match average.
+- **"Last matches":** a list of "Won" / "Lost" (in words: full colour and grey, not green and red), "2–1 vs Bob", the date and the match average.
 - A player with no matches shows the name and "No matches played yet."
 
 ---
@@ -247,7 +246,7 @@ There's one tournament at a time, and the tab shows one of three states.
 
 ### `/admin/stations`
 - **Station list:** a row per station with:
-  - "1. Station name" (a link to `/station/1`) and the board menu; the status pill shows only when the board isn't online and detecting, or while a menu action runs.
+  - The station name (a link to `/station/1`) and the board menu; the status pill shows only when the board isn't online and detecting, or while a menu action runs.
   - The board address (e.g. `http://192.168.1.139:3180`).
   - Buttons: Edit (switches to an inline form) and Remove (danger, disabled while the station has a match).
 - **"Add a station":** a form with a Name (optional) field, a Board address field and an "Add station" button, plus a hint about what the board address is.

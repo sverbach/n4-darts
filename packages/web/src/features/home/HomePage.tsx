@@ -1,15 +1,30 @@
 // Home: where every device starts. Also shown for any path that isn't a page.
 
 import type { StationView } from "@n4/server/api";
+import { BoardStatus } from "../../components/BoardMenu.tsx";
 import { SparkleLogo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
 import { useLive } from "../../lib/useLive.ts";
 
 const LIST = "flex min-w-0 flex-[1_1_420px] flex-col gap-2";
-const TILE =
-  "flex min-h-[60px] flex-1 items-center justify-between gap-3.5 border border-border border-solid bg-surface px-4 font-pixel text-[15px] uppercase tracking-[1px] no-underline kiosk:min-h-[72px] kiosk:gap-4 kiosk:px-5 kiosk:text-[18px] [&_.pixel-icon]:h-[21px] [&_.pixel-icon]:text-accent";
+/** The tiles' fill and frame, shared by a station's Watch link. */
+const FRAME = "border border-border border-solid bg-surface no-underline hover:border-accent-line";
+const TILE = `flex min-h-[60px] min-w-0 flex-1 items-center justify-between gap-4 ${FRAME} px-4 font-pixel text-[15px] uppercase tracking-[1px] kiosk:min-h-[72px] kiosk:px-5 kiosk:text-[18px] [&_.pixel-icon]:h-[21px] [&_.pixel-icon]:text-accent`;
 
-/** The start page: the stations (followed live, so one added in /admin shows up), and the rest. */
+/** What a station is doing, from its live view: "Free", the match and its scores, or its notice. */
+function stationState(station: StationView) {
+  const match = station.match;
+  if (!match) return station.notice ?? "Free";
+  const names = match.players.map((p) => p.name).join(" vs ");
+  const { state, players } = match;
+  if (state.phase === "notStarted") return `${names} · waiting to start`;
+  if (state.phase === "matchWon" && state.winner !== null) {
+    return `${players[state.winner]?.name ?? "?"} won`;
+  }
+  return `${names} · ${state.players.map((p) => p.remaining).join(" – ")}`;
+}
+
+/** The start page: the stations, live (what each is doing, a new one from /admin), and the rest. */
 export function HomePage() {
   const stations = useLive<StationView[]>("/api/stations/live").view ?? [];
 
@@ -25,15 +40,19 @@ export function HomePage() {
           {stations.map((s) => (
             <div key={s.id} className="flex gap-2">
               <a href={`/station/${s.id}`} className={TILE}>
-                <span className="kiosk:text-[12px] text-[11px] text-muted">
-                  {String(s.id).padStart(2, "0")}
+                <span className="flex min-w-0 flex-1 flex-col gap-1">
+                  <span>{s.name}</span>
+                  <span className="overflow-hidden text-ellipsis whitespace-nowrap font-text kiosk:text-[20px] text-[18px] text-muted normal-case tracking-normal">
+                    {stationState(s)}
+                  </span>
                 </span>
-                <span className="flex-1">{s.name}</span>
+                {/* Only a board that needs a look says so; a healthy one says nothing. */}
+                <BoardStatus online={s.boardOnline} running={s.boardRunning} quiet />
                 <PixelIcon name="arrow" />
               </a>
               <a
                 href={`/watch/${s.id}`}
-                className="flex kiosk:w-[110px] w-[88px] items-center justify-center border border-border border-solid font-pixel kiosk:text-[12px] text-[11px] text-muted uppercase tracking-[1px] no-underline hover:text-accent"
+                className={`flex kiosk:w-[110px] w-[88px] items-center justify-center ${FRAME} font-pixel kiosk:text-[12px] text-[11px] text-muted uppercase tracking-[1px] hover:text-accent`}
               >
                 Watch
               </a>
@@ -44,7 +63,7 @@ export function HomePage() {
           <span className="label">More</span>
           {[
             ["/players", "Players and stats"],
-            ["/display", "Display (projector)"],
+            ["/display", "Projector"],
             ["/admin", "Admin"],
           ].map(([href, text]) => (
             <a key={href} href={href} className={TILE}>
@@ -54,10 +73,6 @@ export function HomePage() {
           ))}
         </nav>
       </div>
-      <footer className="label mt-auto flex justify-between border-0 border-border border-t border-solid pt-3">
-        <span>n4-darts</span>
-        <span>x01 · tournaments</span>
-      </footer>
     </main>
   );
 }

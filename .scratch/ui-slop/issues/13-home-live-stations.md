@@ -1,6 +1,6 @@
 # Home shows what each station is doing
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 Home's stations are live since live-lists 03, but each tile shows only "STATION 1" and a Watch link. The Watch links also use a different fill from the tiles.
@@ -19,3 +19,5 @@ Home's stations are live since live-lists 03, but each tile shows only "STATION 
 ## Comments
 
 2026-10-31: Confirmed by the user.
+
+2026-11-01: Built. Each station tile shows what it's doing from the stream it already read (Free / the notice, "Ann vs Bob · waiting to start", the remaining scores, "Ann won"), a board pill only when the board needs a look (`BoardStatus quiet`), and the Watch link shares the tile's frame and fill. Browser test in `live.spec.ts`: a match starting and ending shows on an open home page.
