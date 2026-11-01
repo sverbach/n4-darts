@@ -449,10 +449,8 @@
     no-repeat local,
     linear-gradient(to left, var(--fade-bg, var(--panel)) 40%, transparent) right / 32px 100%
     no-repeat local,
-    linear-gradient(to right, rgb(242 237 228 / 0.4), transparent) left / 24px 100% no-repeat
-    scroll,
-    linear-gradient(to left, rgb(242 237 228 / 0.4), transparent) right / 24px 100% no-repeat
-    scroll;
+    linear-gradient(to right, rgb(242 237 228 / 0.4), transparent) left / 24px 100% no-repeat scroll,
+    linear-gradient(to left, rgb(242 237 228 / 0.4), transparent) right / 24px 100% no-repeat scroll;
   background-color: var(--fade-bg, var(--panel));
 }
 

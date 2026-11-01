@@ -113,7 +113,7 @@ The same scoreboard as the station, for a projector or TV, with nothing clickabl
   - A free station shows "Free" or the station notice.
   - "Next: Ann vs Bob" (not started).
   - The scoreboard plus the current visit (turn shown by the framed card and violet score only).
-  - Game shot, as on the station: winner, legs, checkout and average.
+  - Game shot, as on the station but larger: winner, "ANN 1 – 0 BOB" (the opponent and the legs), checkout and average.
 
 It needs to fit a 720p screen without scrolling.
 

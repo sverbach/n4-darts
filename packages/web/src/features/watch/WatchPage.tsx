@@ -8,10 +8,10 @@ import { matchRulesLabel } from "../../lib/labels.ts";
 import { useStation } from "../../lib/useStation.ts";
 
 /** The bar's small capitals: the match label and "501 · Double out · First to 2 legs · Leg 2". */
-const SMALL = "whitespace-nowrap font-pixel text-muted text-pu-14 uppercase";
+const SMALL = "whitespace-nowrap font-pixel text-muted text-pu-20 uppercase";
 /** "Free", "Connecting…" */
 const NOTE = "m-auto text-center font-pixel text-muted text-pu-40 uppercase tracking-pu-4";
-const TOTAL_LABEL = "font-pixel text-pu-13 uppercase tracking-[1px]";
+const TOTAL_LABEL = "font-pixel text-pu-20 uppercase tracking-[1px]";
 
 /** A station's scoreboard for a TV or the projector: live, with nothing to press. */
 export function WatchPage({ id }: { id: number }) {
@@ -29,7 +29,7 @@ export function WatchPage({ id }: { id: number }) {
           {match?.label && <span className={`${SMALL} tracking-pu-2`}>· {match.label}</span>}
         </div>
         {!connected ? (
-          <span className="status status-danger min-h-pu-36! px-pu-14! text-pu-13!">
+          <span className="status status-danger min-h-pu-36! px-pu-14! text-pu-20!">
             Server offline
           </span>
         ) : (
@@ -91,7 +91,7 @@ function NextMatch({ match }: { match: MatchView }) {
           </div>
         ))}
       </div>
-      <span className="font-pixel text-muted text-pu-15 uppercase tracking-pu-2">
+      <span className="font-pixel text-muted text-pu-20 uppercase tracking-pu-2">
         {matchRulesLabel(match.settings)} · Waiting to start
       </span>
     </div>
@@ -111,7 +111,7 @@ function WatchVisit({ match }: { match: MatchView }) {
       className={`flex h-pu-132 items-center gap-pu-16 border-solid px-pu-20 ${visit?.bust ? "border-danger border-pu-3 bg-danger-tint" : "border border-border bg-panel"}`}
       aria-label="Current visit"
     >
-      <span className="w-pu-120 font-pixel text-muted text-pu-14 uppercase leading-[1.6] tracking-[1px]">
+      <span className="w-pu-120 font-pixel text-muted text-pu-20 uppercase leading-[1.6] tracking-[1px]">
         Visit
       </span>
       <div className="grid flex-1 grid-cols-3 gap-pu-12">

@@ -7,6 +7,8 @@ import { Avatar } from "./Avatar.tsx";
 /** The game shot's styles on the station (phone and kiosk) and on /watch (`--px` units). */
 const STYLES = {
   station: {
+    versus: "",
+    versusLegs: "",
     root: "flex flex-1 flex-col items-center gap-6 text-center kiosk:gap-6",
     title: "mt-auto text-[40px] text-accent tracking-[4px] kiosk:text-[72px] kiosk:tracking-[8px]",
     frame: "avatar-frame text-[11px] [--avatar:120px] kiosk:text-[20px] kiosk:[--avatar:172px]",
@@ -21,15 +23,18 @@ const STYLES = {
   },
   projector: {
     root: "flex flex-1 flex-col items-center justify-center gap-pu-28 p-pu-32 text-center",
-    title: "mt-0 text-accent text-pu-72 tracking-pu-8",
-    frame: "avatar-frame text-pu-20 avatar-pu-172",
-    side: "flex flex-col items-start gap-pu-24",
-    winner: "m-0 font-bold font-pixel text-pu-44 uppercase tracking-pu-4",
+    title: "mt-0 text-accent text-pu-96 tracking-pu-8",
+    frame: "avatar-frame text-pu-28 avatar-pu-240",
+    side: "flex flex-col items-start gap-pu-28",
+    winner: "m-0 font-bold font-pixel text-pu-56 uppercase tracking-pu-4",
     legs: "flex items-baseline gap-pu-24 text-pu-160 leading-[0.78]",
     dash: "text-faint text-pu-96",
     stats: "flex gap-pu-48",
-    value: "text-pu-56 leading-[0.85]",
-    label: "font-pixel text-muted text-pu-13 uppercase tracking-[1px]",
+    value: "text-pu-72 leading-[0.85]",
+    label: "font-pixel text-muted text-pu-20 uppercase tracking-[1px]",
+    /** The room also wants to know against whom: "ANN 1 – 0 BOB". */
+    versus: "m-0 flex items-baseline gap-pu-16 font-pixel text-pu-28 uppercase tracking-pu-3",
+    versusLegs: "font-text text-pu-56 normal-case tracking-normal",
   },
 };
 
@@ -66,10 +71,19 @@ export function MatchOver({
         )}
         <div className={style.side}>
           <p className={style.winner}>{winnerPlayer?.name ?? "?"} wins</p>
+          {size === "projector" && others.length === 1 && (
+            <p className={style.versus}>
+              <span>{winnerPlayer?.name}</span>
+              <span className={style.versusLegs}>
+                {state.players[winner]?.legsWon} – {others[0]}
+              </span>
+              <span className="text-muted">{players.find((_, i) => i !== winner)?.name}</span>
+            </p>
+          )}
           {settings.legsToWin > 1 && others.length > 1 && (
             <p className={`m-0 ${style.label}`}>{state.players[winner]?.legsWon} legs</p>
           )}
-          {settings.legsToWin > 1 && others.length === 1 && (
+          {size === "station" && settings.legsToWin > 1 && others.length === 1 && (
             <div
               className={style.legs}
               role="img"

@@ -15,14 +15,14 @@ const today = () =>
 
 /** A column of a heading and its cards or table. */
 const SECTION = "flex flex-col gap-pu-14";
-const H2 = "font-normal text-muted text-pu-18 tracking-pu-3";
+const H2 = "font-normal text-muted text-pu-20 tracking-pu-3";
 /** The group tables and the leaderboard. */
 const TABLE = "w-full border-collapse border border-border border-solid bg-panel avatar-pu-44";
 const CELL =
   "border-0 border-b border-solid px-pu-10 whitespace-nowrap first:pl-pu-22 last:pr-pu-22";
 /** A header cell: right-aligned and grey unless `look` says otherwise; the first is left-aligned. */
 const th = (look = "text-right text-muted first:text-left") =>
-  `${CELL} h-pu-50 border-border font-normal font-pixel text-pu-13 uppercase ${look}`;
+  `${CELL} h-pu-50 border-border font-normal font-pixel text-pu-20 uppercase ${look}`;
 /** A body cell: its size and colour come with it; right-aligned unless it's the player. */
 const td = (extra: string) =>
   `${CELL} h-pu-72 border-line-soft ${extra.includes("text-left") ? "" : "text-right first:text-left"} ${extra}`;
@@ -61,7 +61,7 @@ function Header(props: { title: string; detail: string; played?: number; total?:
       <Logo width="4.8em" className="flex-none" />
       <div>
         <h1 className="text-pu-40 tracking-pu-4">{title}</h1>
-        <p className="mt-pu-6 mb-0 font-pixel text-muted text-pu-18 uppercase tracking-pu-2">
+        <p className="mt-pu-6 mb-0 font-pixel text-muted text-pu-20 uppercase tracking-pu-2">
           {detail}
         </p>
       </div>
@@ -96,13 +96,13 @@ function Running({ view }: { view: DisplayView }) {
                   className="avatar-pu-40 flex items-center gap-pu-16 border border-line-soft border-solid px-pu-22 py-pu-14 font-pixel text-pu-20 uppercase tracking-pu-2"
                 >
                   {m.label && (
-                    <span className="w-pu-220 whitespace-nowrap text-muted text-pu-14 tracking-pu-1">
+                    <span className="w-pu-220 whitespace-nowrap text-muted text-pu-20 tracking-pu-1">
                       {m.label}
                     </span>
                   )}
                   {m.players.map((p, i) => (
                     <span key={p.id} className="inline-flex items-center gap-pu-16">
-                      {i > 0 && <span className="text-muted text-pu-15">vs</span>}
+                      {i > 0 && <span className="text-muted text-pu-20">vs</span>}
                       <Avatar player={p} />
                       <span>{p.name}</span>
                     </span>
@@ -133,8 +133,9 @@ function Finished({ view }: { view: DisplayView }) {
   return (
     <>
       <Header title={t.name} detail={t.endedEarly ? "Ended early" : "Finished"} />
+      {/* Centred in the frame: with a small field the lists are shorter than the screen. */}
       <Fit
-        className="flex-1"
+        className="flex flex-1 flex-col justify-center"
         // Top-aligned: the champion's panel is as tall as its content, not the screen.
         inner="grid grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,1fr)] items-start gap-pu-48"
       >
@@ -190,7 +191,7 @@ function Idle({ view }: { view: DisplayView }) {
     <>
       <header className="flex items-center justify-between gap-pu-32">
         <Logo width="7.2em" className="flex-none" />
-        <span className="font-pixel text-muted text-pu-18 uppercase tracking-pu-3">
+        <span className="font-pixel text-muted text-pu-20 uppercase tracking-pu-3">
           Darts evening · {today()}
         </span>
       </header>
@@ -237,7 +238,7 @@ function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
       <tbody>
         {rows.map((row, i) => (
           <tr key={row.playerId}>
-            <td className={td(`font-pixel text-muted text-pu-15`)}>{i + 1}</td>
+            <td className={td(`font-pixel text-muted text-pu-20`)}>{i + 1}</td>
             <td className={td("w-full text-left text-pu-34")}>
               <span className={TABLE_PLAYER}>
                 <Avatar player={{ id: row.playerId, name: row.name, photo: row.photo }} />
@@ -278,7 +279,7 @@ function Groups({ view }: { view: DisplayView }) {
             <tbody>
               {group.table.map((row, i) => (
                 <tr key={row.playerId}>
-                  <td className={td("font-pixel text-muted text-pu-15")}>{i + 1}</td>
+                  <td className={td("font-pixel text-muted text-pu-20")}>{i + 1}</td>
                   <td className={td("w-full text-left text-pu-34")}>
                     <span className={TABLE_PLAYER}>
                       <Avatar player={{ id: row.playerId, name: row.name, photo: row.photo }} />
@@ -325,7 +326,7 @@ function Bracket({ view }: { view: DisplayView }) {
                 key={`${column.section}-${column.name}`}
                 className="flex w-pu-330 min-w-0 flex-col gap-pu-14"
               >
-                <h3 className="text-muted text-pu-13 tracking-pu-2">{column.name}</h3>
+                <h3 className="text-muted text-pu-20 tracking-pu-2">{column.name}</h3>
                 <div className="flex flex-1 flex-col justify-around gap-pu-14">
                   {column.matches.map((m) => (
                     <MatchCard key={m.slot} match={m} round={column.name} projector />
@@ -366,7 +367,7 @@ function StationCard({ station, large }: { station: DisplayStation; large?: bool
         <span className={name}>{station.name}</span>
         {match ? (
           <span className="font-pixel text-pu-20 uppercase tracking-pu-2">
-            <span className="text-muted text-pu-15">Next · </span>
+            <span className="text-muted text-pu-20">Next · </span>
             {match.players.map((p, i) => (
               <span key={p.id}>
                 {i > 0 && <span className="text-muted"> vs </span>}
@@ -377,7 +378,7 @@ function StationCard({ station, large }: { station: DisplayStation; large?: bool
         ) : (
           // A real status pill (tint, line, square dot), at projector size.
           <span
-            className={`status ${IDLE[idle.tone as keyof typeof IDLE]} min-h-pu-40! gap-pu-10! px-pu-16! text-pu-16! before:h-pu-10! before:w-pu-10!`}
+            className={`status ${IDLE[idle.tone as keyof typeof IDLE]} min-h-pu-40! gap-pu-10! px-pu-16! text-pu-20! before:h-pu-10! before:w-pu-10!`}
           >
             {idle.text}
           </span>
@@ -390,7 +391,7 @@ function StationCard({ station, large }: { station: DisplayStation; large?: bool
       <div className="flex items-center justify-between gap-pu-16 border-0 border-line-soft border-b border-solid px-pu-22 py-pu-12">
         <span className={name}>{station.name}</span>
         {match.label && (
-          <span className="font-pixel text-muted text-pu-15 uppercase tracking-pu-2">
+          <span className="font-pixel text-muted text-pu-20 uppercase tracking-pu-2">
             {match.label}
           </span>
         )}
@@ -415,7 +416,7 @@ function Score({ card, large }: { card: ScoreCard; large: boolean }) {
           >
             {p.name}
           </span>
-          <span className="text-right font-pixel text-muted text-pu-14 uppercase">
+          <span className="text-right font-pixel text-muted text-pu-20 uppercase">
             {card.legsToWin > 1 ? `Legs ${p.legsWon}` : ""}
           </span>
           {/* The thrower's score is violet (the one turn signal); the winner's says so in words. */}
@@ -428,7 +429,7 @@ function Score({ card, large }: { card: ScoreCard; large: boolean }) {
       ))}
       {card.throwing !== null && (
         <div className="flex items-center gap-pu-10 px-pu-22 py-pu-12">
-          <span className="mr-pu-6 font-pixel text-muted text-pu-13 uppercase">Visit</span>
+          <span className="mr-pu-6 font-pixel text-muted text-pu-20 uppercase">Visit</span>
           {[0, 1, 2].map((i) => {
             const dart = card.visit[i];
             return (
@@ -440,7 +441,7 @@ function Score({ card, large }: { card: ScoreCard; large: boolean }) {
               </span>
             );
           })}
-          <span className="ml-auto font-pixel text-muted text-pu-13 uppercase">
+          <span className="ml-auto font-pixel text-muted text-pu-20 uppercase">
             Total{" "}
             <span className="align-middle font-text text-pu-44 text-text">
               {card.visit.length > 0 ? total : ""}

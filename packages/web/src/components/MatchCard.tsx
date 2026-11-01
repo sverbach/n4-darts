@@ -21,11 +21,11 @@ function cardStyle(match: TournamentMatchView, projector: boolean) {
     return {
       card: `flex flex-col border-solid bg-panel ${live ? "border-2 border-accent" : "border border-border"}`,
       label:
-        "border-0 border-line-soft border-b border-solid px-pu-14 py-pu-8 font-pixel text-muted text-pu-13 uppercase",
-      status: `px-pu-14 py-pu-8 font-pixel text-pu-13 uppercase ${live ? "text-accent" : "text-muted"}`,
+        "border-0 border-line-soft border-b border-solid px-pu-14 py-pu-8 font-pixel text-muted text-pu-20 uppercase",
+      status: `px-pu-14 py-pu-8 font-pixel text-pu-20 uppercase ${live ? "text-accent" : "text-muted"}`,
       player: (winner: boolean) =>
         `flex h-pu-56 items-center gap-pu-12 border-0 border-line-soft border-b border-solid px-pu-14 avatar-pu-36 ${match.winner ? (winner ? "font-bold" : "text-muted") : ""}`,
-      name: "min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-pu-18 uppercase tracking-pu-2",
+      name: "min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-pu-20 uppercase tracking-pu-2",
       legs: "text-pu-40",
     };
   }

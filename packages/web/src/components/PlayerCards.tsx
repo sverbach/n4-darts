@@ -36,7 +36,7 @@ function cardStyle(size: CardsSize, many: boolean, active: boolean) {
         ? "self-start"
         : "flex min-h-0 items-start self-stretch [container-type:size] [grid-area:score]",
       remaining: `block leading-[0.8] ${many ? "text-pu-90" : "text-[length:min(125cqh,55cqw)]"} ${active ? "text-accent" : ""}`,
-      meta: `min-h-[1em] font-pixel text-muted uppercase tracking-[1px] ${many ? "text-pu-12" : "self-start text-pu-14 [grid-area:meta]"}`,
+      meta: `min-h-[1em] font-pixel text-muted uppercase tracking-[1px] ${many ? "text-pu-20" : "self-start text-pu-20 [grid-area:meta]"}`,
     };
   }
   return {

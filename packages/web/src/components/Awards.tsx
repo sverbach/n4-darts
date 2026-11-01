@@ -16,7 +16,7 @@ const STYLES = {
   projector: {
     list: "m-0 flex list-none flex-col gap-pu-14 p-0",
     item: "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-pu-18 gap-y-pu-8 border border-border border-solid bg-panel px-pu-26 py-pu-22 [grid-template-areas:'title_value'_'players_value']",
-    title: "font-pixel text-muted text-pu-15 uppercase tracking-pu-2 [grid-area:title]",
+    title: "font-pixel text-muted text-pu-20 uppercase tracking-pu-2 [grid-area:title]",
     players: "font-pixel text-pu-24 uppercase tracking-pu-2 [grid-area:players]",
     value: "text-pu-72 leading-[0.8] [grid-area:value]",
   },

@@ -356,7 +356,7 @@ Spacing works in a small rhythm: 6 / 8 / 12 / 16 / 24px, with 10px as the common
 
 **The Largest-Step Rule.** Nothing is spaced wider than 24px; when a layout feels like it needs more, it needs less content or a rule, not more air.
 
-**The Fit-The-Room Rule.** Projector pages never scroll and never reflow. They scale.
+**The Fit-The-Room Rule.** Projector pages never scroll and never reflow. They scale, and no text on them is under 20 mockup px (avatar initials aside).
 
 ## Elevation & Depth
 
