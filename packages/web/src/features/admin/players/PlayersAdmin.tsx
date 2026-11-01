@@ -4,6 +4,7 @@ import { ActionMenu } from "../../../components/ActionMenu.tsx";
 import { Avatar } from "../../../components/Avatar.tsx";
 import { PixelIcon } from "../../../components/PixelIcon.tsx";
 import { request } from "../../../lib/api.ts";
+import { average } from "../../../lib/format.ts";
 import { useLive } from "../../../lib/useLive.ts";
 import { PhotoEditor } from "./PhotoEditor.tsx";
 
@@ -167,9 +168,7 @@ function PlayerRow(props: { player: AdminPlayer; change: Change }) {
       <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[16px] uppercase tracking-[1px]">
         {player.name}
       </span>
-      <span className={`${RATING} text-[24px]`}>
-        {player.rating === null ? "–" : player.rating.toFixed(1)}
-      </span>
+      <span className={`${RATING} text-[24px]`}>{average(player.rating)}</span>
       <ActionMenu
         label={`Actions for ${player.name}`}
         items={[

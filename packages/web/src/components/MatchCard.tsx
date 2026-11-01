@@ -1,4 +1,5 @@
 import type { TournamentMatchView } from "@n4/server/api";
+import { NONE } from "../lib/format.ts";
 import { Avatar } from "./Avatar.tsx";
 
 /** What a tournament match is doing, for its card and the fixture lists; empty when it says nothing. */
@@ -68,7 +69,7 @@ export function MatchCard({
         return (
           <div key={side} className={p.player(winner)}>
             {player && <Avatar player={player} />}
-            <span className={p.name}>{player?.name ?? "–"}</span>
+            <span className={p.name}>{player?.name ?? NONE}</span>
             {match.legs && <span className={p.legs}>{match.legs[i]}</span>}
           </div>
         );

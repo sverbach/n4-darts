@@ -1,7 +1,7 @@
 import type { DiagnosticsView } from "@n4/server/api";
 import type { ReactNode } from "react";
 import { useLive } from "../../../lib/useLive.ts";
-import { badge, RULED, SECTION_HEAD } from "../ui.ts";
+import { badge, RULED, SECTION_HEAD, STATUS_SMALL } from "../ui.ts";
 
 const ms = (value: number | null) =>
   value === null ? "–" : value < 10 ? `${value.toFixed(1)} ms` : `${Math.round(value)} ms`;
@@ -122,7 +122,9 @@ export function DiagnosticsAdmin() {
               <tr key={b.station}>
                 <td>{b.name}</td>
                 <td>
-                  <span className={badge(b.online ? "ok" : "warn")}>
+                  <span
+                    className={`status ${b.online ? "status-ok" : "status-danger"} ${STATUS_SMALL}`}
+                  >
                     {b.online ? "Online" : "Offline"}
                   </span>
                 </td>

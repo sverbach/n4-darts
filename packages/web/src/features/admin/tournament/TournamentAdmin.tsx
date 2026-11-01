@@ -4,6 +4,7 @@ import { Avatar } from "../../../components/Avatar.tsx";
 import { PixelIcon } from "../../../components/PixelIcon.tsx";
 import { PlayerPicker } from "../../../components/PlayerPicker.tsx";
 import { request } from "../../../lib/api.ts";
+import { average } from "../../../lib/format.ts";
 import { useLive } from "../../../lib/useLive.ts";
 import {
   ASIDE,
@@ -15,8 +16,8 @@ import {
   HEAD,
   MAIN,
   RULED,
+  runState,
   SECTION,
-  SECTION_HEAD,
 } from "../ui.ts";
 import { TournamentRun } from "./TournamentRun.tsx";
 
@@ -161,8 +162,9 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
   return (
     <>
       <div className={HEAD}>
-        <div className="flex items-center gap-4">
-          <span className="match-label">Draft</span>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <h1>Tournament</h1>
+          <span className={runState(false)}>Draft</span>
           {save !== "idle" && (
             <span
               className={`inline-flex items-center gap-1.5 font-pixel kiosk:text-[12px] text-[11px] uppercase ${save === "saved" ? "text-ok before:size-[7px] before:bg-current before:content-['']" : "text-muted"}`}
@@ -171,7 +173,6 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
             </span>
           )}
         </div>
-        <h1>Tournament</h1>
         <p className="hint">
           Every change saves right away. Start when the problems list is clear.
         </p>
@@ -195,6 +196,8 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
               picked={order}
               onChange={(playerIds) => patch({ playerIds })}
               max={Number.POSITIVE_INFINITY}
+              // The seeds set the order, not the picking.
+              numbered={false}
             />
           </section>
 
@@ -255,6 +258,9 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
                 </label>
               )}
             </div>
+            <p className="hint m-0">
+              Advance per group: how many from each group go on to the knockout, best first.
+            </p>
           </section>
 
           <section className={RULED}>
@@ -330,10 +336,11 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
 
         <aside className={ASIDE}>
           <section className={SECTION}>
-            <div className={SECTION_HEAD}>
-              <h2>Seeds</h2>
-              <span className="label">By rating</span>
-            </div>
+            <h2>Seeds</h2>
+            <p className="hint m-0">
+              By rating, the 3-dart average over the last 10 matches; new players last, in a random
+              order. ↑/↓ to change.
+            </p>
             <ol className="m-0 flex list-none flex-col gap-1.5 p-0">
               {view.entrants.map((e, i) => (
                 <li
@@ -347,9 +354,7 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
                   <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[14px] uppercase tracking-[1px]">
                     {e.name}
                   </span>
-                  <span className="text-[24px] text-muted">
-                    {e.rating === null ? "–" : e.rating.toFixed(1)}
-                  </span>
+                  <span className="text-[24px] text-muted">{average(e.rating)}</span>
                   <button
                     type="button"
                     aria-label={`Move ${e.name} up`}

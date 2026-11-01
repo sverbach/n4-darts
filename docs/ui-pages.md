@@ -26,7 +26,7 @@ n4-darts runs darts evenings: a few automatic dartboards (stations) play x01, wh
 - **Board status plus menu:** a status pill reading "Board online", "Board stopped", "Board offline" or "Server offline", with a ⋮ button beside it. The button opens a small menu: Stop/Start detection, Calibrate, Reset board. While an action runs, the pill shows its progress or result for a few seconds ("Calibrating…", "Calibrated", "Board reset", or an error).
 - **Player picker:**
   - A wrap of name chips, each with an avatar, plus an "add new player" input and button below.
-  - Tapping chips picks players in order, and each picked chip shows its order number. Tapping a picked chip again removes it.
+  - Tapping chips picks players in order, and each picked chip shows its order number (not in the tournament draft, where the seeds set the order). Tapping a picked chip again removes it.
   - At most 8 players can be picked.
 - **Match settings:** four dropdowns.
   - Start: 301, 501 or 701.
@@ -199,6 +199,7 @@ There's one tournament at a time, and the tab shows one of three states.
 - A "Create draft" button.
 
 **2. Draft editor** (all changes save immediately)
+- **Header:** "Tournament" with a "Draft" state and "Saving…"/"Saved" beside it, and the line "Every change saves right away…".
 - **Name:** an input.
 - **Players (n):** the player picker.
 - **Format:**
@@ -206,9 +207,10 @@ There's one tournament at a time, and the tab shows one of three states.
   - Advance per group: Everyone, or Top 1–4.
   - Knockout: Double or Single elimination.
   - Grand final: With bracket reset, or One match (double elimination only).
+  - The hint "Advance per group: how many from each group go on to the knockout, best first."
 - **Legs:** best-of dropdowns for Group matches, Winners bracket (or Knockout), Losers bracket and Final.
 - **Game:** Start, In, Out.
-- **Seeds:** an ordered list of position, name and rating, with ↑/↓ buttons.
+- **Seeds:** the hint "By rating, the 3-dart average over the last 10 matches; new players last, in a random order. ↑/↓ to change.", then an ordered list of position, name and rating, with ↑/↓ buttons.
 - **Groups preview:** "Group A: Ann, Bob, …" (when there are several groups).
 - **Problems:** a list of blocking problems (e.g. not enough players). Without problems it shows the estimate "Takes about 2 h 30."
 - **Buttons:** "Discard" (danger) and a primary "Start tournament".
@@ -274,3 +276,14 @@ Whether the server keeps up, for explaining a slow evening from data. It refresh
 - **This page's request:** "Direct" or "Through a proxy", with the `x-forwarded-*`, `via` and `x-real-ip` headers it came with.
 
 Values that worry are shown in amber and red.
+
+---
+
+## Formats
+
+Every screen writes these the same way (`packages/web/src/lib/format.ts`, `lib/labels.ts`):
+- **Rules:** "501 · Double in · Double out · First to 3 legs" (a straight in rule is left out).
+- **Legs and shared places:** an en dash, "2–1", "3–4".
+- **Empty value:** one en dash, "–".
+- **Visit totals:** unpadded ("40"); before the first dart of a visit, nothing.
+- **Averages:** one decimal.

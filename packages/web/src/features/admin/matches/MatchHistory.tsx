@@ -5,6 +5,7 @@ import { PixelIcon } from "../../../components/PixelIcon.tsx";
 import { SegmentPicker } from "../../../components/SegmentPicker.tsx";
 import { request } from "../../../lib/api.ts";
 import { dartLabel } from "../../../lib/darts.ts";
+import { legScore } from "../../../lib/format.ts";
 import { matchRulesLabel } from "../../../lib/labels.ts";
 import { useLive } from "../../../lib/useLive.ts";
 import { HEAD, runState, TABLE_PANEL } from "../ui.ts";
@@ -21,7 +22,7 @@ function result(match: MatchSummary) {
   if (match.abandoned) return "Abandoned";
   const winner = match.players.find((p) => p.id === match.winner);
   if (!winner) return match.closedAt ? "No winner (corrected)" : "In progress";
-  const legs = match.settings.legsToWin > 1 ? ` ${match.legsWon.join("–")}` : "";
+  const legs = match.settings.legsToWin > 1 ? ` ${legScore(match.legsWon)}` : "";
   return `${winner.name} won${legs}`;
 }
 
@@ -29,7 +30,7 @@ function result(match: MatchSummary) {
 function score(match: MatchSummary) {
   if (match.abandoned) return "Abandoned";
   if (!match.winner) return match.closedAt ? "No winner (corrected)" : "In progress";
-  return match.legsWon.join("–");
+  return legScore(match.legsWon);
 }
 
 /** The history by evening: the date once, then that evening's matches. */

@@ -11,6 +11,7 @@ import { Awards } from "../../../components/Awards.tsx";
 import { MatchCard, STATUS } from "../../../components/MatchCard.tsx";
 import { PixelIcon } from "../../../components/PixelIcon.tsx";
 import { Progress } from "../../../components/Progress.tsx";
+import { average, legScore, placing } from "../../../lib/format.ts";
 import { usePlayers } from "../../../lib/usePlayers.ts";
 import {
   CARD_DETAIL,
@@ -32,7 +33,6 @@ import {
 type Send = (method: string, url: string, body?: object) => Promise<boolean>;
 
 const time = (iso: string) => new Date(iso).toLocaleTimeString(undefined, { timeStyle: "short" });
-const place = (from: number, to: number) => (from === to ? `${from}` : `${from}–${to}`);
 const PHASES = { groups: "Group phase", knockout: "Knockout", finished: "Finished" };
 
 export function TournamentRun(props: { view: TournamentAdminView; send: Send; onNew(): void }) {
@@ -107,7 +107,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                       className="flex min-h-[60px] items-center gap-4 border-0 border-line-soft border-b border-solid [--avatar:36px]"
                     >
                       <span className="min-w-14 whitespace-nowrap text-[32px] text-muted">
-                        {place(p.from, p.to)}
+                        {placing(p.from, p.to)}
                       </span>
                       <Avatar player={p} />
                       <span className="font-pixel text-[16px] uppercase tracking-[1px]">
@@ -220,14 +220,10 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                         <td>{row.played}</td>
                         <td>{row.won}</td>
                         <td>{row.lost}</td>
-                        <td className="text-muted">
-                          {row.legsFor}:{row.legsAgainst}
-                        </td>
+                        <td className="text-muted">{legScore([row.legsFor, row.legsAgainst])}</td>
                         <td>{row.legDiff > 0 ? `+${row.legDiff}` : row.legDiff}</td>
                         <td className="points">{row.points}</td>
-                        <td className="text-muted">
-                          {row.average === null ? "–" : row.average.toFixed(1)}
-                        </td>
+                        <td className="text-muted">{average(row.average)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -317,7 +313,7 @@ function BracketRows({ bracket }: { bracket: TournamentProgress["bracket"] }) {
 }
 
 function fixtureResult(f: TournamentMatchView) {
-  if (f.legs) return `${f.legs[0]}:${f.legs[1]}${f.status === "walkover" ? " (w/o)" : ""}`;
+  if (f.legs) return `${legScore(f.legs)}${f.status === "walkover" ? " (w/o)" : ""}`;
   return STATUS[f.status];
 }
 

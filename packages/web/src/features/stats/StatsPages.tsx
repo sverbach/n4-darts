@@ -3,14 +3,12 @@ import { type ReactNode, useEffect, useState } from "react";
 import { Avatar } from "../../components/Avatar.tsx";
 import { Logo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
+import { average, count, legScore, NONE, placing } from "../../lib/format.ts";
 import { useFetch } from "../../lib/useFetch.ts";
 import { Heatmap } from "./Heatmap.tsx";
 
 /** The matches the rating averages over (STATS, RATING-01). */
 const RATING_MATCHES = 10;
-const avg = (value: number | null) => (value === null ? "–" : value.toFixed(1));
-const num = (value: number | null) => (value === null ? "–" : String(value));
-const place = (from: number, to: number) => (from === to ? `${from}` : `${from}–${to}`);
 const MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
 const pad2 = (n: number) => String(n).padStart(2, "0");
 /** "21 Oct 2026" */
@@ -136,13 +134,13 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
                   </a>
                 </td>
                 <td className={td("kiosk:text-[32px] text-[30px] text-accent")}>
-                  {avg(row.rating)}
+                  {average(row.rating)}
                 </td>
-                <td className={td(NUMBER)}>{avg(row.average)}</td>
+                <td className={td(NUMBER)}>{average(row.average)}</td>
                 <td className={td(`text-muted ${NUMBER}`)}>{row.matches}</td>
                 <td className={td(`text-muted ${NUMBER}`)}>{row.matchesWon}</td>
                 <td className={td(NUMBER)}>{row.s180}</td>
-                <td className={td(NUMBER)}>{num(row.highestCheckout)}</td>
+                <td className={td(NUMBER)}>{count(row.highestCheckout)}</td>
               </tr>
             ))}
           </tbody>
@@ -225,13 +223,13 @@ function Profile({ profile }: { profile: PlayerProfile }) {
           items={[
             {
               label: "Rating",
-              value: avg(profile.rating),
+              value: average(profile.rating),
               sub: t.matches > RATING_MATCHES ? "Last 10 matches" : "All matches",
             },
             ...(t.matches > RATING_MATCHES
-              ? [{ label: "3-dart avg", value: avg(t.average), sub: "All time" }]
+              ? [{ label: "3-dart avg", value: average(t.average), sub: "All time" }]
               : []),
-            { label: "First 9", value: avg(t.first9Average), sub: "First 3 visits" },
+            { label: "First 9", value: average(t.first9Average), sub: "First 3 visits" },
           ]}
         />
         <StatGroup
@@ -239,14 +237,14 @@ function Profile({ profile }: { profile: PlayerProfile }) {
           items={[
             {
               label: "Checkout %",
-              value: t.checkoutPercent === null ? "–" : `${t.checkoutPercent.toFixed(0)}%`,
+              value: t.checkoutPercent === null ? NONE : `${t.checkoutPercent.toFixed(0)}%`,
               sub:
                 t.checkoutPercent === null ? "Double out only" : `Of ${t.checkoutAttempts} darts`,
             },
-            { label: "Highest", value: num(t.highestCheckout) },
+            { label: "Highest", value: count(t.highestCheckout) },
             {
               label: "Best leg",
-              value: num(t.bestLeg),
+              value: count(t.bestLeg),
               sub: t.bestLeg === null ? "" : t.bestLeg === 1 ? "Dart" : "Darts",
             },
           ]}
@@ -304,7 +302,7 @@ function Profile({ profile }: { profile: PlayerProfile }) {
                     <span className={ROW_DATE}>{date(tournament.date)}</span>
                   </div>
                   {tournament.from === 1 && <PixelIcon name="trophy" label="Won" />}
-                  <span className={ROW_VALUE}>{place(tournament.from, tournament.to)}</span>
+                  <span className={ROW_VALUE}>{placing(tournament.from, tournament.to)}</span>
                 </li>
               ))}
             </ul>
@@ -325,11 +323,11 @@ function Profile({ profile }: { profile: PlayerProfile }) {
                   </span>
                   <div className={ROW_MAIN}>
                     <span>
-                      {m.legsFor}–{m.legsAgainst} vs {m.opponents.join(", ")}
+                      {legScore([m.legsFor, m.legsAgainst])} vs {m.opponents.join(", ")}
                     </span>
                     <span className={ROW_DATE}>{date(m.date)}</span>
                   </div>
-                  <span className={ROW_VALUE}>{avg(m.average)}</span>
+                  <span className={ROW_VALUE}>{average(m.average)}</span>
                 </li>
               ))}
             </ul>

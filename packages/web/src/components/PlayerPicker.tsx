@@ -12,8 +12,10 @@ export function PlayerPicker(props: {
   onChange(picked: string[]): void;
   title?: string;
   max?: number;
+  /** Number the picks in order (a match's throwing order); off where the order means nothing. */
+  numbered?: boolean;
 }) {
-  const { picked, onChange, title, max = MAX_PLAYERS } = props;
+  const { picked, onChange, title, max = MAX_PLAYERS, numbered = true } = props;
   const { players, add } = usePlayers();
   const [newName, setNewName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +67,7 @@ export function PlayerPicker(props: {
               >
                 <Avatar player={p} />
                 <span>{p.name}</span>
-                {position >= 0 && (
+                {numbered && position >= 0 && (
                   <span className="inline-grid h-5 kiosk:h-[26px] kiosk:min-w-[26px] min-w-5 place-items-center bg-accent font-bold kiosk:text-[13px] text-[11px] text-accent-text">
                     {position + 1}
                   </span>

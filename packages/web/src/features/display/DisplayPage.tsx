@@ -6,10 +6,10 @@ import { Logo } from "../../components/Logo.tsx";
 import { MatchCard } from "../../components/MatchCard.tsx";
 import { Progress } from "../../components/Progress.tsx";
 import { dartLabel } from "../../lib/darts.ts";
+import { average, count, legScore, placing } from "../../lib/format.ts";
 import { useLive } from "../../lib/useLive.ts";
 
 const PHASES = { groups: "Group phase", knockout: "Knockout", finished: "Finished" };
-const place = (from: number, to: number) => (from === to ? `${from}` : `${from}–${to}`);
 const today = () =>
   new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
@@ -31,7 +31,7 @@ const td = (extra: string) =>
 const TABLE_PLAYER =
   "inline-flex items-center gap-2.5 font-pixel text-pu-20 uppercase tracking-pu-2";
 /** A free station: why it's free. */
-const IDLE = { muted: "text-muted", warn: "text-warn", danger: "text-danger" };
+const IDLE = { muted: "", warn: "status-warn", danger: "status-danger" };
 
 /** The projector: the tournament with live station scores, or the stations and the leaderboard. */
 export function DisplayPage() {
@@ -158,7 +158,7 @@ function Finished({ view }: { view: DisplayView }) {
                   className="flex h-pu-96 items-center gap-pu-22 border-0 border-line-soft border-b border-solid"
                 >
                   <span className="w-pu-160 whitespace-nowrap text-muted text-pu-56">
-                    {place(p.from, p.to)}
+                    {placing(p.from, p.to)}
                   </span>
                   <Avatar player={p} />
                   <span className="font-pixel text-pu-28 uppercase tracking-pu-3">{p.name}</span>
@@ -240,12 +240,10 @@ function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
                 {row.name}
               </span>
             </td>
-            <td className={td("text-accent text-pu-40")}>
-              {row.rating === null ? "–" : row.rating.toFixed(1)}
-            </td>
+            <td className={td("text-accent text-pu-40")}>{average(row.rating)}</td>
             <td className={td("text-muted text-pu-34")}>{row.matches}</td>
             <td className={td("text-pu-34")}>{row.s180}</td>
-            <td className={td("text-pu-34")}>{row.highestCheckout ?? "–"}</td>
+            <td className={td("text-pu-34")}>{count(row.highestCheckout)}</td>
           </tr>
         ))}
       </tbody>
@@ -287,15 +285,13 @@ function Groups({ view }: { view: DisplayView }) {
                   <td className={td("text-pu-34")}>{row.won}</td>
                   <td className={td("text-pu-34")}>{row.lost}</td>
                   <td className={td("text-muted text-pu-34")}>
-                    {row.legsFor}–{row.legsAgainst}
+                    {legScore([row.legsFor, row.legsAgainst])}
                   </td>
                   <td className={td("text-pu-34")}>
                     {row.legDiff > 0 ? `+${row.legDiff}` : row.legDiff}
                   </td>
                   <td className={td("text-accent text-pu-40")}>{row.points}</td>
-                  <td className={td("text-muted text-pu-34")}>
-                    {row.average === null ? "–" : row.average.toFixed(1)}
-                  </td>
+                  <td className={td("text-muted text-pu-34")}>{average(row.average)}</td>
                 </tr>
               ))}
             </tbody>
@@ -375,8 +371,9 @@ function StationCard({ station, large }: { station: DisplayStation; large?: bool
             ))}
           </span>
         ) : (
+          // A real status pill (tint, line, square dot), at projector size.
           <span
-            className={`inline-flex items-center gap-pu-10 font-pixel text-pu-18 uppercase tracking-pu-2 before:h-pu-10 before:w-pu-10 before:bg-current before:content-[''] ${IDLE[idle.tone as keyof typeof IDLE]}`}
+            className={`status ${IDLE[idle.tone as keyof typeof IDLE]} min-h-pu-40! gap-pu-10! px-pu-16! text-pu-16! before:h-pu-10! before:w-pu-10!`}
           >
             {idle.text}
           </span>
@@ -432,14 +429,14 @@ function Score({ card, large }: { card: ScoreCard; large: boolean }) {
                 key={`dart-${i}`}
                 className={`inline-flex h-pu-46 min-w-pu-88 items-center justify-center border text-pu-34 ${dart ? `border-border border-solid bg-surface ${dart.ignored ? "text-muted line-through" : ""}` : "border-faint border-dashed bg-transparent text-faint"}`}
               >
-                {dart ? dartLabel(dart.segment) : "—"}
+                {dart ? dartLabel(dart.segment) : ""}
               </span>
             );
           })}
           <span className="ml-auto font-pixel text-muted text-pu-13 uppercase">
             Total{" "}
             <span className="align-middle font-text text-pu-44 text-text">
-              {String(total).padStart(3, "0")}
+              {card.visit.length > 0 ? total : ""}
             </span>
           </span>
         </div>

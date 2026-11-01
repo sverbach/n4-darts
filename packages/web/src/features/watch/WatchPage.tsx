@@ -136,7 +136,7 @@ function WatchVisit({ match }: { match: MatchView }) {
               : "text-pu-64 leading-[0.8]"
           }
         >
-          {visit?.bust ? "Bust" : String(total).padStart(3, "0")}
+          {visit?.bust ? "Bust" : visit?.darts.length ? total : ""}
         </span>
         <span className={`${TOTAL_LABEL} text-accent`}>
           {state.phase === "awaitingTakeout"
