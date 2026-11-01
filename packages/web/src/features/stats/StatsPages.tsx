@@ -288,7 +288,7 @@ function Profile({ profile }: { profile: PlayerProfile }) {
       )}
 
       {/* Two lists, two of the tiles' columns each. */}
-      <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-4 gap-6 kiosk:gap-4 kiosk:[&>*]:col-span-2">
+      <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-4 gap-6 kiosk:gap-4 kiosk:[&>*]:col-span-2 kiosk:[&>:only-child]:col-span-4">
         {profile.tournaments.length > 0 && (
           <section className={SECTION}>
             <h2 className="label font-normal">Tournaments</h2>

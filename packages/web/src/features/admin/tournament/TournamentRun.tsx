@@ -24,7 +24,6 @@ import {
   cardRow,
   cardTitle,
   EVEN_COLUMNS,
-  MAIN,
   runState,
   SECTION,
   STATUS_SMALL,
@@ -45,6 +44,127 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
     view.entrants.some((e) => e.playerId === playerId && e.withdrawn);
 
   const base = "/api/admin/tournament";
+  const bracketSection = (
+    <section className={SECTION}>
+      <h2>Knockout</h2>
+      <BracketRows bracket={progress.bracket} />
+    </section>
+  );
+  // The standings: beside the stations while it runs, at the foot once it's over.
+  const groupsSection = (
+    <section className={SECTION}>
+      <h2>Groups</h2>
+      {live && progress.phase === "groups" && <LateArrival view={view} send={send} base={base} />}
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,480px),1fr))] gap-x-6 gap-y-4">
+        {progress.groups.map((group) => (
+          <div key={group.name} className="flex min-w-0 flex-col gap-2">
+            {progress.groups.length > 1 && <span className="match-label">{group.name}</span>}
+            <div className="scroll-x border border-border border-solid">
+              <table className="group-table [--avatar:30px] [&_td:first-child]:pl-3 [&_td:first-child]:text-left [&_td:last-child]:pr-3 [&_td]:h-[52px] [&_td]:text-[24px] [&_th:first-child]:pl-3 [&_th:first-child]:text-left [&_th:last-child]:pr-3">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th className="name">Player</th>
+                    <th>P</th>
+                    <th>W</th>
+                    <th>L</th>
+                    {/* On a phone the table keeps what decides the order: P W L Pts. */}
+                    <th className="max-kiosk:hidden">Legs</th>
+                    <th className="max-kiosk:hidden">+/−</th>
+                    <th>Pts</th>
+                    <th className="max-kiosk:hidden">Avg</th>
+                    {live && (
+                      <th>
+                        <span className="sr-only">Actions</span>
+                      </th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {group.table.map((row, i) => (
+                    <tr key={row.playerId}>
+                      <td className="font-pixel text-[12px]! text-muted">{i + 1}</td>
+                      <td
+                        className={`name ${withdrawn(row.playerId) ? "text-muted line-through" : ""}`}
+                      >
+                        <span className="inline-flex items-center gap-2.5">
+                          <Avatar player={{ id: row.playerId, name: row.name, photo: row.photo }} />
+                          {row.name}
+                        </span>
+                      </td>
+                      <td>{row.played}</td>
+                      <td>{row.won}</td>
+                      <td>{row.lost}</td>
+                      <td className="text-muted max-kiosk:hidden">
+                        {legScore([row.legsFor, row.legsAgainst])}
+                      </td>
+                      <td className="max-kiosk:hidden">
+                        {row.legDiff > 0 ? `+${row.legDiff}` : row.legDiff}
+                      </td>
+                      <td className="points">{row.points}</td>
+                      <td className="text-muted max-kiosk:hidden">{average(row.average)}</td>
+                      {live && (
+                        <td className="w-11">
+                          {withdrawn(row.playerId) ? (
+                            <span className="label no-underline">Out</span>
+                          ) : (
+                            <ActionMenu
+                              label={`Actions for ${row.name}`}
+                              items={[
+                                {
+                                  label: "Withdraw",
+                                  danger: true,
+                                  run: () => {
+                                    if (
+                                      confirm(
+                                        `Withdraw ${row.name}? Their remaining matches become walkovers.`,
+                                      )
+                                    ) {
+                                      void send("POST", `${base}/withdraw`, {
+                                        playerId: row.playerId,
+                                      });
+                                    }
+                                  },
+                                },
+                              ]}
+                            />
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {played(group.fixtures).length > 0 && (
+              <details className="border border-line-soft border-solid">
+                <summary className="px-3">
+                  {/* What's still to play is in the queue; this lists what's been played. */}
+                  <PixelIcon name="caret" /> Results ({played(group.fixtures).length})
+                </summary>
+                <ul>
+                  {played(group.fixtures).map((f) => (
+                    <li key={f.slot}>
+                      <span className="font-pixel text-[13px] uppercase">
+                        {f.players[0]} <span className="text-muted">vs</span> {f.players[1]}
+                      </span>
+                      <span
+                        className={
+                          f.legs ? "text-[24px]" : "font-pixel text-[11px] text-muted uppercase"
+                        }
+                      >
+                        {fixtureResult(f)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -135,8 +255,10 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
       )}
 
       {live && (
-        <div className={EVEN_COLUMNS}>
-          <div className={MAIN}>
+        // Stations top left, the queue on the right, the groups under the stations: no column
+        // ends half-way. On a phone: stations, queue, groups.
+        <div className="grid kiosk:grid-cols-2 items-start gap-6 kiosk:[grid-template-areas:'stations_queue'_'groups_queue']">
+          <div className="flex min-w-0 flex-col gap-6 kiosk:[grid-area:stations]">
             <section className={SECTION}>
               <h2>Stations</h2>
               <ul className={CARD_LIST}>
@@ -146,7 +268,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
               </ul>
             </section>
           </div>
-          <div className={MAIN}>
+          <div className="kiosk:row-span-2 flex min-w-0 flex-col gap-6 kiosk:[grid-area:queue]">
             <section className={SECTION}>
               <h2>
                 Queue <span className={COUNT}>({progress.queue.length})</span>
@@ -180,130 +302,16 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
               )}
             </section>
           </div>
+          {/* Under the stations: the groups while they play, the bracket once it's the knockout. */}
+          <div className="min-w-0 kiosk:[grid-area:groups]">
+            {progress.bracket.length > 0 ? bracketSection : groupsSection}
+          </div>
         </div>
       )}
 
-      {progress.bracket.length > 0 && (
-        <section className={SECTION}>
-          <h2>Knockout</h2>
-          <BracketRows bracket={progress.bracket} />
-        </section>
-      )}
+      {!live && progress.bracket.length > 0 && bracketSection}
 
-      <section className={SECTION}>
-        <h2>Groups</h2>
-        {live && progress.phase === "groups" && <LateArrival view={view} send={send} base={base} />}
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,480px),1fr))] gap-x-6 gap-y-4">
-          {progress.groups.map((group) => (
-            <div key={group.name} className="flex min-w-0 flex-col gap-2">
-              {progress.groups.length > 1 && <span className="match-label">{group.name}</span>}
-              <div className="scroll-x border border-border border-solid">
-                <table className="group-table [--avatar:30px] [&_td:first-child]:pl-3 [&_td:first-child]:text-left [&_td:last-child]:pr-3 [&_td]:h-[52px] [&_td]:text-[24px] [&_th:first-child]:pl-3 [&_th:first-child]:text-left [&_th:last-child]:pr-3">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th className="name">Player</th>
-                      <th>P</th>
-                      <th>W</th>
-                      <th>L</th>
-                      {/* On a phone the table keeps what decides the order: P W L Pts. */}
-                      <th className="max-kiosk:hidden">Legs</th>
-                      <th className="max-kiosk:hidden">+/−</th>
-                      <th>Pts</th>
-                      <th className="max-kiosk:hidden">Avg</th>
-                      {live && (
-                        <th>
-                          <span className="sr-only">Actions</span>
-                        </th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {group.table.map((row, i) => (
-                      <tr key={row.playerId}>
-                        <td className="font-pixel text-[12px]! text-muted">{i + 1}</td>
-                        <td
-                          className={`name ${withdrawn(row.playerId) ? "text-muted line-through" : ""}`}
-                        >
-                          <span className="inline-flex items-center gap-2.5">
-                            <Avatar
-                              player={{ id: row.playerId, name: row.name, photo: row.photo }}
-                            />
-                            {row.name}
-                          </span>
-                        </td>
-                        <td>{row.played}</td>
-                        <td>{row.won}</td>
-                        <td>{row.lost}</td>
-                        <td className="text-muted max-kiosk:hidden">
-                          {legScore([row.legsFor, row.legsAgainst])}
-                        </td>
-                        <td className="max-kiosk:hidden">
-                          {row.legDiff > 0 ? `+${row.legDiff}` : row.legDiff}
-                        </td>
-                        <td className="points">{row.points}</td>
-                        <td className="text-muted max-kiosk:hidden">{average(row.average)}</td>
-                        {live && (
-                          <td className="w-11">
-                            {withdrawn(row.playerId) ? (
-                              <span className="label no-underline">Out</span>
-                            ) : (
-                              <ActionMenu
-                                label={`Actions for ${row.name}`}
-                                items={[
-                                  {
-                                    label: "Withdraw",
-                                    danger: true,
-                                    run: () => {
-                                      if (
-                                        confirm(
-                                          `Withdraw ${row.name}? Their remaining matches become walkovers.`,
-                                        )
-                                      ) {
-                                        void send("POST", `${base}/withdraw`, {
-                                          playerId: row.playerId,
-                                        });
-                                      }
-                                    },
-                                  },
-                                ]}
-                              />
-                            )}
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {played(group.fixtures).length > 0 && (
-                <details className="border border-line-soft border-solid">
-                  <summary className="px-3">
-                    {/* What's still to play is in the queue; this lists what's been played. */}
-                    <PixelIcon name="caret" /> Results ({played(group.fixtures).length})
-                  </summary>
-                  <ul>
-                    {played(group.fixtures).map((f) => (
-                      <li key={f.slot}>
-                        <span className="font-pixel text-[13px] uppercase">
-                          {f.players[0]} <span className="text-muted">vs</span> {f.players[1]}
-                        </span>
-                        <span
-                          className={
-                            f.legs ? "text-[24px]" : "font-pixel text-[11px] text-muted uppercase"
-                          }
-                        >
-                          {fixtureResult(f)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
+      {(!live || progress.bracket.length > 0) && groupsSection}
 
       {live && (
         <div className="border-0 border-border border-t border-solid pt-6">
@@ -346,7 +354,7 @@ function BracketRows({ bracket }: { bracket: TournamentProgress["bracket"] }) {
             {row.columns.map((column) => (
               <div
                 key={`${column.section}-${column.name}`}
-                className="flex kiosk:w-[260px] kiosk:flex-none flex-col gap-3"
+                className="flex kiosk:min-w-[260px] kiosk:flex-1 flex-col gap-3"
               >
                 <h3 className="text-[11px]">{column.name}</h3>
                 <div className="flex flex-1 flex-col justify-around gap-3">

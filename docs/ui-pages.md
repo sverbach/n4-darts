@@ -221,6 +221,7 @@ There's one tournament at a time, and the tab shows one of three states.
   - Final placings: a champion card ("Champion" and the name), then the rest from second place.
   - The awards list.
   - A "New tournament" button.
+- **Layout while running:** Stations top left and the Queue on the right; under the stations the Groups during the group phase, the Knockout bracket after it (the groups then move to the foot). On a phone: Stations, Queue, then the rest.
 - **Stations** (while running): a row per station with:
   - The name, and a status only when it needs the organiser ("Board offline" or "Paused"); a healthy station shows none.
   - The current match, each name once: "Group A · ANN 301 · BOB 140", "ANN VS BOB · waiting to start" or "ANN won".
