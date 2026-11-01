@@ -6,7 +6,7 @@ const AWARDS: Record<
   { title: string; format(value: number): string; unit?(value: number): string }
 > = {
   bestAverage: { title: "Best match average", format: (v) => v.toFixed(1) },
-  highestCheckout: { title: "Highest checkout", format: String },
+  highestCheckout: { title: "High out", format: String },
   most180s: { title: "Most 180s", format: String },
   bestLeg: { title: "Best leg", format: String, unit: (v) => (v === 1 ? "dart" : "darts") },
 };

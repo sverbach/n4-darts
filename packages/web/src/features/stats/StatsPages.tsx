@@ -110,7 +110,7 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
             </th>
             <th className={`${th()} max-kiosk:hidden`}>180s</th>
             <th className={th()} title="Highest checkout">
-              HC
+              High out
             </th>
           </tr>
         </thead>
@@ -237,7 +237,7 @@ function Profile({ profile }: { profile: PlayerProfile }) {
               sub:
                 t.checkoutPercent === null ? "Double out only" : `Of ${t.checkoutAttempts} darts`,
             },
-            { label: "Highest", value: count(t.highestCheckout) },
+            { label: "High out", value: count(t.highestCheckout) },
             {
               label: "Best leg",
               value: count(t.bestLeg),

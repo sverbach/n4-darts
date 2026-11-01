@@ -41,7 +41,7 @@ n4-darts runs darts evenings: a few automatic dartboards (stations) play x01, wh
 - **Bracket match card:** under its round's heading, only what the heading doesn't say ("2" under "Semi-final", nothing for the final), two player rows with legs won (the winner bold, the loser grey once decided), a violet frame while it's on a station, and "Walkover" when it was one. Where a match is (queued, on a station, playing) is said by the station cards, not the bracket.
 - **Awards list** (a tie of more than two shows "4 players", not the names):
   - Rows of title, value and player name(s).
-  - The titles: Best match average, Highest checkout, Most 180s, Best leg ("n darts").
+  - The titles: Best match average, High out, Most 180s, Best leg ("n darts").
 
 ---
 
@@ -157,8 +157,8 @@ The layout must cope with 1–3+ stations and 2–8 players per match.
 
 - A back link "← Home" (the logo is at the top right) and the title "Players".
 - A table of everyone who has played a counted match, sorted by rating:
-  - Columns: #, Player (avatar plus name, linking to the profile), Rating (3-dart average over the last 10 matches), Avg (all time), M (matches), W (wins), 180s, HC (highest checkout).
-  - On a phone only #, Player, Rating, M and HC show; the rest from the kiosk width.
+  - Columns: #, Player (avatar plus name, linking to the profile), Rating (3-dart average over the last 10 matches), Avg (all time), M (matches), W (wins), 180s, High out (highest checkout).
+  - On a phone only #, Player, Rating, M and High out show; the rest from the kiosk width.
 - Empty or loading: "No matches played yet." / "Loading…".
 
 ## `/players/:id`: Player profile
@@ -166,7 +166,7 @@ The layout must cope with 1–3+ stations and 2–8 players per match.
 - A back link "← Players", then a large avatar, the name and one line below it: "Rank #3 · 20 matches · since Jul 2026".
 - **Four stat groups** (cards of label and value, each value once; a sub-label only where the label alone doesn't say it; no accent colour):
   - **Average:** Rating ("Last 10 matches"), 3-dart avg ("All time", only from 11 matches on: before that it equals the rating, which then reads "All matches"), First 9 (the average over the first three visits of each leg).
-  - **Checkouts:** Checkout % ("Of 21 darts"), Highest, Best leg ("Darts").
+  - **Checkouts:** Checkout % ("Of 21 darts"), High out, Best leg ("Darts").
   - **Scoring:** 180s, 140+, 100+.
   - **Results:** Matches won ("60%"), Legs won ("Of 41"), Tournaments won ("Of 4"). The best placing is in the tournaments list.
   - On a phone a group's cards share a row; on desktop they stack in four columns that end level.

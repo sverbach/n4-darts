@@ -42,9 +42,14 @@ export function HomePage() {
               <a href={`/station/${s.id}`} className={TILE}>
                 <span className="flex min-w-0 flex-1 flex-col gap-1.5">
                   <span>{s.name}</span>
-                  <span className="overflow-hidden text-ellipsis whitespace-nowrap font-text kiosk:text-[20px] text-[18px] text-muted uppercase tracking-normal">
-                    {stationState(s)}
-                  </span>
+                  {/* Free as the same pill as everywhere else; anything else in words. */}
+                  {!s.match && !s.notice ? (
+                    <span className="status self-start">Free</span>
+                  ) : (
+                    <span className="overflow-hidden text-ellipsis whitespace-nowrap font-text kiosk:text-[20px] text-[18px] text-muted uppercase tracking-normal">
+                      {stationState(s)}
+                    </span>
+                  )}
                 </span>
                 {/* Only a board that needs a look says so; a healthy one says nothing. */}
                 <BoardStatus online={s.boardOnline} running={s.boardRunning} quiet />

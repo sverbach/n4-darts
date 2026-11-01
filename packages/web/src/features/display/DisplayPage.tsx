@@ -311,14 +311,15 @@ function Bracket({ view }: { view: DisplayView }) {
   const top = view.bracket.filter((c) => c.section !== "losers");
   const losers = view.bracket.filter((c) => c.section === "losers");
   const rows = [
-    { title: losers.length > 0 ? "Winners bracket" : "Knockout", columns: top },
+    // Without a losers bracket the header's "Knockout" already names it.
+    { title: losers.length > 0 ? "Winners bracket" : "", columns: top },
     { title: "Losers bracket", columns: losers },
   ].filter((row) => row.columns.length > 0);
   return (
     <div className="flex flex-col gap-pu-26">
       {rows.map((row) => (
-        <section key={row.title} className={SECTION}>
-          <h2 className={H2}>{row.title}</h2>
+        <section key={row.title || "bracket"} className={SECTION}>
+          {row.title && <h2 className={H2}>{row.title}</h2>}
           <div className="flex gap-pu-28">
             {row.columns.map((column) => (
               <div

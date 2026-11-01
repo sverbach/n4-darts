@@ -427,9 +427,8 @@ function StationRow(props: { station: TournamentStationView; send: Send; base: s
             <StationMatchLine match={match} />
           </span>
         ) : (
-          <span className={`${CARD_DETAIL} hint`}>
-            {station.paused ? "Paused for the tournament" : "Free"}
-          </span>
+          // Free as the same pill everywhere; a paused station's pill is in its title already.
+          !station.paused && <span className={`status ${STATUS_SMALL} self-start`}>Free</span>
         )}
       </div>
       <div className={cardActions()}>
