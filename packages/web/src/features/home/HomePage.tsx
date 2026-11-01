@@ -1,6 +1,7 @@
 // Home: where every device starts. Also shown for any path that isn't a page.
 
 import type { StationView } from "@n4/server/api";
+import { Link } from "wouter";
 import { BoardStatus } from "../../components/BoardMenu.tsx";
 import { SparkleLogo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
@@ -39,7 +40,7 @@ export function HomePage() {
           <span className="label">Stations</span>
           {stations.map((s) => (
             <div key={s.id} className="flex gap-2">
-              <a href={`/station/${s.id}`} className={TILE}>
+              <Link href={`/station/${s.id}`} className={TILE}>
                 <span className="flex min-w-0 flex-1 flex-col gap-1.5">
                   <span>{s.name}</span>
                   {/* Free as the same pill as everywhere else; anything else in words. */}
@@ -54,27 +55,29 @@ export function HomePage() {
                 {/* Only a board that needs a look says so; a healthy one says nothing. */}
                 <BoardStatus online={s.boardOnline} running={s.boardRunning} quiet />
                 <PixelIcon name="arrow" />
-              </a>
-              <a
+              </Link>
+              <Link
                 href={`/watch/${s.id}`}
                 className={`flex kiosk:w-[110px] w-[88px] items-center justify-center ${FRAME} font-pixel kiosk:text-[12px] text-[11px] text-text uppercase tracking-[1px] hover:text-accent`}
               >
                 Watch
-              </a>
+              </Link>
             </div>
           ))}
         </nav>
         <nav aria-label="More" className={LIST}>
           <span className="label">More</span>
-          {[
-            ["/players", "Players and stats"],
-            ["/display", "Projector"],
-            ["/admin", "Admin"],
-          ].map(([href, text]) => (
-            <a key={href} href={href} className={TILE}>
+          {(
+            [
+              ["/players", "Players and stats"],
+              ["/display", "Projector"],
+              ["/admin", "Admin"],
+            ] as const
+          ).map(([href, text]) => (
+            <Link key={href} href={href} className={TILE}>
               <span className="flex-1">{text}</span>
               <PixelIcon name="arrow" />
-            </a>
+            </Link>
           ))}
         </nav>
       </div>

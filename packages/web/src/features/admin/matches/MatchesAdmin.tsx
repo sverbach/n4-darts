@@ -1,5 +1,6 @@
 import type { StationView } from "@n4/server/api";
 import { type ReactNode, useState } from "react";
+import { Link } from "wouter";
 import { BoardStatus } from "../../../components/BoardMenu.tsx";
 import { request } from "../../../lib/api.ts";
 import { useLive } from "../../../lib/useLive.ts";
@@ -58,9 +59,9 @@ function StationRow(props: { station: StationView; onAbandon(): void; onOpen(): 
   return (
     <li className="flex flex-col gap-3 border border-border border-solid bg-panel p-4">
       <div className={cardTitle(true)}>
-        <a className={CARD_NAME} href={`/station/${station.id}`}>
+        <Link className={CARD_NAME} href={`/station/${station.id}`}>
           {station.name}
-        </a>
+        </Link>
         <BoardStatus
           online={station.boardOnline}
           running={station.boardRunning}

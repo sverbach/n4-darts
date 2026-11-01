@@ -5,11 +5,14 @@ import { HomePage as Home } from "./features/home/HomePage.tsx";
 import { StationPage } from "./features/station/StationPage.tsx";
 import { LeaderboardPage, ProfilePage } from "./features/stats/StatsPages.tsx";
 import { WatchPage } from "./features/watch/WatchPage.tsx";
+import { useNavigationEffects } from "./lib/navigation.ts";
 
 /** A station number from the path; anything else isn't a station, so the page is home. */
 const isNumber = (id: string) => /^\d+$/.test(id);
 
 export function App() {
+  // Links navigate without reloading the page (web-router 02); this does what a reload did.
+  useNavigationEffects();
   return (
     <Switch>
       <Route path="/station/:id">

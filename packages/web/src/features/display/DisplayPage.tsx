@@ -1,5 +1,6 @@
 import type { DisplayStation, DisplayView, LeaderboardRow, ScoreCard } from "@n4/server/api";
 import { type ReactNode, useCallback, useLayoutEffect, useRef, useState } from "react";
+import { Link } from "wouter";
 import { Avatar } from "../../components/Avatar.tsx";
 import { Awards } from "../../components/Awards.tsx";
 import { Logo } from "../../components/Logo.tsx";
@@ -360,7 +361,7 @@ function StationCard({ station, large }: { station: DisplayStation; large?: bool
 
   if (match?.phase === "notStarted" || !match) {
     return (
-      <a
+      <Link
         className={`${card} flex-row items-center justify-between gap-pu-16 ${large ? "px-pu-24 py-pu-22" : "px-pu-22 py-pu-16"}`}
         href={`/watch/${station.id}`}
       >
@@ -383,11 +384,11 @@ function StationCard({ station, large }: { station: DisplayStation; large?: bool
             {idle.text}
           </span>
         )}
-      </a>
+      </Link>
     );
   }
   return (
-    <a className={`${card} flex-col`} href={`/watch/${station.id}`}>
+    <Link className={`${card} flex-col`} href={`/watch/${station.id}`}>
       <div className="flex items-center justify-between gap-pu-16 border-0 border-line-soft border-b border-solid px-pu-22 py-pu-12">
         <span className={name}>{station.name}</span>
         {match.label && (
@@ -397,7 +398,7 @@ function StationCard({ station, large }: { station: DisplayStation; large?: bool
         )}
       </div>
       <Score card={match} large={large ?? false} />
-    </a>
+    </Link>
   );
 }
 

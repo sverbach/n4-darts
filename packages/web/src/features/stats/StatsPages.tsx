@@ -1,5 +1,6 @@
 import type { LeaderboardRow, PlayerProfile } from "@n4/server/api";
 import { type ReactNode, useEffect, useState } from "react";
+import { Link } from "wouter";
 import { Avatar } from "../../components/Avatar.tsx";
 import { Logo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
@@ -46,9 +47,9 @@ function StatsFrame(props: { back: [string, string]; children: ReactNode }) {
     <div className="min-h-[100dvh]">
       <header className="border-0 border-border border-b border-solid">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between kiosk:px-6 px-4 kiosk:py-3 py-2">
-          <a className="back" href={href}>
+          <Link className="back" href={href}>
             <PixelIcon name="back" height="0.7em" /> {text}
-          </a>
+          </Link>
           <Logo width="72px" />
         </div>
       </header>
@@ -119,13 +120,13 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
             <tr key={row.playerId}>
               <td className={td(`font-pixel kiosk:text-[13px] text-[12px] text-muted`)}>{i + 1}</td>
               <td className={td(`w-full text-left ${NUMBER}`)}>
-                <a
+                <Link
                   href={`/players/${row.playerId}`}
                   className="inline-flex min-h-11 items-center gap-3 kiosk:gap-3 font-pixel kiosk:text-[16px] text-[13px] uppercase tracking-[1px] no-underline"
                 >
                   <Avatar player={{ id: row.playerId, name: row.name, photo: row.photo }} />
                   {row.name}
-                </a>
+                </Link>
               </td>
               <td className={td("kiosk:text-[32px] text-[28px] text-text")}>
                 {average(row.rating)}

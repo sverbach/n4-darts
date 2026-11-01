@@ -1,5 +1,6 @@
 import type { StationAdminView } from "@n4/server/api";
 import { type FormEvent, type ReactNode, useState } from "react";
+import { Link } from "wouter";
 import { BoardMenu } from "../../../components/BoardMenu.tsx";
 import { PixelIcon } from "../../../components/PixelIcon.tsx";
 import { request } from "../../../lib/api.ts";
@@ -106,9 +107,9 @@ function StationRow({ station, change }: { station: StationAdminView; change: Ch
   return (
     <li className={cardRow()}>
       <div className={CARD_MAIN}>
-        <a className={CARD_NAME} href={`/station/${station.id}`}>
+        <Link className={CARD_NAME} href={`/station/${station.id}`}>
           {station.name}
-        </a>
+        </Link>
         <code className="wrap-anywhere font-text text-[22px] text-muted">{station.boardUrl}</code>
       </div>
       {menu}

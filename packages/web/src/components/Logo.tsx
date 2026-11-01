@@ -1,5 +1,6 @@
 // The n4-darts logo, pixel art drawn in the text colour (so a theme can recolour it).
 
+import { Link } from "wouter";
 import sparkleSheet from "../assets/logo-sparkle.png";
 
 const PATH =
@@ -8,7 +9,7 @@ const PATH =
 /** Sized by its width (here or in CSS); the height follows (72 × 33 pixels). */
 export function Logo({ width, className }: { width?: string; className?: string }) {
   return (
-    <a href="/">
+    <Link href="/">
       <svg
         className={`block h-auto text-text ${className ?? ""}`}
         viewBox="0 0 72 33"
@@ -19,7 +20,7 @@ export function Logo({ width, className }: { width?: string; className?: string 
       >
         <path fill="currentColor" d={PATH} />
       </svg>
-    </a>
+    </Link>
   );
 }
 

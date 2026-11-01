@@ -1,5 +1,6 @@
 import type { AdminSession } from "@n4/server/api";
 import { type FormEvent, useState } from "react";
+import { Link } from "wouter";
 import { Logo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
 import { call, request } from "../../lib/api.ts";
@@ -69,7 +70,7 @@ export function AdminPage({ section }: { section: AdminSection }) {
             aria-label="Admin sections"
           >
             {Object.entries(sections).map(([key, { title }]) => (
-              <a
+              <Link
                 key={key}
                 href={`/admin/${key}`}
                 aria-current={key === section ? "page" : undefined}
@@ -82,7 +83,7 @@ export function AdminPage({ section }: { section: AdminSection }) {
                 }
               >
                 {title}
-              </a>
+              </Link>
             ))}
           </nav>
           {session.pinRequired && (
