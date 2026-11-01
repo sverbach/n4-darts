@@ -275,8 +275,9 @@ function Profile({ profile }: { profile: PlayerProfile }) {
         />
       </div>
 
+      {/* On the tiles' four columns: the chart over three, the heatmap over one. */}
       {t.matches > 0 && (
-        <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] kiosk:items-start gap-6 kiosk:gap-6 kiosk:[&>:only-child]:col-start-2">
+        <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-4 kiosk:items-start gap-6 kiosk:gap-4 kiosk:[&>:first-child:not(:only-child)]:col-span-3 kiosk:[&>:only-child]:col-start-4">
           {profile.evenings.length > 0 && (
             <section className={SECTION}>
               <h2 className="label font-normal">Average per evening</h2>
@@ -290,7 +291,8 @@ function Profile({ profile }: { profile: PlayerProfile }) {
         </div>
       )}
 
-      <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-2 gap-6 kiosk:gap-6">
+      {/* Two lists, two of the tiles' columns each. */}
+      <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-4 gap-6 kiosk:gap-4 kiosk:[&>*]:col-span-2">
         {profile.tournaments.length > 0 && (
           <section className={SECTION}>
             <h2 className="label font-normal">Tournaments</h2>
@@ -403,7 +405,7 @@ function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
   if (points.length === 0) return null;
   // Drawn at about its real size, so the text comes out right: a phone's width or the page's.
   // On a wide screen it shares the row with the heatmap: about two thirds of the page.
-  const width = wide ? 760 : 358;
+  const width = wide ? 840 : 358;
   const height = wide ? 300 : 200;
   const font = wide ? 20 : 13;
   const dot = wide ? 10 : 6;

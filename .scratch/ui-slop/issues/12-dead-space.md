@@ -1,6 +1,6 @@
 # No dead space on the kiosk, projector, Home and profile
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 01, 05
 
@@ -24,3 +24,5 @@ Blocked by: 01, 05
 ## Comments
 
 2026-10-31: Confirmed by the user.
+
+2026-11-01: Built. Station and /watch player cards: the remaining score grows into the card instead of leaving a band under the name (kiosk `clamp(96px, min(15vw, 32vh), 280px)`, projector 240 mockup px; DESIGN.md's display token updated). New match on the kiosk: the settings panel is as tall as its content and Continue sits right under the selects (still at the bottom on a phone). /display knockout: the same columns as the group phase (no shrink between phases), and `Fit` can now grow (`grow`, measured at the content's own width): a small bracket scales up to its half of the screen. /display finished: top-aligned, the champion's panel as tall as its content, so there's no full-height panel beside short lists (the space left below depends on the field's size; with four players it's below everything, not beside it). Profile: the tiles were done in 08 (three per group); the chart and heatmap sit on the tiles' four columns (3 + 1) and the two lists on two columns each, so their edges line up with the tiles. Home's footer went in 08.

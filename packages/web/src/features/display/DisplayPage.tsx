@@ -79,9 +79,7 @@ function Running({ view }: { view: DisplayView }) {
   return (
     <>
       <Header title={t.name} detail={PHASES[t.phase]} played={t.played} total={t.total} />
-      <div
-        className={`grid min-h-0 flex-1 ${knockout ? "grid-cols-[calc(560*var(--px))_minmax(0,1fr)] gap-pu-48" : "grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-pu-40"}`}
-      >
+      <div className={`grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-pu-40`}>
         <Fit>
           <section className={SECTION}>
             <h2 className={H2}>Now playing</h2>
@@ -114,7 +112,14 @@ function Running({ view }: { view: DisplayView }) {
             </section>
           )}
         </Fit>
-        <Fit>{knockout ? <Bracket view={view} /> : <Groups view={view} />}</Fit>
+        {/* A small bracket grows to use its half of the screen. */}
+        <Fit
+          grow={knockout ? 1.6 : 1}
+          // Measured at its own width, so there's something to grow from.
+          inner={knockout ? "flex w-max flex-col gap-pu-28" : undefined}
+        >
+          {knockout ? <Bracket view={view} /> : <Groups view={view} />}
+        </Fit>
       </div>
     </>
   );
@@ -130,7 +135,8 @@ function Finished({ view }: { view: DisplayView }) {
       <Header title={t.name} detail={t.endedEarly ? "Ended early" : "Finished"} />
       <Fit
         className="flex-1"
-        inner="grid h-full grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,1fr)] gap-pu-48"
+        // Top-aligned: the champion's panel is as tall as its content, not the screen.
+        inner="grid grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,1fr)] items-start gap-pu-48"
       >
         {champion && (
           <section
@@ -449,11 +455,14 @@ function Score({ card, large }: { card: ScoreCard; large: boolean }) {
 function Fit({
   className = "",
   inner = "flex flex-col gap-pu-28",
+  grow = 1,
   children,
 }: {
   className?: string;
+  /** How far it may scale up to fill the box (1: only down). */
+  grow?: number;
   /** The content's layout: a column by default. */
-  inner?: string;
+  inner?: string | undefined;
   children: ReactNode;
 }) {
   const outer = useRef<HTMLDivElement>(null);
@@ -465,8 +474,10 @@ function Fit({
     // The transform doesn't change layout sizes, so these are the unscaled ones.
     const height = innerRef.current.scrollHeight;
     const width = innerRef.current.scrollWidth;
-    setScale(Math.min(1, outer.current.clientHeight / height, outer.current.clientWidth / width));
-  }, []);
+    setScale(
+      Math.min(grow, outer.current.clientHeight / height, outer.current.clientWidth / width),
+    );
+  }, [grow]);
   // Every render (new data) and every resize of the box.
   useLayoutEffect(measure);
   useLayoutEffect(() => {

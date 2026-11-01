@@ -30,7 +30,7 @@ function cardStyle(size: CardsSize, many: boolean, active: boolean) {
         ? `relative flex min-h-0 min-w-0 flex-col items-start justify-between gap-pu-10 border-solid p-pu-18 avatar-pu-64 ${frame}`
         : `relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)] grid-rows-[auto_auto_1fr] items-center gap-x-pu-18 gap-y-pu-6 border-solid px-pu-26 py-pu-22 avatar-pu-88 [grid-template-areas:'avatar_name'_'avatar_meta'_'score_score'] [&>.avatar]:[grid-area:avatar] ${frame}`,
       name: `max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-pixel font-bold uppercase tracking-pu-3 ${many ? "text-pu-22" : "self-end text-pu-32 [grid-area:name]"}`,
-      remaining: `m-0 leading-[0.8] ${many ? "self-start text-pu-90" : "self-end text-pu-200 [grid-area:score]"} ${active ? "text-accent" : ""}`,
+      remaining: `m-0 leading-[0.8] ${many ? "self-start text-pu-90" : "self-end text-pu-240 [grid-area:score]"} ${active ? "text-accent" : ""}`,
       meta: `min-h-[1em] font-pixel text-muted uppercase tracking-[1px] ${many ? "text-pu-12" : "self-start text-pu-14 [grid-area:meta]"}`,
     };
   }
@@ -46,7 +46,7 @@ function cardStyle(size: CardsSize, many: boolean, active: boolean) {
       : "max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[16px] uppercase tracking-[1px] kiosk:self-end kiosk:font-bold kiosk:text-[36px] kiosk:tracking-[3px] kiosk:[grid-area:name]",
     remaining: many
       ? `leading-[0.8] [grid-area:score] ${active ? "text-[60px] text-accent" : "text-[48px]"} kiosk:m-0 kiosk:self-start kiosk:text-[length:clamp(64px,min(7vw,15vh),120px)]`
-      : `text-[length:clamp(44px,17vw,72px)] leading-[0.8] ${active ? "text-accent" : ""} kiosk:mt-3 kiosk:self-end kiosk:text-[length:clamp(96px,min(13vw,24vh),220px)] kiosk:[grid-area:score]`,
+      : `text-[length:clamp(44px,17vw,72px)] leading-[0.8] ${active ? "text-accent" : ""} kiosk:mt-3 kiosk:self-end kiosk:text-[length:clamp(96px,min(15vw,32vh),280px)] kiosk:[grid-area:score]`,
     meta: many
       ? "min-h-[1em] self-start font-pixel text-[11px] text-muted uppercase tracking-[1px] [grid-area:meta] kiosk:self-auto kiosk:text-[13px]"
       : "min-h-[1em] font-pixel text-[11px] text-muted uppercase tracking-[1px] kiosk:self-start kiosk:text-[14px] kiosk:[grid-area:meta]",

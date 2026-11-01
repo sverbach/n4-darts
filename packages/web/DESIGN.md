@@ -35,7 +35,7 @@ colors:
 typography:
   display:
     fontFamily: "Geist Pixel, monospace"
-    fontSize: "clamp(96px, min(13vw, 24vh), 220px)"
+    fontSize: "clamp(96px, min(15vw, 32vh), 280px)"
     fontWeight: 400
     lineHeight: 0.8
   headline:
@@ -200,7 +200,7 @@ Nine muted grounds (`avatar-1` to `avatar-9`) for initials avatars, chosen from 
 **Character:** Silkscreen is the voice of the readout: words, names and buttons, always in capitals and slightly letter-spaced. Geist Pixel carries the numbers and running text in mixed case. Together they read as one 8-bit instrument panel.
 
 ### Hierarchy
-- **Display** (Geist Pixel 400, `clamp(96px, min(13vw, 24vh), 220px)` on the kiosk, `clamp(44px, 17vw, 72px)` on phones, line-height 0.8): the remaining score. On the projector it scales with the screen (up to 200 mockup px). Leg counts on game shot go to 160px. Nothing competes with it.
+- **Display** (Geist Pixel 400, `clamp(96px, min(15vw, 32vh), 280px)` on the kiosk, `clamp(44px, 17vw, 72px)` on phones, line-height 0.8): the remaining score. On the projector it scales with the screen (240 mockup px). It grows into the card rather than leaving a band under the name. Leg counts on game shot go to 160px. Nothing competes with it.
 - **Headline** (Silkscreen 700, 36px on the kiosk and 26px on phones, letter-spacing 3px/2px, capitals): page titles such as "NEW MATCH".
 - **Title** (Silkscreen 700, 18px/16px, 1px tracking, capitals): section headings.
 - **Body** (Geist Pixel 400, 22px on the kiosk and 20px on phones, line-height 1.2): running text, field values, stats numbers. Fields use 24px.

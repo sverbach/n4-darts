@@ -128,12 +128,13 @@ function QuickMatch({ send, notice }: { send: Send; notice: string | null }) {
         </div>
         <PlayerPicker title="Players" picked={picked} onChange={setPicked} />
       </section>
-      <section className="flex flex-1 kiosk:flex-[1_1_380px] flex-col gap-2.5 kiosk:gap-4 kiosk:border border-0 border-border border-t border-solid kiosk:bg-panel kiosk:p-6 pt-4 [&_.settings]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] kiosk:[&_.settings]:grid-cols-[1fr] kiosk:[&_.settings]:gap-4 kiosk:[&_.settings_label]:text-[12px] kiosk:[&_select]:min-h-14 [&_select]:min-w-0 kiosk:[&_select]:text-[28px]">
+      <section className="flex flex-1 kiosk:flex-[1_1_380px] flex-col gap-2.5 kiosk:gap-4 kiosk:self-start kiosk:border border-0 border-border border-t border-solid kiosk:bg-panel kiosk:p-6 pt-4 [&_.settings]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] kiosk:[&_.settings]:grid-cols-[1fr] kiosk:[&_.settings]:gap-4 kiosk:[&_.settings_label]:text-[12px] kiosk:[&_select]:min-h-14 [&_select]:min-w-0 kiosk:[&_select]:text-[28px]">
         <span className="label">Match settings</span>
         <SettingsFields value={settings} onChange={setSettings} playerCount={picked.length} />
         <button
           type="button"
-          className="primary cta mt-auto"
+          // Right under the settings on the kiosk; at the bottom of a phone's screen.
+          className="primary cta kiosk:mt-2 max-kiosk:mt-auto"
           disabled={picked.length < MIN_PLAYERS}
           onClick={() => send({ type: "quickMatch", playerIds: picked, settings })}
         >
