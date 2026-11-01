@@ -43,15 +43,17 @@ export function HomePage() {
               <Link href={`/station/${s.id}`} className={TILE}>
                 <span className="flex min-w-0 flex-1 flex-col gap-1.5">
                   <span>{s.name}</span>
-                  {/* Free as the same pill as everywhere else; anything else in words. */}
-                  {!s.match && !s.notice ? (
-                    <span className="status self-start">Free</span>
-                  ) : (
+                  {/* A match or a notice in words under the name; a free station is one line. */}
+                  {(s.match || s.notice) && (
                     <span className="overflow-hidden text-ellipsis whitespace-nowrap font-text kiosk:text-[20px] text-[18px] text-muted uppercase tracking-normal">
                       {stationState(s)}
                     </span>
                   )}
                 </span>
+                {/* Free as the small pill admin uses, where the board status goes. */}
+                {!s.match && !s.notice && (
+                  <span className="status min-h-6! px-2! text-[11px]! before:size-1.5!">Free</span>
+                )}
                 {/* Only a board that needs a look says so; a healthy one says nothing. */}
                 <BoardStatus online={s.boardOnline} running={s.boardRunning} quiet />
                 <PixelIcon name="arrow" />

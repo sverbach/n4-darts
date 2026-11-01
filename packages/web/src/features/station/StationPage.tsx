@@ -343,24 +343,32 @@ function VisitPanel(props: ScoreboardProps) {
 
   return (
     <section
-      className={`flex min-w-0 flex-col gap-2 kiosk:gap-3 border-solid p-3 kiosk:px-6 kiosk:py-4 ${visit?.bust ? "border-[3px] border-danger bg-danger-tint" : "border border-border bg-panel"}`}
+      className={`flex min-w-0 flex-col gap-2 kiosk:gap-3 border-solid p-3 kiosk:px-6 kiosk:py-4 ${visit?.bust ? "border border-danger bg-danger-tint outline-2 outline-danger outline-solid -outline-offset-3" : "border border-border bg-panel"}`}
       aria-label="Current visit"
     >
+      {/* A bust thickens the frame with an outline inside the border, which takes no space: the
+          panel keeps its height. */}
       <div className="label flex items-center justify-between gap-3">
         <span>Visit</span>
-        {visit?.bust ? (
-          <span className="font-bold kiosk:text-[28px] text-[20px] text-danger tracking-[3px]">
+        {/* Bust and the total share one cell and only one shows, so the header keeps the
+            taller one's height: no jump at a bust, at takeout or at the first dart. */}
+        <span className="grid items-center justify-items-end">
+          <span
+            className={`font-bold kiosk:text-[28px] text-[20px] text-danger tracking-[3px] [grid-area:1/1] ${visit?.bust ? "" : "invisible"}`}
+            aria-hidden={!visit?.bust}
+          >
             Bust
           </span>
-        ) : // No "Total" label without a total (before the visit's first dart).
-        visit?.darts.length ? (
-          <span>
+          <span
+            className={`[grid-area:1/1] ${!visit?.bust && visit?.darts.length ? "" : "invisible"}`}
+            aria-hidden={visit?.bust || !visit?.darts.length}
+          >
             Total{" "}
             <span className="align-middle font-text kiosk:text-[48px] text-[36px] text-text">
-              {visitTotal}
+              {visit?.darts.length ? visitTotal : 0}
             </span>
           </span>
-        ) : null}
+        </span>
       </div>
       <div className="grid grid-cols-3 gap-2 kiosk:gap-3">
         {[0, 1, 2].map((i) => {

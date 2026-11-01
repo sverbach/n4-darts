@@ -59,3 +59,34 @@ test("a quick match on the station, from setup to Done", async ({ page, n4: _ })
   await page.getByRole("button", { name: "Done" }).click();
   await expect(page.getByRole("heading", { name: "New match" })).toBeVisible();
 });
+
+test("the visit panel keeps its height through a visit, a takeout and a bust", async ({
+  page,
+  n4,
+}) => {
+  const board1 = board(1);
+  // 40 single out: two T20s bust the second visit.
+  await n4.quickMatch(1, ["Ann", "Bob"], { startScore: 40 });
+  await page.goto("/station/1");
+  const visit = page.getByRole("region", { name: "Current visit" });
+  await expect(visit.getByText("Ann to throw")).toBeVisible();
+  const height = async () => (await visit.boundingBox())?.height ?? 0;
+  const before = await height();
+
+  await board1.dart("S1");
+  await expect(visit.getByRole("button", { name: "Correct dart 1: S1" })).toBeVisible();
+  expect(await height()).toBe(before);
+
+  await board1.dart("S1");
+  await board1.dart("S1");
+  await expect(visit.getByText("Remove darts")).toBeVisible();
+  expect(await height()).toBe(before);
+
+  await board1.takeout();
+  await expect(visit.getByText("Bob to throw")).toBeVisible();
+  expect(await height()).toBe(before);
+
+  await board1.dart("T20");
+  await expect(visit.getByText("Bust")).toBeVisible();
+  expect(await height()).toBe(before);
+});
