@@ -53,6 +53,7 @@ export function StationPage({ id }: { id: number }) {
           online={view?.boardOnline ?? false}
           running={view?.boardRunning ?? true}
           connected={connected}
+          takeout={view?.takeout ?? false}
           matchAction={match ? matchAction(match, run) : undefined}
         />
       </header>
@@ -70,7 +71,7 @@ export function StationPage({ id }: { id: number }) {
         ) : match.state.phase === "notStarted" ? (
           <Lineup match={match} send={run} />
         ) : (
-          <Match match={match} send={run} />
+          <Match match={match} send={run} takeout={view.takeout} />
         )}
       </div>
     </main>
@@ -225,7 +226,7 @@ function upNext(match: MatchView): PlayerIndex {
   return (after + 1) % players.length;
 }
 
-function Match({ match, send }: { match: MatchView; send: Send }) {
+function Match({ match, send, takeout }: { match: MatchView; send: Send; takeout: boolean }) {
   const [correcting, setCorrecting] = useState<DartView | null>(null);
   const [adding, setAdding] = useState(false);
 
@@ -253,7 +254,13 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
   const thrower = match.players[visit?.player ?? match.state.currentPlayer];
   return (
     <section className="flex kiosk:grid flex-1 kiosk:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] kiosk:grid-rows-[1fr_auto] flex-col gap-4 kiosk:gap-x-4 kiosk:gap-y-4 kiosk:[&>.scoreboard]:col-span-full">
-      <Scoreboard match={match} onDart={setCorrecting} onAdd={() => setAdding(true)} hints />
+      <Scoreboard
+        match={match}
+        onDart={setCorrecting}
+        onAdd={() => setAdding(true)}
+        hints
+        takeout={takeout}
+      />
 
       <div className="kiosk:m-0 mt-auto kiosk:flex grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] kiosk:flex-col gap-2 kiosk:gap-3">
         <button
@@ -315,6 +322,7 @@ interface ScoreboardProps {
   onAdd?: () => void;
   /** Show the thrower's checkout route on wide screens. */
   hints?: boolean;
+  takeout?: boolean;
 }
 
 /** Scores, the current visit and whose turn it is. */
@@ -423,7 +431,14 @@ function VisitPanel(props: ScoreboardProps) {
           );
         })}
       </div>
-      {state.phase === "awaitingTakeout" ? (
+      {props.takeout ? (
+        <p
+          className={`${VISIT_STATUS} font-normal text-muted before:bg-line-soft after:bg-line-soft`}
+          role="status"
+        >
+          Taking out…
+        </p>
+      ) : state.phase === "awaitingTakeout" ? (
         <p
           className={`${VISIT_STATUS} font-bold text-accent before:bg-accent-line after:bg-accent-line`}
           role="status"

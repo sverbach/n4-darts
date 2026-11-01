@@ -23,7 +23,7 @@ n4-darts runs darts evenings: a few automatic dartboards (stations) play x01, wh
 
 **Shared building blocks:**
 - **Avatar:** a round player photo. A player without a photo gets their initials on a colour derived from them. It comes in two sizes, small (inline with names) and large (scoreboard, champion, profile).
-- **Board status plus menu:** a status pill reading "Board online", "Board stopped", "Board offline" or "Server offline", with a ⋮ button beside it. The button opens a small menu: Stop/Start detection, Calibrate, Reset board. While an action runs, the pill shows its progress or result for a few seconds ("Calibrating…", "Calibrated", "Board reset", or an error).
+- **Board status plus menu:** a status pill reading "Board online", "Board stopped", "Board offline" or "Server offline", with a ⋮ button beside it. On the station page, while the board is taking out (it waits to see the board empty) the pill reads "Takeout…"; after 10 seconds it turns amber, "Takeout stuck", with a "Reset board" button beside it. The button opens a small menu: Stop/Start detection, Calibrate, Reset board. While an action runs, the pill shows its progress or result for a few seconds ("Calibrating…", "Calibrated", "Board reset", or an error).
 - **Player picker:**
   - A wrap of name chips, each with an avatar, plus an "add new player" input and button below.
   - Tapping chips picks players in order, and each picked chip shows its order number (not in the tournament draft, where the seeds set the order). Tapping a picked chip again removes it.
@@ -89,7 +89,7 @@ This is the central screen.
 - **Current visit** (up to 3 darts per turn):
   - Three dart slots (e.g. "T20", "S5", "D16"), with empty slots when fewer darts have landed.
   - The visit total, or "Bust".
-  - Below it, one line: "Remove darts" (prominent; the board waits for the darts to be pulled out), "Ann to throw" before the visit's first dart, or the hint "Tap a dart to correct it" once a dart is down. A tapped dart opens the segment picker.
+  - Below it, one line: "Taking out…" while the board takes out, "Remove darts" (prominent; the board waits for the darts to be pulled out), "Ann to throw" before the visit's first dart, or the hint "Tap a dart to correct it" once a dart is down. A tapped dart opens the segment picker.
   - While the player is throwing, the next empty slot shows "+ Add": for a dart the board missed. It opens the segment picker ("Add dart 3") and the dart counts as if the board had seen it.
   - The visit area has a bust style, and an ignored dart is greyed out (a dart thrown after a bust or checkout).
 - **Buttons:** "Undo" and a primary "Next player" (to skip ahead when the board misses the takeout).

@@ -21,6 +21,7 @@ export function board(station: number) {
     /** S20, D20, T20, 25, BULL, M17 (off the board). */
     dart: (name: string) => post("dart", { name }),
     takeout: () => post("takeout"),
+    takeoutStart: () => post("takeout-start"),
   };
 }
 

@@ -411,7 +411,7 @@ Hard-edged and tactile: square, bordered, never smaller than a thumb.
 - **Collapsible sections:** a Silkscreen summary row with a pixel caret that turns 90° when open (0.1s).
 
 ### Status Pill (signature)
-A readout: a tinted box with a 1px line and a square dot in its own colour, Silkscreen in capitals (11px/13px), never wrapping. Two sizes only: the default (30px high on phones, 36px on the kiosk; the ⋮ button beside it matches) and the small one in admin lists and tables (24px, `STATUS_SMALL`). It comes in ok, warn, danger and accent tints, plus neutral. Errors and notices are its full-width siblings, in red and amber.
+A readout: a tinted box with a 1px line and a square dot in its own colour, Silkscreen in capitals (11px/13px), never wrapping. Two sizes only: the default (30px high on phones, 36px on the kiosk; the ⋮ button beside it matches) and the small one in admin lists and tables (24px, `STATUS_SMALL`). It comes in ok, warn, danger and accent tints, plus neutral. On the station, a takeout in progress shows as a neutral "Takeout…" pill, turning warn ("Takeout stuck", with a Reset board button) after 10 seconds. Errors and notices are its full-width siblings, in red and amber.
 
 ### Scoreboard Player Card (signature)
 The remaining score in Display size, with the avatar and the name in Silkscreen capitals. The active player's score turns Mecha Violet, and that is the only signal for whose turn it is. Darts of the current visit show large in Geist Pixel, and an ignored dart is struck through.

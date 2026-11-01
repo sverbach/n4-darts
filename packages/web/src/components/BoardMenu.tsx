@@ -34,6 +34,8 @@ export interface MatchAction {
 
 type Action = "start" | "stop" | "calibrate" | "reset";
 
+const TAKEOUT_STUCK_MS = 10_000;
+
 const CONFIRM: Partial<Record<Action, string>> = {
   stop: "Stop detection? Darts won't count until it's started again.",
   calibrate: "Clear the board, then calibrate?",
@@ -55,9 +57,17 @@ export function BoardMenu(props: {
   running: boolean;
   connected?: boolean;
   quiet?: boolean;
+  takeout?: boolean;
   matchAction?: MatchAction | undefined;
 }) {
-  const { stationId, online, running, connected, quiet, matchAction } = props;
+  const { stationId, online, running, connected, quiet, takeout = false, matchAction } = props;
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    setStuck(false);
+    if (!takeout) return;
+    const timer = setTimeout(() => setStuck(true), TAKEOUT_STUCK_MS);
+    return () => clearTimeout(timer);
+  }, [takeout]);
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -104,6 +114,25 @@ export function BoardMenu(props: {
         >
           {message.text}
         </span>
+      ) : takeout && online && (connected ?? true) ? (
+        stuck ? (
+          <>
+            <span className="status status-warn" role="status">
+              Takeout stuck
+            </span>
+            <button
+              type="button"
+              className="kiosk:min-h-9 min-h-[30px] px-3"
+              onClick={() => run("reset")}
+            >
+              Reset board
+            </button>
+          </>
+        ) : (
+          <span className="status" role="status">
+            Takeout…
+          </span>
+        )
       ) : (
         <BoardStatus
           online={online}

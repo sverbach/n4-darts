@@ -89,3 +89,26 @@ test("the visit panel keeps its height through a visit, a takeout and a bust", a
   await expect(visit.getByText("Bust")).toBeVisible();
   expect(await height()).toBe(before);
 });
+
+test("a takeout that doesn't finish shows as stuck, and Reset board clears it", async ({
+  page,
+  n4,
+}) => {
+  test.setTimeout(30_000);
+  const board1 = board(1);
+  await n4.quickMatch(1, ["Ann", "Bob"]);
+  await page.goto("/station/1");
+  const visit = page.getByRole("region", { name: "Current visit" });
+  await expect(visit.getByText("Ann to throw")).toBeVisible();
+
+  await board1.dart("S20");
+  await board1.takeoutStart();
+  await expect(page.getByText("Takeout…")).toBeVisible();
+  await expect(visit.getByText("Taking out…")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Reset board" })).toHaveCount(0);
+
+  await expect(page.getByText("Takeout stuck")).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("button", { name: "Reset board" }).click();
+  await expect(page.getByText("Board online")).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText("Takeout stuck")).toHaveCount(0);
+});
