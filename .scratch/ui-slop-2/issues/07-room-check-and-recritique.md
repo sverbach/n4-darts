@@ -2,7 +2,7 @@
 
 Status: ready-for-agent
 Type: task
-Blocked by: 01, 02, 03, 04, 05, 06
+Blocked by: 01, 02, 03, 04, 05, 06, 08, 09, 10, 11, 12
 
 Carried over from ui-slop 16.
 

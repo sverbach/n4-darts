@@ -20,7 +20,12 @@ Read first: `packages/web/PRODUCT.md`, `packages/web/DESIGN.md`, `docs/ui-pages.
 4. `04-phone-admin-wide-content.md`: brackets and tables usable at 390 px (P2)
 5. `05-projector-big-moments.md`: game shot, champion and idle fill the projector (P2)
 6. `06-small-inconsistencies.md`: the minor list from the re-critique (P3)
-7. `07-room-check-and-recritique.md`: the real kiosk and projector, then a re-critique
+7. `07-room-check-and-recritique.md`: the real kiosk and projector, then a re-critique (last)
+8. `08-admin-tournament-repeats.md`: the admin tournament page says each fact once (P1, run 3)
+9. `09-champion-peak.md`: the champion is the peak of the evening
+10. `10-one-word-per-thing.md`: one word and one font per thing
+11. `11-kiosk-admin-dead-halves.md`: kiosk admin without dead halves
+12. `12-small-items-run-3.md`: the small items from run 3
 
 ## For every ticket
 
