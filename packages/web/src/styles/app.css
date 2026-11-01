@@ -217,9 +217,9 @@
   color: var(--muted);
 }
 
-/* "GROUP A", "WB SEMI-FINAL" */
+/* "GROUP A", "WB SEMI-FINAL": a label, so grey (violet is for state). */
 @utility match-label {
-  color: var(--accent);
+  color: var(--muted);
   font-family: var(--font-pixel);
   font-size: 12px;
   letter-spacing: 2px;
@@ -432,7 +432,7 @@
   }
 
   & .points {
-    color: var(--accent);
+    color: var(--text);
   }
 }
 

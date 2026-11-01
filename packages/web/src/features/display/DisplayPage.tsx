@@ -95,7 +95,7 @@ function Running({ view }: { view: DisplayView }) {
                   className="avatar-pu-40 flex items-center gap-pu-16 border border-line-soft border-solid px-pu-22 py-pu-14 font-pixel text-pu-20 uppercase tracking-pu-2"
                 >
                   {m.label && (
-                    <span className="w-pu-220 whitespace-nowrap text-accent text-pu-14 tracking-pu-1">
+                    <span className="w-pu-220 whitespace-nowrap text-muted text-pu-14 tracking-pu-1">
                       {m.label}
                     </span>
                   )}
@@ -139,10 +139,10 @@ function Finished({ view }: { view: DisplayView }) {
       >
         {champion && (
           <section
-            className="avatar-pu-268 flex flex-col items-center justify-center gap-pu-28 border-2 border-accent border-solid bg-panel p-pu-40"
+            className="avatar-pu-268 flex flex-col items-center justify-center gap-pu-28 border-2 border-border border-solid bg-panel p-pu-40"
             aria-label="Champion"
           >
-            <span className="font-pixel text-accent text-pu-22 uppercase tracking-pu-8">
+            <span className="font-pixel text-muted text-pu-22 uppercase tracking-pu-8">
               Champion
             </span>
             <span className="avatar-frame text-pu-26">
@@ -227,7 +227,7 @@ function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
         <tr>
           <th className={th()}>#</th>
           <th className={th("w-full text-left text-muted")}>Player</th>
-          <th className={th("text-right text-accent")}>Rating</th>
+          <th className={th("text-right text-muted")}>Rating</th>
           <th className={th()}>M</th>
           <th className={th()}>180s</th>
           <th className={th()}>High out</th>
@@ -236,16 +236,14 @@ function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
       <tbody>
         {rows.map((row, i) => (
           <tr key={row.playerId}>
-            <td className={td(`font-pixel text-pu-15 ${i < 3 ? "text-accent" : "text-muted"}`)}>
-              {i + 1}
-            </td>
+            <td className={td(`font-pixel text-muted text-pu-15`)}>{i + 1}</td>
             <td className={td("w-full text-left text-pu-34")}>
               <span className={TABLE_PLAYER}>
                 <Avatar player={{ id: row.playerId, name: row.name, photo: row.photo }} />
                 {row.name}
               </span>
             </td>
-            <td className={td("text-accent text-pu-40")}>{average(row.rating)}</td>
+            <td className={td("text-pu-40 text-text")}>{average(row.rating)}</td>
             <td className={td("text-pu-34")}>{row.matches}</td>
             <td className={td("text-pu-34")}>{row.s180}</td>
             <td className={td("text-pu-34")}>{count(row.highestCheckout)}</td>
@@ -272,7 +270,7 @@ function Groups({ view }: { view: DisplayView }) {
                 <th className={th()}>L</th>
                 <th className={th()}>Legs</th>
                 <th className={th()}>+/−</th>
-                <th className={th("text-right text-accent")}>Pts</th>
+                <th className={th("text-right text-muted")}>Pts</th>
                 <th className={th()}>Avg</th>
               </tr>
             </thead>
@@ -295,7 +293,7 @@ function Groups({ view }: { view: DisplayView }) {
                   <td className={td("text-pu-34")}>
                     {row.legDiff > 0 ? `+${row.legDiff}` : row.legDiff}
                   </td>
-                  <td className={td("text-accent text-pu-40")}>{row.points}</td>
+                  <td className={td("text-pu-40 text-text")}>{row.points}</td>
                   <td className={td("text-muted text-pu-34")}>{average(row.average)}</td>
                 </tr>
               ))}
@@ -356,7 +354,7 @@ function StationCard({ station, large }: { station: DisplayStation; large?: bool
         ? "border-danger-line"
         : "border-border";
   const card = `flex border border-solid ${border} bg-panel text-text no-underline hover:text-accent`;
-  const name = `font-pixel text-accent uppercase tracking-pu-2 ${large ? "text-pu-24" : "text-pu-22"}`;
+  const name = `font-pixel text-text uppercase tracking-pu-2 ${large ? "text-pu-24" : "text-pu-22"}`;
 
   if (match?.phase === "notStarted" || !match) {
     return (
@@ -370,7 +368,7 @@ function StationCard({ station, large }: { station: DisplayStation; large?: bool
             <span className="text-muted text-pu-15">Next · </span>
             {match.players.map((p, i) => (
               <span key={p.id}>
-                {i > 0 && <span className="text-accent"> vs </span>}
+                {i > 0 && <span className="text-muted"> vs </span>}
                 {p.name}
               </span>
             ))}

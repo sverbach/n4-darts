@@ -1,6 +1,6 @@
 # The real kiosk and projector, then a re-critique
 
-Status: needs-triage
+Status: ready-for-agent
 Type: task
 Blocked by: 01, 02, 03, 04, 05, 06
 
@@ -15,3 +15,7 @@ Carried over from ui-slop 16.
 
 - The room check is noted here (needs the user).
 - The re-critique shows no P1 issues.
+
+## Comments
+
+2026-11-01: Confirmed by the user ("go ahead with the ui-slop-2 tickets").

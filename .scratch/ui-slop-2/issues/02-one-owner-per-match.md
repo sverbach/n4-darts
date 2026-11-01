@@ -1,6 +1,6 @@
 # Each match's state in one place on the knockout screens
 
-Status: needs-triage
+Status: ready-for-agent
 Type: task
 
 On `/display` in the knockout (`display-knockout-*`) Ann vs Dee is station 1's "Next", the bracket's "On a station" and implied by Up next; Cid vs Bob is in Up next and in the bracket as "Queued". The bracket says "On a station" without naming it while the station card says "Next". Admin's knockout repeats the pairs across Stations, Queue and the bracket.
@@ -15,3 +15,7 @@ On `/display` in the knockout (`display-knockout-*`) Ann vs Dee is station 1's "
 
 - On `display-knockout-*` every match appears once with its state; the station is named.
 - Server view gives the station for an on-station bracket match if it doesn't yet (with a test).
+
+## Comments
+
+2026-11-01: Confirmed by the user ("go ahead with the ui-slop-2 tickets").

@@ -160,7 +160,7 @@ function PlayerRow(props: { player: AdminPlayer; change: Change }) {
         onClick={() => setEditingPhoto(true)}
       >
         <Avatar player={player} />
-        <span className="absolute -right-1 -bottom-1 flex size-[18px] items-center justify-center bg-accent text-accent-text [&_.pixel-icon]:h-auto [&_.pixel-icon]:w-3">
+        <span className="absolute -right-1 -bottom-1 flex size-[18px] items-center justify-center border border-border border-solid bg-surface text-text [&_.pixel-icon]:h-auto [&_.pixel-icon]:w-3">
           <PixelIcon name="dots" />
         </span>
       </button>

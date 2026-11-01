@@ -32,7 +32,7 @@ function at(radius: number, angle: number) {
 const LINE = "stroke-bg [stroke-width:0.004]";
 const FILL = {
   single: ["fill-surface", "fill-line-soft"],
-  ring: ["fill-accent-line", "fill-border"],
+  ring: ["fill-faint", "fill-border"],
 };
 
 /** The part of segment `index` between two radii. */
@@ -68,7 +68,7 @@ function Board() {
         )),
       )}
       <circle r={RINGS.outerBull} className={`fill-border ${LINE}`} />
-      <circle r={RINGS.bull} className={`fill-accent-line ${LINE}`} />
+      <circle r={RINGS.bull} className={`fill-faint ${LINE}`} />
       {ORDER.map((number, i) => {
         const [x, y] = at(NUMBERS_AT, 90 - i * 18).split(" ");
         return (

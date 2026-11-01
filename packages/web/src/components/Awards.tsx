@@ -18,7 +18,7 @@ const STYLES = {
     item: "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-pu-18 gap-y-pu-8 border border-border border-solid bg-panel px-pu-26 py-pu-22 [grid-template-areas:'title_value'_'players_value']",
     title: "font-pixel text-muted text-pu-15 uppercase tracking-pu-2 [grid-area:title]",
     players: "font-pixel text-pu-24 uppercase tracking-pu-2 [grid-area:players]",
-    value: "text-accent text-pu-72 leading-[0.8] [grid-area:value]",
+    value: "text-pu-72 leading-[0.8] [grid-area:value]",
   },
   admin: {
     // Two to a row; an odd last one takes the whole row.
@@ -26,7 +26,7 @@ const STYLES = {
     item: "flex flex-col gap-2.5 border border-border border-solid bg-panel p-4",
     title: "font-pixel text-[11px] text-muted uppercase tracking-[1px]",
     players: "order-3 font-pixel text-[13px] uppercase tracking-[1px]",
-    value: "order-2 text-[48px] text-accent leading-[0.85]",
+    value: "order-2 text-[48px] leading-[0.85]",
   },
 };
 

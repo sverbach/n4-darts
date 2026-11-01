@@ -44,7 +44,7 @@ export function StationPage({ id }: { id: number }) {
       <header className="flex items-center justify-between gap-2 kiosk:gap-4 border-0 border-border border-b border-solid kiosk:px-6 px-4 kiosk:py-3 py-2.5">
         <div className="flex min-w-0 items-center gap-4">
           <Logo width="86px" className="max-kiosk:hidden" />
-          <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel kiosk:text-[20px] text-[13px] text-accent uppercase kiosk:tracking-[2px] tracking-[1px]">
+          <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel kiosk:text-[20px] text-[13px] text-text uppercase kiosk:tracking-[2px] tracking-[1px]">
             {view?.name ?? `Station ${id}`}
           </span>
         </div>
@@ -104,7 +104,7 @@ function SettingsStrip({ match }: { match: MatchView }) {
   const leg = settings.legsToWin > 1 && state.legs.length > 0 ? ` · Leg ${state.legs.length}` : "";
   return (
     <div className="label flex flex-wrap justify-between gap-x-4 gap-y-1.5 border-0 border-line-soft border-b border-solid kiosk:px-6 px-4 kiosk:py-2.5 py-2">
-      {label && <span className="text-accent">{label}</span>}
+      {label && <span className="text-text">{label}</span>}
       <span>
         {matchRulesLabel(settings)}
         {leg}
@@ -176,7 +176,7 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
             key={p.id}
             className="flex kiosk:min-h-24 min-h-[72px] items-center gap-3 kiosk:gap-4 border border-border border-solid bg-surface kiosk:pr-3 pr-2.5 kiosk:pl-6 pl-3 [--avatar:48px] kiosk:[--avatar:64px]"
           >
-            <span className="kiosk:w-10 w-7 font-pixel kiosk:text-[20px] text-[13px] text-accent">
+            <span className="kiosk:w-10 w-7 font-pixel kiosk:text-[20px] text-[13px] text-muted">
               {String(i + 1).padStart(2, "0")}
             </span>
             <Avatar player={p} />

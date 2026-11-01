@@ -1,6 +1,6 @@
 # The re-critique's minor list
 
-Status: needs-triage
+Status: ready-for-agent
 Type: task
 
 Small things from the re-critique; each is quick.
@@ -22,3 +22,7 @@ Small things from the re-critique; each is quick.
 ## Acceptance
 
 - Each item fixed or, if decided against, noted here with why.
+
+## Comments
+
+2026-11-01: Confirmed by the user ("go ahead with the ui-slop-2 tickets").

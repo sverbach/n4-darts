@@ -126,7 +126,7 @@ function CreateTournament({ send }: { send: Send }) {
         <aside className="flex min-w-0 flex-[1_1_340px] flex-col gap-4 border border-border border-solid bg-panel p-6">
           <span className="label">New tournament</span>
           <div className="flex items-baseline gap-3">
-            <span className="text-[72px] text-accent leading-[0.8]">{picked.length}</span>
+            <span className="text-[72px] text-text leading-[0.8]">{picked.length}</span>
             <span className="label">Players picked</span>
           </div>
           <p className="hint m-0">
@@ -351,7 +351,7 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
                   key={e.playerId}
                   className="flex min-h-14 items-center gap-3 border border-border border-solid bg-surface pr-1.5 pl-3 [--avatar:28px]"
                 >
-                  <span className="w-6 font-pixel text-[13px] text-accent">
+                  <span className="w-6 font-pixel text-[13px] text-muted">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <Avatar player={{ id: e.playerId, name: e.name, photo: e.photo }} />

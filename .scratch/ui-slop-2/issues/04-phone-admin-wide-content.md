@@ -1,6 +1,6 @@
 # Brackets and tables usable at 390 px
 
-Status: needs-triage
+Status: ready-for-agent
 Type: task
 
 `admin-tournament-finished-phone` clips the bracket's final column ("AN…", "CID…") and the groups table loses AVG at the edge; `admin-tournament-groups-phone` cuts AVG. The scroll edges from ui-slop 10 are there but too faint to notice.
@@ -14,3 +14,7 @@ Type: task
 ## Acceptance
 
 - No clipped names or columns in any `admin-*-phone` shot.
+
+## Comments
+
+2026-11-01: Confirmed by the user ("go ahead with the ui-slop-2 tickets").

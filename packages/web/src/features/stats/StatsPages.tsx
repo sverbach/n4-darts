@@ -33,7 +33,7 @@ const td = (look: string) =>
 const NUMBER = "text-[24px] kiosk:text-[26px]";
 /** The profile's lists: tournaments and last matches. */
 const ROW =
-  "flex min-h-16 items-center gap-3 border-0 border-line-soft border-b border-solid [&_.pixel-icon]:h-[22px] [&_.pixel-icon]:text-accent";
+  "flex min-h-16 items-center gap-3 border-0 border-line-soft border-b border-solid [&_.pixel-icon]:h-[22px] [&_.pixel-icon]:text-text";
 const ROW_MAIN =
   "flex min-w-0 flex-1 flex-col gap-1.5 font-pixel text-[13px] uppercase tracking-[1px] kiosk:text-[16px]";
 const ROW_DATE = "text-[11px] text-muted tracking-normal kiosk:text-[12px]";
@@ -96,7 +96,7 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
             <tr>
               <th className={th()}>#</th>
               <th className={th("w-full text-left text-muted")}>Player</th>
-              <th className={th("text-right text-accent")} title="3-dart average, last 10 matches">
+              <th className={th("text-right text-muted")} title="3-dart average, last 10 matches">
                 Rating
               </th>
               <th className={th()} title="3-dart average, all matches">
@@ -117,11 +117,7 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
           <tbody>
             {rows.map((row, i) => (
               <tr key={row.playerId}>
-                <td
-                  className={td(
-                    `font-pixel kiosk:text-[13px] text-[12px] ${i < 3 ? "text-accent" : "text-muted"}`,
-                  )}
-                >
+                <td className={td(`font-pixel kiosk:text-[13px] text-[12px] text-muted`)}>
                   {i + 1}
                 </td>
                 <td className={td(`w-full text-left ${NUMBER}`)}>
@@ -133,7 +129,7 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
                     {row.name}
                   </a>
                 </td>
-                <td className={td("kiosk:text-[32px] text-[28px] text-accent")}>
+                <td className={td("kiosk:text-[32px] text-[28px] text-text")}>
                   {average(row.rating)}
                 </td>
                 <td className={td(NUMBER)}>{average(row.average)}</td>
@@ -182,8 +178,8 @@ function Profile({ profile }: { profile: PlayerProfile }) {
     whole === 0 ? "" : `${Math.round((part / whole) * 100)}%`;
   const hero = (
     <section className="flex items-center gap-4 kiosk:gap-6">
-      {/* The photo in a framed square with a corner block. */}
-      <span className="relative flex-none border-[3px] border-accent border-solid kiosk:p-2 p-1.5 [--avatar:96px] kiosk:[--avatar:138px] after:absolute after:-right-[3px] after:-bottom-[3px] after:size-3.5 kiosk:after:size-[18px] after:bg-accent after:content-[''] [&_.avatar]:flex">
+      {/* The octagon alone: brackets are for big moments, violet for state (DESIGN.md). */}
+      <span className="flex-none [--avatar:96px] kiosk:[--avatar:138px] [&_.avatar]:flex">
         <Avatar player={{ id: profile.playerId, name: profile.name, photo: profile.photo }} large />
       </span>
       <div className="flex min-w-0 flex-col gap-2">
@@ -461,7 +457,7 @@ function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
           </g>
         ))}
         <polyline
-          className="fill-none stroke-3 stroke-accent"
+          className="fill-none stroke-3 stroke-muted"
           points={points.map((p, i) => `${x(i)},${y(p.value)}`).join(" ")}
         />
         {points.map((p, i) => {
@@ -473,7 +469,7 @@ function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
                 y={y(p.value) - size / 2}
                 width={size}
                 height={size}
-                className={i === last ? "fill-text" : "fill-accent"}
+                className="fill-text"
               >
                 <title>
                   {shortDay(p.day)}: {p.value.toFixed(1)} ({p.matches} matches)
@@ -492,11 +488,17 @@ function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
             </g>
           );
         })}
-        <rect x={tagX} y={4} width={tagWidth} height={font * 1.5} className="fill-accent" />
+        <rect
+          x={tagX}
+          y={4}
+          width={tagWidth}
+          height={font * 1.5}
+          className="fill-surface stroke-border"
+        />
         <text
           x={tagX + tagWidth / 2}
           y={4 + font * 1.1}
-          className="fill-accent-text uppercase"
+          className="fill-text uppercase"
           textAnchor="middle"
         >
           {tag}

@@ -87,8 +87,11 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
             <section className={SECTION}>
               <h2>Final placings</h2>
               {champion && (
-                <div className="flex items-center gap-4 border-2 border-accent border-solid bg-accent-tint px-6 kiosk:py-6 py-4 [--avatar:64px] kiosk:[--avatar:88px]">
-                  <Avatar player={champion} large />
+                <div className="flex items-center gap-4 border border-border border-solid bg-panel px-6 kiosk:py-6 py-4 [--avatar:64px] kiosk:[--avatar:88px]">
+                  {/* The champion is a big moment: the violet brackets, as on the projector. */}
+                  <span className="avatar-frame kiosk:text-[10px] text-[8px]">
+                    <Avatar player={champion} large />
+                  </span>
                   <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                     <span className="match-label">Champion</span>
                     <span className="wrap-anywhere font-bold font-pixel kiosk:text-[28px] text-[22px] uppercase tracking-[3px]">
@@ -200,7 +203,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                       <th>L</th>
                       <th>Legs</th>
                       <th>+/−</th>
-                      <th className="text-accent!">Pts</th>
+                      <th>Pts</th>
                       <th>Avg</th>
                     </tr>
                   </thead>

@@ -1,6 +1,6 @@
 # The second layer: one signal, one owner, room-sized
 
-Status: needs-triage
+Status: ready-for-agent
 
 Follow-up to `.scratch/ui-slop/`. Its 15 tickets fixed the repeats, spacing, type and pills; the re-critique of 2026-11-01 (`packages/web/.impeccable/critique/2026-11-01T09-16-50Z__src.md`, 27/40, 3 P1s) found the next layer. This set takes those on, plus what was left open in ui-slop 16.
 

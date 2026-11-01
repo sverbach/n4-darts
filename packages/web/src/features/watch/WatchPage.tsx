@@ -23,7 +23,7 @@ export function WatchPage({ id }: { id: number }) {
       <header className="flex h-pu-64 items-center justify-between gap-pu-20 border-0 border-border border-b border-solid px-pu-32">
         <div className="flex min-w-0 items-center gap-pu-20">
           <Logo width="3em" />
-          <span className="whitespace-nowrap font-pixel text-accent text-pu-20 uppercase tracking-pu-2">
+          <span className="whitespace-nowrap font-pixel text-pu-20 text-text uppercase tracking-pu-2">
             {view?.name ?? `Station ${id}`}
           </span>
           {match?.label && <span className={`${SMALL} tracking-pu-2`}>· {match.label}</span>}
@@ -82,7 +82,7 @@ function NextMatch({ match }: { match: MatchView }) {
         {match.players.map((p, i) => (
           <div key={p.id} className="flex items-center gap-pu-56">
             {i > 0 && (
-              <span className="font-pixel text-accent text-pu-28 uppercase tracking-pu-4">vs</span>
+              <span className="font-pixel text-muted text-pu-28 uppercase tracking-pu-4">vs</span>
             )}
             <div className="flex flex-col items-center gap-pu-18 font-bold font-pixel text-pu-40 uppercase tracking-pu-4">
               <Avatar player={p} large />
@@ -138,7 +138,10 @@ function WatchVisit({ match }: { match: MatchView }) {
         >
           {visit?.bust ? "Bust" : visit?.darts.length ? total : ""}
         </span>
-        <span className={`${TOTAL_LABEL} text-accent`}>
+        {/* Violet only for "Remove darts": the one thing to do now. */}
+        <span
+          className={`${TOTAL_LABEL} ${state.phase === "awaitingTakeout" ? "text-accent" : "text-muted"}`}
+        >
           {state.phase === "awaitingTakeout"
             ? "Remove darts"
             : !visit?.darts.length

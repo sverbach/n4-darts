@@ -296,7 +296,7 @@ The palette is near-black and nearly monochrome: warm phosphor text on command b
 A command room at night: five greys stepping up from black, warm paper-white text, one violet signal and three status lights.
 
 ### Primary
-- **Mecha Violet** (`mecha-violet`): the one accent. It marks the active player's remaining score, the selected chip or option (on its tint, `mecha-violet-tint`, with a violet border), primary and CTA buttons, match labels ("GROUP A"), points in tables, focus rings, played progress squares and the brackets around big moments. Its line (`mecha-violet-line`) borders accent status pills.
+- **Mecha Violet** (`mecha-violet`): the one accent, and it means *this one, now*. It marks exactly these: the thrower's remaining score and card frame, the selected or pressed control (on its tint, `mecha-violet-tint`, with a violet border), primary and CTA buttons, focus rings, "Remove darts", a bracket match that's live, the next dart's cursor on /watch, played progress squares, "Game shot" and the brackets around game shot and the champion. Never names, ranks, table columns, labels or award values: those are Phosphor Paper or Readout Grey, and emphasis comes from size and weight. Its line (`mecha-violet-line`) borders accent status pills.
 
 ### Neutral
 - **Command Black** (`command-black`): the page ground, and the text colour on violet fills.
@@ -317,7 +317,7 @@ A command room at night: five greys stepping up from black, warm paper-white tex
 Nine muted grounds (`avatar-1` to `avatar-9`) for initials avatars, chosen from the player id so each player keeps theirs. They are muted on purpose so phosphor text reads on all of them. They're used for nothing else.
 
 ### Named Rules
-**The One Signal Rule.** Mecha Violet is the only accent. If two things on a screen are violet, they must mean the same thing: active, selected or primary.
+**The One Signal Rule.** Mecha Violet is the only accent, and it's for state only: active, selected or primary. If two things on a screen are violet, they must mean the same thing. A station name, a rank, a points column or a label is never violet.
 
 **The Status Lights Rule.** Green, amber and red mean status and nothing else. A status always shows as a tint plus line plus colour, never as a bare coloured word.
 

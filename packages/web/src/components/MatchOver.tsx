@@ -75,7 +75,7 @@ export function MatchOver({
               role="img"
               aria-label={`Legs ${state.players[winner]?.legsWon} to ${others[0]}`}
             >
-              <span className="text-accent">{state.players[winner]?.legsWon}</span>
+              <span>{state.players[winner]?.legsWon}</span>
               {others.map((legs, i) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: the losers' legs, in throwing order.
                 <span key={i} className="contents">
