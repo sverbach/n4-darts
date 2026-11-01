@@ -122,6 +122,14 @@ export function progressView(
                   : match.state.players
                       .map((p, i) => `${match.players[i]?.name ?? "?"} ${p.remaining}`)
                       .join(" · "),
+            remaining:
+              match.state.phase === "notStarted" || match.state.winner !== null
+                ? null
+                : match.state.players.map((p) => p.remaining),
+            winner:
+              match.state.winner !== null
+                ? (match.players[match.state.winner]?.name ?? null)
+                : null,
           }
         : null,
     };

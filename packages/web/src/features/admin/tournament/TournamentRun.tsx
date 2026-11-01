@@ -6,6 +6,7 @@ import type {
   TournamentStationView,
 } from "@n4/server/api";
 import { useState } from "react";
+import { ActionMenu } from "../../../components/ActionMenu.tsx";
 import { Avatar } from "../../../components/Avatar.tsx";
 import { Awards } from "../../../components/Awards.tsx";
 import { MatchCard, STATUS } from "../../../components/MatchCard.tsx";
@@ -40,6 +41,8 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
   const progress = view.progress as TournamentProgress;
   const live = tournament.status === "running";
   const champion = progress.placings?.find((p) => p.from === 1);
+  const withdrawn = (playerId: string) =>
+    view.entrants.some((e) => e.playerId === playerId && e.withdrawn);
 
   const base = "/api/admin/tournament";
   return (
@@ -140,6 +143,8 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                 ))}
               </ul>
             </section>
+          </div>
+          <div className={MAIN}>
             <section className={SECTION}>
               <h2>
                 Queue <span className={COUNT}>({progress.queue.length})</span>
@@ -173,9 +178,6 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
               )}
             </section>
           </div>
-          <div className={MAIN}>
-            <Roster view={view} send={send} base={base} groupPhase={progress.phase === "groups"} />
-          </div>
         </div>
       )}
 
@@ -188,6 +190,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
 
       <section className={SECTION}>
         <h2>Groups</h2>
+        {live && progress.phase === "groups" && <LateArrival view={view} send={send} base={base} />}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,480px),1fr))] gap-x-6 gap-y-4">
           {progress.groups.map((group) => (
             <div key={group.name} className="flex min-w-0 flex-col gap-2">
@@ -206,13 +209,20 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                       <th className="max-kiosk:hidden">+/−</th>
                       <th>Pts</th>
                       <th className="max-kiosk:hidden">Avg</th>
+                      {live && (
+                        <th>
+                          <span className="sr-only">Actions</span>
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
                     {group.table.map((row, i) => (
                       <tr key={row.playerId}>
                         <td className="font-pixel text-[12px]! text-muted">{i + 1}</td>
-                        <td className="name">
+                        <td
+                          className={`name ${withdrawn(row.playerId) ? "text-muted line-through" : ""}`}
+                        >
                           <span className="inline-flex items-center gap-2.5">
                             <Avatar
                               player={{ id: row.playerId, name: row.name, photo: row.photo }}
@@ -231,32 +241,63 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                         </td>
                         <td className="points">{row.points}</td>
                         <td className="text-muted max-kiosk:hidden">{average(row.average)}</td>
+                        {live && (
+                          <td className="w-11">
+                            {withdrawn(row.playerId) ? (
+                              <span className="label no-underline">Out</span>
+                            ) : (
+                              <ActionMenu
+                                label={`Actions for ${row.name}`}
+                                items={[
+                                  {
+                                    label: "Withdraw",
+                                    danger: true,
+                                    run: () => {
+                                      if (
+                                        confirm(
+                                          `Withdraw ${row.name}? Their remaining matches become walkovers.`,
+                                        )
+                                      ) {
+                                        void send("POST", `${base}/withdraw`, {
+                                          playerId: row.playerId,
+                                        });
+                                      }
+                                    },
+                                  },
+                                ]}
+                              />
+                            )}
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <details className="border border-line-soft border-solid">
-                <summary className="px-3">
-                  <PixelIcon name="caret" /> Matches ({group.fixtures.length})
-                </summary>
-                <ul>
-                  {group.fixtures.map((f) => (
-                    <li key={f.slot}>
-                      <span className="font-pixel text-[13px] uppercase">
-                        {f.players[0]} <span className="text-muted">vs</span> {f.players[1]}
-                      </span>
-                      <span
-                        className={
-                          f.legs ? "text-[24px]" : "font-pixel text-[11px] text-muted uppercase"
-                        }
-                      >
-                        {fixtureResult(f)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </details>
+              {played(group.fixtures).length > 0 && (
+                <details className="border border-line-soft border-solid">
+                  <summary className="px-3">
+                    {/* What's still to play is in the queue; this lists what's been played. */}
+                    <PixelIcon name="caret" /> Results ({played(group.fixtures).length})
+                  </summary>
+                  <ul>
+                    {played(group.fixtures).map((f) => (
+                      <li key={f.slot}>
+                        <span className="font-pixel text-[13px] uppercase">
+                          {f.players[0]} <span className="text-muted">vs</span> {f.players[1]}
+                        </span>
+                        <span
+                          className={
+                            f.legs ? "text-[24px]" : "font-pixel text-[11px] text-muted uppercase"
+                          }
+                        >
+                          {fixtureResult(f)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
             </div>
           ))}
         </div>
@@ -320,9 +361,44 @@ function BracketRows({ bracket }: { bracket: TournamentProgress["bracket"] }) {
   );
 }
 
+/** The group's played fixtures: results and walkovers. */
+const played = (fixtures: TournamentMatchView[]) =>
+  fixtures.filter((f) => f.legs || f.status === "walkover");
+
 function fixtureResult(f: TournamentMatchView) {
   if (f.legs) return `${legScore(f.legs)}${f.status === "walkover" ? " (w/o)" : ""}`;
   return STATUS[f.status];
+}
+
+/**
+ * What's on a station, each name once: "ANN 141 · BOB 60" while it's on, "ANN VS BOB · waiting
+ * to start" before, "ANN won" after. Names in Silkscreen capitals, scores in Geist Pixel.
+ */
+function StationMatchLine({ match }: { match: NonNullable<TournamentStationView["match"]> }) {
+  const name = "font-pixel text-[13px] uppercase tracking-[1px]";
+  if (match.winner)
+    return (
+      <span>
+        <span className={name}>{match.winner}</span> won
+      </span>
+    );
+  if (!match.remaining) {
+    return (
+      <span>
+        <span className={name}>{match.players.join(" vs ")}</span> · waiting to start
+      </span>
+    );
+  }
+  return (
+    <span>
+      {match.players.map((player, i) => (
+        <span key={player}>
+          {i > 0 && <span className="text-muted"> · </span>}
+          <span className={name}>{player}</span> {match.remaining?.[i]}
+        </span>
+      ))}
+    </span>
+  );
 }
 
 function StationRow(props: { station: TournamentStationView; send: Send; base: string }) {
@@ -346,9 +422,7 @@ function StationRow(props: { station: TournamentStationView; send: Send; base: s
         {match ? (
           <span className={CARD_DETAIL}>
             {match.label && <span className="match-label">{match.label}</span>}{" "}
-            <span className="uppercase">
-              {match.players.join(" vs ")}: {match.summary}
-            </span>
+            <StationMatchLine match={match} />
           </span>
         ) : (
           <span className={`${CARD_DETAIL} hint`}>
@@ -455,75 +529,33 @@ function QueueRow(props: {
   );
 }
 
-/** Who's in: withdraw a player, or add one who arrives late (group phase only). */
-function Roster(props: {
-  view: TournamentAdminView;
-  send: Send;
-  base: string;
-  groupPhase: boolean;
-}) {
-  const { view, send, base, groupPhase } = props;
+/** A player who arrives late joins during the group phase. */
+function LateArrival(props: { view: TournamentAdminView; send: Send; base: string }) {
+  const { view, send, base } = props;
   const { players } = usePlayers();
   const [late, setLate] = useState("");
   const inIt = new Set(view.entrants.map((e) => e.playerId));
   const available = players?.filter((p) => !inIt.has(p.id)) ?? [];
-
+  if (available.length === 0) return null;
   return (
-    <section className={SECTION}>
-      <h2>
-        Players <span className={COUNT}>({view.entrants.length})</span>
-      </h2>
-      <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-x-6 gap-y-0 border-0 border-border border-t border-solid p-0">
-        {view.entrants.map((e) => (
-          <li
-            key={e.playerId}
-            className="flex min-h-14 items-center gap-3 border-0 border-line-soft border-b border-solid [--avatar:32px]"
-          >
-            <Avatar player={{ id: e.playerId, name: e.name, photo: e.photo }} />
-            <span
-              className={`min-w-0 flex-1 font-pixel text-[13px] uppercase tracking-[1px] ${e.withdrawn ? "text-muted line-through" : ""}`}
-            >
-              {e.name}
-            </span>
-            {e.withdrawn ? (
-              <span className="label">Withdrawn</span>
-            ) : (
-              <button
-                type="button"
-                className="ghost min-h-9 px-3 text-[11px]"
-                onClick={() => {
-                  if (confirm(`Withdraw ${e.name}? Their remaining matches become walkovers.`)) {
-                    void send("POST", `${base}/withdraw`, { playerId: e.playerId });
-                  }
-                }}
-              >
-                Withdraw
-              </button>
-            )}
-          </li>
+    <div className="inline-form max-w-[420px]">
+      <select aria-label="Late arrival" value={late} onChange={(e) => setLate(e.target.value)}>
+        <option value="">Late arrival…</option>
+        {available.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.name}
+          </option>
         ))}
-      </ul>
-      {groupPhase && available.length > 0 && (
-        <div className="inline-form max-w-[420px]">
-          <select aria-label="Late arrival" value={late} onChange={(e) => setLate(e.target.value)}>
-            <option value="">Late arrival…</option>
-            {available.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            disabled={!late}
-            onClick={async () => {
-              if (await send("POST", `${base}/late`, { playerId: late })) setLate("");
-            }}
-          >
-            Add
-          </button>
-        </div>
-      )}
-    </section>
+      </select>
+      <button
+        type="button"
+        disabled={!late}
+        onClick={async () => {
+          if (await send("POST", `${base}/late`, { playerId: late })) setLate("");
+        }}
+      >
+        Add
+      </button>
+    </div>
   );
 }

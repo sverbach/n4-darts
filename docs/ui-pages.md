@@ -223,14 +223,13 @@ There's one tournament at a time, and the tab shows one of three states.
   - A "New tournament" button.
 - **Stations** (while running): a row per station with:
   - The name, and a status only when it needs the organiser ("Board offline" or "Paused"); a healthy station shows none.
-  - The current match, e.g. "Group A Ann vs Bob: 301 / 140".
+  - The current match, each name once: "Group A · ANN 301 · BOB 140", "ANN VS BOB · waiting to start" or "ANN won".
   - Buttons: Pause/Resume. For a match that hasn't started yet, also "Send back" and "Hold".
 - **Queue (n)** (while running): grouped under "Ready (n)", "Waiting for players (n)" and "Held (n)", a card per waiting match with:
   - The label and the players.
   - Actions: Hold/Release, one station dropdown (Any station or Only X) and "Play now", which puts the match on the station it's kept for, or the first free one (disabled when none is free). On a phone the dropdown has its own line.
 - **Knockout:** the bracket, as rows of round columns with match cards (scrolling sideways on a wide screen); on a phone the rounds stack, one under the other.
-- **Groups:** for each group, the table (on a phone: #, Player, P, W, L, Pts) plus a collapsible "Matches" list of fixtures with results ("3:1", "(w/o)" for walkovers, or a status).
-- **Players** (while running): the entrants, with a "Withdraw" button for each (or "Withdrawn"). During the group phase there's also a "Late arrival…" dropdown with an "Add" button.
+- **Groups:** for each group, the table (on a phone: #, Player, P, W, L, Pts) with a ⋮ menu per row to withdraw the player (a withdrawn one is struck through, "Out"), plus a collapsible "Results (n)" of the played fixtures ("3–1", "(w/o)" for walkovers). During the group phase a "Late arrival…" dropdown with "Add" sits above the tables.
 - **"End tournament early"** (danger).
 
 ### `/admin/players`
