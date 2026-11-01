@@ -122,7 +122,7 @@ The **visual suite** (`packages/e2e/tests/visual.spec.ts`) screenshots every pag
 
 ### Board simulator
 
-A fake Autodarts Board Manager (same API as the real one, see `docs/board-manager-api.md`). Each fake board serves a control page at its own address, e.g. <http://localhost:3180/>. Click the dartboard to throw, tap a listed dart and then the board to revise it, and use the buttons for takeout, bounce-out, an outside reset (as if pressed on the laptop), stop/start and offline.
+A fake Autodarts Board Manager (same API as the real one, see `docs/board-manager-api.md`). Each fake board serves a control page at its own address, e.g. <http://localhost:3180/>. Click the dartboard to throw, tap a listed dart and then the board to revise it, and use the buttons for takeout, bounce-out, an outside reset (as if pressed on the laptop), stop/start and offline. **Start takeout** begins a takeout and holds it ("Takeout in progress", as when someone takes long to pull the darts) until **Finish takeout** or a reset.
 
 For a full session without a real board, see [Run it locally](#run-it-locally).
 
@@ -130,6 +130,7 @@ For a full session without a real board, see [Run it locally](#run-it-locally).
 pnpm sim --port 3180                       # one board; --boards 2 for 3180 and 3181. Or by hand:
 curl -X POST localhost:3180/sim/dart -d '{"name":"T20"}'   # S20 SO20 D20 T20 25 BULL M17 BOUNCE
 curl -X POST localhost:3180/sim/takeout
+curl -X POST localhost:3180/sim/takeout-start     # held until /sim/takeout-finish
 pnpm sim --replay prototypes/recordings/2026-10-18-board1.txt --speed 10
 ```
 

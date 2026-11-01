@@ -599,3 +599,73 @@ describe("the board menu", () => {
     expect((await board(server, "explode")).statusCode).toBe(400);
   });
 });
+
+describe("a takeout in progress", () => {
+  const takeoutShown = async (server: Server) => (await server.view()).takeout;
+
+  it("shows from takeout started until it's finished", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await start(server);
+    await throwDart(server, "S20");
+    expect(await takeoutShown(server)).toBe(false);
+
+    sim.takeoutStart();
+    await vi.waitFor(async () => expect(await takeoutShown(server)).toBe(true));
+    sim.takeoutFinish();
+    await vi.waitFor(async () => expect(await takeoutShown(server)).toBe(false));
+  });
+
+  it("ends with a reset from the laptop or from the board menu", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await start(server);
+    await throwDart(server, "S20");
+    sim.takeoutStart();
+    await vi.waitFor(async () => expect(await takeoutShown(server)).toBe(true));
+    sim.reset();
+    await vi.waitFor(async () => expect(await takeoutShown(server)).toBe(false));
+
+    await throwDart(server, "S20");
+    sim.takeoutStart();
+    await vi.waitFor(async () => expect(await takeoutShown(server)).toBe(true));
+    await server.app.inject({
+      method: "POST",
+      url: "/api/stations/1/board",
+      payload: { action: "reset" },
+    });
+    await vi.waitFor(async () => expect(await takeoutShown(server)).toBe(false));
+  });
+
+  it("ends when the board stops or goes offline", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await start(server);
+    await throwDart(server, "S20");
+    sim.takeoutStart();
+    await vi.waitFor(async () => expect(await takeoutShown(server)).toBe(true));
+    sim.stop();
+    await vi.waitFor(async () => expect(await takeoutShown(server)).toBe(false));
+
+    sim.start();
+    await throwDart(server, "S5");
+    sim.takeoutStart();
+    await vi.waitFor(async () => expect(await takeoutShown(server)).toBe(true));
+    sim.setOnline(false);
+    await vi.waitFor(async () => expect(await takeoutShown(server)).toBe(false));
+  });
+
+  it("is picked up from the board when the server starts during one", async () => {
+    sim = await createBoardSim();
+    const path = tempDb();
+    const first = await startServer(path);
+    await start(first);
+    await throwDart(first, "S20");
+    sim.takeoutStart();
+    await vi.waitFor(async () => expect(await takeoutShown(first)).toBe(true));
+    await first.stop();
+
+    const second = await startServer(path);
+    await vi.waitFor(async () => expect(await takeoutShown(second)).toBe(true));
+  });
+});

@@ -1,6 +1,6 @@
 # Show a takeout in progress, and a stuck one
 
-Status: needs-triage
+Status: ready-for-agent
 
 A takeout sometimes starts but never finishes: someone takes long to pull the darts, or the board doesn't see it empty. The board then stays in "Takeout in progress" and ignores new darts, but the station shows "Board online", so players think detection is broken.
 

@@ -52,6 +52,7 @@ export interface StationView {
   boardOnline: boolean;
   /** Detection is running; false after a stop (from the station's menu or the laptop). */
   boardRunning: boolean;
+  takeout: boolean;
   /** Shown while there's no match, e.g. "Paused for the tournament". */
   notice: string | null;
   match: MatchView | null;

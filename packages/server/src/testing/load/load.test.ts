@@ -196,6 +196,7 @@ async function playLongMatch(db: Db, base: string) {
 
   const times: number[] = [];
   let changes = 0;
+  let takeouts = 0;
   for (let n = 0; n < DARTS && current.match?.state.phase !== "matchWon"; n++) {
     const from = station.messages.length;
     const darts = dartsIn(current);
@@ -214,6 +215,7 @@ async function playLongMatch(db: Db, base: string) {
       board.takeout();
       current = (await station.waitFor((v) => v.match?.state.currentVisit == null, after)).view;
       changes += 1;
+      takeouts += 1;
     }
   }
   // Let any late messages arrive before counting them.
@@ -226,6 +228,7 @@ async function playLongMatch(db: Db, base: string) {
   return {
     times,
     changes,
+    takeouts,
     writes,
     messages,
     won,
@@ -235,14 +238,14 @@ async function playLongMatch(db: Db, base: string) {
 }
 
 function check(result: Awaited<ReturnType<typeof playLongMatch>>) {
-  const { times, changes, writes, messages, won, darts } = result;
+  const { times, changes, takeouts, writes, messages, won, darts } = result;
   const log = `\n${report(times)}\nlegs ${result.legs}, writes ${writes}, changes ${changes}, messages per stream ${messages.join(" / ")}`;
 
   // Work per dart: one write per dart or takeout (plus the winner, if the match ended), and at
   // most one message per stream for each.
   expect(writes, log).toBe(changes + (won ? 1 : 0));
-  for (const count of messages) expect(count, log).toBeLessThanOrEqual(changes);
-  expect(messages[0], log).toBe(changes);
+  for (const count of messages) expect(count, log).toBeLessThanOrEqual(changes + takeouts);
+  expect(messages[0], log).toBe(changes + takeouts);
 
   const first = median(times.slice(0, BLOCK));
   const last = median(times.slice(-BLOCK));

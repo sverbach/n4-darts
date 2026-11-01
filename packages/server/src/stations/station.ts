@@ -73,6 +73,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
   let events: StoredEvent[] = match ? db.events(match.id) : [];
   let boardOnline = false;
   let boardRunning = true;
+  let takeout = false;
   /** Whether the board's darts have been matched against the log since this process started. */
   let synced = false;
   /** Dart ids of the darts currently on the board, by the board's index (0–2). */
@@ -88,6 +89,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
       name: db.getStationConfig(id)?.name ?? `Station ${id}`,
       boardOnline,
       boardRunning,
+      takeout,
       notice: match ? null : notice,
       match:
         match && current
@@ -261,10 +263,12 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
       case "BoardOnline":
         boardOnline = true;
         boardRunning = event.snapshot.running;
+        takeout = event.snapshot.status === "Takeout in progress";
         if (!synced) syncWithBoard(event.snapshot.throws ?? []);
         break;
       case "BoardOffline":
         boardOnline = false;
+        takeout = false;
         // A reset we sent may never be answered now.
         ownResets = 0;
         break;
@@ -278,7 +282,11 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
         append({ type: "DartCorrected", dartId, segment: event.segment, source: "board" });
         break;
       }
+      case "TakeoutStarted":
+        takeout = true;
+        break;
       case "TakeoutFinished": {
+        takeout = false;
         boardDarts = [];
         const current = state();
         // A visit without darts doesn't end: that would skip the player. Also close the winning
@@ -294,18 +302,20 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
       case "BoardStarted":
       case "BoardStopped":
         boardRunning = event.type === "BoardStarted";
+        takeout = false;
         break;
       case "BoardReset":
         boardDarts = [];
+        takeout = false;
         if (ownResets > 0) {
           ownResets -= 1;
-          return;
+          break;
         }
         // Pressed on the laptop. The logged darts stand (players-and-matches spec). Mid-visit the
         // visit carries on with the next darts; a finished visit ends here, because the board is
         // clear and won't see a takeout, and the next player's darts must count.
-        if (state()?.phase !== "awaitingTakeout") return;
-        append({ type: "TakeoutFinished", source: "reset" });
+        if (state()?.phase === "awaitingTakeout")
+          append({ type: "TakeoutFinished", source: "reset" });
         break;
       default:
         return;

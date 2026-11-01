@@ -72,6 +72,36 @@ describe("board simulator", () => {
     expect(states[2]?.throws).toBeUndefined();
   });
 
+  it("holds a takeout until it's finished", async () => {
+    sim = await createBoardSim();
+    const { states } = await listen(sim);
+
+    sim.throwDart("S20");
+    sim.takeoutStart();
+    await vi.waitFor(() => expect(states).toHaveLength(2));
+    expect(states[1]).toMatchObject({ event: "Takeout started", status: "Takeout in progress" });
+    sim.throwDart("T20");
+    sim.takeoutStart();
+
+    sim.takeoutFinish();
+    await vi.waitFor(() => expect(states).toHaveLength(3));
+    expect(states[2]).toMatchObject({ event: "Takeout finished", status: "Throw", numThrows: 0 });
+  });
+
+  it("clears a held takeout on reset", async () => {
+    sim = await createBoardSim();
+    const { states } = await listen(sim);
+
+    sim.throwDart("S20");
+    sim.takeoutStart();
+    sim.reset();
+    await vi.waitFor(() => expect(states).toHaveLength(3));
+    expect(states[2]).toMatchObject({ event: "Manual reset", status: "Throw", numThrows: 0 });
+    sim.takeoutFinish();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(states).toHaveLength(3);
+  });
+
   it("reports nothing for a missed dart, but still sees it pulled", async () => {
     sim = await createBoardSim();
     const { states } = await listen(sim);

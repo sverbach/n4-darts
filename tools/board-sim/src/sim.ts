@@ -45,6 +45,8 @@ export interface BoardSim {
   missDart(): void;
   /** Pulls the darts: "Takeout started" then "Takeout finished". */
   takeout(): void;
+  takeoutStart(): void;
+  takeoutFinish(): void;
   reset(): void;
   stop(): void;
   start(): void;
@@ -139,8 +141,16 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
     },
     takeout() {
       if (!state.throws?.length && !missed) return;
-      missed = 0;
+      sim.takeoutStart();
+      sim.takeoutFinish();
+    },
+    takeoutStart() {
+      if (state.status === "Takeout in progress" || (!state.throws?.length && !missed)) return;
       emit("Takeout started", { status: "Takeout in progress" }, state.throws);
+    },
+    takeoutFinish() {
+      if (state.status !== "Takeout in progress") return;
+      missed = 0;
       emit("Takeout finished", { status: "Throw" });
     },
     reset() {
@@ -191,6 +201,8 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
     },
     "POST /sim/miss": () => sim.missDart(),
     "POST /sim/takeout": () => sim.takeout(),
+    "POST /sim/takeout-start": () => sim.takeoutStart(),
+    "POST /sim/takeout-finish": () => sim.takeoutFinish(),
     // As if someone pressed reset / stop / start in Board Manager on the laptop.
     "POST /sim/reset": () => sim.reset(),
     "POST /sim/stop": () => sim.stop(),

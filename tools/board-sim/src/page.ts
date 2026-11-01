@@ -133,6 +133,8 @@ export function renderPage(port: number) {
     <h2>Board</h2>
     <div class="buttons">
       <button type="button" class="primary" data-post="/sim/takeout">Takeout</button>
+      <button type="button" data-post="/sim/takeout-start">Start takeout</button>
+      <button type="button" data-post="/sim/takeout-finish">Finish takeout</button>
       <button type="button" id="bounce">Bounce-out</button>
       <button type="button" data-post="/sim/miss">Missed dart</button>
       <button type="button" data-post="/sim/reset">Reset</button>
