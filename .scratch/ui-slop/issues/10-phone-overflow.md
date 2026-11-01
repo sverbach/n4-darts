@@ -1,6 +1,6 @@
 # Nothing overflows or clips on a phone
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 At 390 px:
@@ -19,3 +19,5 @@ At 390 px:
 ## Comments
 
 2026-10-31: Confirmed by the user. /watch is big screens only.
+
+2026-11-01: Built. New match: the settings grid uses `minmax(0,1fr)` and the selects `min-w-0`, so nothing runs into the edge (the legs select now clips its own text, "First to 1 l…", inside its box). Admin placings "3–4" stay on one line (done with 05). Draft: knockout options "Double" / "Single" (the label says Knockout); an odd last select takes the whole row on a phone; the CTA reads "Start" (named "Start tournament" for screen readers, so tests and assistive tech keep the full name). Admin tabs: the header grid column can shrink (`minmax(0,1fr)`), so the strip scrolls inside itself. New `scroll-x` utility (replaces `table-scroll`): a sideways-scrolling row shows a soft light edge on the side with more, gone at the end (background `local`/`scroll` layers, no JS); used on the admin tabs, the admin group tables and bracket rows, the leaderboard and diagnostics tables. The edge is faint enough to sit under the visual suite's colour threshold, so those shots didn't change; checked in the browser (the right edge brightens to #2b2b2a…#3a). /watch: big screens only, noted in `docs/ui-pages.md`; the visual suite no longer shoots it at phone width (two shots removed).

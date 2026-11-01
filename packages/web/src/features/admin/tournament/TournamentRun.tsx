@@ -27,7 +27,6 @@ import {
   runState,
   SECTION,
   STATUS_SMALL,
-  TABLE_PANEL,
 } from "../ui.ts";
 
 type Send = (method: string, url: string, body?: object) => Promise<boolean>;
@@ -190,7 +189,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
           {progress.groups.map((group) => (
             <div key={group.name} className="flex min-w-0 flex-col gap-2">
               {progress.groups.length > 1 && <span className="match-label">{group.name}</span>}
-              <div className={`table-scroll ${TABLE_PANEL}`}>
+              <div className="scroll-x border border-border border-solid">
                 <table className="group-table [--avatar:30px] [&_td:first-child]:pl-3.5 [&_td:first-child]:text-left [&_td:last-child]:pr-3.5 [&_td]:h-[52px] [&_td]:text-[24px] [&_th:first-child]:pl-3.5 [&_th:first-child]:text-left [&_th:last-child]:pr-3.5">
                   <thead>
                     <tr>
@@ -291,7 +290,7 @@ function BracketRows({ bracket }: { bracket: TournamentProgress["bracket"] }) {
       {rows.map((row) => (
         <div key={row.title} className="flex flex-col gap-2.5">
           {row.title && <span className="match-label">{row.title}</span>}
-          <div className="flex gap-6 overflow-x-auto pb-2">
+          <div className="scroll-x flex gap-6 pb-2 [--fade-bg:var(--bg)]">
             {row.columns.map((column) => (
               <div
                 key={`${column.section}-${column.name}`}

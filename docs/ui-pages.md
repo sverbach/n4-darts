@@ -9,7 +9,7 @@ n4-darts runs darts evenings: a few automatic dartboards (stations) play x01, wh
 | Page | Who uses it | Device | Input |
 |---|---|---|---|
 | `/station/n` | The players at that board | Laptop or tablet beside the board, full-screen kiosk mode | Touch, read from about 2–3 m away |
-| `/watch/n` | Spectators | Projector or TV | None |
+| `/watch/n` | Spectators | Projector or TV (big screens only) | None |
 | `/display` | Everyone in the room | Projector, 16:9, read from across the room | None |
 | `/players`, `/players/:id` | Players | Their phones, sometimes a laptop | Touch |
 | `/admin/...` | The organiser | Mostly a phone, sometimes a laptop | Touch |
@@ -106,7 +106,7 @@ This is the central screen.
 
 ## `/watch/n`: Watch one station
 
-The same scoreboard as the station, for a projector or TV, with nothing clickable.
+The same scoreboard as the station, for a projector or TV, with nothing clickable. Big screens only: there is no phone layout.
 - **Top bar:** the station name, the match label when there is one, the rules line while the match runs, and "Server offline" if disconnected.
 - **States:**
   - "Connecting…".
@@ -205,7 +205,7 @@ There's one tournament at a time, and the tab shows one of three states.
 - **Format:**
   - Groups: 1–4.
   - Advance per group: Everyone, or Top 1–4.
-  - Knockout: Double or Single elimination.
+  - Knockout: Double or Single (elimination).
   - Grand final: With bracket reset, or One match (double elimination only).
   - The hint "Advance per group: how many from each group go on to the knockout, best first."
 - **Legs:** best-of dropdowns for Group matches, Winners bracket (or Knockout), Losers bracket and Final.
@@ -213,7 +213,7 @@ There's one tournament at a time, and the tab shows one of three states.
 - **Seeds:** the hint "By rating, the 3-dart average over the last 10 matches; new players last, in a random order. ↑/↓ to change.", then an ordered list of position, name and rating, with ↑/↓ buttons.
 - **Groups preview:** "Group A: Ann, Bob, …" (when there are several groups).
 - **Problems:** a list of blocking problems (e.g. not enough players). Without problems it shows the estimate "Takes about 2 h 30."
-- **Buttons:** "Discard" (danger) and a primary "Start tournament".
+- **Buttons:** "Discard" (danger) and a primary "Start" (named "Start tournament" for screen readers).
 
 **3. Running / finished**
 - **Header:** the name with a "Running" / "Finished" pill beside it, the line "Group phase · ends around 22:40" and the progress squares (once finished: "30 of 30 matches played").

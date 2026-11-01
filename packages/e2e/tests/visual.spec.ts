@@ -29,6 +29,8 @@ const PROJECTOR = { width: 1920, height: 1080 };
 const SMALL_PROJECTOR = { width: 1280, height: 720 };
 const PAGES = { phone: PHONE, kiosk: KIOSK };
 const SCREENS = { ...PAGES, "1080p": PROJECTOR, "720p": SMALL_PROJECTOR };
+/** /watch is for big screens only (docs/ui-pages.md): no phone. */
+const BIG_SCREENS = { kiosk: KIOSK, "1080p": PROJECTOR, "720p": SMALL_PROJECTOR };
 
 /** The seeded players (playwright.visual.config.ts). */
 const ID = { Ann: "p-ann", Bob: "p-bob", Cid: "p-cid", Dee: "p-dee", Eve: "p-eve", Fay: "p-fay" };
@@ -253,7 +255,7 @@ test("a quick match on station 1", async () => {
   await open(page, "/station/1", (p) => p.getByRole("button", { name: /Correct dart 2/ }));
   await shoot(page, "station-visit", PAGES);
   await open(watch, "/watch/1", (p) => p.getByText("S20").nth(1));
-  await shoot(watch, "watch-visit", SCREENS);
+  await shoot(watch, "watch-visit", BIG_SCREENS);
   await open(display, "/display", (p) => p.getByText("S20").nth(1));
   await shoot(display, "display-no-tournament", SCREENS);
 
@@ -270,7 +272,7 @@ test("a quick match on station 1", async () => {
   await open(page, "/station/1", (p) => p.getByText("Game shot"));
   await shoot(page, "station-game-shot", PAGES);
   await open(watch, "/watch/1", (p) => p.getByText("Game shot"));
-  await shoot(watch, "watch-game-shot", SCREENS);
+  await shoot(watch, "watch-game-shot", BIG_SCREENS);
   await command(1, { type: "closeMatch" });
 
   await watch.close();

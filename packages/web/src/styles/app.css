@@ -436,8 +436,24 @@
   }
 }
 
-@utility table-scroll {
+/*
+ * A row that scrolls sideways (a wide table, the admin tabs, the bracket) shows that it does: a
+ * soft light edge on the side with more, gone at the end. The covers scroll with the content
+ * (`local`), the edges stay put (`scroll`), so an edge only shows where content is hidden. The
+ * ground is `--fade-bg` (the panel unless set).
+ */
+@utility scroll-x {
   overflow-x: auto;
+  background:
+    linear-gradient(to right, var(--fade-bg, var(--panel)) 40%, transparent) left / 32px 100%
+    no-repeat local,
+    linear-gradient(to left, var(--fade-bg, var(--panel)) 40%, transparent) right / 32px 100%
+    no-repeat local,
+    linear-gradient(to right, rgb(242 237 228 / 0.24), transparent) left / 16px 100% no-repeat
+    scroll,
+    linear-gradient(to left, rgb(242 237 228 / 0.24), transparent) right / 16px 100% no-repeat
+    scroll;
+  background-color: var(--fade-bg, var(--panel));
 }
 
 /* "← PLAYERS" */

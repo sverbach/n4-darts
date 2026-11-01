@@ -90,7 +90,7 @@ export function LeaderboardPage() {
 export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
   return (
     <>
-      <div className="table-scroll border border-border border-solid bg-panel">
+      <div className="scroll-x border border-border border-solid">
         <table className="w-full kiosk:min-w-[860px] min-w-[560px] border-collapse [--avatar:32px] kiosk:[--avatar:40px]">
           <thead>
             <tr>

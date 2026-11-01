@@ -57,7 +57,7 @@ export function AdminPage({ section }: { section: AdminSection }) {
   return (
     <div>
       <header className="border-0 border-border border-b border-solid">
-        <div className="mx-auto kiosk:flex grid max-w-[1200px] grid-cols-[1fr_auto] items-center kiosk:gap-x-8 kiosk:gap-y-0 kiosk:px-8">
+        <div className="mx-auto kiosk:flex grid max-w-[1200px] grid-cols-[minmax(0,1fr)_auto] items-center kiosk:gap-x-8 kiosk:gap-y-0 kiosk:px-8">
           <div className="flex kiosk:min-h-16 items-center gap-3 kiosk:gap-3.5 kiosk:p-0 px-4 py-2">
             <Logo width="72px" />
             <span className="font-pixel kiosk:text-[14px] text-[13px] uppercase tracking-[1px]">
@@ -65,7 +65,7 @@ export function AdminPage({ section }: { section: AdminSection }) {
             </span>
           </div>
           <nav
-            className="col-span-full row-start-2 flex kiosk:gap-1 overflow-x-auto border-0 border-border border-t kiosk:border-t-0 border-solid [scrollbar-width:none]"
+            className="scroll-x col-span-full row-start-2 flex min-w-0 kiosk:gap-1 border-0 border-border border-t kiosk:border-t-0 border-solid [--fade-bg:var(--bg)] [scrollbar-width:none]"
             aria-label="Admin sections"
           >
             {Object.entries(sections).map(([key, { title }]) => (

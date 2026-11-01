@@ -21,6 +21,10 @@ import {
 } from "../ui.ts";
 import { TournamentRun } from "./TournamentRun.tsx";
 
+/** The draft's selects: two to a row on a phone, where an odd last one takes the whole row. */
+const DRAFT_SETTINGS =
+  "settings grid-cols-[repeat(auto-fill,minmax(160px,1fr))]! max-kiosk:[&>label:last-child:nth-child(odd)]:col-span-full";
+
 /** The seed list's up and down buttons. */
 const SEED_MOVE = "w-11 bg-transparent p-0 text-[21px]";
 
@@ -203,7 +207,7 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
 
           <section className={RULED}>
             <h2>Format</h2>
-            <div className="settings grid-cols-[repeat(auto-fill,minmax(160px,1fr))]!">
+            <div className={DRAFT_SETTINGS}>
               <label>
                 Groups
                 <select
@@ -241,8 +245,8 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
                   value={format.elimination}
                   onChange={(e) => config("format", { elimination: e.target.value })}
                 >
-                  <option value="double">Double elimination</option>
-                  <option value="single">Single elimination</option>
+                  <option value="double">Double</option>
+                  <option value="single">Single</option>
                 </select>
               </label>
               {format.elimination === "double" && (
@@ -265,7 +269,7 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
 
           <section className={RULED}>
             <h2>Legs</h2>
-            <div className="settings grid-cols-[repeat(auto-fill,minmax(160px,1fr))]!">
+            <div className={DRAFT_SETTINGS}>
               {(
                 [
                   ["groups", "Group matches"],
@@ -295,7 +299,7 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
 
           <section className={RULED}>
             <h2>Game</h2>
-            <div className="settings grid-cols-[repeat(auto-fill,minmax(160px,1fr))]!">
+            <div className={DRAFT_SETTINGS}>
               <label>
                 Start
                 <select
@@ -429,8 +433,10 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
               className={CONTROLS_CTA}
               disabled={view.problems.length > 0}
               onClick={() => send("POST", "/api/admin/tournament/start")}
+              // "Start" fits the button on a phone; the name says what starts.
+              aria-label="Start tournament"
             >
-              Start tournament <PixelIcon name="arrow" height="0.9em" />
+              Start <PixelIcon name="arrow" height="0.9em" />
             </button>
           </div>
         </aside>
