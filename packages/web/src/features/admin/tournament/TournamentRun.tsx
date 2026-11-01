@@ -201,10 +201,11 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                       <th>P</th>
                       <th>W</th>
                       <th>L</th>
-                      <th>Legs</th>
-                      <th>+/−</th>
+                      {/* On a phone the table keeps what decides the order: P W L Pts. */}
+                      <th className="max-kiosk:hidden">Legs</th>
+                      <th className="max-kiosk:hidden">+/−</th>
                       <th>Pts</th>
-                      <th>Avg</th>
+                      <th className="max-kiosk:hidden">Avg</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -222,10 +223,14 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
                         <td>{row.played}</td>
                         <td>{row.won}</td>
                         <td>{row.lost}</td>
-                        <td className="text-muted">{legScore([row.legsFor, row.legsAgainst])}</td>
-                        <td>{row.legDiff > 0 ? `+${row.legDiff}` : row.legDiff}</td>
+                        <td className="text-muted max-kiosk:hidden">
+                          {legScore([row.legsFor, row.legsAgainst])}
+                        </td>
+                        <td className="max-kiosk:hidden">
+                          {row.legDiff > 0 ? `+${row.legDiff}` : row.legDiff}
+                        </td>
                         <td className="points">{row.points}</td>
-                        <td className="text-muted">{average(row.average)}</td>
+                        <td className="text-muted max-kiosk:hidden">{average(row.average)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -293,11 +298,12 @@ function BracketRows({ bracket }: { bracket: TournamentProgress["bracket"] }) {
       {rows.map((row) => (
         <div key={row.title} className="flex flex-col gap-2.5">
           {row.title && <span className="match-label">{row.title}</span>}
-          <div className="scroll-x flex gap-6 pb-2 [--fade-bg:var(--bg)]">
+          {/* Rounds side by side on a wide screen, one under the other on a phone. */}
+          <div className="kiosk:scroll-x flex kiosk:flex-row flex-col gap-6 kiosk:pb-2 kiosk:[--fade-bg:var(--bg)]">
             {row.columns.map((column) => (
               <div
                 key={`${column.section}-${column.name}`}
-                className="flex w-[260px] flex-none flex-col gap-3"
+                className="flex kiosk:w-[260px] kiosk:flex-none flex-col gap-3"
               >
                 <h3 className="text-[11px]">{column.name}</h3>
                 <div className="flex flex-1 flex-col justify-around gap-3">

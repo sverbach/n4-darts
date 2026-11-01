@@ -89,64 +89,57 @@ export function LeaderboardPage() {
 
 export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
   return (
-    <>
-      <div className="scroll-x border border-border border-solid">
-        <table className="w-full kiosk:min-w-[860px] min-w-[560px] border-collapse [--avatar:32px] kiosk:[--avatar:40px]">
-          <thead>
-            <tr>
-              <th className={th()}>#</th>
-              <th className={th("w-full text-left text-muted")}>Player</th>
-              <th className={th("text-right text-muted")} title="3-dart average, last 10 matches">
-                Rating
-              </th>
-              <th className={th()} title="3-dart average, all matches">
-                Avg
-              </th>
-              <th className={th()} title="Matches played">
-                M
-              </th>
-              <th className={th()} title="Matches won">
-                W
-              </th>
-              <th className={th()}>180s</th>
-              <th className={th()} title="Highest checkout">
-                HC
-              </th>
+    <div className="scroll-x border border-border border-solid">
+      <table className="w-full kiosk:min-w-[860px] border-collapse [--avatar:32px] kiosk:[--avatar:40px]">
+        <thead>
+          <tr>
+            <th className={th()}>#</th>
+            <th className={th("w-full text-left text-muted")}>Player</th>
+            <th className={th("text-right text-muted")} title="3-dart average, last 10 matches">
+              Rating
+            </th>
+            {/* On a phone: #, player, rating, matches and highest checkout. */}
+            <th className={`${th()} max-kiosk:hidden`} title="3-dart average, all matches">
+              Avg
+            </th>
+            <th className={th()} title="Matches played">
+              M
+            </th>
+            <th className={`${th()} max-kiosk:hidden`} title="Matches won">
+              W
+            </th>
+            <th className={`${th()} max-kiosk:hidden`}>180s</th>
+            <th className={th()} title="Highest checkout">
+              HC
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            <tr key={row.playerId}>
+              <td className={td(`font-pixel kiosk:text-[13px] text-[12px] text-muted`)}>{i + 1}</td>
+              <td className={td(`w-full text-left ${NUMBER}`)}>
+                <a
+                  href={`/players/${row.playerId}`}
+                  className="inline-flex min-h-11 items-center gap-3 kiosk:gap-3 font-pixel kiosk:text-[16px] text-[13px] uppercase tracking-[1px] no-underline"
+                >
+                  <Avatar player={{ id: row.playerId, name: row.name, photo: row.photo }} />
+                  {row.name}
+                </a>
+              </td>
+              <td className={td("kiosk:text-[32px] text-[28px] text-text")}>
+                {average(row.rating)}
+              </td>
+              <td className={td(`max-kiosk:hidden ${NUMBER}`)}>{average(row.average)}</td>
+              <td className={td(NUMBER)}>{row.matches}</td>
+              <td className={td(`max-kiosk:hidden ${NUMBER}`)}>{row.matchesWon}</td>
+              <td className={td(`max-kiosk:hidden ${NUMBER}`)}>{row.s180}</td>
+              <td className={td(NUMBER)}>{count(row.highestCheckout)}</td>
             </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, i) => (
-              <tr key={row.playerId}>
-                <td className={td(`font-pixel kiosk:text-[13px] text-[12px] text-muted`)}>
-                  {i + 1}
-                </td>
-                <td className={td(`w-full text-left ${NUMBER}`)}>
-                  <a
-                    href={`/players/${row.playerId}`}
-                    className="inline-flex min-h-11 items-center gap-3 kiosk:gap-3 font-pixel kiosk:text-[16px] text-[13px] uppercase tracking-[1px] no-underline"
-                  >
-                    <Avatar player={{ id: row.playerId, name: row.name, photo: row.photo }} />
-                    {row.name}
-                  </a>
-                </td>
-                <td className={td("kiosk:text-[32px] text-[28px] text-text")}>
-                  {average(row.rating)}
-                </td>
-                <td className={td(NUMBER)}>{average(row.average)}</td>
-                <td className={td(NUMBER)}>{row.matches}</td>
-                <td className={td(NUMBER)}>{row.matchesWon}</td>
-                <td className={td(NUMBER)}>{row.s180}</td>
-                <td className={td(NUMBER)}>{count(row.highestCheckout)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {/* Phones only: from the kiosk width up the whole table fits. */}
-      <span className="label flex kiosk:hidden justify-center gap-2 [&>.pixel-icon:first-child]:[transform:scaleX(-1)]">
-        <PixelIcon name="caret" /> Swipe table for more <PixelIcon name="caret" />
-      </span>
-    </>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

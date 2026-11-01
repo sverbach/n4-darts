@@ -158,7 +158,7 @@ The layout must cope with 1–3+ stations and 2–8 players per match.
 - A back link "← Home" (the logo is at the top right) and the title "Players".
 - A table of everyone who has played a counted match, sorted by rating:
   - Columns: #, Player (avatar plus name, linking to the profile), Rating (3-dart average over the last 10 matches), Avg (all time), M (matches), W (wins), 180s, HC (highest checkout).
-  - The table scrolls horizontally on a phone.
+  - On a phone only #, Player, Rating, M and HC show; the rest from the kiosk width.
 - Empty or loading: "No matches played yet." / "Loading…".
 
 ## `/players/:id`: Player profile
@@ -228,8 +228,8 @@ There's one tournament at a time, and the tab shows one of three states.
 - **Queue (n)** (while running): grouped under "Ready (n)", "Waiting for players (n)" and "Held (n)", a card per waiting match with:
   - The label and the players.
   - Actions: Hold/Release, one station dropdown (Any station or Only X) and "Play now", which puts the match on the station it's kept for, or the first free one (disabled when none is free). On a phone the dropdown has its own line.
-- **Knockout:** the bracket, as rows of round columns with match cards. It scrolls horizontally.
-- **Groups:** for each group, the table plus a collapsible "Matches" list of fixtures with results ("3:1", "(w/o)" for walkovers, or a status).
+- **Knockout:** the bracket, as rows of round columns with match cards (scrolling sideways on a wide screen); on a phone the rounds stack, one under the other.
+- **Groups:** for each group, the table (on a phone: #, Player, P, W, L, Pts) plus a collapsible "Matches" list of fixtures with results ("3:1", "(w/o)" for walkovers, or a status).
 - **Players** (while running): the entrants, with a "Withdraw" button for each (or "Withdrawn"). During the group phase there's also a "Late arrival…" dropdown with an "Add" button.
 - **"End tournament early"** (danger).
 

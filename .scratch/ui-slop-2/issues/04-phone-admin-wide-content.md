@@ -1,6 +1,6 @@
 # Brackets and tables usable at 390 px
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 `admin-tournament-finished-phone` clips the bracket's final column ("AN…", "CID…") and the groups table loses AVG at the edge; `admin-tournament-groups-phone` cuts AVG. The scroll edges from ui-slop 10 are there but too faint to notice.
@@ -18,3 +18,5 @@ Type: task
 ## Comments
 
 2026-11-01: Confirmed by the user ("go ahead with the ui-slop-2 tickets").
+
+2026-11-01: Built. One pattern for wide lists on phones: they don't scroll, they keep what matters. Admin's bracket rounds stack one under the other below the kiosk width (side by side and scrolling from there); admin's group tables keep #, Player, P, W, L and Pts on a phone (Legs, +/− and Avg from the kiosk width); /players keeps #, Player, Rating, M and HC on a phone, and its "Swipe table for more" hint went. The scroll edge (still on the admin tab strip and the kiosk-width bracket) is stronger: 24px at 40%. Diagnostics' tables keep scrolling (a technical page with long rows).
