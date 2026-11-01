@@ -19,7 +19,7 @@ const date = (iso: string) => {
 /** A day key (YYYY-MM-DD) as a short date. */
 const shortDay = (day: string) => date(`${day}T12:00:00`).slice(0, 6);
 /** A day key as "Jul 2026". */
-const monthOf = (day: string) => date(`${day}T12:00:00`).slice(3);
+const monthOf = (day: string) => date(`${day}T12:00:00`).slice(3).replace(" ", "\u00a0");
 
 /** A section of the profile: a heading and its chart or list. */
 const SECTION = "flex flex-col gap-2.5";
@@ -399,6 +399,16 @@ function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
   const wide = useWide();
   const points = evenings.flatMap((e) => (e.average === null ? [] : [{ ...e, value: e.average }]));
   if (points.length === 0) return null;
+  // One evening is a number, not a chart.
+  if (points.length === 1) {
+    const only = points[0] as (typeof points)[number];
+    return (
+      <p className="m-0 flex items-baseline gap-3 border border-border border-solid bg-panel p-4">
+        <span className="text-[48px] leading-[0.85]">{only.value.toFixed(1)}</span>
+        <span className="label">{shortDay(only.day)}</span>
+      </p>
+    );
+  }
   // Drawn at about its real size, so the text comes out right: a phone's width or the page's.
   // On a wide screen it shares the row with the heatmap: about two thirds of the page.
   const width = wide ? 840 : 358;

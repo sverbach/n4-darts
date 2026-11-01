@@ -17,7 +17,7 @@ n4-darts runs darts evenings: a few automatic dartboards (stations) play x01, wh
 
 **How the pages behave:**
 - **Live:** every page except the stats pages and the home page updates by itself, with no refresh.
-- **Visual states:** status indicators everywhere use only "ok" (green) and "warn" (amber/red).
+- **Visual states:** status indicators are "ok" (green), "warn" (amber: needs a look) and "danger" (red: broken, e.g. board or server offline), always as a pill.
 - **Errors:** an error shows as a red line near the top of the page.
 - **Confirmations:** destructive actions ask first, with the browser's confirm dialog.
 

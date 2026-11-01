@@ -160,9 +160,6 @@ function PlayerRow(props: { player: AdminPlayer; change: Change }) {
         onClick={() => setEditingPhoto(true)}
       >
         <Avatar player={player} />
-        <span className="absolute -right-1 -bottom-1 flex size-[18px] items-center justify-center border border-border border-solid bg-surface text-text [&_.pixel-icon]:h-auto [&_.pixel-icon]:w-3">
-          <PixelIcon name="dots" />
-        </span>
       </button>
       {editingPhoto && <PhotoEditor player={player} onClose={() => setEditingPhoto(false)} />}
       <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[16px] uppercase tracking-[1px]">
@@ -172,6 +169,7 @@ function PlayerRow(props: { player: AdminPlayer; change: Change }) {
       <ActionMenu
         label={`Actions for ${player.name}`}
         items={[
+          { label: "Change photo", run: () => setEditingPhoto(true) },
           { label: "Rename", run: () => setRenaming(true) },
           {
             label: player.archived ? "Restore" : "Archive",

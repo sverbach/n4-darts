@@ -128,7 +128,9 @@ function WatchVisit({ match }: { match: MatchView }) {
         })}
       </div>
       <div className="flex w-pu-220 flex-col items-end gap-pu-6">
-        <span className={`${TOTAL_LABEL} text-muted`}>{visit?.bust ? "" : "Total"}</span>
+        <span className={`${TOTAL_LABEL} text-muted`}>
+          {visit?.bust || !visit?.darts.length ? "" : "Total"}
+        </span>
         <span
           className={
             visit?.bust

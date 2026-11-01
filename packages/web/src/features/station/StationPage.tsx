@@ -267,7 +267,8 @@ function Match({ match, send }: { match: MatchView; send: Send }) {
           <span className="kiosk:text-[22px]">
             Next player <PixelIcon name="arrow" height="0.9em" />
           </span>
-          <span className="font-normal kiosk:text-[13px] text-[11px]">
+          {/* What a waiting player looks for: readable from the board. */}
+          <span className="font-normal kiosk:text-[16px] text-[12px]">
             Up: {match.players[upNext(match)]?.name}
           </span>
         </button>
@@ -351,14 +352,15 @@ function VisitPanel(props: ScoreboardProps) {
           <span className="font-bold kiosk:text-[28px] text-[20px] text-danger tracking-[3px]">
             Bust
           </span>
-        ) : (
+        ) : // No "Total" label without a total (before the visit's first dart).
+        visit?.darts.length ? (
           <span>
             Total{" "}
             <span className="align-middle font-text kiosk:text-[48px] text-[36px] text-text">
-              {visit ? visitTotal : ""}
+              {visitTotal}
             </span>
           </span>
-        )}
+        ) : null}
       </div>
       <div className="grid grid-cols-3 gap-2 kiosk:gap-3">
         {[0, 1, 2].map((i) => {

@@ -441,12 +441,11 @@ function Score({ card, large }: { card: ScoreCard; large: boolean }) {
               </span>
             );
           })}
-          <span className="ml-auto font-pixel text-muted text-pu-20 uppercase">
-            Total{" "}
-            <span className="align-middle font-text text-pu-44 text-text">
-              {card.visit.length > 0 ? total : ""}
+          {card.visit.length > 0 && (
+            <span className="ml-auto font-pixel text-muted text-pu-20 uppercase">
+              Total <span className="align-middle font-text text-pu-44 text-text">{total}</span>
             </span>
-          </span>
+          )}
         </div>
       )}
     </>

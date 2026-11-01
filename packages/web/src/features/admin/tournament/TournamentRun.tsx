@@ -261,6 +261,10 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
           <div className="flex min-w-0 flex-col gap-6 kiosk:[grid-area:stations]">
             <section className={SECTION}>
               <h2>Stations</h2>
+              <p className="hint m-0">
+                Pause keeps a station out of the tournament. Send back returns a waiting match to
+                the queue; Hold keeps a match out until you release it.
+              </p>
               <ul className={CARD_LIST}>
                 {progress.stations.map((s) => (
                   <StationRow key={s.id} station={s} send={send} base={base} />
@@ -527,8 +531,14 @@ function QueueRow(props: {
         <button
           type="button"
           className="min-h-11 text-[11px]"
-          disabled={!target}
-          title={target ? `Play now on ${target.name}` : "No station is free"}
+          disabled={!target || !entry.ready}
+          title={
+            !entry.ready
+              ? "Waiting for players: one of them is still playing"
+              : target
+                ? `Play now on ${target.name}`
+                : "No station is free"
+          }
           onClick={() => target && send("POST", `${url}/play-now`, { station: target.id })}
         >
           Play now
