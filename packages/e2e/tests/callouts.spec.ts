@@ -49,8 +49,9 @@ test("the station calls the visit with sound on, and nothing with it off", async
   await page.getByRole("button", { name: "Board menu" }).click();
   await page.getByRole("menuitem", { name: "Turn sound on" }).click();
   for (const dart of ["T20", "S20", "S5"]) await board1.dart(dart);
-  await board1.takeout();
   await expect.poll(() => played(page)).toEqual(["/callouts/default/85.mp3"]);
+  await board1.takeout();
+  await expect(visit.getByText("Bob to throw")).toBeVisible();
 
   await page.getByRole("button", { name: "Board menu" }).click();
   await page.getByRole("menuitem", { name: "Turn sound off" }).click();

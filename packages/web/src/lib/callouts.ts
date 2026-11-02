@@ -23,21 +23,24 @@ function visitScore(visit: VisitView): number {
   return visit.darts.reduce((sum, dart) => sum + (dart.ignored ? 0 : dart.score), 0);
 }
 
+function openCall(visit: VisitView, state: MatchState): CallKey | null {
+  const counted = visit.darts.filter((dart) => !dart.ignored).length;
+  return outcome(visit, state) ?? (counted === 3 ? String(visitScore(visit)) : null);
+}
+
 export function callsFor(prev: MatchState | null, next: MatchState): CallKey[] {
   if (!prev || prev.phase === "notStarted") return [];
   const before = closedVisits(prev);
   const after = closedVisits(next);
-  const prevOutcome = prev.currentVisit ? outcome(prev.currentVisit, prev) : null;
+  const called = prev.currentVisit ? openCall(prev.currentVisit, prev) : null;
 
   if (after.length === before.length + 1) {
     const visit = after.at(-1) as VisitView;
-    const key = outcome(visit, next);
-    if (key === null) return [String(visitScore(visit))];
-    return key === prevOutcome ? [] : [key];
+    const key = outcome(visit, next) ?? String(visitScore(visit));
+    return key === called ? [] : [key];
   }
 
   if (after.length !== before.length || !next.currentVisit) return [];
-  const thrown = next.currentVisit.darts.length > (prev.currentVisit?.darts.length ?? 0);
-  const key = outcome(next.currentVisit, next);
-  return thrown && key !== null && key !== prevOutcome ? [key] : [];
+  const key = openCall(next.currentVisit, next);
+  return key !== null && key !== called ? [key] : [];
 }

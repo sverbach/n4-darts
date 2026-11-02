@@ -34,26 +34,31 @@ function calls(before: MatchEvent[], added: MatchEvent[], settings: Partial<X01S
 const visit = (...names: string[]) => [...names.map(dart), takeout];
 
 describe("callsFor", () => {
-  it("calls the visit's score at takeout", () => {
-    const before = [start, dart("T20"), dart("S20"), dart("S5")];
-    expect(calls(before, [takeout])).toEqual(["85"]);
+  it("calls the visit's score on the third dart, and nothing more at takeout", () => {
+    const before = [start, dart("T20"), dart("S20")];
+    expect(calls(before, [dart("S5")])).toEqual(["85"]);
+    expect(calls([...before, dart("S5")], [takeout])).toEqual([]);
   });
 
   it("calls one hundred and eighty", () => {
-    expect(calls([start, dart("T20"), dart("T20"), dart("T20")], [takeout])).toEqual(["180"]);
+    expect(calls([start, dart("T20"), dart("T20")], [dart("T20")])).toEqual(["180"]);
   });
 
   it("calls no score for a visit of misses", () => {
-    expect(calls([start, dart("M"), dart("M"), dart("M")], [takeout])).toEqual(["0"]);
+    expect(calls([start, dart("M"), dart("M")], [dart("M")])).toEqual(["0"]);
+  });
+
+  it("calls the score when the third dart and the takeout arrive together", () => {
+    expect(calls([start, dart("T20"), dart("S20")], [dart("S5"), takeout])).toEqual(["85"]);
   });
 
   it("calls a visit ended early with fewer darts", () => {
     expect(calls([start, dart("S20")], [{ type: "VisitEndedManually" }])).toEqual(["20"]);
   });
 
-  it("makes no call for a dart that doesn't end the visit", () => {
+  it("makes no call for the first and second dart", () => {
+    expect(calls([start], [dart("T20")])).toEqual([]);
     expect(calls([start, dart("T20")], [dart("T20")])).toEqual([]);
-    expect(calls([start, dart("T20"), dart("T20")], [dart("T20")])).toEqual([]);
   });
 
   it("calls a bust on the dart, and nothing more at takeout", () => {
@@ -84,12 +89,32 @@ describe("callsFor", () => {
     ]);
   });
 
-  it("makes no call for a correction", () => {
+  it("calls the new score when a dart of a full visit is corrected", () => {
     const before = [start, dart("T20"), dart("S20"), dart("S5")];
-    const dartId = `d${nextId}`;
-    const corrected: MatchEvent = { type: "DartCorrected", dartId, segment: seg("S1") };
+    const corrected: MatchEvent = {
+      type: "DartCorrected",
+      dartId: `d${nextId}`,
+      segment: seg("S1"),
+    };
+    expect(calls(before, [corrected])).toEqual(["81"]);
+    expect(calls([...before, corrected], [takeout])).toEqual([]);
+  });
+
+  it("makes no call for a correction before the third dart, or after the takeout", () => {
+    const before = [start, dart("T20"), dart("S20")];
+    const corrected: MatchEvent = {
+      type: "DartCorrected",
+      dartId: `d${nextId}`,
+      segment: seg("S1"),
+    };
     expect(calls(before, [corrected])).toEqual([]);
-    expect(calls([...before, takeout], [corrected])).toEqual([]);
+    const closed = [start, dart("T20"), dart("S20"), dart("S5"), takeout];
+    const late: MatchEvent = { type: "DartCorrected", dartId: `d${nextId}`, segment: seg("S1") };
+    expect(calls(closed, [late])).toEqual([]);
+  });
+
+  it("makes no call for an extra dart after the third", () => {
+    expect(calls([start, dart("T20"), dart("S20"), dart("S5")], [dart("S1")])).toEqual([]);
   });
 
   it("makes no call for an undo", () => {

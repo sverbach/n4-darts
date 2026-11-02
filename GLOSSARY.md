@@ -58,7 +58,7 @@ A dart the board didn't detect, entered by hand on the station as the visit's ne
 _Avoid_: Manual dart, missed dart (the miss segment is a dart that hit no number)
 
 **Call**:
-What the caller's voice says after a change at the board: the visit's score at takeout, "No score" on a bust, "Game shot" on a checkout ("Game shot, and the match" when it wins the match). Played by any station screen or /watch with sound on.
+What the caller's voice says after a change at the board: the visit's score on its third dart (again if a dart is corrected, or at takeout for a visit ended early), "No score" on a bust, "Game shot" on a checkout ("Game shot, and the match" when it wins the match). Played by any station screen or /watch with sound on.
 _Avoid_: Announcement, callout (in UI copy)
 
 **Voice pack**:
