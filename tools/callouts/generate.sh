@@ -2,15 +2,34 @@
 set -eu
 
 PIPER_VERSION=1.8.0
-VOICE=en_US-ljspeech-high
-VOICE_URL=https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ljspeech/high
-VOICE_SHA256=5d4f08ba6a2a48c44592eed3ce56bf85e9de3dd4e20df90541ae68a8310c029a
+VOICES=https://huggingface.co/rhasspy/piper-voices/resolve/main
 
 here=$(cd "$(dirname "$0")" && pwd)
-out=${1:-"$here/../../packages/web/public/callouts/default"}
 work=${CALLOUTS_WORK:-"$here/.work"}
 
+case "${1:-default}" in
+  default)
+    VOICE=en_US-ljspeech-high
+    VOICE_URL=$VOICES/en/en_US/ljspeech/high
+    VOICE_SHA256=5d4f08ba6a2a48c44592eed3ce56bf85e9de3dd4e20df90541ae68a8310c029a
+    out=${2:-"$here/../../packages/web/public/callouts/default"}
+    zip=
+    ;;
+  northern_english_male)
+    VOICE=en_GB-northern_english_male-medium
+    VOICE_URL=$VOICES/en/en_GB/northern_english_male/medium
+    VOICE_SHA256=57a219ae8e638873db7d18893304be5069c42868f392bb95c3ff17f0690d0689
+    out="$work/pack-$1"
+    zip=${2:-"$work/Northern English male.zip"}
+    ;;
+  *)
+    echo "usage: $0 [default [out-dir] | northern_english_male [out.zip]]" >&2
+    exit 1
+    ;;
+esac
+
 command -v ffmpeg >/dev/null || { echo "ffmpeg is needed" >&2; exit 1; }
+[ -z "$zip" ] || command -v zip >/dev/null || { echo "zip is needed" >&2; exit 1; }
 mkdir -p "$work" "$out"
 
 if [ ! -x "$work/venv/bin/python" ]; then
@@ -42,4 +61,10 @@ for wav in "$wavs"/*.wav; do
     -ac 1 -ar 22050 -b:a 32k "$out/$key.mp3"
 done
 
-echo "$(ls "$out"/*.mp3 | wc -l | tr -d ' ') files, $(du -sh "$out" | cut -f1) in $out"
+if [ -n "$zip" ]; then
+  rm -f "$zip"
+  (cd "$out" && zip -q -j "$zip" ./*.mp3)
+  echo "$(ls "$out"/*.mp3 | wc -l | tr -d ' ') files, $(du -h "$zip" | cut -f1) in $zip"
+else
+  echo "$(ls "$out"/*.mp3 | wc -l | tr -d ' ') files, $(du -sh "$out" | cut -f1) in $out"
+fi
