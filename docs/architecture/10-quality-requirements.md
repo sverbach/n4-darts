@@ -24,6 +24,7 @@ The quality goals in section 1.2 are the most important of these.
 | Q-16 | Maintainability | The game rules exist once and are shared by the server and the browser. | Dev | ADR 0006 |
 | Q-17 | Observability | A slow or broken evening can be explained afterwards from the diagnostics, and collecting them costs next to nothing when nobody looks. | Ops | ticket: diagnostics |
 | Q-18 | Deployability | One container image and one data volume. The station laptops run nothing of ours. | Ops | arch |
+| Q-19 | Responsiveness | Sound costs the dart nothing: calls are worked out and played in the browser from the views it already gets. The server sends no extra message, and a call that would come late (over 3 s) is skipped rather than queued. | Pla, Spe | spec: audio-callouts |
 
 ## 10.2 Quality scenarios
 

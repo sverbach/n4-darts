@@ -93,6 +93,8 @@ Everything happens in `/admin` → **Tournament**, on the organiser's phone.
 
 **On the projector:** open `/display` in the projector's browser (full screen, e.g. F11) and leave it. It follows the evening by itself: live scores of every station and what's up next beside the group tables, then the bracket, then the champion, placings and awards. Without a tournament it shows the stations and the leaderboard. Tap a station card (or open `/watch/1`) to put one station's scoreboard on screen; go back to `/display` when you're done. Both pages fit any screen size without scrolling.
 
+**Sound:** a caller's voice calls each visit's score, "No score" on a bust and "Game shot" on a checkout. It's off by default and switched on per device, which remembers it: on the station kiosk from the board menu (**Turn sound on**), or with the speaker button on `/watch/n`. For the room's speakers, plug a phone or laptop into them, open `/watch/1` and tap the speaker; the screen stays on while sound is on. Browsers only play sound after a tap, so after a reload tap the page once ("Tap to turn sound on"). The built-in voice is our own (made with Piper, see `tools/callouts/`). In `/admin` → **Sound** you can upload a voice pack in [darts-caller](https://github.com/lbormann/darts-caller)'s format (a zip of files like `60.mp3`, `gameshot.mp3`, `busted.mp3`) and choose which voice is used; calls a pack lacks fall back to the built-in voice. Those packs carry no licence, so upload only what you may use.
+
 **Stats:** every finished match counts towards the players' long-term stats (not walkovers or abandoned matches), whatever kind of match it was. `/players` ranks everyone by rating; a profile shows averages, checkout %, 180s, best leg, results, the average per evening, tournaments and recent matches. Both pages are public, so players can look themselves up on their phones.
 
 **Try it locally:** run `pnpm dev:sim`, add a few players in `/admin`, create and start a tournament, then play the matches that appear on `/station/1` and `/station/2` by clicking the two fake boards (<http://localhost:3180/>, <http://localhost:3181/>). Set every phase to best of 1 for a quick test evening; typing darts on the fake board (`T20`, enter, three times) is faster than clicking.
@@ -143,7 +145,7 @@ docker compose pull && docker compose up -d   # latest published image
 docker compose up -d --build                  # or build from the checkout instead
 ```
 
-Serves on port 3000 (override with `N4_PORT=8080`). Data lives in the `n4-data` volume.
+Serves on port 3000 (override with `N4_PORT=8080`). Data lives in the `n4-data` volume, uploaded voice packs included (`/data/callouts`; they're not in the backups).
 Stations are managed in `/admin` (Stations tab). On the very first start they're seeded from `N4_STATIONS`, e.g. `N4_STATIONS=1=http://192.168.1.139:3180,2=http://192.168.1.140:3180`; after that the variable is ignored. Lock `/admin` with `N4_ADMIN_PIN=1234`.
 
 Open `http://<server>:3000/station/1` on the station laptop (and on any phone that should control it).

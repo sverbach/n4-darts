@@ -419,6 +419,11 @@ The remaining score in Display size, with the avatar and the name in Silkscreen 
 ### Loading Bar
 A 3px Mecha Violet bar across the top of the window while a page waits for its data (nprogress, our own CSS: square, no glow, no spinner). It appears only when loading takes longer than 200ms, so fast loads on the LAN never flicker. Every page, kiosk and projector included.
 
+### Sound Switch
+- **Speaker button (/watch):** a square button at the right end of the header with the pixel speaker (`sound`), or the speaker with an × (`muted`) when off. It's the pressed treatment while sound is on. It's at least 36px so a phone at the speakers can tap it, even where projector units shrink everything else.
+- **Station:** no button of its own; the board menu has a "Sound" section with "Turn sound on" / "Turn sound off", worded like the menu's other actions.
+- **Tap prompt:** while sound is on but the browser hasn't had its tap yet, an accent status pill "Tap to turn sound on" sits where the speaker button is on /watch, and before the board status on the station. Any tap on the page clears it.
+
 ### Progress Squares
 One square per tournament match in a fixed-width row, Mecha Violet when played and Frame Line when not.
 

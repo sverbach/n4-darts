@@ -126,6 +126,10 @@ flowchart TB
         gateway["board/gateway.ts"]
     end
 
+    subgraph sound["Sound"]
+        packs["callouts/packs.ts"]
+    end
+
     subgraph cross["Cross-cutting"]
         admin["admin.ts"]
         diagnostics["diagnostics.ts"]
@@ -174,6 +178,7 @@ flowchart TB
 | `live/`        | `live.ts`, `display.ts`, `liveRoutes.ts`                                              | Live views     | `live.ts`: one change feed for every change. `display.ts`: the projector's view. `liveRoutes.ts`: `streamView`, the SSE stream that resends a view when it changed, and the projector's routes.                                                                                                                  |
 | `access/`      | `admin.ts`, `accessRoutes.ts`                                                         | Access         | The PIN and the token a logged-in device keeps; the routes log in and out and guard `/api/admin`.                                                                                                                                                                                                                |
 | `operations/`  | `diagnostics.ts`, `backups.ts`, `operationsRoutes.ts`                                 | Operations     | Timings and counters for the diagnostics page; the daily backups.                                                                                                                                                                                                                                                |
+| `callouts/`    | `packs.ts`, `calloutsRoutes.ts`                                                       | Sound          | Voice packs for the caller: unpacks a darts-caller zip into `DATA_DIR/callouts/` (files, not database rows, so the backups stay small), keeps which pack is active, and gives every call's recordings (the default voice where the pack has none). The only module without `db.ts`.                              |
 | top level      | `db.ts`, `api.ts`, `app.ts`, `main.ts`                                                | Shared         | Storage for all clusters; the types the web app shares; wiring (creating the components and registering their routes); reading the server's configuration and starting it.                                                                                                                                       |
 
 ### White box: web app
@@ -192,12 +197,13 @@ Every page is one route in `App.tsx`'s route table ([wouter](https://github.com/
 | `features/admin/players/`     | `/admin/players`           | Players                                                                                   | `PlayersAdmin.tsx`, `PhotoEditor.tsx`      |
 | `features/admin/matches/`     | `/admin/matches`           | Matches                                                                                   | `MatchesAdmin.tsx`, `MatchHistory.tsx`     |
 | `features/admin/stations/`    | `/admin/stations`          | Stations                                                                                  | `StationsAdmin.tsx`                        |
+| `features/admin/sound/`       | `/admin/sound`             | Sound                                                                                     | `SoundAdmin.tsx`                           |
 | `features/admin/diagnostics/` | `/admin/diagnostics`       | Operations                                                                                | `DiagnosticsAdmin.tsx`                     |
 
 Shared:
 
-- **`components/`**: the design system's pieces (`Avatar`, `Logo`, `PixelIcon`, `Progress`), and the match pieces more than one page shows: `PlayerCards` and `MatchOver` (station, watch), `PlayerPicker` (station, tournament draft), `SegmentPicker` (station, match corrections), `BoardMenu` (station, admin stations and matches), `Awards` and `MatchCard` (tournament, display).
-- **`lib/`**: everything that talks to the server (ADR 0007): `useLive`, `useFetch`, `useStation`, `usePlayers` (the live player list, for pickers), `api.ts` (`call` and `request`), `darts.ts` (dart labels such as `T20`) and `labels.ts` (rules and legs).
+- **`components/`**: the design system's pieces (`Avatar`, `Logo`, `PixelIcon`, `Progress`), and the match pieces more than one page shows: `PlayerCards` and `MatchOver` (station, watch), `PlayerPicker` (station, tournament draft), `SegmentPicker` (station, match corrections), `BoardMenu` (station, admin stations and matches), `Awards` and `MatchCard` (tournament, display), `Sound` (the speaker button and the tap prompt: station, watch).
+- **`lib/`**: everything that talks to the server (ADR 0007): `useLive`, `useFetch`, `useStation`, `usePlayers` (the live player list, for pickers), `api.ts` (`call` and `request`), `darts.ts` (dart labels such as `T20`), `labels.ts` (rules and legs), and the caller: `callouts.ts` (which calls a match change makes, pure), `callPlayer.ts` (plays them with Web Audio) and `useCallouts` (a page's speaker switch, the tap that unlocks audio, and the calls). The default voice is static files in `packages/web/public/callouts/default/`, made by `tools/callouts/`.
 - **`styles/`** and **`assets/`**: the design system (`theme.css`: the colour tokens and Tailwind's theme on them; `app.css`: element defaults, shared utilities, the logo's keyframes, projector units) and the logo.
 
 ### Observations

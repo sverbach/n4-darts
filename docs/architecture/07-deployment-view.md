@@ -7,7 +7,7 @@ flowchart TB
     subgraph lan["LAN"]
         subgraph server["Linux server with Docker"]
             container["n4-darts container<br/>"]
-            volume[("Volume n4-data<br/>/data: SQLite, backups/")]
+            volume[("Volume n4-data<br/>/data: SQLite, backups/, callouts/")]
             container --- volume
         end
         subgraph laptop1["Station laptop 1 (Windows)"]
@@ -19,7 +19,7 @@ flowchart TB
             kioskN(["Kiosk browser<br/>/station/n"])
         end
         projector(["Projector browser<br/>/display"])
-        phones(["Phones<br/>/admin, /players"])
+        phones(["Phones<br/>/admin, /players,<br/>/watch at the speakers"])
     end
 
     container -- "WebSocket + HTTP" --> bm1
@@ -37,7 +37,7 @@ Restart policy `unless-stopped`; all state on the volume, so a container can be 
 
 **Mapping of building blocks to infrastructure**
 
-The container runs `server` with the built `web` files and `engine`; `/data` holds the database and backups. The Board Manager and the browsers are on the laptops, the projector and phones.
+The container runs `server` with the built `web` files (the default caller voice among them) and `engine`; `/data` holds the database, backups and uploaded voice packs (`callouts/`). The packs aren't in the backups; a pack can be uploaded again. The Board Manager and the browsers are on the laptops, the projector and phones.
 
 ## 7.2 Infrastructure level 2
 
@@ -49,7 +49,7 @@ The container runs `server` with the built `web` files and `engine`; `/data` hol
 | Variable    | Default                   | What                                                                                                                                                                      |
 | ----------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `PORT`      | `3000`                    | HTTP port inside the container (`N4_PORT` maps it on the host).                                                                                                           |
-| `DATA_DIR`  | `/data`                   | Database and `backups/`.                                                                                                                                                  |
+| `DATA_DIR`  | `/data`                   | Database, `backups/` and uploaded voice packs (`callouts/`).                                                                                                              |
 | `STATIONS`  | `1=http://localhost:3180` | Seeds the stations on the very first start (`number=Board Manager address`, comma-separated). Afterwards stations are managed in `/admin` and this is ignored (ADMIN-04). |
 | `ADMIN_PIN` | empty                     | The shared PIN for `/admin`. Empty leaves it open, with a warning (ADMIN-01).                                                                                             |
 

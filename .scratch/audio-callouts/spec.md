@@ -1,6 +1,6 @@
 # Audio callouts
 
-Status: needs-triage
+Status: done
 
 A caller's voice for the match: the visit score, game shot and bust, played by the station kiosk and by a phone on /watch that's connected to the room's speakers.
 

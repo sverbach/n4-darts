@@ -266,6 +266,11 @@ There's one tournament at a time, and the tab shows one of three states.
   - Per leg, the heading "Leg 1 · Ann starts · Ann won" (who won the leg only when there was more than one) and a list of visits. Each visit shows the player name, the dart buttons and the visit score, with "Bust", or "Out" after a checkout.
   - A corrected dart shows its original struck through, and a dart added by hand on the station is marked "added". Tapping a dart opens the segment picker.
 
+### `/admin/sound`
+The caller's voice, for every device with sound on (switching sound on stays on each device: see Sound under shared building blocks).
+- **Voices:** a row per voice: "Default voice" (built in, all 184 calls) first, then each uploaded pack with its name (the zip's) and how much it covers: "All 184 calls", or "12 of 184 calls · the default voice says the rest", plus the number of recordings when a call has variants. The voice in use has a green "In use" tag; the others have "Use". An uploaded pack has "Delete" (danger, confirmed); deleting the one in use goes back to the default voice.
+- **"Upload a pack":** a hint on darts-caller's format (files named by call: `60.mp3`, `gameshot.mp3`, `matchshot.mp3`, `busted.mp3`, variants as `gameshot+1.mp3`; anything else is left out), a file picker for the zip, the note "Packs from other projects aren't ours to share: upload only what you may use", and an "Upload pack" button. A zip over 50 MB, a broken zip or one without calls shows an error. Not shown when the server has no data folder.
+
 ### `/admin/diagnostics`
 Whether the server keeps up, for explaining a slow evening from data. It refreshes every 2 seconds. The timings are only collected while the page has been open in the last 2 minutes, so they start fresh when you open it.
 - **Event loop:** how long the server was blocked over the last minute: median, 99th percentile and longest.
