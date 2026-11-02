@@ -9,8 +9,10 @@ import { PixelIcon } from "../../components/PixelIcon.tsx";
 import { PlayerCards } from "../../components/PlayerCards.tsx";
 import { PlayerPicker } from "../../components/PlayerPicker.tsx";
 import { SegmentPicker } from "../../components/SegmentPicker.tsx";
+import { SoundPrompt } from "../../components/Sound.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import { matchRulesLabel } from "../../lib/labels.ts";
+import { useCallouts } from "../../lib/useCallouts.ts";
 import { useStation } from "../../lib/useStation.ts";
 import { defaultSetupSettings, SettingsFields, type SetupSettings } from "./MatchSetup.tsx";
 
@@ -39,6 +41,7 @@ export function StationPage({ id }: { id: number }) {
   };
 
   const match = view?.match ?? null;
+  const sound = useCallouts(match);
   return (
     <main className="flex min-h-[100dvh] flex-col">
       <header className="flex items-center justify-between gap-2 kiosk:gap-4 border-0 border-border border-b border-solid kiosk:px-6 px-4 kiosk:py-3 py-2.5">
@@ -48,14 +51,18 @@ export function StationPage({ id }: { id: number }) {
             {view?.name ?? `Station ${id}`}
           </span>
         </div>
-        <BoardMenu
-          stationId={id}
-          online={view?.boardOnline ?? false}
-          running={view?.boardRunning ?? true}
-          connected={connected}
-          takeout={view?.takeout ?? false}
-          matchAction={match ? matchAction(match, run) : undefined}
-        />
+        <div className="flex items-center gap-1.5 kiosk:gap-2.5">
+          {sound.needsTap && <SoundPrompt />}
+          <BoardMenu
+            stationId={id}
+            online={view?.boardOnline ?? false}
+            running={view?.boardRunning ?? true}
+            connected={connected}
+            takeout={view?.takeout ?? false}
+            matchAction={match ? matchAction(match, run) : undefined}
+            sound={sound}
+          />
+        </div>
       </header>
       {match && match.state.phase !== "matchWon" && <SettingsStrip match={match} />}
       <div className="flex flex-1 flex-col gap-4 kiosk:gap-4 p-4 kiosk:px-6 kiosk:pt-6 kiosk:pb-6">

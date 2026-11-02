@@ -3,8 +3,10 @@ import { Avatar } from "../../components/Avatar.tsx";
 import { Logo } from "../../components/Logo.tsx";
 import { MatchOver } from "../../components/MatchOver.tsx";
 import { PlayerCards } from "../../components/PlayerCards.tsx";
+import { SoundButton, SoundPrompt } from "../../components/Sound.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import { matchRulesLabel } from "../../lib/labels.ts";
+import { useCallouts } from "../../lib/useCallouts.ts";
 import { useStation } from "../../lib/useStation.ts";
 
 const SMALL = "whitespace-nowrap font-pixel text-muted text-pu-20 uppercase";
@@ -16,10 +18,11 @@ const TOTAL_LABEL = "font-pixel text-pu-20 uppercase tracking-[1px]";
 export function WatchPage({ id }: { id: number }) {
   const { view, connected } = useStation(id, { watch: true });
   const match = view?.match;
+  const sound = useCallouts(match ?? null, { wakeLock: true });
 
   return (
     <main className="flex h-screen flex-col overflow-hidden text-pu-24 [--px:calc(min(100vw,177.78vh)/1280)]">
-      <header className="flex h-pu-64 items-center justify-between gap-pu-20 border-0 border-border border-b border-solid px-pu-32">
+      <header className="flex min-h-pu-64 flex-none items-center justify-between gap-pu-20 border-0 border-border border-b border-solid px-pu-32">
         <div className="flex min-w-0 items-center gap-pu-20">
           <Logo width="3em" />
           <span className="whitespace-nowrap font-pixel text-pu-20 text-text uppercase tracking-pu-2">
@@ -27,16 +30,26 @@ export function WatchPage({ id }: { id: number }) {
           </span>
           {match?.label && <span className={`${SMALL} tracking-pu-2`}>· {match.label}</span>}
         </div>
-        {!connected ? (
-          <span className="status status-danger min-h-pu-36! px-pu-14! text-pu-20!">
-            Server offline
-          </span>
-        ) : (
-          match &&
-          (match.state.phase === "throwing" || match.state.phase === "awaitingTakeout") && (
-            <MatchLine match={match} />
-          )
-        )}
+        <div className="flex min-w-0 items-center gap-pu-20">
+          {!connected ? (
+            <span className="status status-danger min-h-pu-36! px-pu-14! text-pu-20!">
+              Server offline
+            </span>
+          ) : (
+            match &&
+            (match.state.phase === "throwing" || match.state.phase === "awaitingTakeout") && (
+              <MatchLine match={match} />
+            )
+          )}
+          {sound.needsTap ? (
+            <SoundPrompt className="min-h-[max(30px,calc(36*var(--px)))]! px-pu-14! text-[length:max(11px,calc(20*var(--px)))]!" />
+          ) : (
+            <SoundButton
+              sound={sound}
+              className="size-[max(36px,calc(44*var(--px)))] min-h-0 flex-none text-pu-24"
+            />
+          )}
+        </div>
       </header>
       {!view ? (
         <p className={NOTE}>Connecting…</p>

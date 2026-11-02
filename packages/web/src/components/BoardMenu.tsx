@@ -59,8 +59,18 @@ export function BoardMenu(props: {
   quiet?: boolean;
   takeout?: boolean;
   matchAction?: MatchAction | undefined;
+  sound?: { on: boolean; toggle(): void };
 }) {
-  const { stationId, online, running, connected, quiet, takeout = false, matchAction } = props;
+  const {
+    stationId,
+    online,
+    running,
+    connected,
+    quiet,
+    takeout = false,
+    matchAction,
+    sound,
+  } = props;
   const [stuck, setStuck] = useState(false);
   useEffect(() => {
     setStuck(false);
@@ -174,6 +184,24 @@ export function BoardMenu(props: {
           >
             Reset board
           </button>
+          {sound && (
+            <>
+              <span className={`label ${MENU_LABEL} border-0 border-border border-t border-solid`}>
+                Sound
+              </span>
+              <button
+                type="button"
+                role="menuitem"
+                className={ITEM}
+                onClick={() => {
+                  setOpen(false);
+                  sound.toggle();
+                }}
+              >
+                {sound.on ? "Turn sound off" : "Turn sound on"}
+              </button>
+            </>
+          )}
           {matchAction && (
             <>
               <span className={`label ${MENU_LABEL} border-0 border-border border-t border-solid`}>

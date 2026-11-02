@@ -9,7 +9,7 @@ n4-darts runs darts evenings: a few automatic dartboards (stations) play x01, wh
 | Page | Who uses it | Device | Input |
 |---|---|---|---|
 | `/station/n` | The players at that board | Laptop or tablet beside the board, full-screen kiosk mode | Touch, read from about 2–3 m away |
-| `/watch/n` | Spectators | Projector or TV (big screens only) | None |
+| `/watch/n` | Spectators | Projector or TV (big screens only); a phone at the room's speakers for sound | The speaker button only |
 | `/display` | Everyone in the room | Projector, 16:9, read from across the room | None |
 | `/players`, `/players/:id` | Players | Their phones, sometimes a laptop | Touch |
 | `/admin/...` | The organiser | Mostly a phone, sometimes a laptop | Touch |
@@ -23,7 +23,8 @@ n4-darts runs darts evenings: a few automatic dartboards (stations) play x01, wh
 
 **Shared building blocks:**
 - **Avatar:** a round player photo. A player without a photo gets their initials on a colour derived from them. It comes in two sizes, small (inline with names) and large (scoreboard, champion, profile).
-- **Board status plus menu:** a status pill reading "Board online", "Board stopped", "Board offline" or "Server offline", with a ⋮ button beside it. On the station page, while the board is taking out (it waits to see the board empty) the pill reads "Takeout…"; after 10 seconds it turns amber, "Takeout stuck", with a "Reset board" button beside it. The button opens a small menu: Stop/Start detection, Calibrate, Reset board. While an action runs, the pill shows its progress or result for a few seconds ("Calibrating…", "Calibrated", "Board reset", or an error).
+- **Board status plus menu:** a status pill reading "Board online", "Board stopped", "Board offline" or "Server offline", with a ⋮ button beside it. On the station page, while the board is taking out (it waits to see the board empty) the pill reads "Takeout…"; after 10 seconds it turns amber, "Takeout stuck", with a "Reset board" button beside it. The button opens a small menu: Stop/Start detection, Calibrate, Reset board, and on the station page "Turn sound on/off" (see Sound). While an action runs, the pill shows its progress or result for a few seconds ("Calibrating…", "Calibrated", "Board reset", or an error).
+- **Sound (station and /watch):** a caller's voice calls the visit's score at takeout, "No score" on a bust, "Game shot" on a checkout and "Game shot, and the match" when it wins the match. It's off by default, switched per device (the station's board menu, the speaker button on /watch) and remembered by that device. Browsers allow sound only after a tap, so a page that loads with sound on shows a violet "Tap to turn sound on" pill; any tap on the page turns it on. If several devices have sound on, they all play. With sound on, /watch keeps the screen awake.
 - **Player picker:**
   - A wrap of name chips, each with an avatar, plus an "add new player" input and button below.
   - Tapping chips picks players in order, and each picked chip shows its order number (not in the tournament draft, where the seeds set the order). Tapping a picked chip again removes it.
@@ -57,7 +58,7 @@ The animated logo, then two lists of links:
 
 This is the main screen for players: a kiosk at the board. The darts are detected automatically. The screen shows the score and lets players fix mistakes.
 
-**Top bar (always):** the station name on the left, the board status plus menu (described under shared building blocks) on the right.
+**Top bar (always):** the station name on the left, the board status plus menu (described under shared building blocks) on the right, with the "Tap to turn sound on" pill before them when needed.
 
 **Settings strip (while a match is set up or running, not at game shot):** the match label (tournament matches), then every rule in one line, the same on every screen: "501 · Double out · First to 3 legs", plus "Leg 2" when legs > 1.
 
@@ -106,8 +107,8 @@ This is the central screen.
 
 ## `/watch/n`: Watch one station
 
-The same scoreboard as the station, for a projector or TV, with nothing clickable. Big screens only: there is no phone layout.
-- **Top bar:** the station name, the match label when there is one, the rules line while the match runs, and "Server offline" if disconnected.
+The same scoreboard as the station, for a projector or TV. Big screens only: there is no phone layout. The only control is the speaker button, for a phone or laptop at the room's speakers.
+- **Top bar:** the station name, the match label when there is one, the rules line while the match runs, "Server offline" if disconnected, and at the right end the speaker button (pressed while sound is on), or the "Tap to turn sound on" pill.
 - **States:**
   - "Connecting…".
   - A free station shows "Free" or the station notice.

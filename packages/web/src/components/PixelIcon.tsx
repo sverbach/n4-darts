@@ -11,6 +11,14 @@ const ICONS = {
   down: { size: [5, 7], d: "M2 0h1v7h-1zM1 5h1v1h-1zM3 5h1v1h-1zM0 4h1v1h-1zM4 4h1v1h-1z" },
   /** Three dots: "edit" badges. */
   dots: { size: [5, 1], d: "M0 0h1v1h-1zM2 0h1v1h-1zM4 0h1v1h-1z" },
+  sound: {
+    size: [8, 7],
+    d: "M0 2h2v3h-2zM2 1h1v5h-1zM3 0h1v7h-1zM5 2h1v3h-1zM6 0h1v1h-1zM7 1h1v5h-1zM6 6h1v1h-1z",
+  },
+  muted: {
+    size: [8, 7],
+    d: "M0 2h2v3h-2zM2 1h1v5h-1zM3 0h1v7h-1zM5 2h1v1h-1zM7 2h1v1h-1zM6 3h1v1h-1zM5 4h1v1h-1zM7 4h1v1h-1z",
+  },
   trophy: {
     size: [12, 12],
     d: "M3 1h6v1h2v3h-1v1h-1v1h-1v1h-1v1h2v2h-6v-2h2v-1h-1v-1h-1v-1h-1v-1h-1v-3h2zM2 3v2h1v-2zM9 3v2h1v-2z",

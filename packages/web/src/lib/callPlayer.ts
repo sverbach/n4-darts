@@ -13,6 +13,7 @@ export interface CallPlayer {
   load(pack: CallPack): void;
   play(keys: CallKey[]): void;
   stop(): void;
+  close(): void;
 }
 
 interface Pending {
@@ -97,6 +98,9 @@ export function createCallPlayer(pick: (count: number) => number = randomIndex):
         source.onended = null;
         source.stop();
       }
+    },
+    close() {
+      this.stop();
       void context?.close();
       context = null;
       buffers = new Map();
