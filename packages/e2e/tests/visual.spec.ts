@@ -230,6 +230,9 @@ test("the organiser's area", async () => {
   await expect(page.getByText(/Ann won|Ann wins/).first()).toBeVisible();
   await shoot(page, "admin-match-detail", PAGES);
 
+  await open(page, "/admin/sound", (p) => p.getByRole("list", { name: "Voices" }));
+  await shoot(page, "admin-sound", PAGES);
+
   await open(page, "/admin/diagnostics", (p) => p.getByRole("table").first());
   await shoot(page, "admin-diagnostics", PAGES, DIGITS);
 });

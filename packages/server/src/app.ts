@@ -6,6 +6,8 @@ import fastifyStatic from "@fastify/static";
 import Fastify from "fastify";
 import { registerAdmin } from "./access/accessRoutes.ts";
 import { createAccess } from "./access/admin.ts";
+import { registerCallouts } from "./callouts/calloutsRoutes.ts";
+import { createCalloutPacks } from "./callouts/packs.ts";
 import type { Db } from "./db.ts";
 import { displayView } from "./live/display.ts";
 import { createChangeFeed } from "./live/live.ts";
@@ -42,6 +44,8 @@ export interface AppOptions {
   diagnosticsRefreshMs?: number;
   /** Shared PIN for /admin; without one /admin is open. */
   adminPin?: string | undefined;
+  /** Where uploaded voice packs are kept; without one only the default voice is offered. */
+  calloutsDir?: string;
 }
 
 export function buildApp(options: AppOptions = {}) {
@@ -90,6 +94,7 @@ export function buildApp(options: AppOptions = {}) {
   }
 
   registerDiagnostics(app, stations, options.diagnosticsRefreshMs);
+  registerCallouts(app, createCalloutPacks(options.calloutsDir));
 
   if (options.webDir && existsSync(options.webDir)) {
     app.register(fastifyStatic, { root: options.webDir });

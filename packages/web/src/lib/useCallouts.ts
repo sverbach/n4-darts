@@ -1,8 +1,9 @@
 import type { MatchState } from "@n4/engine";
 import type { MatchView } from "@n4/server/api";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { call } from "./api.ts";
 import { callsFor } from "./callouts.ts";
-import { createCallPlayer, defaultPack } from "./callPlayer.ts";
+import { type CallPack, createCallPlayer, defaultPack } from "./callPlayer.ts";
 
 const STORAGE_KEY = "n4.sound";
 
@@ -59,8 +60,14 @@ export function useCallouts(
 
   useEffect(() => {
     if (!active) return;
-    player.load(defaultPack);
-    return () => player.stop();
+    let stale = false;
+    void call<CallPack>("GET", "/api/callouts").then((result) => {
+      if (!stale) player.load(result.data ?? defaultPack);
+    });
+    return () => {
+      stale = true;
+      player.stop();
+    };
   }, [active, player]);
 
   useEffect(() => {

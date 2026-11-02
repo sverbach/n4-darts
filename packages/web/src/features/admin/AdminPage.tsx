@@ -8,6 +8,7 @@ import { useFetch } from "../../lib/useFetch.ts";
 import { DiagnosticsAdmin } from "./diagnostics/DiagnosticsAdmin.tsx";
 import { MatchesAdmin } from "./matches/MatchesAdmin.tsx";
 import { PlayersAdmin } from "./players/PlayersAdmin.tsx";
+import { SoundAdmin } from "./sound/SoundAdmin.tsx";
 import { StationsAdmin } from "./stations/StationsAdmin.tsx";
 import { TournamentAdmin } from "./tournament/TournamentAdmin.tsx";
 import { HEAD } from "./ui.ts";
@@ -21,6 +22,7 @@ const sections = {
   },
   stations: { title: "Stations", blurb: "The dartboards in the room and how to reach them." },
   matches: { title: "Matches", blurb: "What's on each board, and every finished match." },
+  sound: { title: "Sound", blurb: "The caller's voice on the stations and /watch." },
   diagnostics: {
     title: "Diagnostics",
     blurb: "Whether the server keeps up: for explaining a slow evening.",
@@ -78,7 +80,7 @@ export function AdminPage({ section }: { section: AdminSection }) {
                 // On a phone the row scrolls: keep the current tab in sight.
                 ref={
                   key === section
-                    ? (a) => a?.scrollIntoView({ block: "nearest", inline: "nearest" })
+                    ? (a) => a?.scrollIntoView({ block: "nearest", inline: "center" })
                     : undefined
                 }
               >
@@ -122,6 +124,8 @@ export function AdminPage({ section }: { section: AdminSection }) {
               </div>
             }
           />
+        ) : section === "sound" ? (
+          <SoundAdmin />
         ) : section === "diagnostics" ? (
           <DiagnosticsAdmin />
         ) : (

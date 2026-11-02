@@ -7,6 +7,7 @@ const ADMIN = {
   players: "Players",
   stations: "Stations",
   matches: "Matches",
+  sound: "Sound",
   diagnostics: "Diagnostics",
 } as Record<string, string>;
 

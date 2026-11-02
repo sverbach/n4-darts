@@ -387,3 +387,26 @@ export interface DiagnosticsView {
     headers: Record<string, string>;
   };
 }
+
+/** The active voice pack: every call key and the URLs of its recordings (variants). */
+export type CallPack = Record<string, string[]>;
+
+/** An uploaded voice pack, as /admin lists it. */
+export interface CalloutPackView {
+  id: string;
+  name: string;
+  uploadedAt: string;
+  /** Call keys the pack has. */
+  keys: number;
+  files: number;
+  /** Call keys it lacks; the default voice says those. */
+  missing: string[];
+}
+
+export interface CalloutsAdminView {
+  /** The active pack's id; null for the default voice. */
+  active: string | null;
+  /** False when the server has no data folder to keep packs in. */
+  uploads: boolean;
+  packs: CalloutPackView[];
+}

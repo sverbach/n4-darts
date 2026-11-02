@@ -84,3 +84,58 @@ test("/watch remembers sound on, and plays after a tap", async ({ page, n4 }) =>
   await board1.dart("D10");
   await expect.poll(() => played(page)).toEqual(["/callouts/default/matchshot.mp3"]);
 });
+
+test("an uploaded pack is used for its calls, the default voice for the rest", async ({
+  page,
+  n4,
+}) => {
+  const { readFileSync } = await import("node:fs");
+  const { zipSync } = await import("fflate");
+  const admin = (await (await n4.api.get("/api/admin/callouts")).json()) as {
+    packs: { id: string }[];
+  };
+  for (const pack of admin.packs) await n4.api.delete(`/api/admin/callouts/${pack.id}`);
+
+  const recording = readFileSync(
+    new URL("../../web/public/callouts/default/180.mp3", import.meta.url),
+  );
+  const zip = zipSync({ "Test Voice/60.mp3": recording, "Test Voice/gameon.mp3": recording });
+
+  await n4.login(page);
+  await page.goto("/admin/sound");
+  await page.getByLabel("Voice pack (zip)").setInputFiles({
+    name: "Test Voice.zip",
+    mimeType: "application/zip",
+    buffer: Buffer.from(zip),
+  });
+  await page.getByRole("button", { name: "Upload pack" }).click();
+  const voices = page.getByRole("list", { name: "Voices" });
+  const card = voices.getByRole("listitem").filter({ hasText: "Test Voice" });
+  await expect(card).toContainText("1 of 184 calls");
+  await card.getByRole("button", { name: "Use" }).click();
+  await expect(card.getByText("In use")).toBeVisible();
+
+  const board1 = board(1);
+  await recordCalls(page);
+  await n4.quickMatch(1, ["Ann", "Bob"]);
+  await page.goto("/station/1");
+  await page.getByRole("button", { name: "Board menu" }).click();
+  await page.getByRole("menuitem", { name: "Turn sound on" }).click();
+  for (const dart of ["S20", "S20", "S20"]) await board1.dart(dart);
+  await board1.takeout();
+  await expect
+    .poll(() => played(page))
+    .toEqual([expect.stringMatching(/^\/api\/callouts\/.+\/60\.mp3$/)]);
+  for (const dart of ["S1", "S1", "S1"]) await board1.dart(dart);
+  await board1.takeout();
+  await expect.poll(() => played(page)).toHaveLength(2);
+  expect((await played(page))[1]).toBe("/callouts/default/3.mp3");
+
+  await page.goto("/admin/sound");
+  page.once("dialog", (dialog) => dialog.accept());
+  await card.getByRole("button", { name: "Delete" }).click();
+  await expect(card).toHaveCount(0);
+  await expect(
+    voices.getByRole("listitem").filter({ hasText: "Default voice" }).getByText("In use"),
+  ).toBeVisible();
+});
