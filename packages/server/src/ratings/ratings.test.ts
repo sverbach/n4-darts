@@ -91,8 +91,8 @@ describe("rating", () => {
     const players = (await buildApp({ db }).inject("/api/admin/players")).json();
 
     expect(players).toEqual([
-      { id: "ann", name: "Ann", archived: false, photo: null, rating: 60 },
-      { id: "bob", name: "Bob", archived: false, photo: null, rating: null },
+      { id: "ann", name: "Ann", archived: false, photo: null, public: true, rating: 60 },
+      { id: "bob", name: "Bob", archived: false, photo: null, public: true, rating: null },
     ]);
   });
 });

@@ -15,6 +15,7 @@ import { registerDisplay } from "./live/liveRoutes.ts";
 import { createMatches } from "./matches/matches.ts";
 import { registerMatches } from "./matches/matchesRoutes.ts";
 import { registerDiagnostics } from "./operations/operationsRoutes.ts";
+import { hiddenIds, withHiddenPlayers } from "./players/hidden.ts";
 import { createPlayers } from "./players/players.ts";
 import { registerPlayerPhoto, registerPlayers } from "./players/playersRoutes.ts";
 import { ratingOf } from "./ratings/ratings.ts";
@@ -112,7 +113,23 @@ export interface PublicAppOptions {
  */
 export function buildPublicApp(options: PublicAppOptions) {
   const app = Fastify({ logger: false });
-  const { db } = options;
+  const hidden = () => hiddenIds(options.db);
+  const db = withHiddenPlayers(options.db);
+
+  app.addHook("preHandler", async (request, reply) => {
+    const id = (request.params as { id?: string } | undefined)?.id;
+    if (id && (hidden().has(id) || id.startsWith("hidden-"))) {
+      return reply.code(404).send({ error: "not found" });
+    }
+  });
+  app.addHook("onSend", async (_request, reply, payload) => {
+    if (typeof payload !== "string" || !String(reply.getHeader("content-type")).includes("json")) {
+      return payload;
+    }
+    let redacted = payload;
+    for (const [id, standIn] of hidden()) redacted = redacted.replaceAll(`"${id}"`, `"${standIn}"`);
+    return redacted;
+  });
 
   app.get("/api/health", async () => ({ ok: true }));
   registerStats(app, createStats(db));

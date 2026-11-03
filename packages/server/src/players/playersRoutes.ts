@@ -52,10 +52,11 @@ export function registerPlayers(
     attempt(reply, () => reply.code(201).send(players.add(request.body?.name))),
   );
 
-  app.patch<{ Params: { id: string }; Body: { name?: unknown; archived?: unknown } }>(
-    "/api/admin/players/:id",
-    async (request, reply) =>
-      attempt(reply, () => players.update(request.params.id, request.body ?? {})),
+  app.patch<{
+    Params: { id: string };
+    Body: { name?: unknown; archived?: unknown; public?: unknown };
+  }>("/api/admin/players/:id", async (request, reply) =>
+    attempt(reply, () => players.update(request.params.id, request.body ?? {})),
   );
 
   // Photos: the browser crops and shrinks them to a small square JPEG before uploading.

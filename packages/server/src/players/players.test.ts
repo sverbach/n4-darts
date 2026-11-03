@@ -67,6 +67,18 @@ describe("players", () => {
     expect(await names("/api/players")).toEqual(["Ann", "Sven"]);
   });
 
+  it("hides a player from the public site and shows them again", async () => {
+    const { app, add, patch } = setup();
+    const sven = (await add("Sven")).body as Player;
+    expect(sven.public).toBe(true);
+
+    expect((await patch(sven.id, { public: false })).json()).toMatchObject({ public: false });
+    const listed = (await app.inject("/api/admin/players")).json() as Player[];
+    expect(listed[0]).toMatchObject({ name: "Sven", public: false });
+
+    expect((await patch(sven.id, { public: true })).json()).toMatchObject({ public: true });
+  });
+
   it("keeps an archived player's name taken", async () => {
     const { add, patch } = setup();
     const sven = (await add("Sven")).body as Player;

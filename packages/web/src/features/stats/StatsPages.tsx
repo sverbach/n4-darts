@@ -1,7 +1,7 @@
 import type { LeaderboardRow, PlayerProfile } from "@n4/server/api";
 import { type ReactNode, useEffect, useState } from "react";
 import { Link } from "wouter";
-import { Avatar } from "../../components/Avatar.tsx";
+import { Avatar, isHiddenPlayer } from "../../components/Avatar.tsx";
 import { Logo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
 import { tickLabelWidth, valueScale } from "../../lib/chartScale.ts";
@@ -119,13 +119,17 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
             <tr key={row.playerId}>
               <td className={td(`font-pixel kiosk:text-[13px] text-[12px] text-muted`)}>{i + 1}</td>
               <td className={td(`w-full text-left ${NUMBER}`)}>
-                <Link
-                  href={`/players/${row.playerId}`}
-                  className="inline-flex min-h-11 items-center gap-3 kiosk:gap-3 font-pixel kiosk:text-[16px] text-[13px] uppercase tracking-[1px] no-underline"
-                >
-                  <Avatar player={{ id: row.playerId, name: row.name, photo: row.photo }} />
-                  {row.name}
-                </Link>
+                {isHiddenPlayer(row.playerId) ? (
+                  <span className={`${PLAYER_CELL} text-muted`}>
+                    <Avatar player={{ id: row.playerId, name: row.name, photo: row.photo }} />
+                    {row.name}
+                  </span>
+                ) : (
+                  <Link href={`/players/${row.playerId}`} className={`${PLAYER_CELL} no-underline`}>
+                    <Avatar player={{ id: row.playerId, name: row.name, photo: row.photo }} />
+                    {row.name}
+                  </Link>
+                )}
               </td>
               <td className={td("kiosk:text-[32px] text-[28px] text-text")}>
                 {average(row.rating)}
@@ -369,6 +373,9 @@ function StatGroup({ title, items }: { title: string; items: Stat[] }) {
     </section>
   );
 }
+
+const PLAYER_CELL =
+  "inline-flex min-h-11 items-center gap-3 kiosk:gap-3 font-pixel kiosk:text-[16px] text-[13px] uppercase tracking-[1px]";
 
 /** True on a wide screen (the desktop layout). */
 function useWide() {

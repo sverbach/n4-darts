@@ -65,10 +65,12 @@ export interface Player {
   archived: boolean;
   /** Version of the player's photo (for `/api/players/:id/photo?v=`); null without one. */
   photo: string | null;
+  /** Shown by name on the public site; false shows them as "Player", without photo or profile. */
+  public: boolean;
 }
 
 /** What the database needs to add or change a player; the photo is managed on its own. */
-export type PlayerInput = Omit<Player, "photo">;
+export type PlayerInput = Omit<Player, "photo" | "public"> & { public?: boolean };
 
 /** A station as /admin manages it. */
 export interface StationAdminView {

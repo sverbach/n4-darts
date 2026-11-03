@@ -14,6 +14,20 @@ test("the PIN screen unlocks /admin", async ({ page, n4: _ }) => {
   await expect(page.getByRole("navigation", { name: "Admin sections" })).toBeVisible();
 });
 
+test("a player is hidden from the public site and shown again", async ({ page, n4 }) => {
+  await n4.login(page);
+  await page.goto("/admin/players");
+  const row = page.getByRole("listitem").filter({ hasText: "Cid" });
+
+  await row.getByRole("button", { name: "Actions for Cid" }).click();
+  await page.getByRole("menuitem", { name: "Hide from public site" }).click();
+  await expect(row.getByText("Not public")).toBeVisible();
+
+  await row.getByRole("button", { name: "Actions for Cid" }).click();
+  await page.getByRole("menuitem", { name: "Show on public site" }).click();
+  await expect(row.getByText("Not public")).toHaveCount(0);
+});
+
 test("a small tournament: create, start, play one match, correct a dart", async ({ page, n4 }) => {
   test.setTimeout(60_000);
   await n4.login(page);

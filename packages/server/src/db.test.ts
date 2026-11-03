@@ -75,6 +75,7 @@ describe("tournament data", () => {
     v1.close();
 
     const db = openDb(path);
+    expect(db.getPlayer("ann")?.public).toBe(true);
     expect(db.openMatchOn(1)).toMatchObject({
       id: "m1",
       playerIds: ["ann"],

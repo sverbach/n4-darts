@@ -61,15 +61,17 @@ export function createPlayers(db: Db) {
         name: usableName(name),
         archived: false,
         photo: null,
+        public: true,
       };
       db.addPlayer(player);
       return player;
     },
 
-    update(id: string, changes: { name?: unknown; archived?: unknown }): Player {
+    update(id: string, changes: { name?: unknown; archived?: unknown; public?: unknown }): Player {
       const next = { ...existing(id) };
       if (changes.name !== undefined) next.name = usableName(changes.name, id);
       if (changes.archived !== undefined) next.archived = changes.archived === true;
+      if (changes.public !== undefined) next.public = changes.public !== false;
       db.updatePlayer(next);
       return next;
     },

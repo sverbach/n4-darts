@@ -6,6 +6,7 @@ import { PixelIcon } from "../../../components/PixelIcon.tsx";
 import { request } from "../../../lib/api.ts";
 import { average } from "../../../lib/format.ts";
 import { useLive } from "../../../lib/useLive.ts";
+import { STATUS_SMALL } from "../ui.ts";
 import { PhotoEditor } from "./PhotoEditor.tsx";
 
 /** The player lists: active, and archived (in a collapsible panel). */
@@ -158,8 +159,11 @@ function PlayerRow(props: { player: AdminPlayer; change: Change }) {
         <Avatar player={player} />
       </button>
       {editingPhoto && <PhotoEditor player={player} onClose={() => setEditingPhoto(false)} />}
-      <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[16px] uppercase tracking-[1px]">
-        {player.name}
+      <span className="flex min-w-0 flex-1 kiosk:flex-row flex-col items-start kiosk:items-center gap-1 kiosk:gap-2">
+        <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[16px] uppercase tracking-[1px]">
+          {player.name}
+        </span>
+        {!player.public && <span className={`status ${STATUS_SMALL} flex-none`}>Not public</span>}
       </span>
       <span className={`${RATING} text-[24px]`}>{average(player.rating)}</span>
       <ActionMenu
@@ -167,6 +171,10 @@ function PlayerRow(props: { player: AdminPlayer; change: Change }) {
         items={[
           { label: "Change photo", run: () => setEditingPhoto(true) },
           { label: "Rename", run: () => setRenaming(true) },
+          {
+            label: player.public ? "Hide from public site" : "Show on public site",
+            run: () => void change("PATCH", url, { public: !player.public }),
+          },
           {
             label: player.archived ? "Restore" : "Archive",
             run: () => void change("PATCH", url, { archived: !player.archived }),

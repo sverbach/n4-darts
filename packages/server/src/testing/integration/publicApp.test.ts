@@ -110,6 +110,55 @@ describe("the public server", () => {
     expect(await average()).not.toBe(before);
   });
 
+  describe("a player hidden from the public site", () => {
+    function history() {
+      const path = databaseFile();
+      const room = roomServer(path);
+      const site = publicServer(path);
+      room.db.addPlayer({ id: "p-ann", name: "Ann", archived: false, public: false });
+      room.db.addPlayer({ id: "p-bob", name: "Bob", archived: false });
+      room.db.setPhoto("p-ann", new Uint8Array([0xff, 0xd8, 0xff, 0xe0]));
+      seedHistory(room.db, { matches: 2, playerIds: ["p-ann", "p-bob"] });
+      return { room, site };
+    }
+    const get = async (app: FastifyInstance, url: string) => {
+      const res = await app.inject(url);
+      return { status: res.statusCode, body: res.body };
+    };
+
+    it("is 'Player' on the leaderboard, without photo or id", async () => {
+      const { site } = history();
+      const board = await get(site.app, "/api/players/stats");
+      expect(board.body).not.toMatch(/Ann|p-ann/);
+      const rows = JSON.parse(board.body) as { playerId: string; name: string; photo: unknown }[];
+      expect(rows.find((r) => r.name === "Player")).toMatchObject({
+        playerId: "hidden-1",
+        photo: null,
+      });
+    });
+
+    it("has no public profile or photo", async () => {
+      const { site } = history();
+      expect((await get(site.app, "/api/players/p-ann/stats")).status).toBe(404);
+      expect((await get(site.app, "/api/players/hidden-1/stats")).status).toBe(404);
+      expect((await get(site.app, "/api/players/p-ann/photo")).status).toBe(404);
+    });
+
+    it("is 'Player' in others' profiles", async () => {
+      const { site } = history();
+      const profile = await get(site.app, "/api/players/p-bob/stats");
+      expect(profile.status).toBe(200);
+      expect(profile.body).not.toMatch(/Ann|p-ann/);
+      expect(JSON.parse(profile.body).recent[0].opponents).toEqual(["Player"]);
+    });
+
+    it("stays as they are on the room's pages", async () => {
+      const { room } = history();
+      expect((await get(room.app, "/api/players/stats")).body).toMatch(/Ann/);
+      expect((await get(room.app, "/api/players/p-ann/stats")).status).toBe(200);
+    });
+  });
+
   it("refuses a database the room's server hasn't brought up to date", () => {
     expect(() => openDb(databaseFile(), { readOnly: true })).toThrow();
   });

@@ -179,7 +179,7 @@ const OTHER_WRITES = [
  * Bumped when the schema changes incompatibly. Version 0 is the walking skeleton's, whose test
  * matches only had player names: they're dropped, not migrated (players-and-matches spec).
  */
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 interface MatchRow {
   id: string;
@@ -223,11 +223,17 @@ const MATCH_COLUMNS_V4 = {
   leg_minutes: "text",
 };
 
+/** Columns added to `players` in schema version 5. */
+const PLAYER_COLUMNS_V5 = {
+  public: "integer not null default 1",
+};
+
 interface PlayerRow {
   id: string;
   name: string;
   archived: number;
   photo: string | null;
+  public: number;
 }
 
 const toPlayer = (row: PlayerRow): Player => ({
@@ -235,6 +241,7 @@ const toPlayer = (row: PlayerRow): Player => ({
   name: row.name,
   archived: row.archived === 1,
   photo: row.photo,
+  public: row.public === 1,
 });
 
 /** Names are unique ignoring case, including non-ASCII letters (SQLite's NOCASE is ASCII only). */
@@ -325,6 +332,12 @@ function migrate(db: DatabaseSync) {
   for (const [name, type] of Object.entries({ ...MATCH_COLUMNS_V2, ...MATCH_COLUMNS_V4 })) {
     if (!matchColumns.has(name)) db.exec(`alter table matches add column ${name} ${type}`);
   }
+  const playerColumns = new Set(
+    (db.prepare("pragma table_info(players)").all() as { name: string }[]).map((c) => c.name),
+  );
+  for (const [name, type] of Object.entries(PLAYER_COLUMNS_V5)) {
+    if (!playerColumns.has(name)) db.exec(`alter table players add column ${name} ${type}`);
+  }
   db.exec(`
     create index if not exists matches_by_tournament on matches(tournament_id);
     pragma user_version = ${SCHEMA_VERSION};
@@ -375,10 +388,10 @@ export function openDb(path: string, options: { readOnly?: boolean } = {}): Db {
   const selectPhoto = db.prepare("select jpeg, updated_at from player_photos where player_id = ?");
   const deletePhotoStmt = db.prepare("delete from player_photos where player_id = ?");
   const insertPlayer = db.prepare(
-    "insert into players (id, name, name_key, archived) values (?, ?, ?, ?)",
+    "insert into players (id, name, name_key, archived, public) values (?, ?, ?, ?, ?)",
   );
   const updatePlayerStmt = db.prepare(
-    "update players set name = ?, name_key = ?, archived = ? where id = ?",
+    "update players set name = ?, name_key = ?, archived = ?, public = ? where id = ?",
   );
   const deletePlayerStmt = db.prepare("delete from players where id = ?");
   const selectPlayerMatch = db.prepare("select 1 from match_players where player_id = ? limit 1");
@@ -550,10 +563,22 @@ export function openDb(path: string, options: { readOnly?: boolean } = {}): Db {
       return row && toPlayer(row);
     },
     addPlayer(player) {
-      insertPlayer.run(player.id, player.name, nameKey(player.name), player.archived ? 1 : 0);
+      insertPlayer.run(
+        player.id,
+        player.name,
+        nameKey(player.name),
+        player.archived ? 1 : 0,
+        player.public === false ? 0 : 1,
+      );
     },
     updatePlayer(player) {
-      updatePlayerStmt.run(player.name, nameKey(player.name), player.archived ? 1 : 0, player.id);
+      updatePlayerStmt.run(
+        player.name,
+        nameKey(player.name),
+        player.archived ? 1 : 0,
+        player.public === false ? 0 : 1,
+        player.id,
+      );
     },
     deletePlayer(id) {
       deletePlayerStmt.run(id);

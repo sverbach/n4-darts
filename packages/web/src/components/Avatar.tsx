@@ -10,9 +10,14 @@ const initials = (name: string) => {
     .join("");
 };
 
-/** One of the nine avatar colours (tokens.css), steady per player. */
+/** A player hidden from the public site: shown as "Player", with no profile to link to. */
+export const isHiddenPlayer = (id: string) => id.startsWith("hidden-");
+
+/** One of the nine avatar colours (tokens.css), steady per player; neutral for a hidden one. */
 const colour = (id: string) =>
-  `var(--avatar-${([...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 9973, 7) % 9) + 1})`;
+  isHiddenPlayer(id)
+    ? "var(--border)"
+    : `var(--avatar-${([...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 9973, 7) % 9) + 1})`;
 
 export const photoUrl = (player: Pick<MatchPlayer, "id" | "photo">) =>
   `/api/players/${encodeURIComponent(player.id)}/photo?v=${encodeURIComponent(player.photo ?? "")}`;
