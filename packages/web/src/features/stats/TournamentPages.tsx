@@ -105,13 +105,13 @@ function Tournament({ tournament: t }: { tournament: PastTournament }) {
       {t.bracket.length > 0 && (
         <section className={SECTION}>
           <h2 className={H2}>Knockout</h2>
-          <BracketRows bracket={t.bracket} />
+          <BracketRows bracket={t.bracket} linkMatches />
         </section>
       )}
       {t.groups.length > 0 && (
         <section className={SECTION}>
           <h2 className={H2}>Groups</h2>
-          <GroupTables groups={t.groups} />
+          <GroupTables groups={t.groups} linkMatches />
         </section>
       )}
     </>

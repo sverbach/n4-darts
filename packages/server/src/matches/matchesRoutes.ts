@@ -94,3 +94,10 @@ export function registerMatches(
       ),
   );
 }
+
+/** A finished match's page, open to everyone (and on the public site). */
+export function registerMatchPage(app: FastifyInstance, matches: Pick<Matches, "page">) {
+  app.get<{ Params: { id: string } }>("/api/matches/:id", async (request, reply) =>
+    attempt(reply, () => matches.page(request.params.id)),
+  );
+}

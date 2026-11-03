@@ -1,6 +1,7 @@
 import type { DartView } from "@n4/engine";
 import type { MatchDetail, MatchSummary } from "@n4/server/api";
 import { useState } from "react";
+import { MatchLegs } from "../../../components/MatchLegs.tsx";
 import { PixelIcon } from "../../../components/PixelIcon.tsx";
 import { SegmentPicker } from "../../../components/SegmentPicker.tsx";
 import { request } from "../../../lib/api.ts";
@@ -154,72 +155,30 @@ export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) 
             </div>
             <span className="hint">Tap a dart to correct it.</span>
           </div>
-          {match.state.legs.map((leg, legIndex) => (
-            // Only the last leg can be without darts, so the first dart identifies a leg.
-            <details
-              key={leg.visits[0]?.darts[0]?.dartId ?? "current-leg"}
-              className="max-w-[760px]"
-              open={legIndex === match.state.legs.length - 1}
-            >
-              <summary className="bg-surface px-3 text-text">
-                <PixelIcon name="caret" /> Leg {legIndex + 1} · {name(leg.starter)} starts
-                {leg.winner !== null && match.state.legs.length > 1 && ` · ${name(leg.winner)} won`}
-              </summary>
-              <ol className="m-0 list-none p-0">
-                {[
-                  ...leg.visits,
-                  ...(legIndex === match.state.legs.length - 1 && match.state.currentVisit
-                    ? [match.state.currentVisit]
-                    : []),
-                ].map((visit, visitIndex) => (
-                  <li
-                    key={visit.darts[0]?.dartId ?? `visit-${visitIndex}`}
-                    className="grid min-h-[58px] grid-cols-[minmax(0,70px)_minmax(0,1fr)_auto] items-center gap-2 border-0 border-line-soft border-b border-solid"
-                  >
-                    <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[13px] uppercase">
-                      {name(visit.player)}
-                    </span>
-                    <span className="grid grid-cols-[repeat(3,minmax(0,72px))] gap-2">
-                      {visit.darts.map((dart) => {
-                        const original = match.originals[dart.dartId];
-                        const added = match.added.includes(dart.dartId);
-                        return (
-                          <button
-                            type="button"
-                            key={dart.dartId}
-                            className={dartStyle(dart.ignored, Boolean(original), added)}
-                            onClick={() => setCorrecting(dart)}
-                            aria-label={`Correct ${dartLabel(dart.segment)}`}
-                            title={added ? "Added by hand: the board missed it" : undefined}
-                          >
-                            {original && (
-                              <s className="text-[16px] text-muted">{dartLabel(original)}</s>
-                            )}
-                            <span>{dartLabel(dart.segment)}</span>
-                            {added && (
-                              <small className="font-pixel text-[11px] text-muted uppercase">
-                                added
-                              </small>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </span>
-                    <span
-                      className={`min-w-[3em] text-right text-[28px] ${visit.bust ? "text-danger" : ""}`}
-                    >
-                      {visit.bust ? "Bust" : visit.darts.reduce((sum, d) => sum + d.score, 0)}
-                      {visit.checkout && (
-                        <span className="ml-2 align-middle font-pixel text-[11px] text-muted uppercase">
-                          Out
-                        </span>
-                      )}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            </details>
-          ))}
+          <MatchLegs
+            state={match.state}
+            name={name}
+            dart={(dart) => {
+              const original = match.originals[dart.dartId];
+              const added = match.added.includes(dart.dartId);
+              return (
+                <button
+                  type="button"
+                  key={dart.dartId}
+                  className={dartStyle(dart.ignored, Boolean(original), added)}
+                  onClick={() => setCorrecting(dart)}
+                  aria-label={`Correct ${dartLabel(dart.segment)}`}
+                  title={added ? "Added by hand: the board missed it" : undefined}
+                >
+                  {original && <s className="text-[16px] text-muted">{dartLabel(original)}</s>}
+                  <span>{dartLabel(dart.segment)}</span>
+                  {added && (
+                    <small className="font-pixel text-[11px] text-muted uppercase">added</small>
+                  )}
+                </button>
+              );
+            }}
+          />
         </>
       )}
       {correcting && (

@@ -11,7 +11,7 @@ n4-darts runs darts evenings: a few automatic dartboards (stations) play x01, wh
 | `/station/n` | The players at that board | Laptop or tablet beside the board, full-screen kiosk mode | Touch, read from about 2–3 m away |
 | `/watch/n` | Spectators | Projector or TV (big screens only); a phone at the room's speakers for sound | The speaker button only |
 | `/display` | Everyone in the room | Projector, 16:9, read from across the room | None |
-| `/players`, `/players/:id`, `/tournaments`, `/tournaments/:id` | Players | Their phones, sometimes a laptop | Touch |
+| `/players`, `/players/:id`, `/tournaments`, `/tournaments/:id`, `/matches/:id` | Players | Their phones, sometimes a laptop | Touch |
 | `/admin/...` | The organiser | Mostly a phone, sometimes a laptop | Touch |
 | `/` | Anyone | Any | Links only |
 
@@ -174,7 +174,7 @@ The layout must cope with 1–3+ stations and 2–8 players per match.
 - **"Average per evening":** a small line chart (an SVG) with dates on the x axis (in capitals), the average on the y axis, a tooltip on each dot, and the last evening's value tagged.
 - **"Where the darts land":** a drawn dartboard with a soft glowing dot for each of the player's last 500 board-detected darts, captioned "Last 500 darts" (or the real number). Misses off the board show outside it. With fewer than 30 darts it says "Not enough darts yet". Next to the average chart on desktop, below it on phones.
 - **"Tournaments":** a list of the name, date and placing, with 🏆 for a win; each links to the tournament's page.
-- **"Last matches":** a list of "Won" / "Lost" (in words: full colour and grey, not green and red), "2–1 vs Bob", the date and the match average.
+- **"Last matches":** a list of "Won" / "Lost" (in words: full colour and grey, not green and red), "2–1 vs Bob", the date and the match average; each links to the match's page.
 - A player with no matches shows the name and "No matches played yet."
 
 ## `/tournaments`: Past tournaments
@@ -187,8 +187,14 @@ The layout must cope with 1–3+ stations and 2–8 players per match.
 
 - A back link "← Tournaments", the name and the date (plus "Ended early").
 - **"Final placings"** (the champion in brackets, then everyone by place) and **"Awards"**, side by side on desktop, as admin shows a finished tournament.
-- **"Knockout":** the bracket, a round per column on desktop, stacked on a phone.
-- **"Groups":** each group's table and its collapsible "Results (n)".
+- **"Knockout":** the bracket, a round per column on desktop, stacked on a phone. A played match links to its page.
+- **"Groups":** each group's table and its collapsible "Results (n)", each result linking to its match's page.
+
+## `/matches/:id`: A finished match
+
+- A back link "← Players", the players as the title ("Ann vs Bob") and one line: "Ann won 2–1 · 501 · Double out · First to 2 legs · 07 Nov 2026".
+- Each leg collapsed but the last ("Leg 2 · Bob starts · Bob won"), with its visits: the player, the three darts and the score (or "Bust", and "Out" on the checkout), as admin's match detail shows them, without correcting. A dart thrown after the visit was over is crossed out.
+- Abandoned matches, walkovers and unknown ids: "No such match".
 
 ---
 

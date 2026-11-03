@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import type { MatchDetail, MatchSummary, StationView } from "../api.ts";
+import type { MatchDetail, MatchPage, MatchSummary, StationView } from "../api.ts";
 import { buildApp } from "../app.ts";
 import { type Db, openDb } from "../db.ts";
 import { createStation, type Station } from "../stations/station.ts";
@@ -215,5 +215,38 @@ describe("match history", () => {
       payload: { dartId: "nope", segment: { number: 20, multiplier: 3 } },
     });
     expect(res.statusCode).toBe(404);
+  });
+});
+
+describe("a match's page", () => {
+  it("shows a finished match's legs and visits, without corrections", async () => {
+    const ctx = setup();
+    await ctx.create({ station: 1, playerIds: ["ann", "bob"], settings: { startScore: 40 } });
+    await ctx.command(1, "startMatch");
+    ctx.play(1, "S20 S20 /");
+    const id = (await ctx.station(1)).match?.id as string;
+    expect((await ctx.app.inject(`/api/matches/${id}`)).statusCode).toBe(404);
+    await ctx.command(1, "closeMatch");
+
+    const res = await ctx.app.inject(`/api/matches/${id}`);
+    expect(res.statusCode).toBe(200);
+    const page = res.json() as MatchPage;
+    expect(page).toMatchObject({ winner: "ann", legsWon: [1, 0], closedAt: expect.any(String) });
+    expect(page.players.map((p) => p.name)).toEqual(["Ann", "Bob"]);
+    expect(page.state.legs[0]?.visits[0]?.darts).toHaveLength(2);
+    expect(Object.keys(page)).not.toContain("originals");
+    expect(Object.keys(page)).not.toContain("added");
+  });
+
+  it("answers 404 for an abandoned or unknown match", async () => {
+    const ctx = setup();
+    await ctx.create({ station: 1, playerIds: ["ann", "bob"] });
+    await ctx.command(1, "startMatch");
+    ctx.play(1, "T20");
+    const id = (await ctx.station(1)).match?.id as string;
+    await ctx.command(1, "abandonMatch");
+
+    expect((await ctx.app.inject(`/api/matches/${id}`)).statusCode).toBe(404);
+    expect((await ctx.app.inject("/api/matches/nope")).statusCode).toBe(404);
   });
 });

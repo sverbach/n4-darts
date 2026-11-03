@@ -13,7 +13,7 @@ import { displayView } from "./live/display.ts";
 import { createChangeFeed } from "./live/live.ts";
 import { registerDisplay } from "./live/liveRoutes.ts";
 import { createMatches } from "./matches/matches.ts";
-import { registerMatches } from "./matches/matchesRoutes.ts";
+import { registerMatches, registerMatchPage } from "./matches/matchesRoutes.ts";
 import { registerDiagnostics } from "./operations/operationsRoutes.ts";
 import { hiddenIds, withHiddenPlayers } from "./players/hidden.ts";
 import { createPlayers } from "./players/players.ts";
@@ -74,12 +74,9 @@ export function buildApp(options: AppOptions = {}) {
 
   registerStations(app, stations, feed);
   if (isRegistry(stations)) registerStationAdmin(app, stations, feed);
-  registerMatches(
-    app,
-    stations,
-    db ? createMatches(db, stations, tournaments?.resultGuard) : undefined,
-    feed,
-  );
+  const matches = db ? createMatches(db, stations, tournaments?.resultGuard) : undefined;
+  registerMatches(app, stations, matches, feed);
+  if (matches) registerMatchPage(app, matches);
 
   if (db && tournaments && feed) {
     // The tournament as /admin shows it, with the queue from Scheduling and the awards from Stats.
@@ -138,6 +135,7 @@ export function buildPublicApp(options: PublicAppOptions) {
   registerStats(app, stats);
   registerPlayerPhoto(app, createPlayers(db));
   registerPastTournaments(app, pastWithAwards(db, stats));
+  registerMatchPage(app, createMatches(db, fixedDirectory([])));
 
   serveWeb(app, options.webDir);
   return app;

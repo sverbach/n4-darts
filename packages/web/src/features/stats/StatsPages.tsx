@@ -288,19 +288,21 @@ function Profile({ profile }: { profile: PlayerProfile }) {
             <h2 className="label font-normal">Last matches</h2>
             <ul className="m-0 list-none border-0 border-border border-t border-solid p-0">
               {profile.recent.map((m) => (
-                <li key={m.matchId} className={ROW}>
-                  <span
-                    className={`kiosk:w-[52px] w-11 font-pixel kiosk:text-[12px] text-[11px] uppercase ${m.won ? "text-text" : "text-muted"}`}
-                  >
-                    {m.won ? "Won" : "Lost"}
-                  </span>
-                  <div className={ROW_MAIN}>
-                    <span>
-                      {legScore([m.legsFor, m.legsAgainst])} vs {m.opponents.join(", ")}
+                <li key={m.matchId}>
+                  <Link href={`/matches/${m.matchId}`} className={`${ROW} no-underline`}>
+                    <span
+                      className={`kiosk:w-[52px] w-11 font-pixel kiosk:text-[12px] text-[11px] uppercase ${m.won ? "text-text" : "text-muted"}`}
+                    >
+                      {m.won ? "Won" : "Lost"}
                     </span>
-                    <span className={ROW_DATE}>{date(m.date)}</span>
-                  </div>
-                  <span className={ROW_VALUE}>{average(m.average)}</span>
+                    <div className={ROW_MAIN}>
+                      <span>
+                        {legScore([m.legsFor, m.legsAgainst])} vs {m.opponents.join(", ")}
+                      </span>
+                      <span className={ROW_DATE}>{date(m.date)}</span>
+                    </div>
+                    <span className={ROW_VALUE}>{average(m.average)}</span>
+                  </Link>
                 </li>
               ))}
             </ul>

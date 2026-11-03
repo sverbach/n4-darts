@@ -1,5 +1,6 @@
 import type { TournamentMatchView, TournamentProgress } from "@n4/server/api";
 import type { ReactNode } from "react";
+import { Link } from "wouter";
 import { average, legScore, placing } from "../lib/format.ts";
 import { Avatar } from "./Avatar.tsx";
 import { MatchCard, STATUS } from "./MatchCard.tsx";
@@ -56,8 +57,10 @@ export function GroupTables(props: {
   groups: Group[];
   actions?: ((row: Row) => ReactNode) | undefined;
   withdrawn?: ((playerId: string) => boolean) | undefined;
+  /** Results link to their match's page. */
+  linkMatches?: boolean;
 }) {
-  const { groups, actions, withdrawn } = props;
+  const { groups, actions, withdrawn, linkMatches = false } = props;
   return (
     <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,480px),1fr))] gap-x-6 gap-y-4">
       {groups.map((group) => (
@@ -118,20 +121,34 @@ export function GroupTables(props: {
                 <PixelIcon name="caret" /> Results ({played(group.fixtures).length})
               </summary>
               <ul>
-                {played(group.fixtures).map((f) => (
-                  <li key={f.slot}>
-                    <span className="font-pixel text-[13px] uppercase">
-                      {f.players[0]} <span className="text-muted">vs</span> {f.players[1]}
-                    </span>
-                    <span
-                      className={
-                        f.legs ? "text-[24px]" : "font-pixel text-[11px] text-muted uppercase"
-                      }
-                    >
-                      {fixtureResult(f)}
-                    </span>
-                  </li>
-                ))}
+                {played(group.fixtures).map((f) => {
+                  const result = (
+                    <>
+                      <span className="font-pixel text-[13px] uppercase">
+                        {f.players[0]} <span className="text-muted">vs</span> {f.players[1]}
+                      </span>
+                      <span
+                        className={
+                          f.legs ? "text-[24px]" : "font-pixel text-[11px] text-muted uppercase"
+                        }
+                      >
+                        {fixtureResult(f)}
+                      </span>
+                    </>
+                  );
+                  const href = matchHref(f, linkMatches);
+                  return (
+                    <li key={f.slot}>
+                      {href ? (
+                        <Link href={href} className="contents text-text no-underline">
+                          {result}
+                        </Link>
+                      ) : (
+                        result
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </details>
           )}
@@ -142,7 +159,12 @@ export function GroupTables(props: {
 }
 
 /** The winners bracket and final in one row, the losers bracket in another; each scrolls sideways. */
-export function BracketRows({ bracket }: { bracket: TournamentProgress["bracket"] }) {
+export function BracketRows(props: {
+  bracket: TournamentProgress["bracket"];
+  /** Played matches link to their match's page. */
+  linkMatches?: boolean;
+}) {
+  const { bracket, linkMatches = false } = props;
   const top = bracket.filter((c) => c.section !== "losers");
   const losers = bracket.filter((c) => c.section === "losers");
   const rows = [
@@ -163,7 +185,12 @@ export function BracketRows({ bracket }: { bracket: TournamentProgress["bracket"
                 <h3 className="text-[11px]">{column.name}</h3>
                 <div className="flex flex-1 flex-col justify-around gap-3">
                   {column.matches.map((m) => (
-                    <MatchCard key={m.slot} match={m} round={column.name} />
+                    <MatchCard
+                      key={m.slot}
+                      match={m}
+                      round={column.name}
+                      href={matchHref(m, linkMatches)}
+                    />
                   ))}
                 </div>
               </div>
@@ -174,6 +201,10 @@ export function BracketRows({ bracket }: { bracket: TournamentProgress["bracket"
     </>
   );
 }
+
+/** A played match's page; walkovers and unplayed matches have none. */
+const matchHref = (match: TournamentMatchView, link: boolean) =>
+  link && match.matchId && match.status === "played" ? `/matches/${match.matchId}` : undefined;
 
 const played = (fixtures: TournamentMatchView[]) =>
   fixtures.filter((f) => f.legs || f.status === "walkover");

@@ -16,6 +16,7 @@ const PUBLIC_ROUTES = [
   "GET /api/players/:id/photo",
   "GET /api/tournaments",
   "GET /api/tournaments/:id",
+  "GET /api/matches/:id",
 ];
 
 /** Every registered route as "METHOD /path" (HEAD left out: Fastify adds it to each GET). */
@@ -178,6 +179,18 @@ describe("the public server", () => {
       expect(page.body).toMatch(/"Player"/);
       expect((await get(site.app, "/api/tournaments")).body).not.toMatch(/Ann|p-ann/);
       expect((await get(room.app, `/api/tournaments/${id}`)).body).toMatch(/Ann/);
+    });
+
+    it("is 'Player' on a match's page", async () => {
+      const { room, site } = history();
+      const page = await get(site.app, "/api/matches/seed-0");
+      expect(page.status).toBe(200);
+      expect(page.body).toMatch(/Bob/);
+      expect(page.body).not.toMatch(/Ann|p-ann/);
+      expect(JSON.parse(page.body).players.map((p: { name: string }) => p.name)).toContain(
+        "Player",
+      );
+      expect((await get(room.app, "/api/matches/seed-0")).body).toMatch(/Ann/);
     });
 
     it("stays as they are on the room's pages", async () => {

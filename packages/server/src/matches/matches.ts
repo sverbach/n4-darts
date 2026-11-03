@@ -4,7 +4,7 @@
 // The routes are in matchesRoutes.ts.
 
 import { isSegment, matchState, type Segment } from "@n4/engine";
-import type { MatchDetail, MatchSummary } from "../api.ts";
+import type { MatchDetail, MatchPage, MatchSummary } from "../api.ts";
 import type { Db, MatchRecord, StoredEvent } from "../db.ts";
 import { matchPlayer } from "../players/players.ts";
 import type { StationDirectory } from "../stations/stations.ts";
@@ -80,6 +80,16 @@ export function createMatches(db: Db, stations: StationDirectory, guard?: Result
     detail(id: string): MatchDetail {
       const match = existing(id);
       return detail(match, db.events(match.id));
+    },
+
+    /** A finished match, played to its end: not abandoned, not a walkover. */
+    page(id: string): MatchPage {
+      const match = db.getMatch(id);
+      if (!match?.closedAt || match.abandoned || match.walkover) {
+        throw new MatchError("no such match", "missing");
+      }
+      const { originals: _, added: __, station: ___, ...page } = detail(match, db.events(id));
+      return page;
     },
 
     /** The match's detail as it changes; a match removed meanwhile keeps its last state. */

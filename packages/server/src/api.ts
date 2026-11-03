@@ -46,6 +46,9 @@ export interface MatchDetail extends MatchSummary {
   added: string[];
 }
 
+/** A finished match as the stats pages show it: every leg and visit, no corrections. */
+export type MatchPage = Omit<MatchDetail, "originals" | "added" | "station">;
+
 export interface StationView {
   id: number;
   name: string;

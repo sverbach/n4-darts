@@ -1,4 +1,5 @@
 import type { TournamentMatchView } from "@n4/server/api";
+import { Link } from "wouter";
 import { NONE } from "../lib/format.ts";
 import { Avatar } from "./Avatar.tsx";
 
@@ -48,15 +49,18 @@ export function MatchCard({
   match,
   round,
   projector = false,
+  href,
 }: {
   match: TournamentMatchView;
   round?: string;
   projector?: boolean;
+  /** Makes the card a link (to the match's page). */
+  href?: string | undefined;
 }) {
   const p = cardStyle(match, projector);
   const label = ownLabel(match.label, round);
-  return (
-    <div className={p.card}>
+  const content = (
+    <>
       {label && <div className={p.label}>{label}</div>}
       {SIDES.map((side, i) => {
         const player = match.sides[i];
@@ -70,6 +74,13 @@ export function MatchCard({
         );
       })}
       {match.status === "walkover" && <div className={p.status}>{STATUS.walkover}</div>}
-    </div>
+    </>
+  );
+  return href ? (
+    <Link href={href} className={`${p.card} text-text no-underline`}>
+      {content}
+    </Link>
+  ) : (
+    <div className={p.card}>{content}</div>
   );
 }
