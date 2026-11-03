@@ -13,7 +13,7 @@ export function renderPage(name: string) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escape(name)}</title>
+<title>${html(name)}</title>
 <style>
   body { margin: 0; font: 16px system-ui, sans-serif; background: #111; color: #eee; }
   main { max-width: 520px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
@@ -27,7 +27,7 @@ export function renderPage(name: string) {
 </head>
 <body>
 <main>
-  <h1>${escape(name)}</h1>
+  <h1>${html(name)}</h1>
   <div id="light">No preset yet</div>
   <button id="toggle" type="button">Go offline</button>
   <h2>Last presets</h2>
