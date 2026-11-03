@@ -14,5 +14,23 @@ services:
     volumes:
       - n4-data:/data
 
+  # The public site (docs/adr/0008-public-read-only-site.md): read-only stats from outside the room,
+  # behind nginx (docs/nginx-public.conf). Only with `docker compose --profile public up -d`.
+  n4-public:
+    image: ghcr.io/sverbach/n4-darts:latest
+    build: .
+    profiles: [public]
+    restart: unless-stopped
+    depends_on: [n4-darts]
+    ports:
+      # Only nginx on this host reaches it.
+      - "127.0.0.1:${N4_PUBLIC_PORT:-3001}:3000"
+    environment:
+      N4_PUBLIC: "1"
+      # The group's shared password; the public site won't start without one.
+      N4_PUBLIC_PIN: "${N4_PUBLIC_PIN:-}"
+    volumes:
+      - n4-data:/data:ro
+
 volumes:
   n4-data:

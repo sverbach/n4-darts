@@ -31,7 +31,7 @@ flowchart LR
 | Partner | In | Out |
 |---|---|---|
 | **Organiser** | Tournaments (players, format, seeds), overrides (pause, pin, hold, send back, play now), corrections, players and photos, stations | Queue, tables, bracket, placings, duration estimate, match history, diagnostics |
-| **Players** | Match setup (players, settings, order), corrections, added darts, undo, next player, board menu | Live score, checkout routes, game shot, profile and stats |
+| **Players** | Match setup (players, settings, order), corrections, added darts, undo, next player, board menu; the public site's password | Live score, checkout routes, game shot, profile and stats, also from outside the room (read-only) |
 | **Spectators** | Nothing (a tap on a station on the projector opens its scoreboard) | The whole evening on `/display`, one station on `/watch/n`, the leaderboard |
 | **Operator** | Image, configuration (stations, PIN), backups to restore | Backups, diagnostics |
 | **Autodarts** | Where each dart landed, takeouts, the board's state | Start, stop, reset, calibrate |
@@ -48,10 +48,15 @@ flowchart LR
     n4["n4-darts server"]
     bm["Board Manager<br/>(one per station laptop)"]
     vol[("Data volume")]
+    outside(["Phones outside the room"])
+    nginx["nginx (TLS)"]
+    pub["n4-darts public site"]
 
     browsers -- "HTTP: pages, JSON API<br/>SSE: live views" --> n4
     n4 -- "WebSocket: state snapshots<br/>HTTP: commands, state sync" --> bm
     n4 -- "SQLite file, backups" --> vol
+    outside -- "HTTPS" --> nginx -- "HTTP" --> pub
+    pub -- "SQLite file, read-only" --> vol
 ```
 
 | Channel | Between | What goes over it |
@@ -61,5 +66,7 @@ flowchart LR
 | **WebSocket** | Server ← Board Manager | Full state snapshots of the board: darts of the current visit, takeouts, status. The gateway diffs them into events. |
 | **HTTP** | Server → Board Manager | `GET /api/state` to resync after a reconnect; start, stop, reset and auto-calibrate. Unauthenticated and unofficial (`docs/board-manager-api.md`). |
 | **File system** | Server → data volume | The SQLite database and the daily backups in `backups/`. |
+| **HTTPS** | Phones outside → nginx → public site | The stats pages and their JSON reads, behind the shared password (ADR 0008). No live views, nothing that changes anything. |
+| **File system** | Public site → data volume | The same SQLite file, opened read-only next to the room's server. |
 
 The laptops run nothing of ours: the Board Manager and a browser in kiosk mode pointing at `/station/n`.

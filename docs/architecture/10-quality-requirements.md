@@ -17,7 +17,7 @@ The quality goals in section 1.2 are the most important of these.
 | Q-09 | Usability | The projector pages are readable from across the room and fit any screen without scrolling. | Spe | spec: design-system |
 | Q-10 | Usability | Every page works on a phone (about 390 px wide) and on a laptop or kiosk (about 1440 px), with a layout for each. The organiser's area is made for a phone first. | Org, Pla | spec: design-system |
 | Q-11 | Consistency | One visual language across all pages. Every colour is a named role, so a theme can be added in one place. | Pla, Dev | spec: design-system |
-| Q-12 | Security | The PIN stops accidental edits by guests, not attackers. The system is for a private room and must not be exposed to the internet. | Org, Ops | ADR 0004, ticket: live-behind-proxy |
+| Q-12 | Security | The PIN stops accidental edits by guests, not attackers. The room's server is for a private room and must not be exposed to the internet; only the read-only public site may be, behind TLS and its shared password. | Org, Ops | ADR 0004, ADR 0008, ticket: live-behind-proxy |
 | Q-13 | Privacy | Player data (names, photos, history) stays on the room's server and in its backups. | Pla | ADR 0005 |
 | Q-14 | Testability | Everything can be exercised without a real board, through a simulator that speaks the board's protocol. Game rules, scheduling and brackets can be tested without any I/O. | Dev | arch |
 | Q-15 | Maintainability | Every change runs the full checks: types, lint, unit and integration tests, a load test, browser tests and the build. Nothing ships that fails them. | Dev, Ops | CI |

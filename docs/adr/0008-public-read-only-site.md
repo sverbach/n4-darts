@@ -1,0 +1,5 @@
+# A read-only public site, behind one shared password
+
+Players want their stats, last matches and tournaments from outside the room. The room's server stays on the LAN (ADR 0005), so a second process of the same app serves the public site: started with `N4_PUBLIC=1`, it registers only the public read routes (leaderboard, profiles, photos, past tournaments, finished matches) and opens the room's SQLite database read-only, next to the room's server. It runs nothing else: no stations, board gateway, scheduler or backups. Nothing can be created or changed through it, whatever the proxy in front does. nginx adds TLS and rate limits as a second layer.
+
+This amends ADR 0004 for the public site only: it has one shared password for the group (`N4_PUBLIC_PIN`), kept as a cookie like the admin PIN, so phones stay logged in. Players can be hidden from it in `/admin`; a hidden player shows as "Player", without a photo, a profile or an id. Live views, stations, the projector and `/admin` stay in the room.

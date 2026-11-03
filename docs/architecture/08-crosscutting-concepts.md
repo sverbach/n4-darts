@@ -21,7 +21,7 @@ In the browser there is one way to read server data, and no client state library
 
 ## 8.4 Access
 
-No logins for players (ADR 0004). Everything at the station works without a PIN: quick match, adding a player, corrections, the board menu (ADMIN-02). The organiser's area (`/admin`, `/api/admin/*`) is behind a shared PIN, asked once per device and remembered for 30 days in a signed cookie (ADMIN-01). It stops accidental edits by guests, not attackers (Q-12).
+No logins for players (ADR 0004). Everything at the station works without a PIN: quick match, adding a player, corrections, the board menu (ADMIN-02). The organiser's area (`/admin`, `/api/admin/*`) is behind a shared PIN, asked once per device and remembered for 30 days in a signed cookie (ADMIN-01). It stops accidental edits by guests, not attackers (Q-12). The public site has its own shared password (`N4_PUBLIC_PIN`, the same kind of cookie with its own token) in front of every route, and has no routes that change anything (ADR 0008).
 
 ## 8.5 Offline
 

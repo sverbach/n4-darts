@@ -95,7 +95,7 @@ Everything happens in `/admin` → **Tournament**, on the organiser's phone.
 
 **Sound:** a caller's voice calls each visit's score, "No score" on a bust and "Game shot" on a checkout. It's off by default and switched on per device, which remembers it: on the station kiosk from the board menu (**Turn sound on**), or with the speaker button on `/watch/n`. For the room's speakers, plug a phone or laptop into them, open `/watch/1` and tap the speaker; the screen stays on while sound is on. Browsers only play sound after a tap, so after a reload tap the page once ("Tap to turn sound on"). The built-in voice is a Northern English man made with Piper (see `tools/callouts/` and its licence note). In `/admin` → **Sound** you can upload a voice pack in [darts-caller](https://github.com/lbormann/darts-caller)'s format (a zip of files like `60.mp3`, `gameshot.mp3`, `busted.mp3`) and choose which voice is used; calls a pack lacks fall back to the built-in voice. Those packs carry no licence, so upload only what you may use. darts-caller's own downloads need converting first: `tools/callouts/import.sh <url>` (see `tools/callouts/README.md`).
 
-**Stats:** every finished match counts towards the players' long-term stats (not walkovers or abandoned matches), whatever kind of match it was. `/players` ranks everyone by rating; a profile shows averages, checkout %, 180s, best leg, results, the average per evening, tournaments and recent matches. Both pages are public, so players can look themselves up on their phones.
+**Stats:** every finished match counts towards the players' long-term stats (not walkovers or abandoned matches), whatever kind of match it was. `/players` ranks everyone by rating; a profile shows averages, checkout %, 180s, best leg, results, the average per evening, tournaments and recent matches. Both pages are open to everyone in the room, so players can look themselves up on their phones, and from outside on the public site (below). `/tournaments` lists every finished tournament with its placings, awards, groups and bracket, and every finished match has a page with its legs and visits.
 
 **Try it locally:** run `pnpm dev:sim`, add a few players in `/admin`, create and start a tournament, then play the matches that appear on `/station/1` and `/station/2` by clicking the two fake boards (<http://localhost:3180/>, <http://localhost:3181/>). Set every phase to best of 1 for a quick test evening; typing darts on the fake board (`T20`, enter, three times) is faster than clicking.
 
@@ -152,7 +152,19 @@ Open `http://<server>:3000/station/1` on the station laptop (and on any phone th
 
 ### Behind a reverse proxy
 
-The app is meant for the local network: apart from the `/admin` PIN there's no login, so don't expose it to the internet. If you still put a proxy in front, the live updates (Server-Sent Events on `/api/*/live`) need it to pass messages through straight away. nginx works out of the box: the streams send `X-Accel-Buffering: no`. For other proxies, turn response buffering and compression off for `/api/*/live`; otherwise darts show up seconds late.
+The room's server is meant for the local network: apart from the `/admin` PIN there's no login, so don't expose it to the internet (the public site above is the way in from outside). If you still put a proxy in front, the live updates (Server-Sent Events on `/api/*/live`) need it to pass messages through straight away. nginx works out of the box: the streams send `X-Accel-Buffering: no`. For other proxies, turn response buffering and compression off for `/api/*/live`; otherwise darts show up seconds late.
+
+### The public site
+
+Players can look up their stats, past tournaments and matches from outside the room on a read-only copy of the stats pages, behind one password for the group (ADR 0008). It's a second container from the same image (`n4-public` in `docker-compose.yml`) that reads the room's database without being able to change anything; the room's server stays on the local network.
+
+```sh
+N4_PUBLIC_PIN=our-group-password docker compose --profile public up -d
+```
+
+It listens on `127.0.0.1:3001` only (`N4_PUBLIC_PORT` to change it), for nginx on the same host to put on the internet with TLS: `docs/nginx-public.conf` is an example (only the public container proxied, rate limits on the login and the API, `noindex`). Start the room's server first: the public one needs the database to exist and exits until it does (Docker restarts it). In `/admin` → Players, **Hide from public site** shows a player there as "Player", without photo or profile.
+
+Without Docker: `N4_PUBLIC=1 N4_PUBLIC_PIN=… PORT=3001 pnpm start`, with the same `DATA_DIR` as the room's server.
 
 ### Backups
 

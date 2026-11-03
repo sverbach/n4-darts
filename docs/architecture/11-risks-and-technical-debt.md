@@ -9,7 +9,7 @@
 | **The server is a single point of failure** | If the server is down, nobody can play. A relay on the laptops was rejected (ADR 0001). | Restarts resume every match exactly (Q-02); `restart: unless-stopped`; updates only between evenings. |
 | **A power cut loses the last darts** | The database doesn't wait for the disk on every write (`synchronous = normal`), so a power cut or OS crash can lose the last write or two. A server crash or restart loses nothing. | Accepted: waiting for the disk stalled a dart by up to 300 ms on slow disks. Lost darts are still on the board and can be added by hand (PLAY-10). |
 | **Backups on the same disk** | A broken disk loses the database and its backups together. | The operator keeps the backup folder elsewhere too (Q-07). |
-| **Anyone on the network can reset a board or edit with the PIN** | The Board Manager has no authentication; the PIN only stops accidents. | Accepted for a private room; never expose the app to the internet (Q-12). |
+| **Anyone on the network can reset a board or edit with the PIN** | The Board Manager has no authentication; the PIN only stops accidents. | Accepted for a private room; never expose the room's server to the internet (Q-12). The public site can't change anything (ADR 0008). |
 
 ## 11.2 Technical debt
 

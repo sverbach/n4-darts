@@ -25,7 +25,7 @@ The clusters fall into five groups:
 | **Tournaments** | One evening's competition: draft, format, seeding, groups and their tables, the knockout, placings, withdrawals, late arrivals, result changes, ending early, and the duration estimate. | TOUR-01 to 17 | Matches, Players, Ratings |
 | **Scheduling** | Runs the evening: gives free stations the next ready match, hands stations over when matches finish, and carries out the organiser's overrides (pause, pin, hold, send back, play now). | SCHED-01 to 08 | Tournaments, Matches, Stations |
 | **Ratings** | Each player's rating: their recent average, from their last completed matches. | RATING-01 | Matches |
-| **Stats** | Long-term numbers per player: profile, chart, heatmap, leaderboard, and the awards of a finished tournament. | STATS-01 to 07 | Matches, Players, Ratings, Tournaments |
+| **Stats** | Long-term numbers per player: profile, chart, heatmap, leaderboard, the awards of a finished tournament, past tournaments and matches, and a read-only public site. | STATS-01 to 10 | Matches, Players, Ratings, Tournaments |
 | **Live views** | What the room follows: every screen kept up to date, the projector view of the whole evening, and any station's scoreboard on its own. | VIEW-01 to 06 | Match play, Tournaments, Scheduling, Stats, Players |
 | **Access** | Keeps the organiser's functions behind a shared PIN, while everything players need stays open. | ADMIN-01, 02 | – (guards the organiser's functions) |
 | **Operations** | Backups and restoring them, diagnostics, updates. | OPS-01 to 05 | – (looks after all of them) |
@@ -231,6 +231,9 @@ What n4-darts has to do. The quality requirements are in section 10, the constra
 | STATS-05 | A public leaderboard of everyone with a counted match, archived players hidden, ranked by rating. | Pla, Spe | spec: display-and-stats |
 | STATS-06 | Each finished tournament gets awards: best match average, highest checkout, most 180s, best leg. Ties are shared and empty categories left out. | Pla, Spe | spec: display-and-stats |
 | STATS-07 | A correction to a past match updates every stat that depends on it. | Pla | spec: display-and-stats |
+| STATS-08 | Every finished tournament has a page: placings, awards, the group tables and results, and the bracket. | Pla | spec: public-stats |
+| STATS-09 | Every finished match has a read-only page with its legs and visits, dart by dart. | Pla | spec: public-stats |
+| STATS-10 | The stats pages (leaderboard, profiles, tournaments, matches) can be reached from outside the room, read-only and behind one shared password. A player can be hidden there; they show as "Player", without a photo or profile. | Pla | spec: public-stats, ADR 0008 |
 
 #### Administration (ADMIN)
 
