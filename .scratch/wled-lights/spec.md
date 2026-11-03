@@ -1,6 +1,6 @@
 # WLED lights for stations
 
-Status: done
+Status: ready-for-human
 
 The room has WLED light strips with presets. Certain match events at a station should start a preset, configured in admin: which device, which station, which event starts which preset.
 
@@ -19,3 +19,4 @@ The room has WLED light strips with presets. Certain match events at a station s
 3. `03-event-triggers.md`: the station's events start presets and return to the base preset
 4. `04-lights-admin-tab.md`: Admin → Lights: devices with test connection and presets, per-station mapping, test buttons
 5. `05-lights-docs.md`: architecture docs, README (fake WLED in dev:sim), ADR 0009
+6. `06-real-lights-check.md`: the real strips on a darts evening (needs the user)
