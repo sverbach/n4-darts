@@ -1,6 +1,6 @@
 # Critique run 4 follow-ups
 
-Status: ready-for-agent
+Status: done
 
 From critique run 4 (`.impeccable/critique/2026-11-02T22-23-42Z__packages-web-src.md`, 29/40, no P1). The user picked these on 2026-11-03.
 

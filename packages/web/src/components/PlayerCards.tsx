@@ -33,7 +33,7 @@ function cardStyle(size: CardsSize, many: boolean, active: boolean) {
       scoreBox: many
         ? "self-start"
         : "flex min-h-0 items-start self-stretch [container-type:size] [grid-area:score]",
-      remaining: `block leading-[0.8] ${many ? "text-pu-90" : "text-[length:min(125cqh,55cqw)]"} ${active ? "text-accent" : ""}`,
+      remaining: `block leading-[0.8] ${many ? "text-pu-90" : "text-[length:min(125cqh,48cqw)]"} ${active ? "text-accent" : ""}`,
       meta: `min-h-[1em] font-pixel text-muted uppercase tracking-[1px] ${many ? "text-pu-20" : "self-start text-pu-20 [grid-area:meta]"}`,
     };
   }
@@ -52,7 +52,7 @@ function cardStyle(size: CardsSize, many: boolean, active: boolean) {
       : "kiosk:mt-3 kiosk:flex kiosk:min-h-0 kiosk:items-end kiosk:self-stretch kiosk:[container-type:size] kiosk:[grid-area:score]",
     remaining: many
       ? `block leading-[0.8] ${active ? "text-[56px] text-accent" : "text-[48px]"} kiosk:text-[length:clamp(64px,min(7vw,15vh),120px)]`
-      : `block text-[length:clamp(44px,17vw,72px)] leading-[0.8] ${active ? "text-accent" : ""} kiosk:text-[length:min(125cqh,55cqw)]`,
+      : `block text-[length:clamp(44px,17vw,72px)] leading-[0.8] ${active ? "text-accent" : ""} kiosk:text-[length:min(125cqh,48cqw)]`,
     meta: many
       ? "min-h-[1em] self-start font-pixel text-[11px] text-muted uppercase tracking-[1px] [grid-area:meta] kiosk:self-auto kiosk:text-[13px]"
       : "min-h-[1em] font-pixel text-[11px] text-muted uppercase tracking-[1px] kiosk:self-start kiosk:text-[13px] kiosk:[grid-area:meta]",

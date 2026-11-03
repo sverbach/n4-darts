@@ -112,3 +112,37 @@ test("a takeout that doesn't finish shows as stuck, and Reset board clears it", 
   await expect(page.getByText("Board online")).toBeVisible({ timeout: 10_000 });
   await expect(page.getByText("Takeout stuck")).toHaveCount(0);
 });
+
+test("a wide 3-digit score stays inside its card", async ({ page, n4 }) => {
+  await n4.quickMatch(1, ["Ann", "Bob"], { startScore: 501 });
+  const board1 = board(1);
+  for (const dart of ["S19", "S19", "S19"]) await board1.dart(dart);
+  await board1.takeout();
+  await expect.poll(async () => (await n4.station(1)).match?.state.currentPlayer).toBe(1);
+
+  for (const [path, size] of [
+    ["/station/1", { width: 1440, height: 900 }],
+    ["/watch/1", { width: 1920, height: 1080 }],
+    ["/watch/1", { width: 1280, height: 720 }],
+  ] as const) {
+    await page.setViewportSize(size);
+    await page.goto(path);
+    for (const text of ["444", "501"]) {
+      const score = page.getByText(text, { exact: true }).first();
+      await expect(score).toBeVisible();
+      await page.evaluate(() => document.fonts.ready);
+      const overflow = await score.evaluate((el) => {
+        const s = el.getBoundingClientRect();
+        const card = el.parentElement?.parentElement?.getBoundingClientRect();
+        if (!card) return Number.POSITIVE_INFINITY;
+        return Math.max(
+          card.left - s.left,
+          s.right - card.right,
+          card.top - s.top,
+          s.bottom - card.bottom,
+        );
+      });
+      expect(overflow, `${text} on ${path} at ${size.width}`).toBeLessThanOrEqual(0);
+    }
+  }
+});

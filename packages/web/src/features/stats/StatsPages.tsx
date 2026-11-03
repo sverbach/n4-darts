@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { Avatar } from "../../components/Avatar.tsx";
 import { Logo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
+import { tickLabelWidth, valueScale } from "../../lib/chartScale.ts";
 import { average, count, legScore, NONE, placing } from "../../lib/format.ts";
 import { useFetch } from "../../lib/useFetch.ts";
 import { Heatmap } from "./Heatmap.tsx";
@@ -402,24 +403,17 @@ function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
   const height = wide ? 300 : 200;
   const font = wide ? 20 : 13;
   const dot = wide ? 10 : 6;
+  const scale = valueScale(points.map((p) => p.value));
+  const { low, high, ticks } = scale;
+  const labelWidth = tickLabelWidth(scale, font);
   const pad = wide
-    ? { left: 60, right: 30, top: 48, bottom: 40 }
-    : { left: 30, right: 16, top: 34, bottom: 26 };
-  const values = points.map((p) => p.value);
-  // A scale in steps of 5 or 10 around the values, at least 15 tall.
-  const step = Math.max(...values) - Math.min(...values) > 30 ? 10 : 5;
-  let low = Math.floor(Math.min(...values) / step) * step;
-  let high = Math.ceil(Math.max(...values) / step) * step;
-  if (high - low < 3 * step) {
-    low = Math.max(0, low - step);
-    high = low + 3 * step;
-  }
+    ? { left: Math.max(60, labelWidth + 20), right: 30, top: 48, bottom: 40 }
+    : { left: Math.max(30, labelWidth + 16), right: 16, top: 34, bottom: 26 };
   const x = (i: number) =>
     points.length === 1
       ? (pad.left + width - pad.right) / 2
       : pad.left + (i / (points.length - 1)) * (width - pad.left - pad.right);
   const y = (v: number) => pad.top + ((high - v) / (high - low)) * (height - pad.top - pad.bottom);
-  const ticks = Array.from({ length: (high - low) / step + 1 }, (_, i) => low + i * step);
   // Every date fits up to about 8 points wide (4 on a phone); beyond that, every n-th one.
   const labelEvery = Math.ceil(points.length / (wide ? 8 : 4));
   const last = points.length - 1;
@@ -447,7 +441,13 @@ function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
               y2={y(tick)}
               className="stroke-line-soft"
             />
-            <text x={pad.left - 12} y={y(tick)} className="fill-muted" textAnchor="end" dy="0.3em">
+            <text
+              x={pad.left - (wide ? 12 : 8)}
+              y={y(tick)}
+              className="fill-muted"
+              textAnchor="end"
+              dy="0.3em"
+            >
               {tick}
             </text>
           </g>
@@ -476,7 +476,7 @@ function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
                   x={x(i)}
                   y={height - font * 0.6}
                   className="fill-muted uppercase"
-                  textAnchor="middle"
+                  textAnchor={i === 0 ? "start" : i === last ? "end" : "middle"}
                 >
                   {shortDay(p.day)}
                 </text>

@@ -88,12 +88,12 @@ This is the central screen.
   - The current player's column is framed and their score is violet: the only sign of whose turn it is.
   - Desktop only: while the current player can finish this visit, a checkout route under their score, e.g. "T20 · T10 · D20", with the next field brighter. It follows the out rule and updates after each dart.
 - **Current visit** (up to 3 darts per turn):
-  - Three dart slots (e.g. "T20", "S5", "D16"), with empty slots when fewer darts have landed.
+  - Three dart slots labelled "Dart 1" to "Dart 3" (values e.g. "T20", "S5", "D16"), with empty slots when fewer darts have landed.
   - The visit total, or "Bust".
   - Below it, one line: "Taking out…" while the board takes out, "Remove darts" (prominent; the board waits for the darts to be pulled out), "Ann to throw" before the visit's first dart, or the hint "Tap a dart to correct it" once a dart is down. A tapped dart opens the segment picker.
   - While the player is throwing, the next empty slot shows "+ Add": for a dart the board missed. It opens the segment picker ("Add dart 3") and the dart counts as if the board had seen it.
   - The visit area has a bust style, and an ignored dart is greyed out (a dart thrown after a bust or checkout).
-- **Buttons:** "Undo" and a primary "Next player" (to skip ahead when the board misses the takeout).
+- **Buttons:** "Undo" and "Next player" with "Up: Bob", both secondary buttons. Next player is the fallback when the board misses the takeout, so it stays on screen through every visit and never moves into the ⋮ menu.
 - **End match:** in the ⋮ menu, under "Match", with a confirmation. For a tournament match it notes "Goes back in the queue".
 
 ### 4. Match won

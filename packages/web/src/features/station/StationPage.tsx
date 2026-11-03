@@ -272,7 +272,7 @@ function Match({ match, send, takeout }: { match: MatchView; send: Send; takeout
       <div className="kiosk:m-0 mt-auto kiosk:flex grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] kiosk:flex-col gap-2 kiosk:gap-3">
         <button
           type="button"
-          className="primary cta kiosk:flex-1 flex-col items-start gap-1.5 kiosk:gap-1.5"
+          className="kiosk:min-h-[72px] min-h-[60px] kiosk:flex-1 flex-col items-start gap-1.5 kiosk:gap-1.5 px-6 font-bold kiosk:text-[20px] text-[16px] kiosk:tracking-[2px]"
           onClick={() => send({ type: "nextPlayer" })}
         >
           <span className="kiosk:text-[22px]">
@@ -389,7 +389,7 @@ function VisitPanel(props: ScoreboardProps) {
                 onClick={onAdd}
                 aria-label={`Add dart ${i + 1}`}
               >
-                <span className="label kiosk:self-start">D{i + 1}</span>
+                <span className="label kiosk:self-start">Dart {i + 1}</span>
                 <span className="self-end font-pixel text-[13px] text-muted uppercase tracking-[1px]">
                   + Add
                 </span>
@@ -412,7 +412,7 @@ function VisitPanel(props: ScoreboardProps) {
           const content = (
             <>
               <span className="label kiosk:self-start">
-                {dart.ignored ? "Ignored" : `D${i + 1}`}
+                {dart.ignored ? "Ignored" : `Dart ${i + 1}`}
               </span>
               <span
                 className={`font-text kiosk:text-[72px] text-[36px] kiosk:leading-[0.8] leading-[0.85] tracking-normal ${dart.ignored ? "line-through" : ""}`}
