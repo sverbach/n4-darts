@@ -11,7 +11,7 @@ n4-darts runs darts evenings: a few automatic dartboards (stations) play x01, wh
 | `/station/n` | The players at that board | Laptop or tablet beside the board, full-screen kiosk mode | Touch, read from about 2–3 m away |
 | `/watch/n` | Spectators | Projector or TV (big screens only); a phone at the room's speakers for sound | The speaker button only |
 | `/display` | Everyone in the room | Projector, 16:9, read from across the room | None |
-| `/players`, `/players/:id` | Players | Their phones, sometimes a laptop | Touch |
+| `/players`, `/players/:id`, `/tournaments`, `/tournaments/:id` | Players | Their phones, sometimes a laptop | Touch |
 | `/admin/...` | The organiser | Mostly a phone, sometimes a laptop | Touch |
 | `/` | Anyone | Any | Links only |
 
@@ -156,9 +156,9 @@ The layout must cope with 1–3+ stations and 2–8 players per match.
 
 ## `/players`: Leaderboard (stats)
 
-- A back link "← Home" (the logo is at the top right) and the title "Players".
+- A back link "← Home" (the logo is at the top right), the title "Players" and a link "Tournaments ▶" beside it.
 - A table of everyone who has played a counted match, sorted by rating:
-  - Columns: #, Player (avatar plus name, linking to the profile), Rating (3-dart average over the last 10 matches), Avg (all time), M (matches), W (wins), 180s, High out (highest checkout).
+  - Columns: #, Player (avatar plus name, linking to the profile; a player hidden from the public site shows there as "Player" on a grey avatar, without a link), Rating (3-dart average over the last 10 matches), Avg (all time), M (matches), W (wins), 180s, High out (highest checkout).
   - On a phone only #, Player, Rating, M and High out show; the rest from the kiosk width.
 - Empty or loading: "No matches played yet." / "Loading…".
 
@@ -173,9 +173,22 @@ The layout must cope with 1–3+ stations and 2–8 players per match.
   - On a phone a group's cards share a row; on desktop they stack in four columns that end level.
 - **"Average per evening":** a small line chart (an SVG) with dates on the x axis (in capitals), the average on the y axis, a tooltip on each dot, and the last evening's value tagged.
 - **"Where the darts land":** a drawn dartboard with a soft glowing dot for each of the player's last 500 board-detected darts, captioned "Last 500 darts" (or the real number). Misses off the board show outside it. With fewer than 30 darts it says "Not enough darts yet". Next to the average chart on desktop, below it on phones.
-- **"Tournaments":** a list of the name, date and placing, with 🏆 for a win.
+- **"Tournaments":** a list of the name, date and placing, with 🏆 for a win; each links to the tournament's page.
 - **"Last matches":** a list of "Won" / "Lost" (in words: full colour and grey, not green and red), "2–1 vs Bob", the date and the match average.
 - A player with no matches shows the name and "No matches played yet."
+
+## `/tournaments`: Past tournaments
+
+- A back link "← Players" and the title "Tournaments".
+- A list of finished tournaments, newest first: the name and date, then 🏆 with the champion's avatar and name, or "Ended early". Each links to its page.
+- Empty or loading: "No finished tournaments yet." / "Loading…".
+
+## `/tournaments/:id`: A past tournament
+
+- A back link "← Tournaments", the name and the date (plus "Ended early").
+- **"Final placings"** (the champion in brackets, then everyone by place) and **"Awards"**, side by side on desktop, as admin shows a finished tournament.
+- **"Knockout":** the bracket, a round per column on desktop, stacked on a phone.
+- **"Groups":** each group's table and its collapsible "Results (n)".
 
 ---
 
@@ -239,7 +252,8 @@ There's one tournament at a time, and the tab shows one of three states.
 - **Player list:** each row shows:
   - The avatar (tap it to edit the photo).
   - The name, and the rating under the list's one "Rating" heading.
-  - A ⋮ menu: Rename (switches the row to an inline form with Save/Cancel), Archive/Restore, Delete (danger).
+  - A "Not public" pill beside the name (under it on a phone) for a player hidden from the public site.
+  - A ⋮ menu: Change photo, Rename (switches the row to an inline form with Save/Cancel), Hide from public site / Show on public site, Archive/Restore, Delete (danger).
 - **"Archived (n)":** a collapsible list of archived players.
 - **Photo editor** (an overlay dialog):
   - The player's name and Close.
