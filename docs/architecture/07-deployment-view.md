@@ -19,6 +19,7 @@ flowchart TB
             kioskN(["Kiosk browser<br/>/station/n"])
         end
         projector(["Projector browser<br/>/display"])
+        wled["WLED light strips"]
         phones(["Phones<br/>/admin, /players,<br/>/watch at the speakers"])
     end
     subgraph home["On the same server, optional"]
@@ -30,6 +31,7 @@ flowchart TB
     internet -- "HTTPS" --> nginx -- "HTTP 127.0.0.1:3001" --> public
     public -. "read-only" .- volume
 
+    container -- "HTTP (JSON API)" --> wled
     container -- "WebSocket + HTTP" --> bm1
     container -- "WebSocket + HTTP" --> bmN
     kiosk1 & kioskN & projector & phones -- "HTTP + SSE :3000" --> container
@@ -77,4 +79,5 @@ The container runs `server` with the built `web` files (the default caller voice
 - Fixed IPs (DHCP reservations) for the laptops and the server; each station's Board Manager address is set in `/admin` → Stations.
 - No player logins. `/admin` is behind a shared PIN so a guest can't edit by accident (ADR 0004).
 - The Board Manager is unauthenticated, so anyone on the network can reset a board. Accepted for a private room.
+- WLED's API is unauthenticated too: give the controllers fixed IPs and enter them in `/admin` → Lights (ADR 0009).
 - A reverse proxy is optional; the live streams send `X-Accel-Buffering: no` so nginx passes them straight through (OPS-04, README "Behind a reverse proxy"). The room's server must not be exposed to the internet (Q-12); the public site is the one way in from outside, read-only and behind its password (ADR 0008).

@@ -21,7 +21,7 @@ pnpm install
 pnpm dev:sim
 ```
 
-This starts four things side by side. Ctrl-C stops all of them.
+This starts five things side by side. Ctrl-C stops all of them.
 
 | Page                               | What it is                                                         |
 | ---------------------------------- | ------------------------------------------------------------------ |
@@ -34,6 +34,7 @@ This starts four things side by side. Ctrl-C stops all of them.
 | <http://localhost:5173/players>    | Leaderboard; a name opens that player's stats                      |
 | <http://localhost:3180/>           | Fake board for station 1: click the dartboard to throw             |
 | <http://localhost:3181/>           | Fake board for station 2                                           |
+| <http://localhost:3190/>           | Fake WLED light strip: shows the preset that's on                  |
 
 The app runs on the Vite dev server (:5173), which reloads on every code change and forwards `/api` to the n4-darts server (:3000).
 
@@ -44,6 +45,8 @@ The app runs on the Vite dev server (:5173), which reloads on every code change 
 - press **Reset** (as if someone pressed reset on the station laptop), **Stop** / **Start**, or **Go offline** to see how the station copes
 
 **Board menu:** the ⋮ next to the board status on a station page stops or starts detection, calibrates the board and resets it, so players never have to leave the kiosk browser. The status shows "Board stopped" while detection is off. The same menu is on every station in `/admin` → Stations.
+
+**Lights:** in `/admin` → **Lights**, add a WLED device by its address (the fake one: `localhost:3190`) and press **Test connection**: it shows the device's name and how many presets it has. On a station, pick the device, the presets for idle (no match) and playing (a match on), and for each moment (match start, leg won, game shot, 180, bust, high out of 100+) a preset and how many seconds it runs before the playing or idle preset comes back. **Test** starts an event's preset right away. The presets themselves are made in WLED's own app. A device that's offline doesn't hold up play; its failed calls show under Lights in `/admin` → Diagnostics.
 
 **Photos:** in `/admin` → Players, tap a player's avatar to add a photo (camera or gallery on a phone), crop it to the circle and save. Photos show on the station, the projector and the stats pages; players without one get their initials.
 
@@ -127,6 +130,16 @@ The **visual suite** (`packages/e2e/tests/visual.spec.ts`) screenshots every pag
 A fake Autodarts Board Manager (same API as the real one, see `docs/board-manager-api.md`). Each fake board serves a control page at its own address, e.g. <http://localhost:3180/>. Click the dartboard to throw, tap a listed dart and then the board to revise it, and use the buttons for takeout, bounce-out, an outside reset (as if pressed on the laptop), stop/start and offline. **Start takeout** begins a takeout and holds it ("Takeout in progress", as when someone takes long to pull the darts) until **Finish takeout** or a reset.
 
 For a full session without a real board, see [Run it locally](#run-it-locally).
+
+### WLED simulator
+
+A fake WLED controller with eight presets named after the events (1 Idle, 2 Playing, 3 Match start, 4 Leg won, 5 Game shot, 6 180, 7 Bust, 8 High checkout). Its page, e.g. <http://localhost:3190/>, shows the preset that's on and the last ones started, and **Go offline** to see how the lights cope.
+
+```sh
+pnpm --filter @n4/wled-sim sim --port 3190 --name "Wall strip"
+curl -s localhost:3190/json/info                               # what n4-darts asks for
+curl -X POST localhost:3190/json/state -d '{"ps":5}'           # start a preset by hand
+```
 
 ```sh
 pnpm sim --port 3180                       # one board; --boards 2 for 3180 and 3181. Or by hand:

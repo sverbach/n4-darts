@@ -65,6 +65,14 @@ _Avoid_: Announcement, callout (in UI copy)
 The recordings of every call, one file per call key (`0`–`180`, `gameshot`, `matchshot`, `busted`) in darts-caller's format. The default voice is built in; the organiser can upload others.
 _Avoid_: Sound pack, caller (for the files)
 
+**Light event**:
+A moment of a match that can start a light preset at its station: match start, leg won, game shot, 180, bust, high out (a checkout of 100+). Each has its own preset and seconds per station.
+_Avoid_: Trigger, effect
+
+**Base preset**:
+The preset a station's lights go back to after a light event: "playing" while a match is on, "idle" otherwise.
+_Avoid_: Default preset, background
+
 ## Tournament
 
 **Tournament**:

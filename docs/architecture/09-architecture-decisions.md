@@ -14,6 +14,7 @@ The decisions that are hard to reverse, each with its context and consequences:
 | [0006](../adr/0006-typescript-end-to-end.md) | TypeScript end to end, with the game engine as a shared package |
 | [0007](../adr/0007-no-client-state-library.md) | No client state library: server data is pushed live, or read once |
 | [0008](../adr/0008-public-read-only-site.md) | A read-only public site, behind one shared password |
+| [0009](../adr/0009-wled-json-api-fire-and-forget.md) | Lights through WLED's JSON API, fire-and-forget |
 
 ## 9.2 Decision log
 

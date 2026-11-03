@@ -206,7 +206,7 @@ Organiser pages, used mostly on a phone.
 
 **Layout once unlocked:**
 - A top bar with "Admin" and a "Log out" button (only shown if a PIN is set).
-- Tab navigation: **Tournament · Players · Stations · Matches · Diagnostics**.
+- Tab navigation: **Tournament · Players · Stations · Matches · Sound · Lights · Diagnostics**.
 - Each section has an h1 title and a one-line description.
 
 ### `/admin/tournament` (the default tab)
@@ -286,6 +286,15 @@ There's one tournament at a time, and the tab shows one of three states.
   - Per leg, the heading "Leg 1 · Ann starts · Ann won" (who won the leg only when there was more than one) and a list of visits. Each visit shows the player name, the dart buttons and the visit score, with "Bust", or "Out" after a checkout.
   - A corrected dart shows its original struck through, and a dart added by hand on the station is marked "added". Tapping a dart opens the segment picker.
 
+### `/admin/lights`
+The WLED light strips, and what each station's do.
+- **Stations:** a card per station:
+  - **Device:** "No lights" or one of the devices.
+  - With a device: **Idle** (no match) and **Playing** (a match on) presets, then a row per event: Match start, Leg won, Game shot, 180, Bust, High out (100+), each with a preset ("None" leaves it out), its seconds (5 when first picked) and **Test** (starts it now; the base comes back after its seconds).
+  - Presets are picked from the device's own list ("5 · Game shot"); while the device can't be reached, a line says so and their numbers can be typed.
+  - Every choice is saved as it's made. On a phone each event's name sits above its preset, seconds and Test.
+- **Devices** (beside the stations on desktop, below on a phone): a card per device with its name, address, a ⋮ menu (Edit, Remove with a confirmation) and **Test connection**: a green pill with the device's name and its number of presets, or the error in red. Below, **Add a device**: name and address.
+
 ### `/admin/sound`
 The caller's voice, for every device with sound on (switching sound on stays on each device: see Sound under shared building blocks).
 - **Voices:** a row per voice: "Default voice" (built in, all 184 calls) first, then each uploaded pack with its name (the zip's) and how much it covers: "All 184 calls", or "12 of 184 calls · the default voice says the rest", plus the number of recordings when a call has variants. The voice in use has a green "In use" tag; the others have "Use". An uploaded pack has "Delete" (danger, confirmed); deleting the one in use goes back to the default voice.
@@ -296,7 +305,8 @@ Whether the server keeps up, for explaining a slow evening from data. It refresh
 - **Event loop:** how long the server was blocked over the last minute: median, 99th percentile and longest.
 - **Darts:** the last 20 darts, each with how long it took from the board's message to the station's screens.
 - **Boards:** per station, online or offline, reconnects since the server started, time since the board's last message, and the last reset/start/stop with its round trip.
-- **Live streams:** every open screen, with its kind (station, watch, display, admin tournament, stations, admin stations, match detail), client address, how long it has been open, updates sent and browser.
+- **Lights** (once the lights were used): per device, the calls sent since the server started, how many failed (amber when any), and the last failure with its time.
+- **Live streams:** every open screen, with its kind (station, watch, display, admin tournament, stations, admin stations, match detail, admin lights, …), client address, how long it has been open, updates sent and browser.
 - **Views:** per kind of stream, how often its view was computed in the last minute, and how long that took on average and at most.
 - **Database:** writes in the last minute and the slowest one.
 - **This page's request:** "Direct" or "Through a proxy", with the `x-forwarded-*`, `via` and `x-real-ip` headers it came with.

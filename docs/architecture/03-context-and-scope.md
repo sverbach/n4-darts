@@ -21,20 +21,24 @@ flowchart LR
     operator -- "runs" --> n4
     developer -- "develops and maintains" --> n4
     n4 -. "gets dart detection" .-> vendor
+    lights["WLED light strips (external)"]
+    n4 -. "starts presets" .-> lights
 ```
 
 - **n4-darts** is the whole thing as the people in the room see it, the automatic dartboards included: they play at it, run tournaments with it and follow along on it. What's inside comes when we zoom in.
 - **During an evening** nothing from outside the room is needed (`docs/adr/0005-fully-offline.md`).
+- **The light strips** run WLED; n4-darts only starts presets saved on them when something happens in a match (`docs/adr/0009-wled-json-api-fire-and-forget.md`).
 - **Autodarts** provides only the dart detection. Scoring, matches and tournaments are n4-darts' own (`docs/adr/0001-autodarts-for-detection-only.md`).
 - **Between evenings** the operator keeps n4-darts running, the developer changes it, and the Autodarts vendor may change how detection works.
 
 | Partner | In | Out |
 |---|---|---|
-| **Organiser** | Tournaments (players, format, seeds), overrides (pause, pin, hold, send back, play now), corrections, players and photos, stations | Queue, tables, bracket, placings, duration estimate, match history, diagnostics |
+| **Organiser** | Tournaments (players, format, seeds), overrides (pause, pin, hold, send back, play now), corrections, players and photos, stations, lights | Queue, tables, bracket, placings, duration estimate, match history, diagnostics |
 | **Players** | Match setup (players, settings, order), corrections, added darts, undo, next player, board menu; the public site's password | Live score, checkout routes, game shot, profile and stats, also from outside the room (read-only) |
 | **Spectators** | Nothing (a tap on a station on the projector opens its scoreboard) | The whole evening on `/display`, one station on `/watch/n`, the leaderboard |
 | **Operator** | Image, configuration (stations, PIN), backups to restore | Backups, diagnostics |
 | **Autodarts** | Where each dart landed, takeouts, the board's state | Start, stop, reset, calibrate |
+| **WLED** | The device's name and its presets | Which preset to start |
 
 ## 3.2 Technical context
 
@@ -55,6 +59,8 @@ flowchart LR
     browsers -- "HTTP: pages, JSON API<br/>SSE: live views" --> n4
     n4 -- "WebSocket: state snapshots<br/>HTTP: commands, state sync" --> bm
     n4 -- "SQLite file, backups" --> vol
+    wled["WLED controller<br/>(per light strip)"]
+    n4 -- "HTTP: JSON API" --> wled
     outside -- "HTTPS" --> nginx -- "HTTP" --> pub
     pub -- "SQLite file, read-only" --> vol
 ```
@@ -66,6 +72,7 @@ flowchart LR
 | **WebSocket** | Server ← Board Manager | Full state snapshots of the board: darts of the current visit, takeouts, status. The gateway diffs them into events. |
 | **HTTP** | Server → Board Manager | `GET /api/state` to resync after a reconnect; start, stop, reset and auto-calibrate. Unauthenticated and unofficial (`docs/board-manager-api.md`). |
 | **File system** | Server → data volume | The SQLite database and the daily backups in `backups/`. |
+| **HTTP (JSON)** | Server → WLED | `GET /json/info` and `/presets.json` for Admin → Lights, `POST /json/state` with `{"ps": n}` to start a preset. Unauthenticated; each call gives up after 2 s and is never waited on during play (ADR 0009). |
 | **HTTPS** | Phones outside → nginx → public site | The stats pages and their JSON reads, behind the shared password (ADR 0008). No live views, nothing that changes anything. |
 | **File system** | Public site → data volume | The same SQLite file, opened read-only next to the room's server. |
 

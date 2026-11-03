@@ -161,3 +161,30 @@ sequenceDiagram
 - An update is pull and restart (OPS-05); all data is on the volume, so nothing is lost. Updating during an evening works, but every station is offline for the restart, like in 6.5.
 - Developer and operator are often the same person (section 1.3); the pull and restart are the operator's part.
 
+## 6.7 A game shot lights up the room
+
+```mermaid
+sequenceDiagram
+    actor P as Player
+    participant B as Board (Autodarts)
+    participant N as n4-darts
+    participant S as Station screen
+    participant W as WLED
+
+    P->>B: checks out
+    B->>N: snapshot: the winning dart
+    N->>N: append, the match is won
+    N-->>S: "Game shot" (SSE)
+    N->>N: next turn of the event loop: the show sees a game shot
+    N-)W: POST /json/state {"ps": game shot preset}
+    Note over N,W: not waited on; a failure is counted in diagnostics
+    N->>N: after the event's seconds
+    N-)W: POST /json/state {"ps": playing preset}
+    P->>S: Done (the match closes)
+    N-)W: POST /json/state {"ps": idle preset}
+```
+
+- The screens get the dart first; the lights follow from the change feed, so a slow or offline device never delays a dart (ADR 0009). The load test runs with the show on.
+- When one dart is several moments (a 121 checkout that wins a leg), only the most important one with a preset runs: game shot, high out, leg won, 180, bust, match start.
+- A newer event replaces one that's running; its seconds start again.
+

@@ -45,10 +45,12 @@ The rules are pure and shared (engine), everything with state or I/O sits in one
 | **web** (`packages/web`)       | The browser app for every page. It talks to the server only over HTTP and SSE, and shares types with it through `@n4/server/api`.                                                            | Match play (at the board), Live views, the organiser's side of Organise, Stats pages |
 | **SQLite + backups**           | One database file on the data volume: matches as event logs (ADR 0002), players with photos, tournaments, stations. Daily copies in `backups/`.                                              | Kept by Operations, used by all                                                      |
 | **public site**                | The same `server` and `web`, started with `N4_PUBLIC=1` as a second process: only the stats pages' read routes, behind a shared password, on the database opened read-only (ADR 0008). `buildPublicApp` in `app.ts` is the one place its routes are registered. | Stats |
+| **WLED**                       | The light strips' controllers. External; only their local JSON API is used (ADR 0009). | Lights (the far side) |
 | **Board Manager**              | Autodarts' software on each station laptop. External; only its local API is used (ADR 0001, `docs/board-manager-api.md`).                                                                    | Dart detection (the far side)                                                        |
 
 For development only:
 
+- **wled-sim** (`tools/wled-sim`) answers WLED's JSON API and shows the preset that's on; the server's tests, the browser tests and `pnpm dev:sim` use it.
 - **board-sim** (`tools/board-sim`) speaks the Board Manager's protocol, so everything runs and is tested without a real board (Q-14). The server's tests use it.
 - **e2e** (`packages/e2e`) starts the server on simulators and drives the web app in a browser with Playwright.
 
@@ -131,6 +133,12 @@ flowchart TB
         packs["callouts/packs.ts"]
     end
 
+    subgraph lightsC["Lights"]
+        show["lights/show.ts"]
+        lightsM["lights/lights.ts"]
+        wledC["lights/wled.ts"]
+    end
+
     subgraph cross["Cross-cutting"]
         admin["admin.ts"]
         diagnostics["diagnostics.ts"]
@@ -163,6 +171,12 @@ flowchart TB
     station --> players
 
     station --> diagnostics
+
+    show --> live
+    show --> stations
+    show --> wledC
+    show --> diagnostics
+    lightsM --> wledC
 ```
 
 | Folder         | Files                                                                                 | Cluster        | What it does                                                                                                                                                                                                                                                                                                     |
@@ -179,6 +193,7 @@ flowchart TB
 | `live/`        | `live.ts`, `display.ts`, `liveRoutes.ts`                                              | Live views     | `live.ts`: one change feed for every change. `display.ts`: the projector's view. `liveRoutes.ts`: `streamView`, the SSE stream that resends a view when it changed, and the projector's routes.                                                                                                                  |
 | `access/`      | `admin.ts`, `accessRoutes.ts`                                                         | Access         | The PIN and the token a logged-in device keeps; the routes log in and out and guard `/api/admin`, and on the public site its shared password and every route.                                                                                                                                                                                                                |
 | `operations/`  | `diagnostics.ts`, `backups.ts`, `operationsRoutes.ts`                                 | Operations     | Timings and counters for the diagnostics page; the daily backups.                                                                                                                                                                                                                                                |
+| `lights/`      | `wled.ts`, `lights.ts`, `show.ts`, `lightsRoutes.ts`                                  | Lights         | `wled.ts`: the WLED client (info, presets, start a preset; 2 s timeout). `lights.ts`: devices and each station's lights, checked and stored, and the test buttons. `show.ts`: follows the change feed, turns each station's match moments into presets and brings the base preset back; never waited on during play (ADR 0009). |
 | `callouts/`    | `packs.ts`, `calloutsRoutes.ts`                                                       | Sound          | Voice packs for the caller: unpacks a darts-caller zip into `DATA_DIR/callouts/` (files, not database rows, so the backups stay small), keeps which pack is active, and gives every call's recordings (the default voice where the pack has none). The only module without `db.ts`.                              |
 | top level      | `db.ts`, `api.ts`, `app.ts`, `main.ts`                                                | Shared         | Storage for all clusters; the types the web app shares; wiring (creating the components and registering their routes); reading the server's configuration and starting it.                                                                                                                                       |
 
@@ -200,6 +215,7 @@ Every page is one route in `App.tsx`'s route tables (the room's, and the public 
 | `features/admin/matches/`     | `/admin/matches`           | Matches                                                                                   | `MatchesAdmin.tsx`, `MatchHistory.tsx`     |
 | `features/admin/stations/`    | `/admin/stations`          | Stations                                                                                  | `StationsAdmin.tsx`                        |
 | `features/admin/sound/`       | `/admin/sound`             | Sound                                                                                     | `SoundAdmin.tsx`                           |
+| `features/admin/lights/`      | `/admin/lights`            | Lights                                                                                    | `LightsAdmin.tsx`                          |
 | `features/admin/diagnostics/` | `/admin/diagnostics`       | Operations                                                                                | `DiagnosticsAdmin.tsx`                     |
 
 Shared:

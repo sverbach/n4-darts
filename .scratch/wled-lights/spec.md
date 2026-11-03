@@ -1,6 +1,6 @@
 # WLED lights for stations
 
-Status: ready-for-agent
+Status: done
 
 The room has WLED light strips with presets. Certain match events at a station should start a preset, configured in admin: which device, which station, which event starts which preset.
 
