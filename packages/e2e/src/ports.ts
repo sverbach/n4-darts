@@ -8,3 +8,5 @@ export const PIN = "4242";
 export const PUBLIC_PORT = 4310;
 export const PUBLIC_URL = `http://localhost:${PUBLIC_PORT}`;
 export const PUBLIC_PIN = "group-pw";
+/** A fake WLED device for Admin → Lights. */
+export const WLED_PORT = 4390;

@@ -20,7 +20,7 @@ import {
   request,
   test,
 } from "@playwright/test";
-import { BASE_URL, PIN } from "../src/ports.ts";
+import { BASE_URL, PIN, WLED_PORT } from "../src/ports.ts";
 import { board } from "./fixtures.ts";
 
 const PHONE = { width: 390, height: 844 };
@@ -232,6 +232,20 @@ test("the organiser's area", async () => {
 
   await open(page, "/admin/sound", (p) => p.getByRole("list", { name: "Voices" }));
   await shoot(page, "admin-sound", PAGES);
+
+  await api.post("/api/admin/lights/devices", {
+    data: { name: "Wall strip", url: `localhost:${WLED_PORT}` },
+  });
+  await api.put("/api/admin/lights/stations/1", {
+    data: {
+      deviceId: 1,
+      idlePreset: 1,
+      playingPreset: 2,
+      events: { gameShot: { preset: 5, seconds: 8 }, s180: { preset: 6, seconds: 5 } },
+    },
+  });
+  await open(page, "/admin/lights", (p) => p.getByText("Test strip · 8 presets"));
+  await shoot(page, "admin-lights", PAGES);
 
   await open(page, "/admin/diagnostics", (p) => p.getByRole("table").first());
   await shoot(page, "admin-diagnostics", PAGES, DIGITS);

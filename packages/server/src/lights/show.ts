@@ -91,7 +91,7 @@ export function startLightShow(
   const shows = new Map<number, StationShow>();
 
   /** The event preset stays on for `seconds`, then the base comes back. */
-  function runFor(stationId: number, show: StationShow, seconds: number) {
+  function runFor(show: StationShow, seconds: number) {
     if (show.event) clearTimeout(show.event);
     show.event = setTimeout(() => {
       show.event = null;
@@ -131,7 +131,7 @@ export function startLightShow(
     const light = event ? lights.events[event] : undefined;
     if (light) {
       send(show, device.url, light.preset);
-      runFor(stationId, show, light.seconds);
+      runFor(show, light.seconds);
       return;
     }
     if (show.event) return;
@@ -157,7 +157,7 @@ export function startLightShow(
       const show = shows.get(stationId);
       if (!show) return;
       show.sent = null;
-      runFor(stationId, show, seconds);
+      runFor(show, seconds);
     },
     stop() {
       unsubscribe();

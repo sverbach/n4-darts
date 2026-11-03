@@ -415,7 +415,8 @@ export type StreamKind =
   | "match history"
   | "diagnostics"
   | "players"
-  | "admin players";
+  | "admin players"
+  | "admin lights";
 
 /** One board connection, for /admin diagnostics. */
 export interface BoardDiagnostics {

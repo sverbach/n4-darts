@@ -104,7 +104,7 @@ export function buildApp(options: AppOptions = {}) {
     const wled = options.wled ?? createWledClient();
     const show = feed ? startLightShow(db, stations, feed, wled) : undefined;
     if (show) app.addHook("onClose", async () => show.stop());
-    registerLights(app, createLights(db, wled, show?.played));
+    registerLights(app, createLights(db, wled, show?.played), feed);
   }
 
   registerDiagnostics(app, stations, options.diagnosticsRefreshMs);

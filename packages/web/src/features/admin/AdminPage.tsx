@@ -6,6 +6,7 @@ import { PixelIcon } from "../../components/PixelIcon.tsx";
 import { call, request } from "../../lib/api.ts";
 import { useFetch } from "../../lib/useFetch.ts";
 import { DiagnosticsAdmin } from "./diagnostics/DiagnosticsAdmin.tsx";
+import { LightsAdmin } from "./lights/LightsAdmin.tsx";
 import { MatchesAdmin } from "./matches/MatchesAdmin.tsx";
 import { PlayersAdmin } from "./players/PlayersAdmin.tsx";
 import { SoundAdmin } from "./sound/SoundAdmin.tsx";
@@ -23,6 +24,11 @@ const sections = {
   stations: { title: "Stations", blurb: "The dartboards in the room and how to reach them." },
   matches: { title: "Matches", blurb: "What's on each board, and every finished match." },
   sound: { title: "Sound", blurb: "The caller's voice on the stations and /watch." },
+  lights: {
+    title: "Lights",
+    blurb:
+      "The WLED light strips: which station each one lights, and what a match's moments start.",
+  },
   diagnostics: {
     title: "Diagnostics",
     blurb: "Whether the server keeps up: for explaining a slow evening.",
@@ -126,6 +132,8 @@ export function AdminPage({ section }: { section: AdminSection }) {
           />
         ) : section === "sound" ? (
           <SoundAdmin />
+        ) : section === "lights" ? (
+          <LightsAdmin />
         ) : section === "diagnostics" ? (
           <DiagnosticsAdmin />
         ) : (
