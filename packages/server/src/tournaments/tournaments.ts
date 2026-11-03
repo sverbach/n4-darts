@@ -2,7 +2,7 @@
 // it. Running it, matches and the scheduler, builds on this (.scratch/tournaments/spec.md).
 
 import { randomUUID } from "node:crypto";
-import { dartStats, defaultX01Settings, matchState, RULES_VERSION } from "@n4/engine";
+import { defaultX01Settings, matchState, RULES_VERSION } from "@n4/engine";
 import type { TournamentAdminView } from "../api.ts";
 import type { Db, MatchRecord, StoredEvent, TournamentRecord } from "../db.ts";
 import type { ResultGuard } from "../matches/matches.ts";
@@ -17,6 +17,7 @@ import {
   type Result,
   type TournamentConfig,
 } from "./plan/types.ts";
+import { resultOf } from "./results.ts";
 import { progressView } from "./tournamentView.ts";
 
 export class TournamentError extends Error {
@@ -55,36 +56,6 @@ function shuffle<T>(items: T[]): T[] {
     [out[i], out[j]] = [out[j] as T, out[i] as T];
   }
   return out;
-}
-
-/** A decided tournament match as the pure logic sees it. */
-function resultOf(match: MatchRecord, events: ReturnType<Db["events"]>): Result | null {
-  if (!match.closedAt || match.abandoned || !match.winner || !match.slot) return null;
-  const [a, b] = match.playerIds as [string, string];
-  if (match.walkover) {
-    const legs = match.settings.legsToWin;
-    return {
-      slot: match.slot,
-      players: [a, b],
-      winner: match.winner,
-      legs: match.winner === a ? [legs, 0] : [0, legs],
-      walkover: true,
-      stats: [
-        { points: 0, darts: 0 },
-        { points: 0, darts: 0 },
-      ],
-    };
-  }
-  const state = matchState(match.settings, events);
-  const stats = dartStats(match.settings, events);
-  return {
-    slot: match.slot,
-    players: [a, b],
-    winner: match.winner,
-    legs: [state.players[0]?.legsWon ?? 0, state.players[1]?.legsWon ?? 0],
-    walkover: false,
-    stats: [stats[0] ?? { points: 0, darts: 0 }, stats[1] ?? { points: 0, darts: 0 }],
-  };
 }
 
 const sameSet = (a: string[], b: string[]) =>

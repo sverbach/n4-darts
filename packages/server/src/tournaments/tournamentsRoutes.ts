@@ -2,7 +2,7 @@
 // players, ending early, and the organiser's overrides (pause, hold, pin, send back, play now).
 
 import type { FastifyInstance, FastifyReply } from "fastify";
-import type { TournamentAdminView } from "../api.ts";
+import type { PastTournament, PastTournamentSummary, TournamentAdminView } from "../api.ts";
 import type { ChangeFeed } from "../live/live.ts";
 import { streamView } from "../live/liveRoutes.ts";
 import { TournamentError, type TournamentInput, type Tournaments } from "./tournaments.ts";
@@ -113,4 +113,16 @@ export function registerTournaments(
         return tournaments.view();
       }),
   );
+}
+
+/** Finished tournaments, open to everyone (and on the public site). */
+export function registerPastTournaments(
+  app: FastifyInstance,
+  past: { list(): PastTournamentSummary[]; one(id: string): PastTournament | undefined },
+) {
+  app.get("/api/tournaments", async () => past.list());
+  app.get<{ Params: { id: string } }>("/api/tournaments/:id", async (request, reply) => {
+    const tournament = past.one(request.params.id);
+    return tournament ?? reply.code(404).send({ error: "no such tournament" });
+  });
 }

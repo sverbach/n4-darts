@@ -1,29 +1,26 @@
 import type { LeaderboardRow, PlayerProfile } from "@n4/server/api";
-import { type ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { Avatar, isHiddenPlayer } from "../../components/Avatar.tsx";
-import { Logo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
 import { tickLabelWidth, valueScale } from "../../lib/chartScale.ts";
 import { average, count, legScore, NONE, placing } from "../../lib/format.ts";
 import { useFetch } from "../../lib/useFetch.ts";
+import {
+  date,
+  monthOf,
+  ROW,
+  ROW_DATE,
+  ROW_MAIN,
+  ROW_VALUE,
+  SECTION,
+  StatsFrame,
+  shortDay,
+} from "./frame.tsx";
 import { Heatmap } from "./Heatmap.tsx";
 
 const RATING_MATCHES = 10;
-const MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
-const pad2 = (n: number) => String(n).padStart(2, "0");
-/** "21 Oct 2026" */
-const date = (iso: string) => {
-  const d = new Date(iso);
-  return `${pad2(d.getDate())} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
-};
-/** A day key (YYYY-MM-DD) as a short date. */
-const shortDay = (day: string) => date(`${day}T12:00:00`).slice(0, 6);
-/** A day key as "Jul 2026". */
-const monthOf = (day: string) => date(`${day}T12:00:00`).slice(3).replace(" ", "\u00a0");
 
-/** A section of the profile: a heading and its chart or list. */
-const SECTION = "flex flex-col gap-2.5";
 /** The leaderboard's cells; `look` sets alignment and colour where they differ. */
 const CELL =
   "whitespace-nowrap border-0 border-b border-solid px-2 first:pl-4 last:pr-4 kiosk:px-3 kiosk:first:pl-6 kiosk:last:pr-6";
@@ -32,33 +29,6 @@ const th = (look = "text-right text-muted first:text-left") =>
 const td = (look: string) =>
   `${CELL} h-[60px] border-line-soft kiosk:h-[68px] ${look.includes("text-left") ? "" : "text-right first:text-left"} ${look}`;
 const NUMBER = "text-[24px] kiosk:text-[26px]";
-/** The profile's lists: tournaments and last matches. */
-const ROW =
-  "flex min-h-16 items-center gap-3 border-0 border-line-soft border-b border-solid [&_.pixel-icon]:h-[22px] [&_.pixel-icon]:text-text";
-const ROW_MAIN =
-  "flex min-w-0 flex-1 flex-col gap-1.5 font-pixel text-[13px] uppercase tracking-[1px] kiosk:text-[16px]";
-const ROW_DATE = "text-[11px] text-muted tracking-normal kiosk:text-[12px]";
-const ROW_VALUE = "min-w-12 text-right text-[28px] kiosk:w-[60px] kiosk:text-[32px]";
-
-/** The stats pages' frame: a back link and the logo, then the page. */
-function StatsFrame(props: { back: [string, string]; children: ReactNode }) {
-  const [href, text] = props.back;
-  return (
-    <div className="min-h-[100dvh]">
-      <header className="border-0 border-border border-b border-solid">
-        <div className="mx-auto flex max-w-[1200px] items-center justify-between kiosk:px-6 px-4 kiosk:py-3 py-2">
-          <Link className="back" href={href}>
-            <PixelIcon name="back" height="0.7em" /> {text}
-          </Link>
-          <Logo width="72px" />
-        </div>
-      </header>
-      <main className="mx-auto flex max-w-[1200px] flex-col gap-6 kiosk:gap-6 kiosk:px-6 px-4 kiosk:pt-6 pt-6 kiosk:pb-6 pb-6">
-        {props.children}
-      </main>
-    </div>
-  );
-}
 
 /** /players: everyone with a counted match, best rating first. */
 export function LeaderboardPage() {
@@ -67,7 +37,12 @@ export function LeaderboardPage() {
   return (
     <StatsFrame back={["/", "Home"]}>
       <div className="flex flex-col gap-2">
-        <h1 className="kiosk:text-[40px]">Players</h1>
+        <div className="flex flex-wrap items-center justify-between gap-x-4">
+          <h1 className="kiosk:text-[40px]">Players</h1>
+          <Link className="back" href="/tournaments">
+            Tournaments <PixelIcon name="arrow" height="0.7em" />
+          </Link>
+        </div>
         <p className="hint m-0">
           Everyone who has played a counted match. Rating is the 3-dart average over the last 10
           matches.
@@ -293,13 +268,15 @@ function Profile({ profile }: { profile: PlayerProfile }) {
             <h2 className="label font-normal">Tournaments</h2>
             <ul className="m-0 list-none border-0 border-border border-t border-solid p-0">
               {profile.tournaments.map((tournament) => (
-                <li key={tournament.id} className={ROW}>
-                  <div className={ROW_MAIN}>
-                    <span>{tournament.name}</span>
-                    <span className={ROW_DATE}>{date(tournament.date)}</span>
-                  </div>
-                  {tournament.from === 1 && <PixelIcon name="trophy" label="Won" />}
-                  <span className={ROW_VALUE}>{placing(tournament.from, tournament.to)}</span>
+                <li key={tournament.id}>
+                  <Link href={`/tournaments/${tournament.id}`} className={`${ROW} no-underline`}>
+                    <div className={ROW_MAIN}>
+                      <span>{tournament.name}</span>
+                      <span className={ROW_DATE}>{date(tournament.date)}</span>
+                    </div>
+                    {tournament.from === 1 && <PixelIcon name="trophy" label="Won" />}
+                    <span className={ROW_VALUE}>{placing(tournament.from, tournament.to)}</span>
+                  </Link>
                 </li>
               ))}
             </ul>

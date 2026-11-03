@@ -28,10 +28,11 @@ import {
   type StationRegistry,
 } from "./stations/stations.ts";
 import { registerStationAdmin, registerStations } from "./stations/stationsRoutes.ts";
-import { createStats } from "./stats/stats.ts";
+import { createStats, type Stats } from "./stats/stats.ts";
 import { registerStats } from "./stats/statsRoutes.ts";
+import { pastTournament, pastTournaments } from "./tournaments/past.ts";
 import { createTournaments } from "./tournaments/tournaments.ts";
-import { registerTournaments } from "./tournaments/tournamentsRoutes.ts";
+import { registerPastTournaments, registerTournaments } from "./tournaments/tournamentsRoutes.ts";
 
 export interface AppOptions {
   /** Directory with the built web app; served at `/` when it exists. */
@@ -66,6 +67,7 @@ export function buildApp(options: AppOptions = {}) {
   if (db && stats && feed) {
     registerPlayers(app, createPlayers(db), (id) => ratingOf(db, id), feed);
     registerStats(app, stats);
+    registerPastTournaments(app, pastWithAwards(db, stats));
   }
 
   const tournaments = db ? createTournaments(db, stations) : undefined;
@@ -127,16 +129,29 @@ export function buildPublicApp(options: PublicAppOptions) {
       return payload;
     }
     let redacted = payload;
-    for (const [id, standIn] of hidden()) redacted = redacted.replaceAll(`"${id}"`, `"${standIn}"`);
+    for (const [id, standIn] of hidden()) redacted = redacted.replaceAll(id, standIn);
     return redacted;
   });
 
   app.get("/api/health", async () => ({ ok: true }));
-  registerStats(app, createStats(db));
+  const stats = createStats(db);
+  registerStats(app, stats);
   registerPlayerPhoto(app, createPlayers(db));
+  registerPastTournaments(app, pastWithAwards(db, stats));
 
   serveWeb(app, options.webDir);
   return app;
+}
+
+/** Finished tournaments with the awards from Stats. */
+function pastWithAwards(db: Db, stats: Stats) {
+  return {
+    list: () => pastTournaments(db),
+    one(id: string) {
+      const tournament = pastTournament(db, id);
+      return tournament && { ...tournament, awards: stats.awards(id) };
+    },
+  };
 }
 
 function serveWeb(app: FastifyInstance, webDir: string | undefined) {

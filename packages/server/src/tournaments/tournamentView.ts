@@ -137,17 +137,20 @@ export function progressView(
 
   const finished = tournament.status === "finished";
   const remaining = plan.matches.filter((m) => !decided(recordFor(m.slot)));
-  const perLeg = legMinutes(db, tournament.config.x01.startScore);
-  const working = Math.max(1, stationViews.filter((s) => !s.paused).length);
-  const minutesLeft =
-    remaining.reduce((sum, m) => sum + matchMinutes(tournament.config.legs[m.phase], perLeg), 0) /
-    working;
+  const expectedEnd = () => {
+    const perLeg = legMinutes(db, tournament.config.x01.startScore);
+    const working = Math.max(1, stationViews.filter((s) => !s.paused).length);
+    const minutesLeft =
+      remaining.reduce((sum, m) => sum + matchMinutes(tournament.config.legs[m.phase], perLeg), 0) /
+      working;
+    return new Date(Date.now() + minutesLeft * 60_000).toISOString();
+  };
 
   return {
     phase: finished ? "finished" : plan.groupPhaseDone ? "knockout" : "groups",
     played: plan.matches.length - remaining.length,
     total: plan.matches.length,
-    expectedEnd: finished ? null : new Date(Date.now() + minutesLeft * 60_000).toISOString(),
+    expectedEnd: finished ? null : expectedEnd(),
     stations: stationViews,
     // The queue is Scheduling's; the views add it (withQueue in scheduler.ts).
     queue: [],

@@ -4,6 +4,7 @@ import { DisplayPage } from "./features/display/DisplayPage.tsx";
 import { HomePage as Home } from "./features/home/HomePage.tsx";
 import { StationPage } from "./features/station/StationPage.tsx";
 import { LeaderboardPage, ProfilePage } from "./features/stats/StatsPages.tsx";
+import { TournamentPage, TournamentsPage } from "./features/stats/TournamentPages.tsx";
 import { WatchPage } from "./features/watch/WatchPage.tsx";
 import { useNavigationEffects } from "./lib/navigation.ts";
 
@@ -23,6 +24,8 @@ export function App() {
       <Route path="/display" component={DisplayPage} />
       <Route path="/players" component={LeaderboardPage} />
       <Route path="/players/:id">{({ id }) => <ProfilePage id={id} />}</Route>
+      <Route path="/tournaments" component={TournamentsPage} />
+      <Route path="/tournaments/:id">{({ id }) => <TournamentPage id={id} />}</Route>
       <Route path="/admin/:section?">
         {({ section = "tournament" }) =>
           isAdminSection(section) ? <AdminPage section={section} /> : <Home />

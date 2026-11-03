@@ -322,5 +322,11 @@ test("a tournament on station 1, station 2 busy", async () => {
   await open(display, "/display", (p) => p.getByText(/Champion/i).first());
   await shoot(display, "display-finished", SCREENS);
 
+  await open(page, "/tournaments", (p) => p.getByRole("link", { name: /Visual night/ }));
+  await shoot(page, "tournaments", PAGES);
+  await page.getByRole("link", { name: /Visual night/ }).click();
+  await expect(page.getByRole("heading", { name: "Visual night" })).toBeVisible();
+  await shoot(page, "tournament", PAGES);
+
   await display.close();
 });

@@ -7,22 +7,30 @@ import { buildApp, buildPublicApp } from "../../app.ts";
 import { type Db, openDb } from "../../db.ts";
 import { createStationRegistry, type StationRegistry } from "../../stations/stations.ts";
 import { seedHistory } from "../seed.ts";
+import { playTournament } from "../tournament.ts";
 
 const PUBLIC_ROUTES = [
   "GET /api/health",
   "GET /api/players/stats",
   "GET /api/players/:id/stats",
   "GET /api/players/:id/photo",
+  "GET /api/tournaments",
+  "GET /api/tournaments/:id",
 ];
 
 /** Every registered route as "METHOD /path" (HEAD left out: Fastify adds it to each GET). */
 function routes(app: FastifyInstance): string[] {
   const found: string[] = [];
+  const parents: string[] = [];
   for (const line of app.printRoutes({ commonPrefix: false }).split("\n")) {
-    const match = line.match(/(\/\S*) \(([A-Z, ]+)\)/);
+    const match = line.match(/^([│├└─\s]*)(\/\S*) \(([A-Z, ]+)\)/);
     if (!match) continue;
-    for (const method of (match[2] as string).split(", ")) {
-      if (method !== "HEAD") found.push(`${method} ${match[1]}`);
+    const depth = (match[1] as string).length / 4;
+    parents.length = depth;
+    const path = `${parents[depth - 1] ?? ""}${match[2]}`;
+    parents[depth] = path;
+    for (const method of (match[3] as string).split(", ")) {
+      if (method !== "HEAD") found.push(`${method} ${path}`);
     }
   }
   return [...new Set(found)].sort();
@@ -150,6 +158,26 @@ describe("the public server", () => {
       expect(profile.status).toBe(200);
       expect(profile.body).not.toMatch(/Ann|p-ann/);
       expect(JSON.parse(profile.body).recent[0].opponents).toEqual(["Player"]);
+    });
+
+    it("is 'Player' in a tournament's placings, groups, bracket and awards", async () => {
+      const { room, site } = history();
+      room.db.addPlayer({ id: "p-cid", name: "Cid", archived: false });
+      room.db.addPlayer({ id: "p-dee", name: "Dee", archived: false });
+      const id = await playTournament(buildApp({ db: room.db }), room.db, [
+        "p-ann",
+        "p-bob",
+        "p-cid",
+        "p-dee",
+      ]);
+
+      const page = await get(site.app, `/api/tournaments/${id}`);
+      expect(page.status).toBe(200);
+      expect(page.body).toMatch(/Bob/);
+      expect(page.body).not.toMatch(/Ann|p-ann/);
+      expect(page.body).toMatch(/"Player"/);
+      expect((await get(site.app, "/api/tournaments")).body).not.toMatch(/Ann|p-ann/);
+      expect((await get(room.app, `/api/tournaments/${id}`)).body).toMatch(/Ann/);
     });
 
     it("stays as they are on the room's pages", async () => {

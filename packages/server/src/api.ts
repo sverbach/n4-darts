@@ -215,6 +215,25 @@ export interface TournamentProgress {
   endedEarly: boolean;
 }
 
+/** A finished tournament in the list of past ones. */
+export interface PastTournamentSummary {
+  id: string;
+  name: string;
+  /** ISO time it started. */
+  date: string;
+  /** Null when it was ended early. */
+  champion: MatchPlayer | null;
+}
+
+/** A finished tournament's page: how it ended, and how it got there. */
+export interface PastTournament extends PastTournamentSummary {
+  endedEarly: boolean;
+  placings: TournamentProgress["placings"];
+  awards: TournamentProgress["awards"];
+  groups: TournamentProgress["groups"];
+  bracket: TournamentProgress["bracket"];
+}
+
 export interface Award {
   kind: "bestAverage" | "highestCheckout" | "most180s" | "bestLeg";
   /** The 3-dart average, the checkout, the number of 180s, or the darts in the leg. */
