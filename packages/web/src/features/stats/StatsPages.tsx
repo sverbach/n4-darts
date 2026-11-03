@@ -5,6 +5,7 @@ import { Avatar, isHiddenPlayer } from "../../components/Avatar.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
 import { tickLabelWidth, valueScale } from "../../lib/chartScale.ts";
 import { average, count, legScore, NONE, placing } from "../../lib/format.ts";
+import { usePublicSite } from "../../lib/publicSite.ts";
 import { useFetch } from "../../lib/useFetch.ts";
 import {
   date,
@@ -35,7 +36,7 @@ export function LeaderboardPage() {
   // Read once: the stats pages don't follow live, by design (VIEW-01).
   const { data: rows, error } = useFetch<LeaderboardRow[]>("/api/players/stats");
   return (
-    <StatsFrame back={["/", "Home"]}>
+    <StatsFrame back={usePublicSite() ? null : ["/", "Home"]}>
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center justify-between gap-x-4">
           <h1 className="kiosk:text-[40px]">Players</h1>

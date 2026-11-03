@@ -201,6 +201,13 @@ describe("the public server", () => {
       expect(run.stderr).toMatch(/N4_PUBLIC_PIN/);
     });
 
+    it("asks search engines to stay away", async () => {
+      const site = sitePublic();
+      expect((await site.app.inject("/api/public/session")).headers["x-robots-tag"]).toBe(
+        "noindex, nofollow",
+      );
+    });
+
     it("tells the room's web app it isn't the public site", async () => {
       const room = roomServer(databaseFile());
       expect((await room.inject("/api/public/session")).json()).toEqual({

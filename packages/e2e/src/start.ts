@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createBoardSim } from "@n4/board-sim";
-import { BOARD_PORTS, PIN, SERVER_PORT } from "./ports.ts";
+import { BOARD_PORTS, PIN, PUBLIC_PIN, PUBLIC_PORT, SERVER_PORT } from "./ports.ts";
 
 const sims = await Promise.all(BOARD_PORTS.map((port) => createBoardSim({ port })));
 const dataDir = mkdtempSync(join(tmpdir(), "n4-e2e-"));
@@ -36,7 +36,28 @@ const server = spawn(process.execPath, [main], {
 });
 console.log(`e2e: boards on ${BOARD_PORTS.join(", ")}, data in ${dataDir}`);
 
+// The public site opens the database read-only, so it starts once the room's server has set it up.
+for (let tries = 0; tries < 100; tries++) {
+  const up = await fetch(`http://localhost:${SERVER_PORT}/api/health`).then(
+    (res) => res.ok,
+    () => false,
+  );
+  if (up) break;
+  await new Promise((resolve) => setTimeout(resolve, 100));
+}
+const publicServer = spawn(process.execPath, [main], {
+  stdio: "inherit",
+  env: {
+    ...process.env,
+    N4_PUBLIC: "1",
+    N4_PUBLIC_PIN: PUBLIC_PIN,
+    PORT: String(PUBLIC_PORT),
+    DATA_DIR: dataDir,
+  },
+});
+
 const stop = async () => {
+  publicServer.kill("SIGTERM");
   server.kill("SIGTERM");
   await Promise.all(sims.map((sim) => sim.close()));
   process.exit(0);

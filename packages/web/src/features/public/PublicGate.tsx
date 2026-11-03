@@ -3,6 +3,7 @@ import { type FormEvent, type ReactNode, useState } from "react";
 import { Logo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
 import { call } from "../../lib/api.ts";
+import { PublicSite } from "../../lib/publicSite.ts";
 import { useFetch } from "../../lib/useFetch.ts";
 
 const ALERT = "error justify-center! border-0! border-b-2! border-danger!";
@@ -22,7 +23,7 @@ export function PublicGate(props: { room: ReactNode; site: ReactNode }) {
   }
   if (!session.public) return props.room;
   if (!session.authenticated) return <PublicLogin onDone={reload} />;
-  return props.site;
+  return <PublicSite.Provider value={true}>{props.site}</PublicSite.Provider>;
 }
 
 function PublicLogin({ onDone }: { onDone: () => Promise<void> }) {

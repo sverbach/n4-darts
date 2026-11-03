@@ -26,15 +26,18 @@ export const ROW_DATE = "text-[11px] text-muted tracking-normal kiosk:text-[12px
 export const ROW_VALUE = "min-w-12 text-right text-[28px] kiosk:w-[60px] kiosk:text-[32px]";
 
 /** The stats pages' frame: a back link and the logo, then the page. */
-export function StatsFrame(props: { back: [string, string]; children: ReactNode }) {
-  const [href, text] = props.back;
+export function StatsFrame(props: { back: [string, string] | null; children: ReactNode }) {
   return (
     <div className="min-h-[100dvh]">
       <header className="border-0 border-border border-b border-solid">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between kiosk:px-6 px-4 kiosk:py-3 py-2">
-          <Link className="back" href={href}>
-            <PixelIcon name="back" height="0.7em" /> {text}
-          </Link>
+          {props.back ? (
+            <Link className="back" href={props.back[0]}>
+              <PixelIcon name="back" height="0.7em" /> {props.back[1]}
+            </Link>
+          ) : (
+            <span className="min-h-11" />
+          )}
           <Logo width="72px" />
         </div>
       </header>

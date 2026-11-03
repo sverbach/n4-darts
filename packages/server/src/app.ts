@@ -127,6 +127,7 @@ export function buildPublicApp(options: PublicAppOptions) {
     }
   });
   app.addHook("onSend", async (_request, reply, payload) => {
+    reply.header("x-robots-tag", "noindex, nofollow");
     if (typeof payload !== "string" || !String(reply.getHeader("content-type")).includes("json")) {
       return payload;
     }
