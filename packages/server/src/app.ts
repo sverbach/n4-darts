@@ -9,6 +9,9 @@ import { createAccess } from "./access/admin.ts";
 import { registerCallouts } from "./callouts/calloutsRoutes.ts";
 import { createCalloutPacks } from "./callouts/packs.ts";
 import type { Db } from "./db.ts";
+import { createLights } from "./lights/lights.ts";
+import { registerLights } from "./lights/lightsRoutes.ts";
+import { createWledClient, type WledClient } from "./lights/wled.ts";
 import { displayView } from "./live/display.ts";
 import { createChangeFeed } from "./live/live.ts";
 import { registerDisplay } from "./live/liveRoutes.ts";
@@ -48,6 +51,8 @@ export interface AppOptions {
   adminPin?: string | undefined;
   /** Where uploaded voice packs are kept; without one only the default voice is offered. */
   calloutsDir?: string;
+  /** Talks to the WLED lights; tests pass one with a short timeout. */
+  wled?: WledClient;
 }
 
 export function buildApp(options: AppOptions = {}) {
@@ -93,6 +98,8 @@ export function buildApp(options: AppOptions = {}) {
       app.addHook("onClose", async () => scheduler.stop());
     }
   }
+
+  if (db) registerLights(app, createLights(db, options.wled ?? createWledClient()));
 
   registerDiagnostics(app, stations, options.diagnosticsRefreshMs);
   registerCallouts(app, createCalloutPacks(options.calloutsDir));

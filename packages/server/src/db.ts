@@ -2,7 +2,7 @@
 
 import { DatabaseSync } from "node:sqlite";
 import type { MatchEvent, X01Settings } from "@n4/engine";
-import type { Player, PlayerInput } from "./api.ts";
+import type { LightDevice, Player, PlayerInput, StationLights } from "./api.ts";
 import { diagnostics } from "./operations/diagnostics.ts";
 import type { Entrant, Placing, TournamentConfig } from "./tournaments/plan/types.ts";
 
@@ -138,6 +138,14 @@ export interface Db {
   backupTo(path: string): void;
   /** Called after every write; `matchId` names the match it touched, if any. */
   onChange(listener: (change: DbChange) => void): () => void;
+  lightDevices(): LightDevice[];
+  /** Adds a device (without an id) or changes one; returns it with its id. */
+  saveLightDevice(device: Omit<LightDevice, "id"> & { id?: number }): LightDevice;
+  /** Stations that used it keep their presets, without a device. */
+  deleteLightDevice(id: number): void;
+  /** Stations with lights set up; a station without a row has none. */
+  stationLights(): StationLights[];
+  saveStationLights(lights: StationLights): void;
   /** Changes whenever another connection (another process) has written to the database. */
   dataVersion(): number;
   close(): void;
@@ -173,13 +181,16 @@ const OTHER_WRITES = [
   "setEntrants",
   "setPhoto",
   "deletePhoto",
+  "saveLightDevice",
+  "deleteLightDevice",
+  "saveStationLights",
 ] as const;
 
 /**
  * Bumped when the schema changes incompatibly. Version 0 is the walking skeleton's, whose test
  * matches only had player names: they're dropped, not migrated (players-and-matches spec).
  */
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 6;
 
 interface MatchRow {
   id: string;
@@ -318,6 +329,18 @@ function migrate(db: DatabaseSync) {
     create table if not exists paused_stations (
       id integer primary key
     );
+    create table if not exists light_devices (
+      id integer primary key autoincrement,
+      name text not null,
+      url text not null
+    );
+    create table if not exists light_stations (
+      station_id integer primary key references stations(id) on delete cascade,
+      device_id integer references light_devices(id) on delete set null,
+      idle_preset integer,
+      playing_preset integer,
+      events text not null default '{}'
+    );
     create table if not exists match_events (
       match_id text not null references matches(id) on delete cascade,
       seq integer not null,
@@ -360,6 +383,18 @@ export function openDb(path: string, options: { readOnly?: boolean } = {}): Db {
   }
 
   const selectDataVersion = db.prepare("pragma data_version");
+  const selectLightDevices = db.prepare("select id, name, url from light_devices order by id");
+  const insertLightDevice = db.prepare("insert into light_devices (name, url) values (?, ?)");
+  const updateLightDevice = db.prepare("update light_devices set name = ?, url = ? where id = ?");
+  const deleteLightDeviceStmt = db.prepare("delete from light_devices where id = ?");
+  const selectStationLights = db.prepare("select * from light_stations order by station_id");
+  const upsertStationLights = db.prepare(`
+    insert into light_stations (station_id, device_id, idle_preset, playing_preset, events)
+    values (?, ?, ?, ?, ?)
+    on conflict (station_id) do update set device_id = excluded.device_id,
+      idle_preset = excluded.idle_preset, playing_preset = excluded.playing_preset,
+      events = excluded.events
+  `);
   const selectStations = db.prepare("select * from stations order by id");
   const selectStation = db.prepare("select * from stations where id = ?");
   const upsertStation = db.prepare(
@@ -743,6 +778,46 @@ export function openDb(path: string, options: { readOnly?: boolean } = {}): Db {
     backupTo(path) {
       db.prepare("vacuum into ?").run(path);
     },
+    lightDevices() {
+      return selectLightDevices.all() as unknown as LightDevice[];
+    },
+    saveLightDevice(device) {
+      if (device.id === undefined) {
+        const { lastInsertRowid } = insertLightDevice.run(device.name, device.url);
+        return { id: Number(lastInsertRowid), name: device.name, url: device.url };
+      }
+      updateLightDevice.run(device.name, device.url, device.id);
+      return { id: device.id, name: device.name, url: device.url };
+    },
+    deleteLightDevice(id) {
+      deleteLightDeviceStmt.run(id);
+    },
+    stationLights() {
+      return (
+        selectStationLights.all() as {
+          station_id: number;
+          device_id: number | null;
+          idle_preset: number | null;
+          playing_preset: number | null;
+          events: string;
+        }[]
+      ).map((row) => ({
+        stationId: row.station_id,
+        deviceId: row.device_id,
+        idlePreset: row.idle_preset,
+        playingPreset: row.playing_preset,
+        events: JSON.parse(row.events),
+      }));
+    },
+    saveStationLights(lights) {
+      upsertStationLights.run(
+        lights.stationId,
+        lights.deviceId,
+        lights.idlePreset,
+        lights.playingPreset,
+        JSON.stringify(lights.events),
+      );
+    },
     dataVersion() {
       return (selectDataVersion.get() as { data_version: number }).data_version;
     },
@@ -774,10 +849,14 @@ function withChanges(store: Omit<Db, "onChange">): Db {
     };
   }
   for (const name of OTHER_WRITES) {
-    const write = store[name] as (...args: unknown[]) => void;
+    const write = store[name] as (...args: unknown[]) => unknown;
     (db[name] as typeof write) = (...args) => {
-      diagnostics.timeWrite(name, () => write(...args));
+      let result: unknown;
+      diagnostics.timeWrite(name, () => {
+        result = write(...args);
+      });
       announce({ matchId: name === "createMatch" ? (args[0] as NewMatch).id : null });
+      return result;
     };
   }
   return db;

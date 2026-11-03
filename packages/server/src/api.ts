@@ -92,6 +92,47 @@ export interface AdminPlayer extends Player {
   rating: number | null;
 }
 
+/** Match moments a station's lights react to (wled-lights). */
+export type LightEvent = "matchStart" | "legWon" | "gameShot" | "s180" | "bust" | "highCheckout";
+
+/** A WLED controller on the LAN. */
+export interface LightDevice {
+  id: number;
+  name: string;
+  /** e.g. `http://192.168.1.50` */
+  url: string;
+}
+
+/** The preset an event starts, and for how long before the station's base preset comes back. */
+export interface EventLight {
+  preset: number;
+  seconds: number;
+}
+
+/** A station's lights: its device, its two base presets and what each event starts. */
+export interface StationLights {
+  stationId: number;
+  deviceId: number | null;
+  /** While the station has no match. */
+  idlePreset: number | null;
+  /** While a match is on. */
+  playingPreset: number | null;
+  events: Partial<Record<LightEvent, EventLight>>;
+}
+
+/** Admin → Lights: every device, and every station with its lights (empty ones too). */
+export interface LightsAdminView {
+  devices: LightDevice[];
+  stations: (StationLights & { name: string })[];
+}
+
+/** What testing a device found: its name and presets, or why it couldn't be reached. */
+export interface LightDeviceTest {
+  name: string;
+  version: string;
+  presets: { id: number; name: string }[];
+}
+
 /** Whether this is the public site (public-stats), and whether this device has logged in. */
 export interface PublicSession {
   public: boolean;
