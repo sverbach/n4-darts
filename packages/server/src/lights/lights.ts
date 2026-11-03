@@ -91,7 +91,12 @@ function events(value: unknown): Partial<Record<LightEvent, EventLight>> {
   return out;
 }
 
-export function createLights(db: Db, wled: WledClient) {
+export function createLights(
+  db: Db,
+  wled: WledClient,
+  /** Told when a test started an event's preset, so the base comes back after it. */
+  played?: (stationId: number, seconds: number) => void,
+) {
   const device = (id: number): LightDevice => {
     const found = db.lightDevices().find((d) => d.id === id);
     if (!found) throw new LightsError("no such device", "missing");
@@ -171,7 +176,7 @@ export function createLights(db: Db, wled: WledClient) {
       return { ...info, presets };
     },
 
-    /** Starts the event's preset on the station's device once. */
+    /** Starts the event's preset on the station's device, as if it had happened. */
     async testEvent(stationId: number, event: unknown) {
       if (!LIGHT_EVENTS.includes(event as LightEvent)) {
         throw new LightsError(`no such event: ${String(event)}`, "invalid");
@@ -182,6 +187,7 @@ export function createLights(db: Db, wled: WledClient) {
       if (!light) throw new LightsError("the event has no preset", "invalid");
       const { url } = device(lights.deviceId);
       await reach(() => wled.setPreset(url, light.preset));
+      played?.(stationId, light.seconds);
     },
   };
 }

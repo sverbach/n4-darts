@@ -430,6 +430,14 @@ export interface BoardDiagnostics {
   lastCommand: { name: string; ms: number; ok: boolean; at: string } | null;
 }
 
+export interface LightDiagnostics {
+  device: string;
+  sent: number;
+  failed: number;
+  /** The last failure: why, and when. */
+  lastError: { message: string; at: string } | null;
+}
+
 /** GET /api/admin/diagnostics: whether the server keeps up (diagnostics ticket). */
 export interface DiagnosticsView {
   startedAt: string;
@@ -448,6 +456,8 @@ export interface DiagnosticsView {
   views: { kind: StreamKind; perMinute: number; averageMs: number | null; maxMs: number | null }[];
   database: { writesPerMinute: number; slowestMs: number | null; slowestWrite: string | null };
   boards: BoardDiagnostics[];
+  /** Calls to the WLED lights since the server started, per device; failures don't stop play. */
+  lights: LightDiagnostics[];
   /** The last 20 darts: from the board's message to the station's streams, newest first. */
   darts: { station: number; name: string; ms: number; at: string }[];
   /** This request: whether it came through a proxy. */

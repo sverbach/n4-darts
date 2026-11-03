@@ -48,7 +48,7 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
   );
 }
 
-/** Whether the server keeps up: event loop, live streams, views, database, boards and darts. */
+/** Whether the server keeps up: event loop, live streams, views, database, boards, lights and darts. */
 export function DiagnosticsAdmin() {
   // Pushed by the server every 2 seconds while the page is open; closing it stops the costlier timings.
   const { view, connected, failed } = useLive<DiagnosticsView>("/api/admin/diagnostics/live");
@@ -161,6 +161,25 @@ export function DiagnosticsAdmin() {
           </Table>
         )}
       </Section>
+
+      {view.lights.length > 0 && (
+        <Section title="Lights" hint="Calls since the server started">
+          <Table head={["Device", "Sent", "Failed", "Last failure"]}>
+            {view.lights.map((l) => (
+              <tr key={l.device}>
+                <td>{l.device}</td>
+                <td>{l.sent}</td>
+                <td className={l.failed > 0 ? "text-warn" : ""}>{l.failed}</td>
+                <td className="text-muted">
+                  {l.lastError
+                    ? `${l.lastError.message} · ${new Date(l.lastError.at).toLocaleTimeString()}`
+                    : "–"}
+                </td>
+              </tr>
+            ))}
+          </Table>
+        </Section>
+      )}
 
       <Section title="Live streams" hint={`${view.streams.length} open`}>
         {view.streams.length === 0 ? (

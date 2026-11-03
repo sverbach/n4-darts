@@ -73,6 +73,7 @@ export function createDiagnostics() {
   const views = new Map<StreamKind, Window>();
   const writes = new Window();
   const darts: DiagnosticsView["darts"] = [];
+  const lights = new Map<string, DiagnosticsView["lights"][number]>();
 
   /** After a full minute, keeps that minute's numbers and starts the next. */
   function rollMinute() {
@@ -150,6 +151,17 @@ export function createDiagnostics() {
       darts.length = Math.min(darts.length, LAST_DARTS);
     },
 
+    /** A call to a WLED device finished: `error` says why it failed. */
+    light(device: string, error?: string) {
+      const entry = lights.get(device) ?? { device, sent: 0, failed: 0, lastError: null };
+      lights.set(device, entry);
+      entry.sent += 1;
+      if (error !== undefined) {
+        entry.failed += 1;
+        entry.lastError = { message: error, at: new Date().toISOString() };
+      }
+    },
+
     /** What the page shows, the same for every viewer (their own request is `requestInfo`). */
     view(boards: BoardDiagnostics[]): Omit<DiagnosticsView, "request"> {
       rollMinute();
@@ -178,6 +190,7 @@ export function createDiagnostics() {
           return { writesPerMinute: count, slowestMs: maxMs, slowestWrite: slowest };
         })(),
         boards,
+        lights: [...lights.values()],
         darts,
       };
     },

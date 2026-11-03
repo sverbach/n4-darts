@@ -11,6 +11,7 @@ import { createCalloutPacks } from "./callouts/packs.ts";
 import type { Db } from "./db.ts";
 import { createLights } from "./lights/lights.ts";
 import { registerLights } from "./lights/lightsRoutes.ts";
+import { startLightShow } from "./lights/show.ts";
 import { createWledClient, type WledClient } from "./lights/wled.ts";
 import { displayView } from "./live/display.ts";
 import { createChangeFeed } from "./live/live.ts";
@@ -99,7 +100,12 @@ export function buildApp(options: AppOptions = {}) {
     }
   }
 
-  if (db) registerLights(app, createLights(db, options.wled ?? createWledClient()));
+  if (db) {
+    const wled = options.wled ?? createWledClient();
+    const show = feed ? startLightShow(db, stations, feed, wled) : undefined;
+    if (show) app.addHook("onClose", async () => show.stop());
+    registerLights(app, createLights(db, wled, show?.played));
+  }
 
   registerDiagnostics(app, stations, options.diagnosticsRefreshMs);
   registerCallouts(app, createCalloutPacks(options.calloutsDir));
