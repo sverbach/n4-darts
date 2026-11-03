@@ -1,6 +1,6 @@
 # Public read-only stats
 
-Status: done
+Status: ready-for-human
 
 Players want their stats, last matches and tournaments from outside the room's LAN. Nothing may be created or changed from outside: no players, matches, tournaments, corrections, stations.
 
@@ -26,3 +26,4 @@ New ADR 0008 (public read-only mode): amends ADR 0004 (no logins: the public sit
 5. `05-match-page.md`: a match's detail page, read-only (API and web, LAN too)
 6. `06-public-web-mode.md`: the web app in public mode: only public pages and links
 7. `07-deploy-public.md`: docker compose service, nginx example (TLS, rate limit, noindex), README, ADR 0008
+8. `08-real-deploy-check.md`: the public site on the home server behind nginx (needs the user)
