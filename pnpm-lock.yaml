@@ -214,6 +214,9 @@ importers:
       '@n4/board-sim':
         specifier: workspace:*
         version: link:../../tools/board-sim
+      '@n4/wled-sim':
+        specifier: workspace:*
+        version: link:../../tools/wled-sim
 
   packages/web:
     dependencies:
@@ -273,6 +276,8 @@ importers:
       '@types/ws':
         specifier: 8.18.2
         version: 8.18.2
+
+  tools/wled-sim: {}
 
 packages:
 

@@ -11,6 +11,7 @@ COPY packages/server/package.json packages/server/
 COPY packages/web/package.json packages/web/
 COPY packages/e2e/package.json packages/e2e/
 COPY tools/board-sim/package.json tools/board-sim/
+COPY tools/wled-sim/package.json tools/wled-sim/
 RUN pnpm install --frozen-lockfile
 
 COPY . .

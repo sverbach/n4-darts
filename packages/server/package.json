@@ -15,7 +15,8 @@
     "fflate": "0.8.3"
   },
   "devDependencies": {
-    "@n4/board-sim": "workspace:*"
+    "@n4/board-sim": "workspace:*",
+    "@n4/wled-sim": "workspace:*"
   },
   "exports": {
     "./api": {

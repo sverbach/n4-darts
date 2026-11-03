@@ -15,6 +15,7 @@ export default defineConfig({
       { extends: true, test: { name: "server", root: "packages/server", environment: "node" } },
       { extends: true, test: { name: "web", root: "packages/web" } },
       { extends: true, test: { name: "board-sim", root: "tools/board-sim", environment: "node" } },
+      { extends: true, test: { name: "wled-sim", root: "tools/wled-sim", environment: "node" } },
     ],
   },
 });
