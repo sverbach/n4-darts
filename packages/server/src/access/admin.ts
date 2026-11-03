@@ -8,16 +8,17 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * The token a logged-in device keeps: derived from the PIN alone, so a device stays logged in
  * across server restarts and is logged out when the PIN changes.
  */
-const tokenFor = (pin: string) => createHmac("sha256", pin).update("n4-darts admin").digest("hex");
+const tokenFor = (pin: string, scope: string) =>
+  createHmac("sha256", pin).update(`n4-darts ${scope}`).digest("hex");
 
 function sameText(a: string, b: string) {
   const [x, y] = [Buffer.from(a), Buffer.from(b)];
   return x.length === y.length && timingSafeEqual(x, y);
 }
 
-/** Without a PIN, /admin is open. */
-export function createAccess(pin: string | undefined) {
-  const token = pin ? tokenFor(pin) : undefined;
+/** Without a PIN, /admin is open. `scope` keeps the public site's token apart from admin's. */
+export function createAccess(pin: string | undefined, scope: "admin" | "public" = "admin") {
+  const token = pin ? tokenFor(pin, scope) : undefined;
   return {
     /** The token for a correct PIN; undefined while /admin is open. */
     token,

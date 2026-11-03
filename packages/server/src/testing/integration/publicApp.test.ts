@@ -1,8 +1,11 @@
+import { spawnSync } from "node:child_process";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { FastifyInstance } from "fastify";
+import { fileURLToPath } from "node:url";
+import type { FastifyInstance, InjectOptions, LightMyRequestResponse } from "fastify";
 import { afterEach, describe, expect, it } from "vitest";
+import { createAccess } from "../../access/admin.ts";
 import { buildApp, buildPublicApp } from "../../app.ts";
 import { type Db, openDb } from "../../db.ts";
 import { createStationRegistry, type StationRegistry } from "../../stations/stations.ts";
@@ -17,7 +20,14 @@ const PUBLIC_ROUTES = [
   "GET /api/tournaments",
   "GET /api/tournaments/:id",
   "GET /api/matches/:id",
+  "GET /api/public/session",
+  "POST /api/public/login",
+  "POST /api/public/logout",
 ];
+const PIN = "4321";
+const LOGGED_IN = `n4_public=${createAccess(PIN, "public").token}`;
+
+type Inject = (options: InjectOptions | string) => Promise<LightMyRequestResponse>;
 
 /** Every registered route as "METHOD /path" (HEAD left out: Fastify adds it to each GET). */
 function routes(app: FastifyInstance): string[] {
@@ -53,13 +63,21 @@ function roomServer(path: string) {
     gatewayOptions: { reconnectDelayMs: 1000, maxReconnectDelayMs: 1000 },
   });
   opened.push(db, registry);
-  return { db, app: buildApp({ db, stations: registry, adminPin: "1234" }) };
+  const app = buildApp({ db, stations: registry, adminPin: "1234" });
+  const inject: Inject = (options) => app.inject(options);
+  return { db, app, inject };
 }
 
-function publicServer(path: string): { db: Db; app: FastifyInstance } {
+/** The public server; `inject` asks as a device that has logged in. */
+function publicServer(path: string): { db: Db; app: FastifyInstance; inject: Inject } {
   const db = openDb(path, { readOnly: true });
   opened.push(db);
-  return { db, app: buildPublicApp({ db }) };
+  const app = buildPublicApp({ db, pin: PIN, wrongPinDelayMs: 0 });
+  const inject: Inject = (options) => {
+    const asked = typeof options === "string" ? { url: options } : options;
+    return app.inject({ ...asked, headers: { ...asked.headers, cookie: LOGGED_IN } });
+  };
+  return { db, app, inject };
 }
 
 describe("the public server", () => {
@@ -76,7 +94,7 @@ describe("the public server", () => {
     expect(privateRoutes.length).toBeGreaterThan(30);
     for (const route of privateRoutes) {
       const [method, url] = route.split(" ") as [string, string];
-      const res = await site.app.inject({
+      const res = await site.inject({
         method: method as "GET",
         url: url.replace(/:\w+/g, "x"),
       });
@@ -107,7 +125,7 @@ describe("the public server", () => {
     room.db.addPlayer({ id: "bob", name: "Bob", archived: false });
     seedHistory(room.db, { matches: 1, playerIds: ["ann", "bob"] });
     const average = async () =>
-      ((await site.app.inject("/api/players/stats")).json() as { average: number }[])[0]?.average;
+      ((await site.inject("/api/players/stats")).json() as { average: number }[])[0]?.average;
 
     const before = await average();
     room.db.append("seed-0", {
@@ -117,6 +135,79 @@ describe("the public server", () => {
       source: "admin",
     });
     expect(await average()).not.toBe(before);
+  });
+
+  describe("the shared password", () => {
+    /** The public server on a database the room's server has set up. */
+    const sitePublic = () => {
+      const path = databaseFile();
+      roomServer(path);
+      return publicServer(path);
+    };
+
+    it("is needed for everything but logging in", async () => {
+      const site = sitePublic();
+      expect((await site.app.inject("/api/players/stats")).statusCode).toBe(401);
+      expect((await site.app.inject("/api/players/x/photo")).statusCode).toBe(401);
+      expect((await site.app.inject("/api/public/session")).json()).toEqual({
+        public: true,
+        authenticated: false,
+      });
+      expect((await site.inject("/api/players/stats")).statusCode).toBe(200);
+    });
+
+    it("logs a device in with the right PIN, and not with a wrong one", async () => {
+      const site = sitePublic();
+      const login = (pin: string, headers = {}) =>
+        site.app.inject({ method: "POST", url: "/api/public/login", payload: { pin }, headers });
+
+      expect((await login("0000")).statusCode).toBe(401);
+      const res = await login(PIN);
+      expect(res.statusCode).toBe(204);
+      const cookie = String(res.headers["set-cookie"]);
+      expect(cookie).toMatch(/HttpOnly/);
+      expect(cookie).not.toMatch(/Secure/);
+      const session = await site.app.inject({
+        url: "/api/public/session",
+        headers: { cookie: cookie.split(";")[0] as string },
+      });
+      expect(session.json()).toEqual({ public: true, authenticated: true });
+
+      const tls = await login(PIN, { "x-forwarded-proto": "https" });
+      expect(String(tls.headers["set-cookie"])).toMatch(/Secure/);
+    });
+
+    it("doesn't take the admin PIN's cookie", async () => {
+      const site = sitePublic();
+      const res = await site.app.inject({
+        url: "/api/players/stats",
+        headers: { cookie: `n4_public=${createAccess(PIN).token}` },
+      });
+      expect(res.statusCode).toBe(401);
+    });
+
+    it("must be set, or the public server doesn't start", () => {
+      const main = fileURLToPath(new URL("../../main.ts", import.meta.url));
+      const run = spawnSync(
+        process.execPath,
+        ["--conditions=source", "--experimental-strip-types", main],
+        {
+          env: { ...process.env, N4_PUBLIC: "1", N4_PUBLIC_PIN: "", DATA_DIR: databaseFile() },
+          encoding: "utf8",
+          timeout: 10_000,
+        },
+      );
+      expect(run.status).toBe(1);
+      expect(run.stderr).toMatch(/N4_PUBLIC_PIN/);
+    });
+
+    it("tells the room's web app it isn't the public site", async () => {
+      const room = roomServer(databaseFile());
+      expect((await room.inject("/api/public/session")).json()).toEqual({
+        public: false,
+        authenticated: true,
+      });
+    });
   });
 
   describe("a player hidden from the public site", () => {
@@ -130,14 +221,14 @@ describe("the public server", () => {
       seedHistory(room.db, { matches: 2, playerIds: ["p-ann", "p-bob"] });
       return { room, site };
     }
-    const get = async (app: FastifyInstance, url: string) => {
-      const res = await app.inject(url);
+    const get = async (server: { inject: Inject }, url: string) => {
+      const res = await server.inject(url);
       return { status: res.statusCode, body: res.body };
     };
 
     it("is 'Player' on the leaderboard, without photo or id", async () => {
       const { site } = history();
-      const board = await get(site.app, "/api/players/stats");
+      const board = await get(site, "/api/players/stats");
       expect(board.body).not.toMatch(/Ann|p-ann/);
       const rows = JSON.parse(board.body) as { playerId: string; name: string; photo: unknown }[];
       expect(rows.find((r) => r.name === "Player")).toMatchObject({
@@ -148,14 +239,14 @@ describe("the public server", () => {
 
     it("has no public profile or photo", async () => {
       const { site } = history();
-      expect((await get(site.app, "/api/players/p-ann/stats")).status).toBe(404);
-      expect((await get(site.app, "/api/players/hidden-1/stats")).status).toBe(404);
-      expect((await get(site.app, "/api/players/p-ann/photo")).status).toBe(404);
+      expect((await get(site, "/api/players/p-ann/stats")).status).toBe(404);
+      expect((await get(site, "/api/players/hidden-1/stats")).status).toBe(404);
+      expect((await get(site, "/api/players/p-ann/photo")).status).toBe(404);
     });
 
     it("is 'Player' in others' profiles", async () => {
       const { site } = history();
-      const profile = await get(site.app, "/api/players/p-bob/stats");
+      const profile = await get(site, "/api/players/p-bob/stats");
       expect(profile.status).toBe(200);
       expect(profile.body).not.toMatch(/Ann|p-ann/);
       expect(JSON.parse(profile.body).recent[0].opponents).toEqual(["Player"]);
@@ -172,31 +263,31 @@ describe("the public server", () => {
         "p-dee",
       ]);
 
-      const page = await get(site.app, `/api/tournaments/${id}`);
+      const page = await get(site, `/api/tournaments/${id}`);
       expect(page.status).toBe(200);
       expect(page.body).toMatch(/Bob/);
       expect(page.body).not.toMatch(/Ann|p-ann/);
       expect(page.body).toMatch(/"Player"/);
-      expect((await get(site.app, "/api/tournaments")).body).not.toMatch(/Ann|p-ann/);
-      expect((await get(room.app, `/api/tournaments/${id}`)).body).toMatch(/Ann/);
+      expect((await get(site, "/api/tournaments")).body).not.toMatch(/Ann|p-ann/);
+      expect((await get(room, `/api/tournaments/${id}`)).body).toMatch(/Ann/);
     });
 
     it("is 'Player' on a match's page", async () => {
       const { room, site } = history();
-      const page = await get(site.app, "/api/matches/seed-0");
+      const page = await get(site, "/api/matches/seed-0");
       expect(page.status).toBe(200);
       expect(page.body).toMatch(/Bob/);
       expect(page.body).not.toMatch(/Ann|p-ann/);
       expect(JSON.parse(page.body).players.map((p: { name: string }) => p.name)).toContain(
         "Player",
       );
-      expect((await get(room.app, "/api/matches/seed-0")).body).toMatch(/Ann/);
+      expect((await get(room, "/api/matches/seed-0")).body).toMatch(/Ann/);
     });
 
     it("stays as they are on the room's pages", async () => {
       const { room } = history();
-      expect((await get(room.app, "/api/players/stats")).body).toMatch(/Ann/);
-      expect((await get(room.app, "/api/players/p-ann/stats")).status).toBe(200);
+      expect((await get(room, "/api/players/stats")).body).toMatch(/Ann/);
+      expect((await get(room, "/api/players/p-ann/stats")).status).toBe(200);
     });
   });
 

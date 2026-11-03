@@ -4,7 +4,7 @@
 import { existsSync } from "node:fs";
 import fastifyStatic from "@fastify/static";
 import Fastify, { type FastifyInstance } from "fastify";
-import { registerAdmin } from "./access/accessRoutes.ts";
+import { registerAdmin, registerPublicAccess, registerRoomSession } from "./access/accessRoutes.ts";
 import { createAccess } from "./access/admin.ts";
 import { registerCallouts } from "./callouts/calloutsRoutes.ts";
 import { createCalloutPacks } from "./callouts/packs.ts";
@@ -59,6 +59,7 @@ export function buildApp(options: AppOptions = {}) {
 
   app.get("/api/health", async () => ({ ok: true }));
   registerAdmin(app, createAccess(options.adminPin));
+  registerRoomSession(app);
 
   const feed = db ? createChangeFeed(db, stations) : undefined;
   if (feed) app.addHook("onClose", async () => feed.close());
@@ -103,7 +104,11 @@ export function buildApp(options: AppOptions = {}) {
 export interface PublicAppOptions {
   /** Opened read-only: the room's server keeps it up to date. */
   db: Db;
+  /** The group's shared password; required. */
+  pin: string;
   webDir?: string;
+  /** Tests shorten it. */
+  wrongPinDelayMs?: number;
 }
 
 /**
@@ -131,6 +136,9 @@ export function buildPublicApp(options: PublicAppOptions) {
   });
 
   app.get("/api/health", async () => ({ ok: true }));
+  registerPublicAccess(app, createAccess(options.pin, "public"), {
+    wrongPinDelayMs: options.wrongPinDelayMs,
+  });
   const stats = createStats(db);
   registerStats(app, stats);
   registerPlayerPhoto(app, createPlayers(db));

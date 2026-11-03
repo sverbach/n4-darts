@@ -16,6 +16,17 @@ vi.mock("./features/stats/StatsPages.tsx", () => ({
   LeaderboardPage: () => "@@leaderboard@@",
   ProfilePage: ({ id }: { id: string }) => `@@profile ${id}@@`,
 }));
+const mode = vi.hoisted(() => ({ publicSite: false }));
+vi.mock("./features/public/PublicGate.tsx", () => ({
+  PublicGate: ({ room, site }: { room: unknown; site: unknown }) => (mode.publicSite ? site : room),
+}));
+vi.mock("./features/stats/TournamentPages.tsx", () => ({
+  TournamentsPage: () => "@@tournaments@@",
+  TournamentPage: ({ id }: { id: string }) => `@@tournament ${id}@@`,
+}));
+vi.mock("./features/stats/MatchPage.tsx", () => ({
+  MatchPage: ({ id }: { id: string }) => `@@match ${id}@@`,
+}));
 vi.mock("./features/admin/AdminPage.tsx", async (actual) => ({
   ...(await actual<typeof import("./features/admin/AdminPage.tsx")>()),
   AdminPage: ({ section }: { section: string }) => `@@admin ${section}@@`,
@@ -36,6 +47,7 @@ function pageAt(path: string) {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  mode.publicSite = false;
 });
 
 describe("routes", () => {
@@ -51,6 +63,9 @@ describe("routes", () => {
     ["/players", "leaderboard"],
     ["/players/", "leaderboard"],
     ["/players/Ann%20B", "profile Ann B"],
+    ["/tournaments", "tournaments"],
+    ["/tournaments/t1", "tournament t1"],
+    ["/matches/m1", "match m1"],
     ["/admin", "admin tournament"],
     ["/admin/", "admin tournament"],
     ["/admin/players", "admin players"],
@@ -60,4 +75,25 @@ describe("routes", () => {
   ])("%s shows %s", (path, page) => {
     expect(pageAt(path)).toBe(page);
   });
+});
+
+describe("routes on the public site", () => {
+  it.each([
+    ["/players", "leaderboard"],
+    ["/players/p1", "profile p1"],
+    ["/tournaments", "tournaments"],
+    ["/tournaments/t1", "tournament t1"],
+    ["/matches/m1", "match m1"],
+  ])("%s shows %s", (path, page) => {
+    mode.publicSite = true;
+    expect(pageAt(path)).toBe(page);
+  });
+
+  it.each(["/", "/station/1", "/watch/1", "/display", "/admin", "/admin/players"])(
+    "%s shows nothing of the room's pages",
+    (path) => {
+      mode.publicSite = true;
+      expect(pageAt(path)).toBe("");
+    },
+  );
 });

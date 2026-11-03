@@ -15,8 +15,13 @@ const seed = process.env.STATIONS ?? "1=http://localhost:3180";
 const adminPin = process.env.ADMIN_PIN || undefined;
 
 if (process.env.N4_PUBLIC === "1") {
+  const pin = process.env.N4_PUBLIC_PIN;
+  if (!pin) {
+    console.error("N4_PUBLIC_PIN is not set: the public site needs a password");
+    process.exit(1);
+  }
   const db = openDb(join(dataDir, "n4-darts.db"), { readOnly: true });
-  const app = buildPublicApp({ db, webDir });
+  const app = buildPublicApp({ db, pin, webDir });
   await app.listen({ host: "0.0.0.0", port });
   console.log(`n4-darts public site (read-only) listening on http://0.0.0.0:${port}`);
   const shutdown = async () => {

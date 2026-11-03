@@ -92,6 +92,12 @@ export interface AdminPlayer extends Player {
   rating: number | null;
 }
 
+/** Whether this is the public site (public-stats), and whether this device has logged in. */
+export interface PublicSession {
+  public: boolean;
+  authenticated: boolean;
+}
+
 export interface AdminSession {
   /** False when the server has no `ADMIN_PIN`: /admin is open. */
   pinRequired: boolean;

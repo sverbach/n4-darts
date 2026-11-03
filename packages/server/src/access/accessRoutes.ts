@@ -2,7 +2,7 @@
 // other /api/admin/* route.
 
 import type { FastifyInstance } from "fastify";
-import type { AdminSession } from "../api.ts";
+import type { AdminSession, PublicSession } from "../api.ts";
 import type { Access } from "./admin.ts";
 
 const COOKIE = "n4_admin";
@@ -19,8 +19,9 @@ function cookieValue(header: string | undefined, name: string) {
   return undefined;
 }
 
-const setCookie = (value: string, maxAge: number) =>
-  `${COOKIE}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}`;
+const cookie = (name: string, value: string, maxAge: number, secure = false) =>
+  `${name}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure ? "; Secure" : ""}`;
+const setCookie = (value: string, maxAge: number) => cookie(COOKIE, value, maxAge);
 
 /** Adds login/logout/session routes and guards every other `/api/admin/*` route. */
 export function registerAdmin(app: FastifyInstance, access: Access) {
@@ -53,5 +54,74 @@ export function registerAdmin(app: FastifyInstance, access: Access) {
 
   app.post("/api/admin/logout", async (_request, reply) =>
     reply.header("set-cookie", setCookie("", 0)).code(204).send(),
+  );
+}
+
+const PUBLIC_COOKIE = "n4_public";
+/** Routes of the public site that work without logging in. */
+const PUBLIC_OPEN = new Set([
+  "/api/health",
+  "/api/public/login",
+  "/api/public/logout",
+  "/api/public/session",
+]);
+/** How long a wrong PIN waits before its answer. */
+const WRONG_PIN_DELAY_MS = 1000;
+
+/**
+ * The public site's shared PIN (docs/adr/0008): login/logout/session, and a guard in front of
+ * every other /api route. The cookie is Secure when nginx says the request came over TLS.
+ */
+export function registerPublicAccess(
+  app: FastifyInstance,
+  access: Access,
+  options: { wrongPinDelayMs?: number | undefined } = {},
+) {
+  const authenticated = (cookies: string | undefined) =>
+    access.allows(cookieValue(cookies, PUBLIC_COOKIE));
+
+  app.addHook("onRequest", async (request, reply) => {
+    const path = request.url.split("?")[0] as string;
+    if (!path.startsWith("/api/") || PUBLIC_OPEN.has(path)) return;
+    if (!authenticated(request.headers.cookie)) {
+      return reply.code(401).send({ error: "password required" });
+    }
+  });
+
+  app.get(
+    "/api/public/session",
+    async (request): Promise<PublicSession> => ({
+      public: true,
+      authenticated: authenticated(request.headers.cookie),
+    }),
+  );
+
+  app.post<{ Body: { pin?: unknown } }>("/api/public/login", async (request, reply) => {
+    if (!access.token || !access.isPin(String(request.body?.pin ?? ""))) {
+      await new Promise((resolve) =>
+        setTimeout(resolve, options.wrongPinDelayMs ?? WRONG_PIN_DELAY_MS),
+      );
+      return reply.code(401).send({ error: "wrong password" });
+    }
+    const secure = request.headers["x-forwarded-proto"] === "https";
+    return reply
+      .header("set-cookie", cookie(PUBLIC_COOKIE, access.token, MAX_AGE, secure))
+      .code(204)
+      .send();
+  });
+
+  app.post("/api/public/logout", async (_request, reply) =>
+    reply
+      .header("set-cookie", cookie(PUBLIC_COOKIE, "", 0))
+      .code(204)
+      .send(),
+  );
+}
+
+/** On the room's server: not the public site, and nothing to log in to. */
+export function registerRoomSession(app: FastifyInstance) {
+  app.get(
+    "/api/public/session",
+    async (): Promise<PublicSession> => ({ public: false, authenticated: true }),
   );
 }
