@@ -1,6 +1,6 @@
 # Deploying the public site
 
-Status: needs-triage
+Status: ready-for-agent
 Type: task
 Blocked by: 01, 02, 06
 

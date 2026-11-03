@@ -1,6 +1,6 @@
 # The web app in public mode
 
-Status: needs-triage
+Status: ready-for-agent
 Type: task
 Blocked by: 01, 02, 04, 05
 

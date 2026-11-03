@@ -3,7 +3,7 @@
 
 import { existsSync } from "node:fs";
 import fastifyStatic from "@fastify/static";
-import Fastify from "fastify";
+import Fastify, { type FastifyInstance } from "fastify";
 import { registerAdmin } from "./access/accessRoutes.ts";
 import { createAccess } from "./access/admin.ts";
 import { registerCallouts } from "./callouts/calloutsRoutes.ts";
@@ -16,7 +16,7 @@ import { createMatches } from "./matches/matches.ts";
 import { registerMatches } from "./matches/matchesRoutes.ts";
 import { registerDiagnostics } from "./operations/operationsRoutes.ts";
 import { createPlayers } from "./players/players.ts";
-import { registerPlayers } from "./players/playersRoutes.ts";
+import { registerPlayerPhoto, registerPlayers } from "./players/playersRoutes.ts";
 import { ratingOf } from "./ratings/ratings.ts";
 import { createScheduler, type SchedulerOptions, withQueue } from "./scheduling/scheduler.ts";
 import type { Station } from "./stations/station.ts";
@@ -96,14 +96,38 @@ export function buildApp(options: AppOptions = {}) {
   registerDiagnostics(app, stations, options.diagnosticsRefreshMs);
   registerCallouts(app, createCalloutPacks(options.calloutsDir));
 
-  if (options.webDir && existsSync(options.webDir)) {
-    app.register(fastifyStatic, { root: options.webDir });
-    // Client-side routes such as /station/1 all load the SPA.
-    app.setNotFoundHandler((request, reply) => {
-      if (request.url.startsWith("/api/")) return reply.code(404).send({ error: "not found" });
-      return reply.sendFile("index.html");
-    });
-  }
-
+  serveWeb(app, options.webDir);
   return app;
+}
+
+export interface PublicAppOptions {
+  /** Opened read-only: the room's server keeps it up to date. */
+  db: Db;
+  webDir?: string;
+}
+
+/**
+ * The public site (docs/adr/0008): only the routes registered here, all reads. Anything else
+ * answers 404; nothing runs in the background.
+ */
+export function buildPublicApp(options: PublicAppOptions) {
+  const app = Fastify({ logger: false });
+  const { db } = options;
+
+  app.get("/api/health", async () => ({ ok: true }));
+  registerStats(app, createStats(db));
+  registerPlayerPhoto(app, createPlayers(db));
+
+  serveWeb(app, options.webDir);
+  return app;
+}
+
+function serveWeb(app: FastifyInstance, webDir: string | undefined) {
+  if (!webDir || !existsSync(webDir)) return;
+  app.register(fastifyStatic, { root: webDir });
+  // Client-side routes such as /station/1 all load the SPA.
+  app.setNotFoundHandler((request, reply) => {
+    if (request.url.startsWith("/api/")) return reply.code(404).send({ error: "not found" });
+    return reply.sendFile("index.html");
+  });
 }

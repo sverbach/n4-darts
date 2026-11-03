@@ -65,17 +65,7 @@ export function registerPlayers(
     (_request, body, done) => done(null, body),
   );
 
-  app.get<{ Params: { id: string }; Querystring: { v?: string } }>(
-    "/api/players/:id/photo",
-    async (request, reply) => {
-      const photo = players.photo(request.params.id);
-      if (!photo) return reply.code(404).send({ error: "no photo" });
-      // A versioned URL never changes; without a version, always ask again.
-      const cache =
-        request.query.v === photo.version ? "public, max-age=31536000, immutable" : "no-cache";
-      return reply.type("image/jpeg").header("cache-control", cache).send(Buffer.from(photo.jpeg));
-    },
-  );
+  registerPlayerPhoto(app, players);
 
   app.put<{ Params: { id: string }; Body: Buffer }>(
     "/api/admin/players/:id/photo",
@@ -92,5 +82,20 @@ export function registerPlayers(
       players.remove(request.params.id);
       return reply.code(204).send();
     }),
+  );
+}
+
+/** A player's photo: open to everyone, also on the public site. */
+export function registerPlayerPhoto(app: FastifyInstance, players: Pick<Players, "photo">) {
+  app.get<{ Params: { id: string }; Querystring: { v?: string } }>(
+    "/api/players/:id/photo",
+    async (request, reply) => {
+      const photo = players.photo(request.params.id);
+      if (!photo) return reply.code(404).send({ error: "no photo" });
+      // A versioned URL never changes; without a version, always ask again.
+      const cache =
+        request.query.v === photo.version ? "public, max-age=31536000, immutable" : "no-cache";
+      return reply.type("image/jpeg").header("cache-control", cache).send(Buffer.from(photo.jpeg));
+    },
   );
 }

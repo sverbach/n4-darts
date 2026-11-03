@@ -138,6 +138,8 @@ export interface Db {
   backupTo(path: string): void;
   /** Called after every write; `matchId` names the match it touched, if any. */
   onChange(listener: (change: DbChange) => void): () => void;
+  /** Changes whenever another connection (another process) has written to the database. */
+  dataVersion(): number;
   close(): void;
 }
 
@@ -238,17 +240,17 @@ const toPlayer = (row: PlayerRow): Player => ({
 /** Names are unique ignoring case, including non-ASCII letters (SQLite's NOCASE is ASCII only). */
 const nameKey = (name: string) => name.toLocaleLowerCase("und");
 
-/** Opens (and if needed creates) the database; `:memory:` for tests. */
-export function openDb(path: string): Db {
-  const db = new DatabaseSync(path);
+const userVersion = (db: DatabaseSync) =>
+  (db.prepare("pragma user_version").get() as { user_version: number }).user_version;
+
+/** Creates the tables and brings an older database up to SCHEMA_VERSION. */
+function migrate(db: DatabaseSync) {
   // `synchronous = normal`: in WAL mode a write no longer waits for the disk to confirm it, only a
   // checkpoint does. That wait blocks the one thread every dart goes through: on a slow disk a
   // single write took up to 300 ms. A crash or restart of the server still loses nothing; a power
   // cut or OS crash can lose the last write or two (Q-03).
   db.exec("pragma journal_mode = wal; pragma synchronous = normal; pragma foreign_keys = on;");
-  const { user_version: version } = db.prepare("pragma user_version").get() as {
-    user_version: number;
-  };
+  const version = userVersion(db);
   if (version < 1) db.exec("drop table if exists match_events; drop table if exists matches;");
   db.exec(`
     create table if not exists meta (
@@ -327,7 +329,24 @@ export function openDb(path: string): Db {
     create index if not exists matches_by_tournament on matches(tournament_id);
     pragma user_version = ${SCHEMA_VERSION};
   `);
+}
 
+/** Opens (and if needed creates) the database; `:memory:` for tests. */
+export function openDb(path: string, options: { readOnly?: boolean } = {}): Db {
+  const db = new DatabaseSync(path, { readOnly: options.readOnly ?? false });
+  if (options.readOnly) {
+    const version = userVersion(db);
+    if (version !== SCHEMA_VERSION) {
+      db.close();
+      throw new Error(
+        `${path} has schema version ${version}, this server needs ${SCHEMA_VERSION}: start the room's server on it first`,
+      );
+    }
+  } else {
+    migrate(db);
+  }
+
+  const selectDataVersion = db.prepare("pragma data_version");
   const selectStations = db.prepare("select * from stations order by id");
   const selectStation = db.prepare("select * from stations where id = ?");
   const upsertStation = db.prepare(
@@ -698,6 +717,9 @@ export function openDb(path: string): Db {
     },
     backupTo(path) {
       db.prepare("vacuum into ?").run(path);
+    },
+    dataVersion() {
+      return (selectDataVersion.get() as { data_version: number }).data_version;
     },
     close() {
       db.close();

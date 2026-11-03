@@ -1,6 +1,6 @@
 # Past tournaments: a list and a page each
 
-Status: needs-triage
+Status: ready-for-agent
 Type: task
 
 Only /display and admin show a finished tournament today, and only the latest.

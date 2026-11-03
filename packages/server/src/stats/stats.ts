@@ -90,8 +90,15 @@ export function createStats(db: Db) {
     if (matchId) cache.delete(matchId);
   });
 
+  let seen = db.dataVersion();
+
   /** Every player's numbers in a match (throwing order), and the day it was played. */
   function cached(match: MatchRecord) {
+    const version = db.dataVersion();
+    if (version !== seen) {
+      seen = version;
+      cache.clear();
+    }
     let entry = cache.get(match.id);
     if (!entry) {
       const timed = db.timedEvents(match.id);

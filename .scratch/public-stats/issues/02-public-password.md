@@ -1,6 +1,6 @@
 # A shared password for the public site
 
-Status: needs-triage
+Status: ready-for-agent
 Type: task
 Blocked by: 01
 

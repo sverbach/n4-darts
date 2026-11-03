@@ -1,6 +1,6 @@
 # Public read-only stats
 
-Status: needs-triage
+Status: ready-for-agent
 
 Players want their stats, last matches and tournaments from outside the room's LAN. Nothing may be created or changed from outside: no players, matches, tournaments, corrections, stations.
 

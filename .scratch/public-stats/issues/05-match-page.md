@@ -1,6 +1,6 @@
 # A match's page, read-only
 
-Status: needs-triage
+Status: ready-for-agent
 Type: task
 
 ## What to do

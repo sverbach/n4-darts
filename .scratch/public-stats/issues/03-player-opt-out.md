@@ -1,6 +1,6 @@
 # Players can be hidden from the public site
 
-Status: needs-triage
+Status: ready-for-agent
 Type: task
 
 ## What to do
