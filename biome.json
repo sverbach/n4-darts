@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/dist", "!.scratch", "!prototypes"]
+    "includes": ["**", "!**/dist", "!.scratch", "!prototypes", "!.claude"]
   },
   "formatter": {
     "indentStyle": "space",
