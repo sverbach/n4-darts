@@ -1,0 +1,17 @@
+language js
+
+// A route's request is unknown until it's parsed (docs/adr/0010).
+`$app.$verb<$types>($args)` as $hit where {
+  $app <: or {
+    `app`,
+    `zips`
+  },
+  $verb <: or {
+    `get`,
+    `post`,
+    `put`,
+    `patch`,
+    `delete`
+  },
+  register_diagnostic(span=$hit, message="Routes don't declare what a request holds (docs/adr/0010): parse request.body, request.params and request.query with parse() instead.")
+}

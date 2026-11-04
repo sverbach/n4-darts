@@ -1,0 +1,12 @@
+language js
+
+// Logic takes typed input; a request is parsed in its routes file first (docs/adr/0010).
+or {
+  JsFormalParameter(),
+  TsPropertySignatureTypeMember()
+} as $hit where {
+  $hit <: contains TsUnknownType(),
+  not $hit <: within JsCallArguments(),
+  not $hit <: within TsAsExpression(),
+  register_diagnostic(span=$hit, message="Logic takes typed input (docs/adr/0010): parse the request against a schema from api.ts in the routes file, and take the parsed type here.")
+}

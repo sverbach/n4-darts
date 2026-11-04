@@ -15,6 +15,7 @@ The decisions that are hard to reverse, each with its context and consequences:
 | [0007](../adr/0007-no-client-state-library.md) | No client state library: server data is pushed live, or read once |
 | [0008](../adr/0008-public-read-only-site.md) | A read-only public site, behind one shared password |
 | [0009](../adr/0009-wled-json-api-fire-and-forget.md) | Lights through WLED's JSON API, fire-and-forget |
+| [0010](../adr/0010-requests-parsed-with-zod-at-the-routes.md) | Requests are parsed with Zod at the routes |
 
 ## 9.2 Decision log
 
@@ -92,6 +93,14 @@ Details in `.scratch/board-menu-and-photos/spec.md`.
 ### Design system (2026-10-21)
 
 Details in `.scratch/design-system/spec.md`. The look, theming, styles and projector scaling are described in [section 8.6](08-crosscutting-concepts.md#86-user-interface-and-design-system).
+
+### Input validation (2026-11-04)
+
+Details in `.scratch/input-validation/spec.md`.
+
+- **Zod at the routes** (ADR 0010): every request is parsed before the logic sees it; schemas in `api.ts`, types derived from them; a 400 with a readable message for what doesn't fit.
+- **Stricter than before:** unknown fields, booleans and numbers sent as text, and an unknown `?view=` are refused instead of coerced. `paused`, `held` and a pin's `station` are required.
+- **Segments:** only what a board can report. 1–20 as single, double or treble; 25 as single or double; a miss is multiplier 0 with a number 0–20 (the nearest segment, or 0 for a bounce-out).
 
 ### Build order (done)
 

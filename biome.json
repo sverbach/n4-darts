@@ -100,8 +100,34 @@
         "packages/server/src/**",
         "!packages/server/src/**/*Routes.ts",
         "!packages/server/src/app.ts",
+        "!packages/server/src/api.ts",
+        "!packages/server/src/parse.ts",
         "!packages/server/src/**/*.test.ts"
       ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["fastify", "@fastify/*"],
+                    "message": "Logic has no HTTP in it (docs/architecture/05-building-block-view.md, 5.2): routes go in the component's *Routes.ts."
+                  },
+                  {
+                    "group": ["zod", "zod/*"],
+                    "message": "Requests are parsed in the routes files (docs/adr/0010): schemas go in api.ts, the helpers in parse.ts."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/server/src/api.ts", "packages/server/src/parse.ts"],
       "linter": {
         "rules": {
           "style": {
@@ -119,6 +145,23 @@
           }
         }
       }
+    },
+    {
+      "includes": [
+        "packages/server/src/**",
+        "!packages/server/src/**/*Routes.ts",
+        "!packages/server/src/app.ts",
+        "!packages/server/src/api.ts",
+        "!packages/server/src/parse.ts",
+        "!packages/server/src/db.ts",
+        "!packages/server/src/testing/**",
+        "!packages/server/src/**/*.test.ts"
+      ],
+      "plugins": ["./lint/typed-logic.grit"]
+    },
+    {
+      "includes": ["packages/server/src/**/*Routes.ts", "packages/server/src/app.ts"],
+      "plugins": ["./lint/no-route-generics.grit"]
     }
   ],
   "css": {

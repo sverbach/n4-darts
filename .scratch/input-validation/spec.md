@@ -1,6 +1,6 @@
 # Request input parsed with Zod at the routes
 
-Status: ready-for-agent
+Status: done
 
 Every request body, param and query string is parsed against a Zod schema in its routes file. The logic gets typed values and never sees `unknown`. Today each logic module checks its input by hand (`usableName(value: unknown)`, `preset(value: unknown)`, `(value as number) < 1`), and some routes declare a precise body type that nothing checks at runtime.
 

@@ -1,5 +1,5 @@
 // Reading a request's body, params or query string against a schema from api.ts. What doesn't fit
-// throws, and app.ts answers it with a 400.
+// throws, and app.ts answers it with a 400 (docs/adr/0010).
 
 import { z } from "zod";
 

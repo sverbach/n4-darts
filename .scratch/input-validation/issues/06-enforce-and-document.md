@@ -1,6 +1,6 @@
 # Keep it that way, and document it
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 02, 03, 04, 05
 
@@ -21,3 +21,18 @@ Blocked by: 02, 03, 04, 05
 
 - Adding `app.post<{ Body: { x: string } }>` to a routes file, or `function f(x: unknown)` to a logic file, fails `pnpm lint` or `pnpm test` with a message pointing at the ADR.
 - The ADR and docs are written; all checks pass.
+
+## Comments
+
+2026-11-04: Built.
+- **`zod` imports:** `biome.json`'s logic override now restricts `fastify` and `zod` together. `api.ts` and `parse.ts` got their own override with `fastify` only, since one file can't merge two `noRestrictedImports` overrides.
+- **No `unknown` in logic:** a Biome GritQL plugin works, and overrides can scope it, so no test was needed.
+  - `lint/typed-logic.grit` flags a `JsFormalParameter` or `TsPropertySignatureTypeMember` that contains `unknown`, in `packages/server/src/**` minus the routes files, `app.ts`, `api.ts`, `parse.ts`, `db.ts`, `testing/` and tests.
+  - It leaves out parameters of callbacks passed to a call (`.catch((error: unknown) => …)` in `show.ts`) and types inside an `as` cast (`wled.ts` reading the device's JSON).
+- **No route generics:** `lint/no-route-generics.grit` flags `app.`/`zips.` + `get`/`post`/`put`/`patch`/`delete` with type arguments, in the routes files and `app.ts`. The `Buffer` uploads parse their body too (`FileBody`), so no exception was needed. The last generic was in `statsRoutes.ts`, now parsed with `TextIdParams`.
+- **Proven by planting violations** (then removed): an `unknown` parameter, `{ name?: unknown }` and a `zod` import in `players.ts`, a `fastify` import in `players.ts` and in `api.ts`, and `app.post<{ Body: … }>` in a routes file. Each failed `biome lint` with its message pointing at the ADR.
+- **Docs:**
+  - `docs/adr/0010-requests-parsed-with-zod-at-the-routes.md`.
+  - Architecture section 2.3 (a convention bullet), 5.2 (the layering is now "routes parse, logic decides, `db.ts` stores", plus the lint rules), and a new 8.8 "Input validation". Operations moved to 8.9; nothing linked to the old number.
+  - Section 9: ADR 0010 in the table, and an "Input validation" entry in the decision log with what's stricter now and what a segment is.
+  - `GLOSSARY.md` needs nothing: "a miss or bounce-out" already covers it. `parse.ts`'s header points at the ADR again.

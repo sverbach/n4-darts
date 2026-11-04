@@ -53,7 +53,15 @@ Pages and their layouts are described in `docs/ui-pages.md`.
   - **`packages/e2e/`**: the browser tests.
 - **CI** runs all of it on every push; nothing ships that fails (Q-15).
 
-## 8.8 Operations
+## 8.8 Input validation
+
+Every request is parsed at its route before anything else happens (ADR 0010):
+- **Where:** the body, path params and query string go through `parse(schema, value)` in the component's `*Routes.ts`. The schemas are in `api.ts`, and the request types the web app uses are derived from them. Schemas only one route needs (a query string, a file's params) sit in that routes file.
+- **What a refusal looks like:** `400 { error }`, answered by one error handler in `app.ts`. The message is the schema's own where a page shows it ("start score must be a whole number of at least 2"), otherwise the field's path and Zod's message (`settings.outRule: Invalid option: …`).
+- **What the schema checks, and what the logic checks:** the schema checks types, ranges, allowed values and unknown keys (objects are strict), and does simple clean-ups (trimming a name, completing a device's address). The logic checks what needs the database or the match's state, and takes the parsed type.
+- **Enforced by the linter:** `zod` only in `api.ts`, `parse.ts`, the routes files and `app.ts`; no `unknown` parameter in the server's logic (`lint/typed-logic.grit`); no type arguments on route registrations (`lint/no-route-generics.grit`).
+
+## 8.9 Operations
 
 - **Backups:** at start if the newest is over a day old, then daily; the newest 30 are kept in `DATA_DIR/backups` (OPS-01).
 - **Diagnostics:** `/admin/diagnostics` shows event-loop delay, open live connections, view and write timings, board connections and the board-to-screen time of the last 20 darts. Counting is always on and costs next to nothing; the heavier timings only run while the page is open, and stop the moment the last one closes (OPS-03, Q-17). The page is a stream pushed every 2 seconds by one shared timer: the view is computed once per tick and sent to every open page, so a second viewer adds no work.
