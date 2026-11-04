@@ -1,8 +1,15 @@
 // Admin → Lights (behind the PIN): devices, each station's lights, and the test buttons.
 
 import type { FastifyInstance, FastifyReply } from "fastify";
+import {
+  LightDeviceChangesInput,
+  LightTestInput,
+  NewLightDeviceInput,
+  StationLightsInput,
+} from "../api.ts";
 import type { ChangeFeed } from "../live/live.ts";
 import { streamView } from "../live/liveRoutes.ts";
+import { IdParams, parse } from "../parse.ts";
 import { type Lights, LightsError } from "./lights.ts";
 
 const STATUS = { invalid: 400, missing: 404, unreachable: 502 } as const;
@@ -18,8 +25,6 @@ async function attempt<T>(reply: FastifyReply, run: () => T | Promise<T>) {
   }
 }
 
-type Body = Record<string, unknown> | undefined;
-
 export function registerLights(app: FastifyInstance, lights: Lights, feed?: ChangeFeed) {
   const base = "/api/admin/lights";
 
@@ -30,31 +35,38 @@ export function registerLights(app: FastifyInstance, lights: Lights, feed?: Chan
     );
   }
 
-  app.post<{ Body: Body }>(`${base}/devices`, async (request, reply) =>
-    attempt(reply, () => reply.code(201).send(lights.addDevice(request.body ?? {}))),
-  );
-  app.patch<{ Params: { id: string }; Body: Body }>(`${base}/devices/:id`, async (request, reply) =>
-    attempt(reply, () => lights.updateDevice(Number(request.params.id), request.body ?? {})),
-  );
-  app.delete<{ Params: { id: string } }>(`${base}/devices/:id`, async (request, reply) =>
-    attempt(reply, () => {
-      lights.removeDevice(Number(request.params.id));
+  app.post(`${base}/devices`, async (request, reply) => {
+    const input = parse(NewLightDeviceInput, request.body);
+    return attempt(reply, () => reply.code(201).send(lights.addDevice(input)));
+  });
+  app.patch(`${base}/devices/:id`, async (request, reply) => {
+    const { id } = parse(IdParams, request.params);
+    const input = parse(LightDeviceChangesInput, request.body);
+    return attempt(reply, () => lights.updateDevice(id, input));
+  });
+  app.delete(`${base}/devices/:id`, async (request, reply) => {
+    const { id } = parse(IdParams, request.params);
+    return attempt(reply, () => {
+      lights.removeDevice(id);
       return reply.code(204).send();
-    }),
-  );
-  app.post<{ Params: { id: string } }>(`${base}/devices/:id/test`, async (request, reply) =>
-    attempt(reply, () => lights.testDevice(Number(request.params.id))),
-  );
+    });
+  });
+  app.post(`${base}/devices/:id/test`, async (request, reply) => {
+    const { id } = parse(IdParams, request.params);
+    return attempt(reply, () => lights.testDevice(id));
+  });
 
-  app.put<{ Params: { id: string }; Body: Body }>(`${base}/stations/:id`, async (request, reply) =>
-    attempt(reply, () => lights.saveStation(Number(request.params.id), request.body ?? {})),
-  );
-  app.post<{ Params: { id: string }; Body: Body }>(
-    `${base}/stations/:id/test`,
-    async (request, reply) =>
-      attempt(reply, async () => {
-        await lights.testEvent(Number(request.params.id), request.body?.event);
-        return reply.code(204).send();
-      }),
-  );
+  app.put(`${base}/stations/:id`, async (request, reply) => {
+    const { id } = parse(IdParams, request.params);
+    const input = parse(StationLightsInput, request.body);
+    return attempt(reply, () => lights.saveStation(id, input));
+  });
+  app.post(`${base}/stations/:id/test`, async (request, reply) => {
+    const { id } = parse(IdParams, request.params);
+    const { event } = parse(LightTestInput, request.body);
+    return attempt(reply, async () => {
+      await lights.testEvent(id, event);
+      return reply.code(204).send();
+    });
+  });
 }

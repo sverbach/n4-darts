@@ -163,3 +163,87 @@ describe("lights configuration", () => {
     expect((await call("GET", "")).status).toBe(401);
   });
 });
+
+describe("a lights request that doesn't fit", () => {
+  it.each([
+    ["no name", { url: "http://w" }, "a device needs a name"],
+    ["a blank name", { name: "  ", url: "http://w" }, "a device needs a name"],
+    ["no address", { name: "Wall" }, "a device needs an address, e.g. 192.168.1.50"],
+    [
+      "an address that isn't one",
+      { name: "Wall", url: "http://" },
+      "a device needs an address, e.g. 192.168.1.50",
+    ],
+    ["an unknown field", { name: "Wall", url: "http://w", leds: 60 }, /leds/],
+  ])("refuses a device with %s, and adds none", async (_, payload, error) => {
+    const { call } = setup();
+
+    const res = await call("POST", "/devices", payload);
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(error);
+    expect((await call("GET", "")).body.devices).toEqual([]);
+  });
+
+  it("cleans up an address: http:// added, no trailing slash", async () => {
+    const { call } = setup();
+
+    const res = await call("POST", "/devices", { name: " Wall ", url: " 192.168.1.50/ " });
+    expect(res.body).toMatchObject({ name: "Wall", url: "http://192.168.1.50" });
+  });
+
+  it.each([
+    ["an unknown event", { events: { nope: { preset: 1, seconds: 1 } } }, "no such event: nope"],
+    ["events that aren't an object", { events: "bust" }, "events must be an object"],
+    [
+      "a preset of 0",
+      { events: { bust: { preset: 0, seconds: 3 } } },
+      "bust's preset must be a preset number from 1 to 250",
+    ],
+    ["a preset of 251", { idlePreset: 251 }, "idle must be a preset number from 1 to 250"],
+    [
+      "seconds that aren't whole",
+      { events: { s180: { preset: 2, seconds: 1.5 } } },
+      "s180 runs from 1 to 600 seconds",
+    ],
+    [
+      "too many seconds",
+      { events: { s180: { preset: 2, seconds: 601 } } },
+      "s180 runs from 1 to 600 seconds",
+    ],
+    [
+      "an event without seconds",
+      { events: { legWon: { preset: 2 } } },
+      "legWon runs from 1 to 600 seconds",
+    ],
+    ["a device id as text", { deviceId: "1" }, "deviceId must be a device's id or null"],
+    ["an unknown field", { stationId: 2 }, /stationId/],
+  ])(
+    "refuses a station's lights with %s, and they stay as they were",
+    async (_, payload, error) => {
+      const { call } = setup();
+      await call("PUT", "/stations/2", {
+        idlePreset: 1,
+        events: { bust: { preset: 3, seconds: 2 } },
+      });
+
+      const res = await call("PUT", "/stations/2", payload);
+      expect(res.status).toBe(400);
+      expect(res.body.error).toEqual(
+        error instanceof RegExp ? expect.stringMatching(error) : error,
+      );
+      expect((await call("GET", "")).body.stations[1]).toMatchObject({
+        idlePreset: 1,
+        events: { bust: { preset: 3, seconds: 2 } },
+      });
+    },
+  );
+
+  it("refuses testing an unknown event, or a station id that isn't a number", async () => {
+    const { call } = setup();
+
+    const unknown = await call("POST", "/stations/1/test", { event: "confetti" });
+    expect(unknown.status).toBe(400);
+    expect(unknown.body.error).toBe("no such event: confetti");
+    expect((await call("POST", "/stations/one/test", { event: "bust" })).status).toBe(400);
+  });
+});

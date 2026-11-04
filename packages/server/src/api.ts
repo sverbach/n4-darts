@@ -324,6 +324,110 @@ export const ActivePackInput = z.strictObject({
   id: z.string({ error: "Choose a pack, or null for the default voice." }).nullable(),
 });
 
+const LIGHT_EVENTS = {
+  matchStart: "matchStart",
+  legWon: "legWon",
+  gameShot: "gameShot",
+  s180: "s180",
+  bust: "bust",
+  highCheckout: "highCheckout",
+} as const satisfies { [E in LightEvent]: E };
+
+export const LightEventInput = z.enum(LIGHT_EVENTS, {
+  error: (issue) => `no such event: ${String(issue.input)}`,
+});
+
+/** How long an event's preset may run before the base preset comes back. */
+export const MAX_LIGHT_SECONDS = 600;
+
+const DEVICE_NAME = "a device needs a name";
+const DEVICE_URL = "a device needs an address, e.g. 192.168.1.50";
+
+const deviceName = z
+  .string({ error: DEVICE_NAME })
+  .transform((name) => name.trim())
+  .pipe(z.string().min(1, { error: DEVICE_NAME }));
+
+/** `http://` added when there's none, no trailing slash. */
+const deviceUrl = z.string({ error: DEVICE_URL }).transform((value, ctx) => {
+  const raw = value.trim();
+  const url = /^https?:\/\//.test(raw) ? raw : `http://${raw}`;
+  try {
+    if (raw && new URL(url).hostname) return url.replace(/\/+$/, "");
+  } catch {}
+  ctx.issues.push({ code: "custom", message: DEVICE_URL, input: value });
+  return z.NEVER;
+});
+
+export const NewLightDeviceInput = z.strictObject({ name: deviceName, url: deviceUrl });
+export type NewLightDeviceInput = z.infer<typeof NewLightDeviceInput>;
+
+export const LightDeviceChangesInput = z.strictObject({
+  name: deviceName.exactOptional(),
+  url: deviceUrl.exactOptional(),
+});
+export type LightDeviceChangesInput = z.infer<typeof LightDeviceChangesInput>;
+
+const presetNumber = (what: string) => {
+  const error = `${what} must be a preset number from 1 to 250`;
+  return z.number({ error }).int({ error }).min(1, { error }).max(250, { error });
+};
+
+/** An event's preset and its seconds; `null` takes the event's light away. */
+const eventLight = (event: LightEvent) => {
+  const error = `${event} runs from 1 to ${MAX_LIGHT_SECONDS} seconds`;
+  return z
+    .strictObject({
+      preset: presetNumber(`${event}'s preset`),
+      seconds: z
+        .number({ error })
+        .int({ error })
+        .min(1, { error })
+        .max(MAX_LIGHT_SECONDS, { error }),
+    })
+    .nullable()
+    .exactOptional();
+};
+
+const eventLights = z
+  .strictObject(
+    {
+      matchStart: eventLight("matchStart"),
+      legWon: eventLight("legWon"),
+      gameShot: eventLight("gameShot"),
+      s180: eventLight("s180"),
+      bust: eventLight("bust"),
+      highCheckout: eventLight("highCheckout"),
+    } satisfies { [E in LightEvent]: z.ZodType },
+    {
+      error: (issue) =>
+        issue.code === "unrecognized_keys"
+          ? `no such event: ${issue.keys.join(", ")}`
+          : "events must be an object",
+    },
+  )
+  .transform((input) => {
+    const out: Partial<Record<LightEvent, EventLight>> = {};
+    for (const event of Object.values(LIGHT_EVENTS)) {
+      const light = input[event];
+      if (light) out[event] = light;
+    }
+    return out;
+  });
+
+const DEVICE_ID = "deviceId must be a device's id or null";
+
+/** A change to a station's lights; what's left out stays, `events` replaces them all. */
+export const StationLightsInput = z.strictObject({
+  deviceId: z.number({ error: DEVICE_ID }).int({ error: DEVICE_ID }).nullable().exactOptional(),
+  idlePreset: presetNumber("idle").nullable().exactOptional(),
+  playingPreset: presetNumber("playing").nullable().exactOptional(),
+  events: eventLights.exactOptional(),
+});
+export type StationLightsInput = z.infer<typeof StationLightsInput>;
+
+export const LightTestInput = z.strictObject({ event: LightEventInput });
+
 export const BoardActionInput = z.strictObject({
   action: z.enum(["start", "stop", "calibrate", "reset"], {
     error: "action must be start, stop, calibrate or reset",

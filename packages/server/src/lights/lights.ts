@@ -3,26 +3,17 @@
 // lightsRoutes.ts.
 
 import type {
-  EventLight,
   LightDevice,
+  LightDeviceChangesInput,
   LightDeviceTest,
   LightEvent,
   LightsAdminView,
+  NewLightDeviceInput,
   StationLights,
+  StationLightsInput,
 } from "../api.ts";
 import type { Db } from "../db.ts";
 import { type WledClient, WledError } from "./wled.ts";
-
-export const LIGHT_EVENTS: LightEvent[] = [
-  "matchStart",
-  "legWon",
-  "gameShot",
-  "s180",
-  "bust",
-  "highCheckout",
-];
-
-const MAX_SECONDS = 600;
 
 /** Why a change or a test was refused. */
 export class LightsError extends Error {
@@ -40,56 +31,6 @@ const noLights = (stationId: number): StationLights => ({
   playingPreset: null,
   events: {},
 });
-
-function usableName(value: unknown) {
-  const name = typeof value === "string" ? value.trim() : "";
-  if (!name) throw new LightsError("a device needs a name", "invalid");
-  return name;
-}
-
-function usableUrl(value: unknown) {
-  const raw = typeof value === "string" ? value.trim() : "";
-  const url = /^https?:\/\//.test(raw) ? raw : `http://${raw}`;
-  try {
-    const parsed = new URL(url);
-    if (!raw || !parsed.hostname) throw new Error();
-    return url.replace(/\/+$/, "");
-  } catch {
-    throw new LightsError("a device needs an address, e.g. 192.168.1.50", "invalid");
-  }
-}
-
-function preset(value: unknown, what: string): number | null {
-  if (value === null || value === undefined) return null;
-  if (!Number.isInteger(value) || (value as number) < 1 || (value as number) > 250) {
-    throw new LightsError(`${what} must be a preset number from 1 to 250`, "invalid");
-  }
-  return value as number;
-}
-
-function events(value: unknown): Partial<Record<LightEvent, EventLight>> {
-  if (value === undefined || value === null) return {};
-  if (typeof value !== "object") throw new LightsError("events must be an object", "invalid");
-  const out: Partial<Record<LightEvent, EventLight>> = {};
-  for (const [event, light] of Object.entries(value as Record<string, unknown>)) {
-    if (!LIGHT_EVENTS.includes(event as LightEvent)) {
-      throw new LightsError(`no such event: ${event}`, "invalid");
-    }
-    if (light === null) continue;
-    const { preset: p, seconds } = (light ?? {}) as { preset?: unknown; seconds?: unknown };
-    const id = preset(p, `${event}'s preset`);
-    if (id === null) continue;
-    if (
-      !Number.isInteger(seconds) ||
-      (seconds as number) < 1 ||
-      (seconds as number) > MAX_SECONDS
-    ) {
-      throw new LightsError(`${event} runs from 1 to ${MAX_SECONDS} seconds`, "invalid");
-    }
-    out[event as LightEvent] = { preset: id, seconds: seconds as number };
-  }
-  return out;
-}
 
 export function createLights(
   db: Db,
@@ -127,16 +68,16 @@ export function createLights(
       };
     },
 
-    addDevice(input: { name?: unknown; url?: unknown }): LightDevice {
-      return db.saveLightDevice({ name: usableName(input.name), url: usableUrl(input.url) });
+    addDevice(input: NewLightDeviceInput): LightDevice {
+      return db.saveLightDevice(input);
     },
 
-    updateDevice(id: number, input: { name?: unknown; url?: unknown }): LightDevice {
+    updateDevice(id: number, input: LightDeviceChangesInput): LightDevice {
       const current = device(id);
       return db.saveLightDevice({
         id,
-        name: input.name === undefined ? current.name : usableName(input.name),
-        url: input.url === undefined ? current.url : usableUrl(input.url),
+        name: input.name ?? current.name,
+        url: input.url ?? current.url,
       });
     },
 
@@ -145,24 +86,18 @@ export function createLights(
       db.deleteLightDevice(id);
     },
 
-    saveStation(stationId: number, input: Partial<Record<keyof StationLights, unknown>>) {
+    saveStation(stationId: number, input: StationLightsInput) {
       if (!db.getStationConfig(stationId)) throw new LightsError("no such station", "missing");
       const current = ofStation(stationId);
       const deviceId = input.deviceId === undefined ? current.deviceId : input.deviceId;
-      if (deviceId !== null && !Number.isInteger(deviceId)) {
-        throw new LightsError("deviceId must be a device's id or null", "invalid");
-      }
-      if (deviceId !== null) device(deviceId as number);
+      if (deviceId !== null) device(deviceId);
       const next: StationLights = {
         stationId,
-        deviceId: deviceId as number | null,
-        idlePreset:
-          input.idlePreset === undefined ? current.idlePreset : preset(input.idlePreset, "idle"),
+        deviceId,
+        idlePreset: input.idlePreset === undefined ? current.idlePreset : input.idlePreset,
         playingPreset:
-          input.playingPreset === undefined
-            ? current.playingPreset
-            : preset(input.playingPreset, "playing"),
-        events: input.events === undefined ? current.events : events(input.events),
+          input.playingPreset === undefined ? current.playingPreset : input.playingPreset,
+        events: input.events ?? current.events,
       };
       db.saveStationLights(next);
       return next;
@@ -177,13 +112,10 @@ export function createLights(
     },
 
     /** Starts the event's preset on the station's device, as if it had happened. */
-    async testEvent(stationId: number, event: unknown) {
-      if (!LIGHT_EVENTS.includes(event as LightEvent)) {
-        throw new LightsError(`no such event: ${String(event)}`, "invalid");
-      }
+    async testEvent(stationId: number, event: LightEvent) {
       const lights = ofStation(stationId);
       if (lights.deviceId === null) throw new LightsError("the station has no device", "invalid");
-      const light = lights.events[event as LightEvent];
+      const light = lights.events[event];
       if (!light) throw new LightsError("the event has no preset", "invalid");
       const { url } = device(lights.deviceId);
       await reach(() => wled.setPreset(url, light.preset));
