@@ -1,5 +1,8 @@
 // Talks to a WLED light controller on the LAN through its JSON API (docs/adr/0009): what it is,
-// its presets, and starting one. Every call gives up after a short timeout.
+// its presets, and starting one. Every call gives up after a short timeout, and what the device
+// answers is parsed before it's used (docs/adr/0010).
+
+import { z } from "zod";
 
 export interface WledInfo {
   name: string;
@@ -15,6 +18,14 @@ export interface WledPreset {
 export class WledError extends Error {}
 
 const DEFAULT_TIMEOUT_MS = 2000;
+
+/** `GET /json/info`: WLED sends much more; only these two are used. */
+const InfoAnswer = z.looseObject({ name: z.string(), ver: z.string().optional().catch(undefined) });
+
+/** `GET /presets.json`: preset id to preset; `n` is its name. */
+const PresetsAnswer = z.record(z.string(), z.unknown());
+const NamedPreset = z.looseObject({ n: z.string() });
+const PresetId = z.coerce.number().int().min(1);
 
 export function createWledClient(options: { timeoutMs?: number } = {}) {
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
@@ -42,18 +53,22 @@ export function createWledClient(options: { timeoutMs?: number } = {}) {
 
   return {
     async info(url: string): Promise<WledInfo> {
-      const info = (await ask(url, "/json/info")) as { name?: unknown; ver?: unknown };
-      if (typeof info?.name !== "string") throw new WledError(`${url} isn't a WLED device`);
-      return { name: info.name, version: String(info.ver ?? "") };
+      const info = InfoAnswer.safeParse(await ask(url, "/json/info"));
+      if (!info.success) throw new WledError(`${url} isn't a WLED device`);
+      return { name: info.data.name, version: info.data.ver ?? "" };
     },
 
     /** Saved presets by id; WLED's empty slot 0 and playlists without a name are left out. */
     async presets(url: string): Promise<WledPreset[]> {
-      const all = (await ask(url, "/presets.json")) as Record<string, { n?: unknown }>;
-      return Object.entries(all ?? {})
-        .map(([id, preset]) => ({ id: Number(id), name: preset?.n }))
-        .filter((p): p is WledPreset => p.id > 0 && typeof p.name === "string")
-        .sort((a, b) => a.id - b.id);
+      const all = PresetsAnswer.safeParse(await ask(url, "/presets.json"));
+      if (!all.success) throw new WledError(`${url} isn't a WLED device`);
+      const presets: WledPreset[] = [];
+      for (const [key, value] of Object.entries(all.data)) {
+        const id = PresetId.safeParse(key);
+        const preset = NamedPreset.safeParse(value);
+        if (id.success && preset.success) presets.push({ id: id.data, name: preset.data.n });
+      }
+      return presets.sort((a, b) => a.id - b.id);
     },
 
     async setPreset(url: string, id: number): Promise<void> {

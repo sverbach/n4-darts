@@ -33,3 +33,4 @@ Every request body, param and query string is parsed against a Zod schema in its
 5. `05-lights.md`: the largest set of hand-written checks
 6. `06-enforce-and-document.md`: keeping `unknown` out of logic, ADR 0010, architecture docs
 7. `07-only-real-segments.md`: `isSegment` accepts a triple bull and other segments no board has
+8. `08-wled-answers.md`: what a WLED device answers, parsed in `wled.ts`

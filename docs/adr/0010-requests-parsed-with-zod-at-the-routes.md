@@ -15,9 +15,10 @@ Zod won on readable schemas, discriminated unions (the station commands), transf
 
 - **Shape in the schema, rules in the logic.** The schema owns types, ranges and allowed values; the logic keeps whatever needs state ("name already taken", "the match has already started", "3 players per group") and takes the parsed type, never `unknown`.
 - **The linter keeps it that way:**
-  - `zod` may only be imported in `api.ts`, `parse.ts`, the routes files and `app.ts`.
+  - `zod` may only be imported in `api.ts`, `parse.ts`, the routes files, `app.ts` and the clients of devices on the network (`lights/wled.ts`).
   - The `lint/typed-logic.grit` plugin refuses a parameter or property typed `unknown` in the server's logic files.
   - `lint/no-route-generics.grit` refuses route registrations that declare what a request holds (`app.post<{ Body: … }>`).
+- **The same goes for devices.** A WLED device's answers are untrusted input from the network too, so `wled.ts` parses them with schemas of its own, next to the client: they describe WLED's API, not ours.
 - **Stored data isn't parsed on read.** It was written by our own server and is trusted. Changing a schema doesn't need a migration, but it also doesn't clean up what's already stored.
 - **Messages live in two places:** the friendly ones in the schemas, the domain ones in the logic.
 - **One more dependency** in the server, pinned like the rest.

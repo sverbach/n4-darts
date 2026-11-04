@@ -102,6 +102,7 @@
         "!packages/server/src/app.ts",
         "!packages/server/src/api.ts",
         "!packages/server/src/parse.ts",
+        "!packages/server/src/lights/wled.ts",
         "!packages/server/src/**/*.test.ts"
       ],
       "linter": {
@@ -117,7 +118,7 @@
                   },
                   {
                     "group": ["zod", "zod/*"],
-                    "message": "Requests are parsed in the routes files (docs/adr/0010): schemas go in api.ts, the helpers in parse.ts."
+                    "message": "What comes in is parsed at the edge (docs/adr/0010): requests in the routes files with schemas from api.ts, a device's answers in its client (lights/wled.ts)."
                   }
                 ]
               }
@@ -127,7 +128,11 @@
       }
     },
     {
-      "includes": ["packages/server/src/api.ts", "packages/server/src/parse.ts"],
+      "includes": [
+        "packages/server/src/api.ts",
+        "packages/server/src/parse.ts",
+        "packages/server/src/lights/wled.ts"
+      ],
       "linter": {
         "rules": {
           "style": {
