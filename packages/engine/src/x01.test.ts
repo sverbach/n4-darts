@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { defaultX01Settings, type MatchEvent, matchState, type X01Settings } from "./index.ts";
+import {
+  defaultX01Settings,
+  isSegment,
+  type MatchEvent,
+  matchState,
+  type X01Settings,
+} from "./index.ts";
 
 // Dart notation used in tests: S20 / D20 / T20, 25 (outer bull), BULL (bullseye), M (miss).
 let nextId = 0;
@@ -447,5 +453,32 @@ describe("leg history", () => {
       [0, true],
     ]);
     expect(state.currentVisit).toBeNull();
+  });
+});
+
+describe("a segment a dart can land in", () => {
+  it("is a single, double or treble 1–20, an outer bull, a bullseye or a miss", () => {
+    for (let number = 1; number <= 20; number++) {
+      for (const multiplier of [1, 2, 3]) expect(isSegment({ number, multiplier })).toBe(true);
+    }
+    expect(isSegment({ number: 25, multiplier: 1 })).toBe(true);
+    expect(isSegment({ number: 25, multiplier: 2 })).toBe(true);
+    expect(isSegment({ number: 0, multiplier: 0 })).toBe(true);
+    expect(isSegment({ number: 17, multiplier: 0 })).toBe(true);
+  });
+
+  it.each([
+    ["a treble bull", { number: 25, multiplier: 3 }],
+    ["a miss next to the bull", { number: 25, multiplier: 0 }],
+    ["a single 0", { number: 0, multiplier: 1 }],
+    ["a treble 0", { number: 0, multiplier: 3 }],
+    ["a 21", { number: 21, multiplier: 1 }],
+    ["a negative number", { number: -1, multiplier: 1 }],
+    ["a number that isn't whole", { number: 1.5, multiplier: 1 }],
+    ["a quadruple", { number: 20, multiplier: 4 }],
+    ["text", { number: "20", multiplier: 1 }],
+    ["nothing", undefined],
+  ])("isn't %s", (_, value) => {
+    expect(isSegment(value)).toBe(false);
   });
 });

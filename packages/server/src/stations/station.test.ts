@@ -469,6 +469,7 @@ describe("a command that doesn't fit", () => {
   it.each([
     ["a number above 20", { number: 21, multiplier: 1 }],
     ["a negative number", { number: -1, multiplier: 1 }],
+    ["a treble bull", { number: 25, multiplier: 3 }],
     ["no multiplier", { number: 20 }],
     ["not a segment at all", "T20"],
   ])("refuses a dart with %s, and records nothing", async (_, segment) => {

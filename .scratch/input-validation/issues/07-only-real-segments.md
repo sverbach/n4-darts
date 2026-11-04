@@ -1,6 +1,6 @@
 # Only segments a dart can land in
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 01
 
@@ -24,3 +24,12 @@ They can come in through any route that takes a segment: a correction or an adde
 - A server test over HTTP: adding a triple bull at the station gets `400 "not a valid segment"`.
 - Old matches still replay. Nothing in a stored log may be refused on read, so check that the fold doesn't call `isSegment`.
 - All checks pass.
+
+## Comments
+
+2026-11-04: Built.
+- **What a miss looks like** (`docs/board-manager-api.md`, the 2026-10-18 recording): multiplier 0 with the number of the segment it landed next to (`M17` is `{ 17, 0 }`), or `{ 0, 0 }` for a bounce-out. So there isn't a single miss: any number 0–20 with multiplier 0 is valid. The gateway doesn't need to normalise anything, and the number stays as the board said.
+- `isSegment` now accepts exactly: multiplier 0 with a number 0–20; 25 with multiplier 1 or 2; 1–20 with multiplier 1–3. The `Segment` doc comment says what a miss is.
+- The web app's `SegmentPicker` only offers 1–20 × S/D/T, 25, the bull and the miss `{ 0, 0 }`, so nothing changes there.
+- Old matches: `isSegment` is only called on requests (`SegmentInput` in `api.ts`). The fold never calls it, so stored logs replay as before.
+- Tests: in `x01.test.ts`, every valid segment, and the refusals: treble bull, a miss next to the bull, single and treble 0, 21, a negative number, a number that isn't whole, a quadruple, text, nothing. In `station.test.ts`, adding a treble bull at the station gets `400 "not a valid segment"`.

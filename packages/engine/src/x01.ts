@@ -9,18 +9,25 @@ export const MAX_PLAYERS = 8;
 /** Bumped whenever the rules change, so old matches replay under the rules they were played with. */
 export const RULES_VERSION = 1;
 
-/** Where a dart landed: the bullseye is `{ number: 25, multiplier: 2 }`, a miss has multiplier 0. */
+/**
+ * Where a dart landed: the bullseye is `{ number: 25, multiplier: 2 }`. A miss has multiplier 0
+ * and the number of the segment it landed next to, or 0 for a bounce-out
+ * (docs/board-manager-api.md).
+ */
 export interface Segment {
   number: number;
   multiplier: 0 | 1 | 2 | 3;
 }
 
+const isWhole = (value: unknown, min: number, max: number): value is number =>
+  typeof value === "number" && Number.isInteger(value) && value >= min && value <= max;
+
 /** Whether a value from outside (a request body) is a segment a dart can land in. */
 export function isSegment(value: unknown): value is Segment {
   const { number, multiplier } = (value ?? {}) as Partial<Segment>;
-  if (typeof number !== "number" || typeof multiplier !== "number") return false;
-  const validNumber = number === 25 || (Number.isInteger(number) && number >= 0 && number <= 20);
-  return validNumber && [0, 1, 2, 3].includes(multiplier);
+  if (multiplier === 0) return isWhole(number, 0, 20);
+  if (number === 25) return multiplier === 1 || multiplier === 2;
+  return isWhole(number, 1, 20) && isWhole(multiplier, 1, 3);
 }
 
 export type InRule = "straight" | "double" | "master" | "bull";
