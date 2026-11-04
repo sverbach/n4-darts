@@ -1,23 +1,45 @@
 // One connection to one Autodarts Board Manager (docs/adr/0001). Turns its full-state snapshots
-// into board events and sends commands. Knows nothing about games.
+// into board events and sends commands. Knows nothing about games. What the board sends is
+// parsed before it's used (docs/adr/0010).
 
 import { performance } from "node:perf_hooks";
 import type { Segment } from "@n4/engine";
+import { z } from "zod";
+
+/**
+ * Keys the Board Manager adds are dropped, not refused: its API is unofficial and changes with
+ * its updates (docs/adr/0001). Only what the gateway reads is required.
+ */
+const BoardThrowSchema = z.object({
+  bouncer: z.boolean(),
+  coords: z.object({ x: z.number(), y: z.number() }),
+  segment: z.object({
+    bed: z.string(),
+    multiplier: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]),
+    name: z.string(),
+    number: z.number(),
+  }),
+});
+export type BoardThrow = z.infer<typeof BoardThrowSchema>;
 
 /** A Board Manager state snapshot (docs/board-manager-api.md). */
-export interface BoardSnapshot {
-  connected: boolean;
-  event: string;
-  numThrows: number;
-  running: boolean;
-  status: string;
-  throws?: BoardThrow[];
-}
+const BoardSnapshotSchema = z.object({
+  connected: z.boolean().exactOptional(),
+  event: z.string(),
+  numThrows: z.number().exactOptional(),
+  running: z.boolean(),
+  status: z.string(),
+  throws: z.array(BoardThrowSchema).exactOptional(),
+});
+export type BoardSnapshot = z.infer<typeof BoardSnapshotSchema>;
 
-export interface BoardThrow {
-  bouncer: boolean;
-  coords: { x: number; y: number };
-  segment: { bed: string; multiplier: number; name: string; number: number };
+const BoardMessage = z.object({ type: z.string(), data: z.unknown() });
+
+/** Why something the board sent didn't fit, e.g. `throws.0.segment.multiplier: …`. */
+function problemOf(error: z.ZodError): string {
+  const issue = error.issues[0];
+  if (!issue) return "doesn't fit";
+  return issue.path.length ? `${issue.path.join(".")}: ${issue.message}` : issue.message;
 }
 
 export interface DetectedDart {
@@ -59,6 +81,8 @@ export interface GatewayStats {
   lastMessageAt: number | null;
   /** The last reset, start or stop, and how long the board took to answer. */
   lastCommand: { name: string; ms: number; ok: boolean; at: string } | null;
+  /** Messages dropped because they didn't fit, and the last one's reason. */
+  rejected: { count: number; last: { reason: string; at: string } | null };
 }
 
 export interface BoardGateway {
@@ -76,7 +100,7 @@ export function toDetectedDart(index: number, t: BoardThrow): DetectedDart {
   const { number, multiplier } = t.segment;
   return {
     index,
-    segment: { number, multiplier: multiplier as Segment["multiplier"] },
+    segment: { number, multiplier },
     name: t.segment.name,
     coords: t.coords,
     bouncer: t.bouncer,
@@ -151,7 +175,17 @@ export function createBoardGateway(options: BoardGatewayOptions): BoardGateway {
   let closed = false;
   let delay = minDelay;
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const stats: GatewayStats = { reconnects: -1, lastMessageAt: null, lastCommand: null };
+  const stats: GatewayStats = {
+    reconnects: -1,
+    lastMessageAt: null,
+    lastCommand: null,
+    rejected: { count: 0, last: null },
+  };
+
+  function reject(reason: string) {
+    stats.rejected.count += 1;
+    stats.rejected.last = { reason, at: new Date().toISOString() };
+  }
 
   const emit = (events: BoardEvent[]) => {
     // After close() the owner may already be gone (e.g. its database closed on shutdown).
@@ -173,7 +207,12 @@ export function createBoardGateway(options: BoardGatewayOptions): BoardGateway {
   async function sync() {
     const res = await fetch(`${base}/api/state`);
     if (!res.ok) throw new Error(`GET /api/state: ${res.status}`);
-    const snapshot = (await res.json()) as BoardSnapshot;
+    const parsed = BoardSnapshotSchema.safeParse(await res.json().catch(() => undefined));
+    if (!parsed.success) {
+      reject(`GET /api/state: ${problemOf(parsed.error)}`);
+      throw new Error("GET /api/state didn't fit");
+    }
+    const snapshot = parsed.data;
     stats.lastMessageAt = Date.now();
     // The first snapshot is the baseline: darts already on the board aren't news.
     // After a reconnect, whatever changed while we were away is diffed in.
@@ -210,8 +249,18 @@ export function createBoardGateway(options: BoardGatewayOptions): BoardGateway {
       // reflected in it. A change in the few milliseconds between the board answering the sync
       // and its response arriving would be missed until the next message; darts are seconds apart.
       if (!online) return;
-      const message = JSON.parse(String(e.data));
-      if (message.type === "state") applyLive(message.data as BoardSnapshot, receivedAt);
+      let json: unknown;
+      try {
+        json = JSON.parse(String(e.data));
+      } catch {
+        return reject("a message that isn't JSON");
+      }
+      const message = BoardMessage.safeParse(json);
+      if (!message.success) return reject(problemOf(message.error));
+      if (message.data.type !== "state") return;
+      const snapshot = BoardSnapshotSchema.safeParse(message.data.data);
+      if (!snapshot.success) return reject(problemOf(snapshot.error));
+      applyLive(snapshot.data, receivedAt);
     });
     // A refused handshake can fire "error" without ever firing "close", leaving the socket stuck
     // in CONNECTING; so either event, or a connect timeout, abandons this socket.
@@ -249,7 +298,11 @@ export function createBoardGateway(options: BoardGatewayOptions): BoardGateway {
     get online() {
       return online;
     },
-    stats: () => ({ ...stats, reconnects: Math.max(0, stats.reconnects) }),
+    stats: () => ({
+      ...stats,
+      reconnects: Math.max(0, stats.reconnects),
+      rejected: { ...stats.rejected },
+    }),
     start: () => command("PUT", "start"),
     stop: () => command("PUT", "stop"),
     reset: () => command("POST", "reset"),

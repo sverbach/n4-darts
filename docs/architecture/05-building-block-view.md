@@ -65,6 +65,7 @@ One long-lived WebSocket client per board, configured per station with the Board
 - Turns snapshots into events by diffing them against the last one: `DartDetected`, `DartRevised` (Autodarts changed an earlier dart), `TakeoutStarted`, `TakeoutFinished`, `BoardReset`, `BoardStopped`, `BoardStarted`, `BoardOffline`, `BoardOnline`.
 - Sends commands: start, stop, reset, auto-calibrate.
 - Reconnects with backoff; on reconnect it fetches `GET /api/state` and diffs again, so a dropped connection never loses or duplicates a dart (BOARD-02, Q-03).
+- Parses every snapshot before diffing it (ADR 0010). One that doesn't fit is dropped and counted for diagnostics; the next full snapshot catches up.
 - Knows nothing about games; it only speaks "board".
 
 ### Engine
@@ -89,7 +90,7 @@ One SQLite file on the data volume (`packages/server/src/db.ts`):
 
 Modules in `packages/server/src`, one folder per cluster. Components depend on each other in one direction only: the linter fails on any import cycle, type-only imports included (`noImportCycles` in `biome.json`). Only dependencies between clusters are drawn. Every module uses `db.ts` and `api.ts`, and `app.ts` wires them all together, so those three are left out of the diagram.
 
-Each component is layered: **routes parse, logic decides, `db.ts` stores**. A component's Fastify routes are in its own `<component>Routes.ts` (`players/playersRoutes.ts`, …): they parse the request against a schema from `api.ts` (`parse()` in `parse.ts`; what doesn't fit is a 400), call the logic with the typed result, and turn the logic's errors into status codes (ADR 0010). The logic has no HTTP in it and takes no `unknown`, and the linter keeps it that way: `noRestrictedImports` on `fastify` outside the route files and `app.ts`, and on `zod` outside those, `api.ts`, `parse.ts` and `lights/wled.ts`, and the `lint/typed-logic.grit` plugin. Live streams go through `streamView` in `live/liveRoutes.ts`. The diagram shows the logic only; each routes file depends on its own component's logic, and those that stream on `live/`.
+Each component is layered: **routes parse, logic decides, `db.ts` stores**. A component's Fastify routes are in its own `<component>Routes.ts` (`players/playersRoutes.ts`, …): they parse the request against a schema from `api.ts` (`parse()` in `parse.ts`; what doesn't fit is a 400), call the logic with the typed result, and turn the logic's errors into status codes (ADR 0010). The logic has no HTTP in it and takes no `unknown`, and the linter keeps it that way: `noRestrictedImports` on `fastify` outside the route files and `app.ts`, and on `zod` outside those, `api.ts`, `parse.ts` and the device clients (`lights/wled.ts`, `board/gateway.ts`), and the `lint/typed-logic.grit` plugin. Live streams go through `streamView` in `live/liveRoutes.ts`. The diagram shows the logic only; each routes file depends on its own component's logic, and those that stream on `live/`.
 
 ```mermaid
 flowchart TB

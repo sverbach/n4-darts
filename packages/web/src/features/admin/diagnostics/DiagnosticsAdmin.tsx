@@ -141,6 +141,12 @@ export function DiagnosticsAdmin() {
                 <td>{b.reconnects}</td>
                 <td className="text-muted">
                   {b.sinceMessageSeconds === null ? "–" : `${duration(b.sinceMessageSeconds)} ago`}
+                  {b.rejected.count > 0 && (
+                    <span className="text-danger" title={b.rejected.last?.reason}>
+                      {" "}
+                      · {b.rejected.count} dropped
+                    </span>
+                  )}
                 </td>
                 <td>
                   {b.lastCommand ? (

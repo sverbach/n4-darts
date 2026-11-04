@@ -28,6 +28,7 @@ export function registerDiagnostics(
             ? null
             : Math.round((Date.now() - stats.lastMessageAt) / 1000),
         lastCommand: stats?.lastCommand ?? null,
+        rejected: stats?.rejected ?? { count: 0, last: null },
       };
     });
 

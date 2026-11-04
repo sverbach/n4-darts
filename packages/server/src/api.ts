@@ -700,6 +700,8 @@ export interface BoardDiagnostics {
   sinceMessageSeconds: number | null;
   /** The last reset, start or stop sent to the board, and how long it took to answer. */
   lastCommand: { name: string; ms: number; ok: boolean; at: string } | null;
+  /** Messages from the board dropped because they didn't fit, and the last one's reason. */
+  rejected: { count: number; last: { reason: string; at: string } | null };
 }
 
 export interface LightDiagnostics {

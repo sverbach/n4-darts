@@ -54,6 +54,8 @@ export interface BoardSim {
   calibrate(): Promise<void>;
   /** Publishes an arbitrary state, e.g. from a recording. */
   publish(state: BoardState): void;
+  /** Sends any text as a board message, without changing the state: what a broken board might send. */
+  sendRaw(text: string): void;
   /** Offline: drops WebSocket clients and refuses all requests until back online. */
   setOnline(online: boolean): void;
   readonly online: boolean;
@@ -172,6 +174,9 @@ export async function createBoardSim(options: BoardSimOptions = {}): Promise<Boa
       emit("Calibrated", { status: state.running ? "Throw" : "Stopped" });
     },
     publish,
+    sendRaw(text: string) {
+      for (const client of wss.clients) client.send(text);
+    },
     setOnline(next: boolean) {
       online = next;
       if (!online) for (const client of wss.clients) client.terminate();

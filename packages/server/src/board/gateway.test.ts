@@ -178,3 +178,71 @@ describe("board gateway", () => {
     );
   });
 });
+
+describe("what the board sends that doesn't fit", () => {
+  const state = (data: unknown) => JSON.stringify({ type: "state", data });
+  const t20 = {
+    bouncer: false,
+    coords: { x: 0, y: 0.6 },
+    segment: { bed: "Triple", multiplier: 3, name: "T20", number: 20 },
+  };
+
+  it.each([
+    ["a message that isn't JSON", () => "{nope", /^a message that isn't JSON$/],
+    ["a message without a type", () => JSON.stringify({ data: {} }), /^type: /],
+    ["a state without a status", () => state({ ...sim.state, status: 3 }), /^status: /],
+    [
+      "a dart with a multiplier of 4",
+      () =>
+        state({ ...sim.state, throws: [{ ...t20, segment: { ...t20.segment, multiplier: 4 } }] }),
+      /^throws\.0\.segment\.multiplier: /,
+    ],
+    [
+      "a dart without coordinates",
+      () => state({ ...sim.state, throws: [{ ...t20, coords: null }] }),
+      /^throws\.0\.coords: /,
+    ],
+  ])("drops %s and counts it; the next good one brings the dart in", async (_, message, reason) => {
+    const events = await connect();
+
+    sim.sendRaw(message());
+    await vi.waitFor(() => expect(gateway.stats().rejected.count).toBe(1));
+    expect(gateway.stats().rejected.last?.reason).toMatch(reason);
+    expect(events).toEqual([]);
+
+    sim.throwDart("T20");
+    await vi.waitFor(() => expect(summary(events)).toEqual(["DartDetected T20@0"]));
+    expect(gateway.online).toBe(true);
+  });
+
+  it("takes a snapshot with fields the board added, and drops them", async () => {
+    const events = await connect();
+
+    sim.sendRaw(
+      state({
+        ...sim.state,
+        event: "Throw detected",
+        firmware: "3.0",
+        throws: [{ ...t20, confidence: 0.9 }],
+      }),
+    );
+    await vi.waitFor(() => expect(summary(events)).toEqual(["DartDetected T20@0"]));
+    expect(gateway.stats().rejected.count).toBe(0);
+  });
+
+  it("stays offline while a resync's state doesn't fit, and comes back once it does", async () => {
+    await connect();
+    const good = sim.state;
+    sim.setOnline(false);
+    await vi.waitFor(() => expect(gateway.online).toBe(false));
+
+    sim.publish({ ...good, running: "yes" } as never);
+    sim.setOnline(true);
+    await vi.waitFor(() => expect(gateway.stats().rejected.count).toBeGreaterThan(1));
+    expect(gateway.stats().rejected.last?.reason).toMatch(/^GET \/api\/state: running: /);
+    expect(gateway.online).toBe(false);
+
+    sim.publish(good);
+    await vi.waitFor(() => expect(gateway.online).toBe(true));
+  });
+});

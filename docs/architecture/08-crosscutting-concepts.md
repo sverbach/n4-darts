@@ -59,8 +59,10 @@ Every request is parsed at its route before anything else happens (ADR 0010):
 - **Where:** the body, path params and query string go through `parse(schema, value)` in the component's `*Routes.ts`. The schemas are in `api.ts`, and the request types the web app uses are derived from them. Schemas only one route needs (a query string, a file's params) sit in that routes file.
 - **What a refusal looks like:** `400 { error }`, answered by one error handler in `app.ts`. The message is the schema's own where a page shows it ("start score must be a whole number of at least 2"), otherwise the field's path and Zod's message (`settings.outRule: Invalid option: …`).
 - **What the schema checks, and what the logic checks:** the schema checks types, ranges, allowed values and unknown keys (objects are strict), and does simple clean-ups (trimming a name, completing a device's address). The logic checks what needs the database or the match's state, and takes the parsed type.
-- **Devices too:** what a WLED device answers is parsed in `lights/wled.ts` with schemas of its own; an answer that doesn't fit is "isn't a WLED device".
-- **Enforced by the linter:** `zod` only in `api.ts`, `parse.ts`, the routes files, `app.ts` and `lights/wled.ts`; no `unknown` parameter in the server's logic (`lint/typed-logic.grit`); no type arguments on route registrations (`lint/no-route-generics.grit`).
+- **Devices too:** what a device sends is parsed in its client with schemas of its own.
+  - **WLED** (`lights/wled.ts`): an answer that doesn't fit is "isn't a WLED device".
+  - **Board Manager** (`board/gateway.ts`): a snapshot that doesn't fit is dropped and counted (`/admin/diagnostics` → Boards, "n dropped"), and the next full snapshot catches up. A resync answer that doesn't fit is retried like a failed connection.
+- **Enforced by the linter:** `zod` only in `api.ts`, `parse.ts`, the routes files, `app.ts` and the two device clients; no `unknown` parameter in the server's logic (`lint/typed-logic.grit`); no type arguments on route registrations (`lint/no-route-generics.grit`).
 
 ## 8.9 Operations
 

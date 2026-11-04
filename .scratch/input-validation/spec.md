@@ -34,3 +34,4 @@ Every request body, param and query string is parsed against a Zod schema in its
 6. `06-enforce-and-document.md`: keeping `unknown` out of logic, ADR 0010, architecture docs
 7. `07-only-real-segments.md`: `isSegment` accepts a triple bull and other segments no board has
 8. `08-wled-answers.md`: what a WLED device answers, parsed in `wled.ts`
+9. `09-board-snapshots.md`: the Board Manager's snapshots, parsed in `gateway.ts` (cost measured first: 0.28 µs a message)
