@@ -13,7 +13,7 @@ Swap the transport under every live view in one go. `streamView` and `followStre
 - `live/liveRoutes.ts`: replace `openEventStream` with a socket-based equivalent. It sends one message per view (the JSON text) and runs `onClose` when the socket closes. Ping every 25 s, and terminate a socket that didn't answer the previous ping. Drop the SSE headers and the `: keep-alive` comment.
 - `streamView` keeps its signature apart from what it takes instead of `reply`. The routes still pass `subscribe`, `view` and `{ kind, label }`.
 - Every `/live` route becomes a WebSocket route on the same URL: display, stations (list, one station, admin list), players (public, admin), matches (history, detail), tournament (admin), lights, and diagnostics (`operationsRoutes.ts`, which uses the low-level helper directly).
-- **Refusals:** a live route that can't stream closes the socket with `4000 + status` and the error text as the reason. This covers an unknown station or match (4404), a param or query that doesn't parse (4400), and `/api/admin/matches/live` without a feed (4404). One helper does this, so routes don't each pick codes.
+- **Refusals:** a live route that can't stream closes the socket with `4000 + status` and the error text as the reason. This covers an unknown station or match (4404), a param or query that doesn't parse (4400), and `/api/admin/matches/live` without a feed (4404). One helper does this, so routes don't each pick codes. Route errors on a socket don't reach `app.ts`'s error handler, so the helper maps them itself: a `parse` failure becomes 4400 with `requestProblem(error)` (`parse.ts`) as the reason, the same text the 400 has today. Live routes keep parsing their params and query with `parse` (ADR 0010).
 - **Admin guard** (`access/accessRoutes.ts`): for an upgrade request to `/api/admin/*/live` without a valid cookie, the guard doesn't reply 401. The socket then closes with 4401 "admin PIN required". Keep the check in the guard, for example by marking the request there and having the socket helper close a marked request, so no route needs its own check. Plain HTTP requests get 401 as before.
 
 ### Client
@@ -32,7 +32,7 @@ Swap the transport under every live view in one go. `streamView` and `followStre
 ### Tests
 
 - `live/live.test.ts`: read streams over a WebSocket (`injectWS` from `@fastify/websocket`, or the `ws` client against a listening app, whichever reads better). Replace the SSE header test with: a refused admin stream closes with 4401 and the reason, an unknown station closes with 4404, and a bad id closes with 4400.
-- The other server tests that open `/live` (`station.test.ts`, `diagnostics.test.ts`, `overrides.test.ts`, …) move the same way.
+- The other server tests that open `/live` (`station.test.ts`, `stations.test.ts`, `diagnostics.test.ts`, `overrides.test.ts`) move the same way.
 - `testing/load/load.test.ts`: its stream reader reads a socket. The thresholds stay as they are. If the numbers move, record by how much in the comments here.
 - `lib/liveStream.test.ts`: replace the back/forward cache tests with:
   - a dropped connection reconnects, with growing delays capped at 5 s, reset after an open;
