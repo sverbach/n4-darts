@@ -278,6 +278,52 @@ export const MatchHoldInput = z.strictObject({ held: z.boolean() });
 export const MatchPinInput = z.strictObject({ station: z.number().int().nullable() });
 export const PlayNowInput = z.strictObject({ station: z.number().int() });
 
+const PLAYER_NAME = "a player needs a name";
+
+/** Trimmed, inner whitespace collapsed, not empty. */
+const playerName = z
+  .string({ error: PLAYER_NAME })
+  .transform((name) => name.trim().replace(/\s+/g, " "))
+  .pipe(z.string().min(1, { error: PLAYER_NAME }));
+
+export const NewPlayerInput = z.strictObject({ name: playerName });
+
+export const PlayerChangesInput = z.strictObject({
+  name: playerName.exactOptional(),
+  archived: z.boolean().exactOptional(),
+  public: z.boolean().exactOptional(),
+});
+export type PlayerChangesInput = z.infer<typeof PlayerChangesInput>;
+
+const STATION_NUMBER = "the station number must be a whole number from 1";
+const BOARD_URL = "the board address should look like http://192.168.1.139:3180";
+
+/** A station added in /admin; without an id, it gets the number after the highest one. */
+export const NewStationInput = z.strictObject({
+  id: z
+    .number({ error: STATION_NUMBER })
+    .int({ error: STATION_NUMBER })
+    .min(1, { error: STATION_NUMBER })
+    .exactOptional(),
+  name: z.string().exactOptional(),
+  boardUrl: z.string({ error: BOARD_URL }),
+});
+export type NewStationInput = z.infer<typeof NewStationInput>;
+
+export const StationChangesInput = z.strictObject({
+  name: z.string().exactOptional(),
+  boardUrl: z.string({ error: BOARD_URL }).exactOptional(),
+});
+export type StationChangesInput = z.infer<typeof StationChangesInput>;
+
+/** The admin PIN, or the public site's password. */
+export const PinInput = z.strictObject({ pin: z.string() });
+
+/** The callout pack to use; `null` for the default voice. */
+export const ActivePackInput = z.strictObject({
+  id: z.string({ error: "Choose a pack, or null for the default voice." }).nullable(),
+});
+
 export const BoardActionInput = z.strictObject({
   action: z.enum(["start", "stop", "calibrate", "reset"], {
     error: "action must be start, stop, calibrate or reset",

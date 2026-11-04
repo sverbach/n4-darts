@@ -86,3 +86,19 @@ describe("admin PIN", () => {
     expect((await appWith("1234").inject("/api/stations")).statusCode).toBe(200);
   });
 });
+
+describe("a login that doesn't fit", () => {
+  it.each([
+    ["no PIN", {}],
+    ["a PIN that isn't text", { pin: 1234 }],
+  ])("refuses %s with a 400 and no cookie", async (_, payload) => {
+    const res = await appWith("1234").inject({
+      method: "POST",
+      url: "/api/admin/login",
+      payload,
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.headers["set-cookie"]).toBeUndefined();
+  });
+});

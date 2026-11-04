@@ -132,6 +132,39 @@ describe("stations in /admin", () => {
   });
 });
 
+describe("a station request that doesn't fit", () => {
+  it.each([
+    ["no board address", { name: "Left" }, /^the board address should look like/],
+    ["a station number of 0", { id: 0, boardUrl: "http://a:3180" }, /^the station number must/],
+    ["a station number as text", { id: "3", boardUrl: "http://a:3180" }, /^the station number/],
+    ["a name that isn't text", { name: 5, boardUrl: "http://a:3180" }, /^name: /],
+    ["an unknown field", { boardUrl: "http://a:3180", colour: "red" }, /colour/],
+  ])("refuses adding one with %s, and adds nothing", async (_, payload, error) => {
+    const { admin, list } = await setup();
+
+    const res = await admin("POST", "/api/admin/stations", payload);
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(error);
+    expect(await list()).toEqual([]);
+  });
+
+  it("refuses a change that doesn't fit, and the station stays as it was", async () => {
+    const { admin, list } = await setup();
+    await admin("POST", "/api/admin/stations", { name: "Left", boardUrl: sims[0]?.url });
+
+    expect((await admin("PATCH", "/api/admin/stations/1", { boardUrl: 5 })).status).toBe(400);
+    expect((await admin("PATCH", "/api/admin/stations/one", { name: "Right" })).status).toBe(400);
+    expect((await list())[0]).toMatchObject({ name: "Left", boardUrl: sims[0]?.url });
+  });
+
+  it("refuses an unknown view of a station's live stream", async () => {
+    const { admin } = await setup();
+    await admin("POST", "/api/admin/stations", { boardUrl: sims[0]?.url });
+
+    expect((await admin("GET", "/api/stations/1/live?view=kiosk")).status).toBe(400);
+  });
+});
+
 describe("seeding from STATIONS", () => {
   it("happens once, on a fresh database", async () => {
     const { admin, list } = await setup("1=http://127.0.0.1:1,2=http://127.0.0.1:2");

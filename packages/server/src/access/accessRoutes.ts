@@ -2,7 +2,8 @@
 // other /api/admin/* route.
 
 import type { FastifyInstance } from "fastify";
-import type { AdminSession, PublicSession } from "../api.ts";
+import { type AdminSession, PinInput, type PublicSession } from "../api.ts";
+import { parse } from "../parse.ts";
 import type { Access } from "./admin.ts";
 
 const COOKIE = "n4_admin";
@@ -44,9 +45,10 @@ export function registerAdmin(app: FastifyInstance, access: Access) {
     }),
   );
 
-  app.post<{ Body: { pin?: unknown } }>("/api/admin/login", async (request, reply) => {
+  app.post("/api/admin/login", async (request, reply) => {
+    const { pin } = parse(PinInput, request.body);
     if (!access.token) return reply.code(204).send();
-    if (!access.isPin(String(request.body?.pin ?? ""))) {
+    if (!access.isPin(pin)) {
       return reply.code(401).send({ error: "wrong PIN" });
     }
     return reply.header("set-cookie", setCookie(access.token, MAX_AGE)).code(204).send();
@@ -96,8 +98,9 @@ export function registerPublicAccess(
     }),
   );
 
-  app.post<{ Body: { pin?: unknown } }>("/api/public/login", async (request, reply) => {
-    if (!access.token || !access.isPin(String(request.body?.pin ?? ""))) {
+  app.post("/api/public/login", async (request, reply) => {
+    const { pin } = parse(PinInput, request.body);
+    if (!access.token || !access.isPin(pin)) {
       await new Promise((resolve) =>
         setTimeout(resolve, options.wrongPinDelayMs ?? WRONG_PIN_DELAY_MS),
       );

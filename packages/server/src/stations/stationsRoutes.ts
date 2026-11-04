@@ -3,7 +3,8 @@
 // address, applied without a restart).
 
 import type { FastifyInstance, FastifyReply } from "fastify";
-import { BoardActionInput, StationCommand } from "../api.ts";
+import { z } from "zod";
+import { BoardActionInput, NewStationInput, StationChangesInput, StationCommand } from "../api.ts";
 import type { ChangeFeed } from "../live/live.ts";
 import { streamView } from "../live/liveRoutes.ts";
 import { IdParams, parse } from "../parse.ts";
@@ -14,6 +15,9 @@ import {
   type StationRegistry,
   stationAdminView,
 } from "./stations.ts";
+
+/** `?view=watch` from /watch, so diagnostics can tell the projector from the kiosk. */
+const LiveQuery = z.object({ view: z.enum(["station", "watch"]).default("station") });
 
 export function registerStations(
   app: FastifyInstance,
@@ -59,13 +63,12 @@ export function registerStations(
     }
   });
 
-  // Live station state: the full view on connect and after every change. `?view=watch` from
-  // /watch, so diagnostics can tell the projector from the kiosk.
-  app.get<{ Querystring: { view?: string } }>("/api/stations/:id/live", (request, reply) => {
+  // Live station state: the full view on connect and after every change.
+  app.get("/api/stations/:id/live", (request, reply) => {
     const station = stations.get(parse(IdParams, request.params).id);
     if (!station) return reply.code(404).send({ error: "no such station" });
     streamView(request, reply, station.subscribe, station.view, {
-      kind: request.query.view === "watch" ? "watch" : "station",
+      kind: parse(LiveQuery, request.query).view,
       label: station.view().name,
     });
   });
@@ -97,26 +100,24 @@ export function registerStationAdmin(
     );
   }
 
-  app.post<{ Body: { id?: unknown; name?: unknown; boardUrl?: unknown } }>(
-    "/api/admin/stations",
-    async (request, reply) =>
-      attempt(reply, () =>
-        reply.code(201).send(stationAdminView(registry, registry.add(request.body ?? {}))),
-      ),
-  );
+  app.post("/api/admin/stations", async (request, reply) => {
+    const input = parse(NewStationInput, request.body);
+    return attempt(reply, () =>
+      reply.code(201).send(stationAdminView(registry, registry.add(input))),
+    );
+  });
 
-  app.patch<{ Params: { id: string }; Body: { name?: unknown; boardUrl?: unknown } }>(
-    "/api/admin/stations/:id",
-    async (request, reply) =>
-      attempt(reply, () =>
-        stationAdminView(registry, registry.update(Number(request.params.id), request.body ?? {})),
-      ),
-  );
+  app.patch("/api/admin/stations/:id", async (request, reply) => {
+    const { id } = parse(IdParams, request.params);
+    const changes = parse(StationChangesInput, request.body);
+    return attempt(reply, () => stationAdminView(registry, registry.update(id, changes)));
+  });
 
-  app.delete<{ Params: { id: string } }>("/api/admin/stations/:id", async (request, reply) =>
-    attempt(reply, () => {
-      registry.remove(Number(request.params.id));
+  app.delete("/api/admin/stations/:id", async (request, reply) => {
+    const { id } = parse(IdParams, request.params);
+    return attempt(reply, () => {
+      registry.remove(id);
       return reply.code(204).send();
-    }),
-  );
+    });
+  });
 }

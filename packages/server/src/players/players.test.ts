@@ -153,3 +153,55 @@ describe("players", () => {
     expect((await app.inject("/api/players")).statusCode).toBe(200);
   });
 });
+
+describe("a player request that doesn't fit", () => {
+  it.each([
+    ["no name", {}],
+    ["a name that isn't text", { name: 5 }],
+    ["an unknown field", { name: "Ivy", nick: "I" }],
+  ])("refuses adding with %s, and adds nobody", async (_, payload) => {
+    const { app, names } = setup();
+
+    for (const url of ["/api/players", "/api/admin/players"]) {
+      const res = await app.inject({ method: "POST", url, payload });
+      expect(res.statusCode).toBe(400);
+    }
+    expect(await names("/api/admin/players")).toEqual([]);
+  });
+
+  it("answers a missing name like an empty one", async () => {
+    const { app } = setup();
+
+    const res = await app.inject({ method: "POST", url: "/api/players", payload: {} });
+    expect(res.json().error).toBe("a player needs a name");
+  });
+
+  it.each([
+    ["archived as text", { archived: "true" }],
+    ["public as a number", { public: 0 }],
+    ["an empty name", { name: "  " }],
+    ["an unknown field", { rating: 50 }],
+  ])("refuses a change with %s, and the player stays as they were", async (_, payload) => {
+    const { add, patch, app } = setup();
+    const { body } = await add("Ann");
+
+    expect((await patch(body.id, payload)).statusCode).toBe(400);
+    expect((await app.inject("/api/admin/players")).json()[0]).toMatchObject({
+      name: "Ann",
+      archived: false,
+      public: true,
+    });
+  });
+
+  it("refuses a photo that isn't a file", async () => {
+    const { add, app } = setup();
+    const { body } = await add("Ann");
+
+    const res = await app.inject({
+      method: "PUT",
+      url: `/api/admin/players/${body.id}/photo`,
+      payload: { jpeg: "nope" },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+});

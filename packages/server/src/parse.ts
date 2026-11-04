@@ -27,3 +27,6 @@ export const IdParams = z.object({ id: z.coerce.number().int() });
 
 /** A text id in the path, e.g. a match's. */
 export const TextIdParams = z.object({ id: z.string().min(1) });
+
+/** A file uploaded as the request's body (a photo, a callout pack). */
+export const FileBody = z.instanceof(Buffer, { error: "expected a file" });

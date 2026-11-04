@@ -2,14 +2,8 @@
 // picker; changes go through /admin. The routes are in playersRoutes.ts.
 
 import { randomUUID } from "node:crypto";
-import type { MatchPlayer, Player } from "../api.ts";
+import type { MatchPlayer, Player, PlayerChangesInput } from "../api.ts";
 import type { Db } from "../db.ts";
-
-/** Trimmed, inner whitespace collapsed; empty means invalid. */
-const cleanName = (name: unknown) =>
-  String(name ?? "")
-    .trim()
-    .replace(/\s+/g, " ");
 
 /** A player as matches and views show them: name and photo version. */
 export function matchPlayer(db: Db, id: string): MatchPlayer {
@@ -32,10 +26,8 @@ export class PlayerError extends Error {
 }
 
 export function createPlayers(db: Db) {
-  /** The cleaned name, if nobody but `self` has it yet. */
-  function usableName(raw: unknown, self?: string): string {
-    const name = cleanName(raw);
-    if (!name) throw new PlayerError("a player needs a name", "invalid");
+  /** The name, if nobody but `self` has it yet. */
+  function usableName(name: string, self?: string): string {
     const taken = db.playerNamed(name);
     if (taken && taken.id !== self) {
       throw new PlayerError(`there is already a player called ${taken.name}`, "taken");
@@ -55,7 +47,7 @@ export function createPlayers(db: Db) {
     /** Everyone, archived players too, for /admin. */
     listAll: () => db.players({ includeArchived: true }),
 
-    add(name: unknown): Player {
+    add(name: string): Player {
       const player: Player = {
         id: randomUUID(),
         name: usableName(name),
@@ -67,20 +59,20 @@ export function createPlayers(db: Db) {
       return player;
     },
 
-    update(id: string, changes: { name?: unknown; archived?: unknown; public?: unknown }): Player {
+    update(id: string, changes: PlayerChangesInput): Player {
       const next = { ...existing(id) };
       if (changes.name !== undefined) next.name = usableName(changes.name, id);
-      if (changes.archived !== undefined) next.archived = changes.archived === true;
-      if (changes.public !== undefined) next.public = changes.public !== false;
+      if (changes.archived !== undefined) next.archived = changes.archived;
+      if (changes.public !== undefined) next.public = changes.public;
       db.updatePlayer(next);
       return next;
     },
 
     photo: (id: string) => db.photo(id),
 
-    setPhoto(id: string, jpeg: unknown) {
+    setPhoto(id: string, jpeg: Buffer) {
       const player = existing(id);
-      if (!Buffer.isBuffer(jpeg) || !isJpeg(jpeg)) {
+      if (!isJpeg(jpeg)) {
         throw new PlayerError("the photo must be a JPEG", "invalid");
       }
       db.setPhoto(player.id, jpeg);

@@ -127,3 +127,27 @@ describe("voice packs", () => {
     expect((await upload(zipSync({ "60.mp3": sound(1) }))).statusCode).toBe(409);
   });
 });
+
+describe("a voice pack request that doesn't fit", () => {
+  it.each([
+    ["no id", {}],
+    ["an id that isn't text", { id: 5 }],
+  ])("refuses choosing a pack with %s", async (_, payload) => {
+    const { app } = setup();
+
+    const res = await app.inject({ method: "PUT", url: "/api/admin/callouts/active", payload });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error).toBe("Choose a pack, or null for the default voice.");
+  });
+
+  it("refuses an upload that isn't a file", async () => {
+    const { app } = setup();
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/admin/callouts?name=Ivy.zip",
+      payload: { zip: "nope" },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+});

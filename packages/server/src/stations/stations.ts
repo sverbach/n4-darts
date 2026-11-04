@@ -1,4 +1,4 @@
-import type { StationAdminView } from "../api.ts";
+import type { NewStationInput, StationAdminView, StationChangesInput } from "../api.ts";
 import {
   type BoardGateway,
   type BoardGatewayOptions,
@@ -51,8 +51,8 @@ export class StationConfigError extends Error {
 export interface StationRegistry extends StationDirectory {
   configs(): StationConfig[];
   /** Without an id, the station gets the number after the highest one. */
-  add(input: { id?: unknown; name?: unknown; boardUrl?: unknown }): StationConfig;
-  update(id: number, changes: { name?: unknown; boardUrl?: unknown }): StationConfig;
+  add(input: NewStationInput): StationConfig;
+  update(id: number, changes: StationChangesInput): StationConfig;
   /** Refused while the station has a match. */
   remove(id: number): void;
   /** Whether this start seeded the stations from `STATIONS`. */
@@ -74,18 +74,16 @@ export function stationAdminView(
   };
 }
 
-function checkUrl(value: unknown): string {
+function checkUrl(value: string): string {
   try {
-    const url = new URL(String(value));
+    const url = new URL(value);
     if (url.protocol === "http:" || url.protocol === "https:") return url.origin;
   } catch {}
   throw new StationConfigError("the board address should look like http://192.168.1.139:3180", 400);
 }
 
-const cleanName = (value: unknown, id: number) =>
-  String(value ?? "")
-    .trim()
-    .replace(/\s+/g, " ") || `Station ${id}`;
+const cleanName = (value: string | undefined, id: number) =>
+  (value ?? "").trim().replace(/\s+/g, " ") || `Station ${id}`;
 
 export function createStationRegistry(
   db: Db,
@@ -142,10 +140,7 @@ export function createStationRegistry(
     configs: () => db.stationConfigs(),
     add(input) {
       const highest = Math.max(0, ...entries.keys());
-      const id = input.id === undefined ? highest + 1 : Number(input.id);
-      if (!Number.isInteger(id) || id < 1) {
-        throw new StationConfigError("the station number must be a whole number from 1", 400);
-      }
+      const id = input.id ?? highest + 1;
       if (entries.has(id)) throw new StationConfigError(`station ${id} already exists`, 409);
       const config = { id, name: cleanName(input.name, id), boardUrl: checkUrl(input.boardUrl) };
       db.saveStation(config);

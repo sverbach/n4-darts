@@ -1,5 +1,12 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
+import { z } from "zod";
+import { ActivePackInput } from "../api.ts";
+import { FileBody, parse, TextIdParams } from "../parse.ts";
 import { type CalloutPacks, MAX_PACK_BYTES, PackError } from "./packs.ts";
+
+const FileParams = z.object({ id: z.string(), file: z.string() });
+/** The uploaded file's name, which the pack is named after. */
+const UploadQuery = z.object({ name: z.string().default("") });
 
 const STATUS = { invalid: 400, missing: 404, unavailable: 409 } as const;
 
@@ -19,17 +26,15 @@ export function registerCallouts(app: FastifyInstance, packs: CalloutPacks) {
     reply.header("cache-control", "no-cache").send(packs.pack()),
   );
 
-  app.get<{ Params: { id: string; file: string } }>(
-    "/api/callouts/:id/:file",
-    async (request, reply) => {
-      const file = packs.file(request.params.id, request.params.file);
-      if (!file) return reply.code(404).send({ error: "no such file" });
-      return reply
-        .type(file.type)
-        .header("cache-control", "public, max-age=31536000, immutable")
-        .send(file.data);
-    },
-  );
+  app.get("/api/callouts/:id/:file", async (request, reply) => {
+    const { id, file: name } = parse(FileParams, request.params);
+    const file = packs.file(id, name);
+    if (!file) return reply.code(404).send({ error: "no such file" });
+    return reply
+      .type(file.type)
+      .header("cache-control", "public, max-age=31536000, immutable")
+      .send(file.data);
+  });
 
   app.get("/api/admin/callouts", async () => packs.admin());
 
@@ -39,30 +44,26 @@ export function registerCallouts(app: FastifyInstance, packs: CalloutPacks) {
       { parseAs: "buffer", bodyLimit: MAX_PACK_BYTES },
       (_request, body, done) => done(null, body),
     );
-    zips.post<{ Querystring: { name?: string }; Body: Buffer }>(
-      "/api/admin/callouts",
-      async (request, reply) =>
-        attempt(reply, () =>
-          reply.code(201).send(packs.add(request.query.name ?? "", request.body)),
-        ),
-    );
+    zips.post("/api/admin/callouts", async (request, reply) => {
+      const { name } = parse(UploadQuery, request.query);
+      const zip = parse(FileBody, request.body);
+      return attempt(reply, () => reply.code(201).send(packs.add(name, zip)));
+    });
   });
 
-  app.put<{ Body: { id?: unknown } }>("/api/admin/callouts/active", async (request, reply) =>
-    attempt(reply, () => {
-      const id = request.body?.id;
-      if (id !== null && typeof id !== "string") {
-        throw new PackError("Choose a pack, or null for the default voice.", "invalid");
-      }
+  app.put("/api/admin/callouts/active", async (request, reply) => {
+    const { id } = parse(ActivePackInput, request.body);
+    return attempt(reply, () => {
       packs.activate(id);
       return packs.admin();
-    }),
-  );
+    });
+  });
 
-  app.delete<{ Params: { id: string } }>("/api/admin/callouts/:id", async (request, reply) =>
-    attempt(reply, () => {
-      packs.remove(request.params.id);
+  app.delete("/api/admin/callouts/:id", async (request, reply) => {
+    const { id } = parse(TextIdParams, request.params);
+    return attempt(reply, () => {
+      packs.remove(id);
       return packs.admin();
-    }),
-  );
+    });
+  });
 }
