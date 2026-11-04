@@ -215,6 +215,16 @@ export const StationCommand = z.discriminatedUnion("type", [
 ]);
 export type StationCommand = z.infer<typeof StationCommand>;
 
+/** A match the organiser puts on a station in /admin. */
+export const NewMatchInput = z.strictObject({
+  station: z.number().int(),
+  playerIds,
+  settings: MatchSettingsInput.exactOptional(),
+});
+
+/** The organiser's correction of a dart, in /admin. */
+export const CorrectionInput = z.strictObject({ dartId: z.string(), segment: SegmentInput });
+
 export const BoardActionInput = z.strictObject({
   action: z.enum(["start", "stop", "calibrate", "reset"], {
     error: "action must be start, stop, calibrate or reset",

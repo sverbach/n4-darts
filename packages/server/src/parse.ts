@@ -24,3 +24,6 @@ export function requestProblem(error: unknown): string | null {
 
 /** A numeric id in the path, e.g. a station's. */
 export const IdParams = z.object({ id: z.coerce.number().int() });
+
+/** A text id in the path, e.g. a match's. */
+export const TextIdParams = z.object({ id: z.string().min(1) });

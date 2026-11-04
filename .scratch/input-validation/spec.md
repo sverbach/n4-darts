@@ -32,3 +32,4 @@ Every request body, param and query string is parsed against a Zod schema in its
 4. `04-players-stations-access-callouts.md`: the small bodies
 5. `05-lights.md`: the largest set of hand-written checks
 6. `06-enforce-and-document.md`: keeping `unknown` out of logic, ADR 0010, architecture docs
+7. `07-only-real-segments.md`: `isSegment` accepts a triple bull and other segments no board has

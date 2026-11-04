@@ -3,7 +3,7 @@
 // any match (docs/adr/0002: the correction is appended, the original detection stays in the log).
 // The routes are in matchesRoutes.ts.
 
-import { isSegment, matchState, type Segment } from "@n4/engine";
+import { matchState, type Segment } from "@n4/engine";
 import type { MatchDetail, MatchPage, MatchSummary } from "../api.ts";
 import type { Db, MatchRecord, StoredEvent } from "../db.ts";
 import { matchPlayer } from "../players/players.ts";
@@ -22,8 +22,8 @@ export interface ResultGuard {
 
 /** Why a request about a match was refused. */
 export class MatchError extends Error {
-  readonly reason: "invalid" | "missing" | "refused";
-  constructor(message: string, reason: "invalid" | "missing" | "refused") {
+  readonly reason: "missing" | "refused";
+  constructor(message: string, reason: "missing" | "refused") {
     super(message);
     this.reason = reason;
   }
@@ -102,9 +102,8 @@ export function createMatches(db: Db, stations: StationDirectory, guard?: Result
     },
 
     /** Corrects a dart of a running or finished match; the result follows. */
-    correct(id: string, dartId: unknown, segment: unknown): MatchDetail {
+    correct(id: string, dartId: string, segment: Segment): MatchDetail {
       const match = existing(id);
-      if (!isSegment(segment)) throw new MatchError("not a valid segment", "invalid");
       const events = db.events(match.id);
       if (!events.some((e) => e.type === "DartThrown" && e.dartId === dartId)) {
         throw new MatchError("no such dart in this match", "missing");
@@ -112,7 +111,7 @@ export function createMatches(db: Db, stations: StationDirectory, guard?: Result
 
       const event: StoredEvent = {
         type: "DartCorrected",
-        dartId: dartId as string,
+        dartId,
         segment,
         source: "admin",
       };
@@ -123,7 +122,7 @@ export function createMatches(db: Db, stations: StationDirectory, guard?: Result
       // A running match goes through its station, which keeps its own state and live viewers.
       const station = stationOf(match.id);
       if (station) {
-        station.correct(dartId as string, segment, "admin");
+        station.correct(dartId, segment, "admin");
       } else {
         db.append(match.id, event);
         // The stored result follows the log, also after the match was closed; an abandoned

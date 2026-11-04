@@ -86,6 +86,34 @@ describe("creating matches in /admin", () => {
     expect((await create({ station: 1, playerIds: "ann" })).statusCode).toBe(400);
   });
 
+  it.each([
+    ["no station", { playerIds: ["ann", "bob"] }, /^station: /],
+    ["a station that isn't a number", { station: "one", playerIds: ["ann", "bob"] }, /^station: /],
+    [
+      "an unknown out rule",
+      { station: 1, playerIds: ["ann", "bob"], settings: { outRule: "banana" } },
+      /^settings\.outRule: /,
+    ],
+    [
+      "a start score of 1",
+      { station: 1, playerIds: ["ann", "bob"], settings: { startScore: 1 } },
+      /^start score must be a whole number of at least 2$/,
+    ],
+    [
+      "no legs to win",
+      { station: 1, playerIds: ["ann", "bob"], settings: { legsToWin: 0 } },
+      /^legs to win must be a whole number of at least 1$/,
+    ],
+    ["an unknown field", { station: 1, playerIds: ["ann", "bob"], best: true }, /best/],
+  ])("refuses a match with %s, and puts nothing on the station", async (_, payload, error) => {
+    const { create, station } = setup();
+
+    const res = await create(payload);
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error).toMatch(error);
+    expect((await station(1)).match).toBeNull();
+  });
+
   it("abandons a station's match from /admin", async () => {
     const { app, create, station } = setup();
     await create({ station: 1, playerIds: ["ann", "bob"] });
@@ -215,6 +243,37 @@ describe("match history", () => {
       payload: { dartId: "nope", segment: { number: 20, multiplier: 3 } },
     });
     expect(res.statusCode).toBe(404);
+  });
+});
+
+describe("a correction that doesn't fit", () => {
+  it.each([
+    [
+      "an invalid segment",
+      (dartId: string) => ({ dartId, segment: { number: 21, multiplier: 1 } }),
+    ],
+    ["no segment", (dartId: string) => ({ dartId })],
+    ["no dart", () => ({ segment: { number: 19, multiplier: 1 } })],
+    [
+      "an unknown field",
+      (dartId: string) => ({ dartId, segment: { number: 19, multiplier: 1 }, source: "station" }),
+    ],
+  ])("is refused with %s, and the match doesn't change", async (_, payload) => {
+    const ctx = setup();
+    await ctx.create({ station: 1, playerIds: ["ann", "bob"] });
+    await ctx.command(1, "startMatch");
+    ctx.play(1, "S20");
+    const match = (await ctx.station(1)).match;
+    const dartId = match?.state.currentVisit?.darts[0]?.dartId as string;
+    const before = db.events(match?.id as string);
+
+    const res = await ctx.app.inject({
+      method: "POST",
+      url: `/api/admin/matches/${match?.id}/corrections`,
+      payload: payload(dartId),
+    });
+    expect(res.statusCode).toBe(400);
+    expect(db.events(match?.id as string)).toEqual(before);
   });
 });
 

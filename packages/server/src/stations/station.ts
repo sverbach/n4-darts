@@ -138,12 +138,6 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
     if (match) throw new CommandError("station already has a match; close it first");
     checkPlayers(input.playerIds);
     const settings = { ...defaultX01Settings, ...input.settings, rulesVersion: RULES_VERSION };
-    if (!Number.isInteger(settings.startScore) || settings.startScore < 2) {
-      throw new CommandError("start score must be a whole number of at least 2");
-    }
-    if (!Number.isInteger(settings.legsToWin) || settings.legsToWin < 1) {
-      throw new CommandError("legs to win must be a whole number of at least 1");
-    }
     const matchId = randomUUID();
     db.createMatch({ id: matchId, station: id, settings, playerIds: [...input.playerIds] });
     match = db.getMatch(matchId) ?? null;
