@@ -145,3 +145,58 @@ describe("setting up a tournament", () => {
     expect((await call("GET", "/api/admin/tournament")).body.tournament).toBeNull();
   });
 });
+
+describe("a tournament request that doesn't fit", () => {
+  it.each([
+    [
+      "an unknown elimination",
+      { format: { elimination: "triple" } },
+      /^config\.format\.elimination: /,
+    ],
+    ["groups as text", { format: { groups: "2" } }, /^config\.format\.groups: /],
+    ["no groups", { format: { groups: 0 } }, /^config\.format\.groups: /],
+    ["a bracket reset as text", { format: { bracketReset: "yes" } }, /bracketReset/],
+    ["legs that aren't whole", { legs: { final: 2.5 } }, /^config\.legs\.final: /],
+    ["an unknown in rule", { x01: { inRule: "banana" } }, /^config\.x01\.inRule: /],
+    ["legs to win in the X01 settings", { x01: { legsToWin: 3 } }, /legsToWin/],
+    ["an unknown section", { cricket: {} }, /cricket/],
+  ])("refuses a config with %s, and the draft stays as it was", async (_, config, error) => {
+    const { call } = setup();
+    const draft = (await call("POST", "/api/admin/tournament", { playerIds: ids(3) })).body;
+
+    const created = await call("POST", "/api/admin/tournament", { playerIds: ids(3), config });
+    expect(created.status).toBe(400);
+    const patched = await call("PATCH", "/api/admin/tournament", { config });
+    expect(patched.status).toBe(400);
+    expect(patched.body.error).toMatch(error);
+    expect((await call("GET", "/api/admin/tournament")).body.tournament?.config).toEqual(
+      draft.tournament?.config,
+    );
+  });
+
+  it.each([
+    ["a name that isn't text", { name: 5 }],
+    ["players that aren't a list", { playerIds: "ann" }],
+    ["a seed order that isn't a list", { seedOrder: "ann" }],
+    ["an unknown field", { rounds: 3 }],
+  ])("refuses %s", async (_, body) => {
+    const { call } = setup();
+    await call("POST", "/api/admin/tournament", { playerIds: ids(3) });
+
+    expect((await call("PATCH", "/api/admin/tournament", body)).status).toBe(400);
+  });
+
+  it.each([
+    ["/api/admin/tournament/withdraw", {}],
+    ["/api/admin/tournament/late", { playerId: 5 }],
+    ["/api/admin/tournament/stations/1/pause", { paused: "yes" }],
+    ["/api/admin/tournament/stations/one/pause", { paused: true }],
+    ["/api/admin/tournament/matches/m1/hold", {}],
+    ["/api/admin/tournament/matches/m1/pin", { station: "1" }],
+    ["/api/admin/tournament/matches/m1/play-now", { station: null }],
+  ])("refuses %s with %j", async (url, body) => {
+    const { call } = setup();
+
+    expect((await call("POST", url, body)).status).toBe(400);
+  });
+});

@@ -136,8 +136,7 @@ export function plan(config: TournamentConfig, entrants: Entrant[], results: Res
 export function configProblems(config: TournamentConfig, playerCount: number): string[] {
   const problems: string[] = [];
   const { groups, advancePerGroup } = config.format;
-  if (!Number.isInteger(groups) || groups < 1) problems.push("There has to be at least one group.");
-  else if (playerCount < groups * 3) {
+  if (playerCount < groups * 3) {
     problems.push(
       groups === 1
         ? "A tournament needs at least 3 players."
@@ -145,20 +144,12 @@ export function configProblems(config: TournamentConfig, playerCount: number): s
     );
   }
   if (advancePerGroup !== null) {
-    const smallest = Math.floor(playerCount / Math.max(groups, 1));
-    if (!Number.isInteger(advancePerGroup) || advancePerGroup < 1) {
-      problems.push("At least one player has to advance from each group.");
-    } else if (advancePerGroup > smallest && playerCount >= groups * 3) {
+    const smallest = Math.floor(playerCount / groups);
+    if (advancePerGroup > smallest && playerCount >= groups * 3) {
       problems.push(`Only ${smallest} players are in the smallest group.`);
     } else if (groups * advancePerGroup < 2) {
       problems.push("At least two players have to reach the knockout.");
     }
-  }
-  for (const [phase, legs] of Object.entries(config.legs)) {
-    if (!Number.isInteger(legs) || legs < 1) problems.push(`Legs for ${phase} must be at least 1.`);
-  }
-  if (!Number.isInteger(config.x01.startScore) || config.x01.startScore < 2) {
-    problems.push("The start score must be a whole number of at least 2.");
   }
   return problems;
 }

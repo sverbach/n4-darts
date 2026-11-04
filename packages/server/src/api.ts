@@ -11,7 +11,13 @@ import {
 } from "@n4/engine";
 import { z } from "zod";
 import type { TableRow } from "./tournaments/plan/groups.ts";
-import type { Placing, TournamentConfig } from "./tournaments/plan/types.ts";
+import type {
+  Elimination,
+  PhaseLegs,
+  Placing,
+  TournamentConfig,
+  TournamentFormat,
+} from "./tournaments/plan/types.ts";
 
 export type { Placing, TableRow, TournamentConfig };
 
@@ -224,6 +230,53 @@ export const NewMatchInput = z.strictObject({
 
 /** The organiser's correction of a dart, in /admin. */
 export const CorrectionInput = z.strictObject({ dartId: z.string(), segment: SegmentInput });
+
+const ELIMINATIONS = {
+  single: "single",
+  double: "double",
+} as const satisfies { [E in Elimination]: E };
+
+const legsToWin = z.number().int().min(1).exactOptional();
+
+/** A change to some of the tournament's settings; what's left out stays as it is. */
+export const TournamentConfigPatch = z.strictObject({
+  format: z
+    .strictObject({
+      groups: z.number().int().min(1).exactOptional(),
+      advancePerGroup: z.number().int().min(1).nullable().exactOptional(),
+      elimination: z.enum(ELIMINATIONS).exactOptional(),
+      bracketReset: z.boolean().exactOptional(),
+    } satisfies { [K in keyof TournamentFormat]: z.ZodType })
+    .exactOptional(),
+  legs: z
+    .strictObject({
+      groups: legsToWin,
+      winners: legsToWin,
+      losers: legsToWin,
+      final: legsToWin,
+    } satisfies { [K in keyof PhaseLegs]: z.ZodType })
+    .exactOptional(),
+  x01: MatchSettingsInput.pick({ startScore: true, inRule: true, outRule: true }).exactOptional(),
+} satisfies { [K in keyof TournamentConfig]: z.ZodType });
+export type TournamentConfigPatch = z.infer<typeof TournamentConfigPatch>;
+
+/** Drafting the tournament in /admin: creating it, or changing what may still change. */
+export const TournamentInput = z.strictObject({
+  name: z.string().exactOptional(),
+  playerIds: z.array(z.string()).exactOptional(),
+  config: TournamentConfigPatch.exactOptional(),
+  /** Player ids in the organiser's seed order. */
+  seedOrder: z.array(z.string()).exactOptional(),
+});
+export type TournamentInput = z.infer<typeof TournamentInput>;
+
+/** A player withdrawing from the running tournament, or arriving late. */
+export const TournamentPlayerInput = z.strictObject({ playerId: z.string() });
+export const StationPauseInput = z.strictObject({ paused: z.boolean() });
+export const MatchHoldInput = z.strictObject({ held: z.boolean() });
+/** `null` lets the match go to any station. */
+export const MatchPinInput = z.strictObject({ station: z.number().int().nullable() });
+export const PlayNowInput = z.strictObject({ station: z.number().int() });
 
 export const BoardActionInput = z.strictObject({
   action: z.enum(["start", "stop", "calibrate", "reset"], {

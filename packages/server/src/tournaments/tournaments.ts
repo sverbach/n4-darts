@@ -3,7 +3,7 @@
 
 import { randomUUID } from "node:crypto";
 import { defaultX01Settings, matchState, RULES_VERSION } from "@n4/engine";
-import type { TournamentAdminView } from "../api.ts";
+import type { TournamentAdminView, TournamentConfigPatch, TournamentInput } from "../api.ts";
 import type { Db, MatchRecord, StoredEvent, TournamentRecord } from "../db.ts";
 import type { ResultGuard } from "../matches/matches.ts";
 import { ratingOf } from "../ratings/ratings.ts";
@@ -28,20 +28,14 @@ export class TournamentError extends Error {
   }
 }
 
-export interface TournamentInput {
-  name?: unknown;
-  playerIds?: unknown;
-  config?: unknown;
-  /** Player ids in the organiser's seed order. */
-  seedOrder?: unknown;
-}
-
 const today = () =>
   new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
 
 /** Merges a partial config from a request onto the current one, section by section. */
-function mergeConfig(current: TournamentConfig, input: unknown): TournamentConfig {
-  const patch = (input ?? {}) as Partial<Record<keyof TournamentConfig, object>>;
+function mergeConfig(
+  current: TournamentConfig,
+  patch: TournamentConfigPatch = {},
+): TournamentConfig {
   return {
     format: { ...current.format, ...patch.format },
     legs: { ...current.legs, ...patch.legs },
@@ -201,10 +195,7 @@ export function createTournaments(db: Db, stations: StationDirectory) {
     return current;
   }
 
-  function checkPlayers(raw: unknown): string[] {
-    if (!Array.isArray(raw) || !raw.every((p) => typeof p === "string")) {
-      throw new TournamentError("playerIds must be a list of player ids", 400);
-    }
+  function checkPlayers(raw: string[]): string[] {
     if (new Set(raw).size !== raw.length)
       throw new TournamentError("a player can only enter once", 400);
     for (const id of raw) {
@@ -488,7 +479,7 @@ export function createTournaments(db: Db, stations: StationDirectory) {
     const config = mergeConfig(defaultTournamentConfig, input.config);
     const tournament: TournamentRecord = {
       id: randomUUID(),
-      name: String(input.name ?? "").trim() || today(),
+      name: input.name?.trim() || today(),
       status: "draft",
       config,
       createdAt: new Date().toISOString(),
@@ -515,19 +506,16 @@ export function createTournaments(db: Db, stations: StationDirectory) {
     const tournament = editable();
     const previous = db.entrants(tournament.id);
     const config = mergeConfig(tournament.config, input.config);
-    const name =
-      input.name === undefined ? tournament.name : String(input.name).trim() || tournament.name;
+    const name = input.name?.trim() || tournament.name;
     let order = previous.map((e) => e.playerId);
     if (input.playerIds !== undefined) order = seedOrder(checkPlayers(input.playerIds), order);
     if (input.seedOrder !== undefined) {
       const wanted = input.seedOrder;
       const same =
-        Array.isArray(wanted) &&
-        wanted.length === order.length &&
-        [...wanted].sort().join() === [...order].sort().join();
+        wanted.length === order.length && [...wanted].sort().join() === [...order].sort().join();
       if (!same)
         throw new TournamentError("the seed order has to contain exactly the entrants", 400);
-      order = wanted as string[];
+      order = wanted;
     }
     if (tournament.status === "running") {
       const problems = configProblems(config, order.length);
