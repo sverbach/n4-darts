@@ -3,9 +3,11 @@
 // address, applied without a restart).
 
 import type { FastifyInstance, FastifyReply } from "fastify";
+import { BoardActionInput, StationCommand } from "../api.ts";
 import type { ChangeFeed } from "../live/live.ts";
 import { streamView } from "../live/liveRoutes.ts";
-import { CommandError, type StationCommand } from "./station.ts";
+import { IdParams, parse } from "../parse.ts";
+import { CommandError } from "./station.ts";
 import {
   StationConfigError,
   type StationDirectory,
@@ -27,57 +29,46 @@ export function registerStations(
     );
   }
 
-  app.get<{ Params: { id: string } }>("/api/stations/:id", async (request, reply) => {
-    const station = stations.get(Number(request.params.id));
+  app.get("/api/stations/:id", async (request, reply) => {
+    const station = stations.get(parse(IdParams, request.params).id);
     return station ? station.view() : reply.code(404).send({ error: "no such station" });
   });
 
-  app.post<{ Params: { id: string }; Body: StationCommand }>(
-    "/api/stations/:id/commands",
-    async (request, reply) => {
-      const station = stations.get(Number(request.params.id));
-      if (!station) return reply.code(404).send({ error: "no such station" });
-      try {
-        return await station.command(request.body);
-      } catch (error) {
-        if (error instanceof CommandError) return reply.code(409).send({ error: error.message });
-        throw error;
-      }
-    },
-  );
+  app.post("/api/stations/:id/commands", async (request, reply) => {
+    const station = stations.get(parse(IdParams, request.params).id);
+    if (!station) return reply.code(404).send({ error: "no such station" });
+    const command = parse(StationCommand, request.body);
+    try {
+      return await station.command(command);
+    } catch (error) {
+      if (error instanceof CommandError) return reply.code(409).send({ error: error.message });
+      throw error;
+    }
+  });
 
-  app.post<{ Params: { id: string }; Body: { action?: unknown } }>(
-    "/api/stations/:id/board",
-    async (request, reply) => {
-      const station = stations.get(Number(request.params.id));
-      if (!station) return reply.code(404).send({ error: "no such station" });
-      const action = request.body?.action;
-      if (action !== "start" && action !== "stop" && action !== "calibrate" && action !== "reset") {
-        return reply.code(400).send({ error: "action must be start, stop, calibrate or reset" });
-      }
-      try {
-        await station.boardCommand(action);
-        return { ok: true };
-      } catch (error) {
-        if (error instanceof CommandError) return reply.code(502).send({ error: error.message });
-        throw error;
-      }
-    },
-  );
+  app.post("/api/stations/:id/board", async (request, reply) => {
+    const station = stations.get(parse(IdParams, request.params).id);
+    if (!station) return reply.code(404).send({ error: "no such station" });
+    const { action } = parse(BoardActionInput, request.body);
+    try {
+      await station.boardCommand(action);
+      return { ok: true };
+    } catch (error) {
+      if (error instanceof CommandError) return reply.code(502).send({ error: error.message });
+      throw error;
+    }
+  });
 
   // Live station state: the full view on connect and after every change. `?view=watch` from
   // /watch, so diagnostics can tell the projector from the kiosk.
-  app.get<{ Params: { id: string }; Querystring: { view?: string } }>(
-    "/api/stations/:id/live",
-    (request, reply) => {
-      const station = stations.get(Number(request.params.id));
-      if (!station) return reply.code(404).send({ error: "no such station" });
-      streamView(request, reply, station.subscribe, station.view, {
-        kind: request.query.view === "watch" ? "watch" : "station",
-        label: station.view().name,
-      });
-    },
-  );
+  app.get<{ Querystring: { view?: string } }>("/api/stations/:id/live", (request, reply) => {
+    const station = stations.get(parse(IdParams, request.params).id);
+    if (!station) return reply.code(404).send({ error: "no such station" });
+    streamView(request, reply, station.subscribe, station.view, {
+      kind: request.query.view === "watch" ? "watch" : "station",
+      label: station.view().name,
+    });
+  });
 }
 
 export function registerStationAdmin(

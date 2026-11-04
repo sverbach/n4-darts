@@ -321,7 +321,6 @@ describe("a dart the board missed", () => {
     await server.command({ type: "startMatch" });
     for (const _ of [1, 2, 3]) await throwDart(server, "S1");
     expect((await add(server, 20, 1)).status).toBe(409);
-    expect((await add(server, 21, 1)).status).toBe(409);
   });
 
   it("isn't taken for a pulled dart when the server restarts mid-visit", async () => {
@@ -419,6 +418,95 @@ describe("setting up a match", () => {
     expect((await server.view()).match).toBeNull();
     expect(server.db.getMatch(id)).toBeUndefined();
     expect(server.db.playerHasMatches("ann")).toBe(false);
+  });
+});
+
+describe("a command that doesn't fit", () => {
+  const send = (server: Server, payload: unknown, url = "/api/stations/1/commands") =>
+    server.app.inject({ method: "POST", url, payload: payload as object });
+
+  it.each([
+    ["an unknown type", { type: "explode" }, /type/],
+    ["no type", {}, /type/],
+    ["a quick match without players", { type: "quickMatch" }, /^playerIds: /],
+    ["players that aren't a list", { type: "quickMatch", playerIds: "ann" }, /^playerIds: /],
+    [
+      "an unknown out rule",
+      { type: "quickMatch", playerIds: ["ann", "bob"], settings: { outRule: "banana" } },
+      /^settings\.outRule: /,
+    ],
+    [
+      "an unknown in rule",
+      { type: "quickMatch", playerIds: ["ann", "bob"], settings: { inRule: "banana" } },
+      /^settings\.inRule: /,
+    ],
+    [
+      "an unknown setting",
+      { type: "quickMatch", playerIds: ["ann", "bob"], settings: { rulesVersion: 0 } },
+      /^settings: .*rulesVersion/,
+    ],
+    [
+      "a start score of 1",
+      { type: "quickMatch", playerIds: ["ann", "bob"], settings: { startScore: 1 } },
+      /^start score must be a whole number of at least 2$/,
+    ],
+    [
+      "legs to win that aren't whole",
+      { type: "quickMatch", playerIds: ["ann", "bob"], settings: { legsToWin: 1.5 } },
+      /^legs to win must be a whole number of at least 1$/,
+    ],
+    ["a reorder without players", { type: "setOrder" }, /^playerIds: /],
+  ])("refuses %s, and sets up nothing", async (_, payload, error) => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+
+    const res = await send(server, payload);
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error).toMatch(error);
+    expect((await server.view()).match).toBeNull();
+  });
+
+  it.each([
+    ["a number above 20", { number: 21, multiplier: 1 }],
+    ["a negative number", { number: -1, multiplier: 1 }],
+    ["no multiplier", { number: 20 }],
+    ["not a segment at all", "T20"],
+  ])("refuses a dart with %s, and records nothing", async (_, segment) => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await start(server);
+
+    const res = await send(server, { type: "addDart", segment });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error).toBe("not a valid segment");
+    expect((await state(server)).currentVisit?.darts ?? []).toEqual([]);
+  });
+
+  it("keeps only a segment's number and multiplier", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+    await start(server);
+
+    const res = await send(server, {
+      type: "addDart",
+      segment: { number: 20, multiplier: 3, x: 1 },
+    });
+    expect(res.statusCode).toBe(200);
+    const match = server.db.openMatchOn(1);
+    const added = server.db.events(match?.id ?? "").find((e) => e.type === "DartThrown");
+    expect(added).toMatchObject({ segment: { number: 20, multiplier: 3 } });
+    expect(added?.type === "DartThrown" && added.segment).not.toHaveProperty("x");
+  });
+
+  it("answers 400 for a station id that isn't a number, and 404 for an unknown one", async () => {
+    sim = await createBoardSim();
+    const server = await startServer(tempDb());
+
+    expect((await send(server, { type: "undo" }, "/api/stations/one/commands")).statusCode).toBe(
+      400,
+    );
+    expect((await send(server, { type: "undo" }, "/api/stations/9/commands")).statusCode).toBe(404);
+    expect((await server.app.inject("/api/stations/one")).statusCode).toBe(400);
   });
 });
 
@@ -596,7 +684,9 @@ describe("the board menu", () => {
     const res = await board(server, "stop");
     expect(res.statusCode).toBe(502);
     expect(res.json().error).toMatch(/didn't answer/);
-    expect((await board(server, "explode")).statusCode).toBe(400);
+    const unknown = await board(server, "explode");
+    expect(unknown.statusCode).toBe(400);
+    expect(unknown.json().error).toBe("action must be start, stop, calibrate or reset");
   });
 });
 

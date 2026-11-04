@@ -19,6 +19,7 @@ import { registerDisplay } from "./live/liveRoutes.ts";
 import { createMatches } from "./matches/matches.ts";
 import { registerMatches, registerMatchPage } from "./matches/matchesRoutes.ts";
 import { registerDiagnostics } from "./operations/operationsRoutes.ts";
+import { requestProblem } from "./parse.ts";
 import { hiddenIds, withHiddenPlayers } from "./players/hidden.ts";
 import { createPlayers } from "./players/players.ts";
 import { registerPlayerPhoto, registerPlayers } from "./players/playersRoutes.ts";
@@ -56,8 +57,19 @@ export interface AppOptions {
   wled?: WledClient;
 }
 
-export function buildApp(options: AppOptions = {}) {
+/** Fastify with a 400 for a request that doesn't fit its schema. */
+function fastify() {
   const app = Fastify({ logger: false });
+  app.setErrorHandler(async (error, _request, reply) => {
+    const problem = requestProblem(error);
+    if (problem === null) throw error;
+    return reply.code(400).send({ error: problem });
+  });
+  return app;
+}
+
+export function buildApp(options: AppOptions = {}) {
+  const app = fastify();
   const stations = Array.isArray(options.stations)
     ? fixedDirectory(options.stations)
     : (options.stations ?? fixedDirectory([]));
@@ -129,7 +141,7 @@ export interface PublicAppOptions {
  * answers 404; nothing runs in the background.
  */
 export function buildPublicApp(options: PublicAppOptions) {
-  const app = Fastify({ logger: false });
+  const app = fastify();
   const hidden = () => hiddenIds(options.db);
   const db = withHiddenPlayers(options.db);
 

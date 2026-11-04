@@ -10,7 +10,7 @@ Blocked by: 01
   - `POST /api/admin/matches` parses `{ station, playerIds, settings }` (the station's id as a whole number, `playerIds` as in 01, `settings` as `MatchSettingsInput`).
   - The correction route parses `{ dartId: string, segment: Segment }`.
   - Every `:id` param uses the shared schema. Match ids are UUIDs, so that schema is `z.string()`; no UUID check is needed, since an unknown id is a 404.
-- Remove the hand-written checks that 01's schemas now cover (the `playerIds` check in the route, `isSegment` in the correction path). `MatchError`'s `"invalid"` reason goes if nothing uses it anymore.
+- Remove the hand-written checks that 01's schemas now cover: the `playerIds` check in the route, `isSegment` in the correction path, and the `startScore`/`legsToWin` checks in `station.ts`'s `assign`, which 01 left because this route was their last unparsed caller. Tournament matches reach `assign` with the config's `x01`, which 03 parses. `MatchError`'s `"invalid"` reason goes if nothing uses it anymore.
 
 ## Acceptance
 

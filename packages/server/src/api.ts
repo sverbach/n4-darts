@@ -1,6 +1,15 @@
-// Types shared with the web app. Type-only: nothing here may pull in Node modules.
+// Types shared with the web app, and the schemas requests are parsed with (src/parse.ts). The web
+// app imports types only; nothing here may pull in Node modules.
 
-import type { MatchState, Segment, X01Settings } from "@n4/engine";
+import {
+  type InRule,
+  isSegment,
+  type MatchState,
+  type OutRule,
+  type Segment,
+  type X01Settings,
+} from "@n4/engine";
+import { z } from "zod";
 import type { TableRow } from "./tournaments/plan/groups.ts";
 import type { Placing, TournamentConfig } from "./tournaments/plan/types.ts";
 
@@ -145,24 +154,73 @@ export interface AdminSession {
   authenticated: boolean;
 }
 
-export type StationCommand =
-  /** Sets up a match on the station; it starts with `startMatch`. */
-  | { type: "quickMatch"; playerIds: string[]; settings?: MatchSettingsInput }
-  /** Reorders the players of a match that hasn't started; the first one starts leg 1. */
-  | { type: "setOrder"; playerIds: string[] }
-  | { type: "startMatch" }
-  | { type: "correctDart"; dartId: string; segment: Segment }
-  /** Adds a dart the board missed as the visit's next dart. */
-  | { type: "addDart"; segment: Segment }
-  | { type: "nextPlayer" }
-  | { type: "undo" }
-  /** Frees the station after the match is won. */
-  | { type: "closeMatch" }
-  /** Ends the match without a result; one that never started is removed altogether. */
-  | { type: "abandonMatch" };
+const IN_RULES = {
+  straight: "straight",
+  double: "double",
+  master: "master",
+  bull: "bull",
+} as const satisfies { [R in InRule]: R };
+
+const OUT_RULES = {
+  straight: "straight",
+  double: "double",
+  master: "master",
+} as const satisfies { [R in OutRule]: R };
+
+export const SegmentInput = z
+  .custom<Segment>(isSegment, { error: "not a valid segment" })
+  .transform(({ number, multiplier }): Segment => ({ number, multiplier }));
+
+const START_SCORE = "start score must be a whole number of at least 2";
+const LEGS_TO_WIN = "legs to win must be a whole number of at least 1";
 
 /** What can be chosen when setting up a match; the rules version is always the current one. */
-export type MatchSettingsInput = Partial<Omit<X01Settings, "rulesVersion">>;
+export const MatchSettingsInput = z.strictObject({
+  startScore: z
+    .number({ error: START_SCORE })
+    .int({ error: START_SCORE })
+    .min(2, { error: START_SCORE })
+    .exactOptional(),
+  inRule: z.enum(IN_RULES).exactOptional(),
+  outRule: z.enum(OUT_RULES).exactOptional(),
+  legsToWin: z
+    .number({ error: LEGS_TO_WIN })
+    .int({ error: LEGS_TO_WIN })
+    .min(1, { error: LEGS_TO_WIN })
+    .exactOptional(),
+});
+export type MatchSettingsInput = z.infer<typeof MatchSettingsInput>;
+
+const playerIds = z.array(z.string()).min(1);
+
+export const StationCommand = z.discriminatedUnion("type", [
+  /** Sets up a match on the station; it starts with `startMatch`. */
+  z.strictObject({
+    type: z.literal("quickMatch"),
+    playerIds,
+    settings: MatchSettingsInput.exactOptional(),
+  }),
+  /** Reorders the players of a match that hasn't started; the first one starts leg 1. */
+  z.strictObject({ type: z.literal("setOrder"), playerIds }),
+  z.strictObject({ type: z.literal("startMatch") }),
+  z.strictObject({ type: z.literal("correctDart"), dartId: z.string(), segment: SegmentInput }),
+  /** Adds a dart the board missed as the visit's next dart. */
+  z.strictObject({ type: z.literal("addDart"), segment: SegmentInput }),
+  z.strictObject({ type: z.literal("nextPlayer") }),
+  z.strictObject({ type: z.literal("undo") }),
+  /** Frees the station after the match is won. */
+  z.strictObject({ type: z.literal("closeMatch") }),
+  /** Ends the match without a result; one that never started is removed altogether. */
+  z.strictObject({ type: z.literal("abandonMatch") }),
+]);
+export type StationCommand = z.infer<typeof StationCommand>;
+
+export const BoardActionInput = z.strictObject({
+  action: z.enum(["start", "stop", "calibrate", "reset"], {
+    error: "action must be start, stop, calibrate or reset",
+  }),
+});
+export type BoardAction = z.infer<typeof BoardActionInput>["action"];
 
 export interface TournamentEntrantView {
   playerId: string;

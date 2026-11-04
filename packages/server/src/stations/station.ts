@@ -6,14 +6,13 @@ import { randomUUID } from "node:crypto";
 import { performance } from "node:perf_hooks";
 import {
   defaultX01Settings,
-  isSegment,
   MAX_PLAYERS,
   MIN_PLAYERS,
   matchState,
   RULES_VERSION,
   type Segment,
 } from "@n4/engine";
-import type { MatchSettingsInput, StationCommand, StationView } from "../api.ts";
+import type { BoardAction, MatchSettingsInput, StationCommand, StationView } from "../api.ts";
 import {
   type BoardEvent,
   type BoardThrow,
@@ -25,7 +24,7 @@ import type { Db, StoredEvent } from "../db.ts";
 import { diagnostics } from "../operations/diagnostics.ts";
 import { matchPlayer } from "../players/players.ts";
 
-export type { StationCommand, StationView };
+export type { BoardAction, StationCommand, StationView };
 
 /** The part of the board gateway a station needs to send commands. */
 export interface BoardControl {
@@ -36,8 +35,6 @@ export interface BoardControl {
   /** How the board connection is doing, for /admin diagnostics. */
   stats?(): GatewayStats;
 }
-
-export type BoardAction = "start" | "stop" | "calibrate" | "reset";
 
 export class CommandError extends Error {}
 
@@ -357,10 +354,8 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
         append({ type: "MatchStarted", playerCount: match.playerIds.length });
         break;
       case "correctDart":
-        if (!isSegment(cmd.segment)) throw new CommandError("not a valid segment");
         return correct(cmd.dartId, cmd.segment, "station");
       case "addDart": {
-        if (!isSegment(cmd.segment)) throw new CommandError("not a valid segment");
         const current = state();
         if (current?.phase !== "throwing" || (current.currentVisit?.darts.length ?? 0) >= 3) {
           throw new CommandError("a dart can only be added while a visit has fewer than 3");
