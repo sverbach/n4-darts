@@ -15,7 +15,7 @@ sequenceDiagram
     B->>N: new state snapshot (WebSocket)
     N->>N: diff with the last snapshot: a new dart
     N->>N: append the dart to the match's log, recompute the score
-    N-->>S: new station view (SSE)
+    N-->>S: new station view (WebSocket)
     Note over P,S: after three darts, a bust or a checkout: "remove darts"
     P->>B: takes the darts out
     B->>N: snapshot: takeout finished
@@ -41,7 +41,7 @@ sequenceDiagram
     P->>S: picks the right segment
     S->>N: correctDart (dart, segment)
     N->>N: append the correction to the log, recompute the score
-    N-->>S: corrected view (SSE)
+    N-->>S: corrected view (WebSocket)
 ```
 
 - The correction is appended; the original detection stays in the log and the dart stays marked as corrected (PLAY-09, ADR 0002).
@@ -174,7 +174,7 @@ sequenceDiagram
     P->>B: checks out
     B->>N: snapshot: the winning dart
     N->>N: append, the match is won
-    N-->>S: "Game shot" (SSE)
+    N-->>S: "Game shot" (WebSocket)
     N->>N: next turn of the event loop: the show sees a game shot
     N-)W: POST /json/state {"ps": game shot preset}
     Note over N,W: not waited on; a failure is counted in diagnostics

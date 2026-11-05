@@ -165,7 +165,7 @@ Open `http://<server>:3000/station/1` on the station laptop (and on any phone th
 
 ### Behind a reverse proxy
 
-The room's server is meant for the local network: apart from the `/admin` PIN there's no login, so don't expose it to the internet (the public site above is the way in from outside). If you still put a proxy in front, the live updates (Server-Sent Events on `/api/*/live`) need it to pass messages through straight away. nginx works out of the box: the streams send `X-Accel-Buffering: no`. For other proxies, turn response buffering and compression off for `/api/*/live`; otherwise darts show up seconds late.
+The room's server is meant for the local network: apart from the `/admin` PIN there's no login, so don't expose it to the internet (the public site above is the way in from outside). If you still put a proxy in front, it must forward WebSockets: the live updates on `/api/*/live` are WebSockets (ADR 0011). In nginx, set `proxy_http_version 1.1` and pass the `Upgrade` and `Connection` headers on (in nginx UI: the WebSocket toggle). Nothing else needs configuring. Without it, pages show "disconnected" and stop updating.
 
 ### The public site
 

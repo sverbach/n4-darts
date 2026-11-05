@@ -34,7 +34,7 @@ flowchart TB
     container -- "HTTP (JSON API)" --> wled
     container -- "WebSocket + HTTP" --> bm1
     container -- "WebSocket + HTTP" --> bmN
-    kiosk1 & kioskN & projector & phones -- "HTTP + SSE :3000" --> container
+    kiosk1 & kioskN & projector & phones -- "HTTP + WebSocket :3000" --> container
 ```
 
 **Motivation**
@@ -80,4 +80,4 @@ The container runs `server` with the built `web` files (the default caller voice
 - No player logins. `/admin` is behind a shared PIN so a guest can't edit by accident (ADR 0004).
 - The Board Manager is unauthenticated, so anyone on the network can reset a board. Accepted for a private room.
 - WLED's API is unauthenticated too: give the controllers fixed IPs and enter them in `/admin` → Lights (ADR 0009).
-- A reverse proxy is optional; the live streams send `X-Accel-Buffering: no` so nginx passes them straight through (OPS-04, README "Behind a reverse proxy"). The room's server must not be exposed to the internet (Q-12); the public site is the one way in from outside, read-only and behind its password (ADR 0008).
+- A reverse proxy is optional; it must forward WebSocket upgrades for the live views, and needs nothing else (OPS-04, ADR 0011, README "Behind a reverse proxy"). The room's server must not be exposed to the internet (Q-12); the public site is the one way in from outside, read-only and behind its password (ADR 0008).

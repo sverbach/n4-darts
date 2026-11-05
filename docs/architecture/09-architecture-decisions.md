@@ -16,6 +16,7 @@ The decisions that are hard to reverse, each with its context and consequences:
 | [0008](../adr/0008-public-read-only-site.md) | A read-only public site, behind one shared password |
 | [0009](../adr/0009-wled-json-api-fire-and-forget.md) | Lights through WLED's JSON API, fire-and-forget |
 | [0010](../adr/0010-requests-parsed-with-zod-at-the-routes.md) | Requests are parsed with Zod at the routes |
+| [0011](../adr/0011-live-views-over-websockets.md) | Live views over WebSockets |
 
 ## 9.2 Decision log
 
@@ -75,7 +76,7 @@ Details in `.scratch/tournaments/spec.md`.
 
 Details in `.scratch/display-and-stats/spec.md`.
 
-- **Live updates** everywhere as Server-Sent Events: every database write and station change triggers a recompute, and a view is only sent when it changed. No polling left.
+- **Live updates** everywhere (Server-Sent Events then, WebSockets since ADR 0011): every database write and station change triggers a recompute, and a view is only sent when it changed. No polling left.
 - **`/display`**: a fixed split, scaled to fit any screen, no rotating pages. Now playing (live scores) and Up next beside the group tables or the bracket; afterwards the champion, placings and awards; with no tournament, the stations and the top 10. It never switches to a station by itself.
 - **`/watch/n`**: the station's scoreboard without controls, linked from `/display` and the home page.
 - **Stats** over every completed match of any kind (no walkovers, no abandoned matches), computed from the event log and cached per match until it changes. Public leaderboard (`/players`) and profiles (`/players/<id>`). A match's evening is the day it started, shifted 6 h so a night past midnight counts to the day it began. Checkout % counts darts at a one-dart finish in double-out matches.
@@ -101,6 +102,15 @@ Details in `.scratch/input-validation/spec.md`.
 - **Zod at the routes** (ADR 0010): every request is parsed before the logic sees it; schemas in `api.ts`, types derived from them; a 400 with a readable message for what doesn't fit.
 - **Stricter than before:** unknown fields, booleans and numbers sent as text, and an unknown `?view=` are refused instead of coerced. `paused`, `held` and a pin's `station` are required.
 - **Segments:** only what a board can report. 1–20 as single, double or treble; 25 as single or double; a miss is multiplier 0 with a number 0–20 (the nearest segment, or 0 for a bounce-out).
+
+### Live views over WebSockets (2026-11-05)
+
+Details in `.scratch/live-websockets/spec.md`.
+
+- **WebSockets instead of Server-Sent Events** (ADR 0011): a proxy can't buffer them, and they don't use up the browser's six HTTP/1.1 connections, the two ways SSE had slowed the app down.
+- **One socket per view**, server to client only, on the same `/live` URLs; changes stay HTTP requests.
+- **Refusals close with 4000 + the HTTP status** (4401 without the admin PIN); the client gives up on those and reconnects after anything else, 500 ms doubling to 5 s.
+- **Proxies must forward WebSockets** (OPS-04).
 
 ### Build order (done)
 

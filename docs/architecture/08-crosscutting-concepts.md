@@ -10,14 +10,14 @@ A match is its log (ADR 0002). Darts, corrections, added darts, undo and manual 
 
 ## 8.3 Live updates
 
-Every screen except the stats pages updates by itself (VIEW-01). One change feed (`live.ts`) hears every database write and every station's view change, settles a burst into one call per event-loop turn, and each Server-Sent Events stream recomputes its view and sends it only when it differs from the last one. Any number of devices can follow or control a station at once (VIEW-06).
+Every screen except the stats pages updates by itself (VIEW-01). One change feed (`live.ts`) hears every database write and every station's view change, settles a burst into one call per event-loop turn, and each live view's WebSocket recomputes its view and sends it only when it differs from the last one. Any number of devices can follow or control a station at once (VIEW-06).
 
 In the browser there is one way to read server data, and no client state library (ADR 0007):
 
-- **Changes while the page is open** (every screen but the stats pages): `useLive(url)` follows a stream and holds the latest whole view. A stream lives as long as the component that uses it: navigating to another page (client-side, no reload) closes it through the effect's cleanup, and `followStream` (`lib/liveStream.ts`) also closes it when the page is hidden in the back/forward cache and reopens it when the page comes back (ui-bugs 03). Lists count too: players (`usePlayers`, /admin), the match history, Home's stations, diagnostics.
+- **Changes while the page is open** (every screen but the stats pages): `useLive(url)` follows a stream and holds the latest whole view. A stream lives as long as the component that uses it: navigating to another page (client-side, no reload) closes it through the effect's cleanup, and `followStream` (`lib/liveStream.ts`) reconnects by itself after a dropped connection (500 ms, doubling up to 5 s) and gives up when the server refuses the view with a 4xxx close code (ADR 0011). Lists count too: players (`usePlayers`, /admin), the match history, Home's stations, diagnostics.
 - **Read once** (the stats pages, the admin session): `useFetch(url)`, with the same loading and error handling everywhere.
 - **Changes**: `request()` / `call()` in `lib/api.ts`. A page doesn't reload after its own change; the stream brings the new view.
-- Only `lib/` calls `fetch` or opens an `EventSource`; Biome's `noRestrictedGlobals` refuses them anywhere else in the web app.
+- Only `lib/` calls `fetch` or opens a `WebSocket`; Biome's `noRestrictedGlobals` refuses them anywhere else in the web app.
 
 ## 8.4 Access
 

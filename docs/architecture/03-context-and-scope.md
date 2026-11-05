@@ -56,7 +56,7 @@ flowchart LR
     nginx["nginx (TLS)"]
     pub["n4-darts public site"]
 
-    browsers -- "HTTP: pages, JSON API<br/>SSE: live views" --> n4
+    browsers -- "HTTP: pages, JSON API<br/>WebSocket: live views" --> n4
     n4 -- "WebSocket: state snapshots<br/>HTTP: commands, state sync" --> bm
     n4 -- "SQLite file, backups" --> vol
     wled["WLED controller<br/>(per light strip)"]
@@ -68,7 +68,7 @@ flowchart LR
 | Channel | Between | What goes over it |
 |---|---|---|
 | **HTTP (JSON)** | Browsers → server | Commands and changes: station commands, quick matches, corrections, everything in `/admin`. The organiser's routes (`/api/admin/*`) need the PIN cookie. |
-| **Server-Sent Events** | Server → browsers | Every live view (`/api/*/live`): a station, the projector, the tournament, the matches. A view is sent again only when it changed. Works through a reverse proxy without special configuration (OPS-04). |
+| **WebSocket** | Server → browsers | Every live view (`/api/*/live`), one socket each: a station, the projector, the tournament, the matches. A view is sent again only when it changed. A refused view closes with 4000 + the HTTP status (ADR 0011). Works through a reverse proxy that forwards WebSockets (OPS-04). |
 | **WebSocket** | Server ← Board Manager | Full state snapshots of the board: darts of the current visit, takeouts, status. The gateway diffs them into events. |
 | **HTTP** | Server → Board Manager | `GET /api/state` to resync after a reconnect; start, stop, reset and auto-calibrate. Unauthenticated and unofficial (`docs/board-manager-api.md`). |
 | **File system** | Server → data volume | The SQLite database and the daily backups in `backups/`. |

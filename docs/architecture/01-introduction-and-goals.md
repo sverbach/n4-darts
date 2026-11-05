@@ -251,7 +251,7 @@ What n4-darts has to do. The quality requirements are in section 10, the constra
 | OPS-01 | The database is backed up by itself: at start if the newest backup is over a day old, then every day. The newest 30 are kept. | Ops | spec: display-and-stats |
 | OPS-02 | The operator can restore a backup by putting the file in place while the server is stopped. | Ops | spec: display-and-stats |
 | OPS-03 | A diagnostics page (organiser's area) shows whether the server keeps up: event-loop delay, open live connections, how long views take, database writes, board connections, and the time from the board to the screens for the last 20 darts. It also shows whether the page's own request came through a proxy. | Ops | ticket: diagnostics |
-| OPS-04 | Live updates keep working behind a reverse proxy without special proxy configuration. | Ops | ticket: live-behind-proxy |
+| OPS-04 | Live updates keep working behind a reverse proxy that forwards WebSockets; nothing else needs configuring (no buffering or compression settings). | Ops | spec: live-websockets |
 | OPS-05 | An update is: pull a new image and restart. | Ops | arch |
 
 ### Deliberately out of scope

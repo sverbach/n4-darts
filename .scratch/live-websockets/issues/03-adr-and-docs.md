@@ -1,6 +1,6 @@
 # ADR and docs for live views over WebSockets
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 01
 
@@ -24,3 +24,18 @@ Blocked by: 01
 
 - `git grep -nE "SSE|Server-Sent|EventSource|X-Accel"` finds nothing in `README.md`, `docs/` or `GLOSSARY.md`, apart from the ADR's history and the old tickets in `.scratch/`.
 - Mermaid diagrams still render.
+
+## Comments
+
+2026-11-05: Done.
+- **ADR 0011** is written and added to the list in section 9, next to a "Live views over WebSockets" entry. The old "Live updates" line there now says it was SSE then.
+- **README:** the proxy has to forward WebSockets (nginx settings, or nginx UI's toggle).
+- **OPS-04** has the agreed wording.
+- **Changed from SSE to WebSocket:**
+  - sections 3, 4, 5, 6, 7 and 8, including the diagram labels;
+  - `noRestrictedGlobals` in section 8;
+  - the `followStream` passage in section 8, which now describes reconnects and close codes instead of the back/forward cache;
+  - `streamView` → `liveView` in section 5;
+  - the glossary's abbreviation table.
+- `GLOSSARY.md` has no transport terms.
+- `git grep` finds SSE only in section 9's history lines.
