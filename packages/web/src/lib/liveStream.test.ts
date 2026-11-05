@@ -11,6 +11,7 @@ function fakeEnv(protocol = "http:") {
   const sockets: FakeSocket[] = [];
   const timers: { run: () => void; ms: number; cleared: boolean }[] = [];
   class FakeSocket implements StreamSocket {
+    readyState = 1;
     onopen: (() => void) | null = null;
     onclose: ((e: { code: number }) => void) | null = null;
     onmessage: ((e: { data: unknown }) => void) | null = null;
@@ -108,6 +109,20 @@ describe("following a live stream", () => {
     latest().onclose?.({ code: 1006 });
     stop();
     expect(timers[0]?.cleared).toBe(true);
+  });
+
+  it("stopping mid-handshake waits for the socket to open, then closes it", () => {
+    const { env, latest } = fakeEnv();
+    const views: unknown[] = [];
+    const stop = followStream("/api/x/live", { onView: (v) => views.push(v) }, env);
+    const socket = latest();
+    socket.readyState = 0;
+    stop();
+    expect(socket.closed).toBe(false);
+    socket.onopen?.();
+    socket.onmessage?.({ data: "{}" });
+    expect(socket.closed).toBe(true);
+    expect(views).toEqual([]);
   });
 
   it("stopping closes the socket, and that close doesn't reconnect", () => {

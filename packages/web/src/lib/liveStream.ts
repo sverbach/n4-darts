@@ -1,4 +1,5 @@
 export interface StreamSocket {
+  readonly readyState: number;
   onopen: (() => void) | null;
   onclose: ((e: { code: number }) => void) | null;
   onmessage: ((e: { data: unknown }) => void) | null;
@@ -23,6 +24,14 @@ export const MAX_RETRY_MS = 5000;
 
 /** The server closes with 4000 + an HTTP status when it won't stream (docs/adr/0011). */
 const isRefusal = (code: number) => code >= 4000 && code <= 4999;
+
+const CONNECTING = 0;
+
+function closeCleanly(socket: StreamSocket) {
+  socket.onmessage = null;
+  if (socket.readyState === CONNECTING) socket.onopen = () => socket.close();
+  else socket.close();
+}
 
 const browser = (): StreamEnv => ({
   Socket: WebSocket as unknown as StreamEnv["Socket"],
@@ -73,7 +82,7 @@ export function followStream(
   return () => {
     stopped = true;
     if (retry !== null) env.clearTimeout(retry);
-    socket?.close();
+    if (socket) closeCleanly(socket);
     socket = null;
   };
 }
