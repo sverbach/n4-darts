@@ -1,6 +1,6 @@
 # Live views over WebSockets
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 Swap the transport under every live view in one go. `streamView` and `followStream` are shared, so the server and client switch together, and the tests that read streams move with them. Read the spec's decisions first.
@@ -46,3 +46,26 @@ Swap the transport under every live view in one go. `streamView` and `followStre
 - Every live page works as before in `pnpm dev` and in the built app, including `/admin` without the PIN, which shows its error and doesn't spin.
 - Restarting the server while a station page is open: the page shows disconnected, then catches up by itself within about 5 s.
 - `pnpm typecheck`, `pnpm lint`, `pnpm test` and `pnpm e2e` pass.
+
+## Comments
+
+2026-11-05: Built.
+- `@fastify/websocket` 11.3.4 and `@types/ws` 8.18.2 are in `@n4/server`.
+- **Plugin order:** the plugin's `onRoute` hook only turns routes into socket routes once it has loaded. So `buildApp` registers the room's routes in `enableLive(app).after(…)`, on the root instance. A child scope would have put the admin guard out of reach of routes added at the root (`admin.test.ts` caught that).
+- `liveRoutes.ts`:
+  - `liveRoute(app, url, open)` is the socket route. It pings every 25 s and terminates a socket that missed a pong. A thrown `Refusal(status, message)` or `parse` error closes the socket with `4000 + status`; anything else closes it with 1011 and is rethrown.
+  - `liveView(app, url, follow)` streams one view and is what every route but diagnostics uses. `follow(request)` returns `{ subscribe, view, kind, label }`.
+- **Admin guard:** an upgrade request without the cookie gets `refuseLive(request, 401, …)` instead of a 401 response, and the socket closes with 4401. An upgrade to a route that isn't a socket route is closed by the plugin without running its handler, so letting it past the guard leaks nothing.
+- **Client:** `followStream` takes an injectable `{ Socket, location, setTimeout, clearTimeout }`. It uses `wss:` on https pages. Retries wait 500 ms, then double up to a 5 s cap, and reset on open.
+- **Tests:** `src/testing/liveClient.ts` (`openLive`) uses Node's own `WebSocket`, which can send headers. The live, diagnostics and station tests use it. `stations.test.ts` uses `injectWS`, and the load test reads a socket.
+- **Load test,** same machine, SSE before → WebSockets now (median of the last 100 darts):
+  - quiet: 2.91 → 2.89 ms
+  - busy: 15.85 → 14.74 ms
+  - The thresholds are unchanged.
+- **Checked in the dev app** (Vite proxy, headless Chromium, PIN set):
+  - Without the PIN, /admin shows its PIN screen and opens no socket, as before. The 4401 path is only hit when the cookie stops being accepted while a page is open, and it's covered by tests.
+  - Logged in: a player added over the API showed up live.
+  - After a server restart (`node --watch`), the next change showed up 1.5 s later on the reconnected socket.
+  - Clicking through tabs left one open socket.
+- **Also changed:** `useStation.ts` and `PRODUCT.md` no longer mention EventSource or SSE.
+- Not done here: Brave, the kiosk and the proxy (ticket 02).

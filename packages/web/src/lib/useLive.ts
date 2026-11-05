@@ -5,13 +5,13 @@ import { beginLoading } from "./loading.ts";
 export interface Live<T> {
   /** The latest view the server pushed; null until the first one arrives. */
   view: T | null;
-  /** False while the connection to the server is down; EventSource keeps retrying. */
+  /** False while the connection to the server is down; it reconnects by itself. */
   connected: boolean;
-  /** The stream answered with an error status (e.g. 401: the admin PIN is needed). */
+  /** The server refused the stream (e.g. 4401: the admin PIN is needed); no more retries. */
   failed: boolean;
 }
 
-/** Follows a Server-Sent Events stream of whole views (`streamView` on the server). */
+/** Follows a live view over a WebSocket: whole views (`streamView` on the server). */
 export function useLive<T>(url: string | null): Live<T> {
   const [view, setView] = useState<T | null>(null);
   const [connected, setConnected] = useState(false);

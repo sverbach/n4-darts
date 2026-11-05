@@ -1,8 +1,7 @@
-export interface StreamSource {
-  readonly readyState: number;
+export interface StreamSocket {
   onopen: (() => void) | null;
-  onerror: (() => void) | null;
-  onmessage: ((e: { data: string }) => void) | null;
+  onclose: ((e: { code: number }) => void) | null;
+  onmessage: ((e: { data: unknown }) => void) | null;
   close(): void;
 }
 
@@ -12,46 +11,69 @@ export interface StreamHandlers {
   onFailed?(): void;
 }
 
-const CLOSED = 2;
+export interface StreamEnv {
+  Socket: new (url: string) => StreamSocket;
+  location: { protocol: string; host: string };
+  setTimeout(run: () => void, ms: number): unknown;
+  clearTimeout(timer: unknown): void;
+}
 
+export const FIRST_RETRY_MS = 500;
+export const MAX_RETRY_MS = 5000;
+
+/** The server closes with 4000 + an HTTP status when it won't stream (docs/adr/0011). */
+const isRefusal = (code: number) => code >= 4000 && code <= 4999;
+
+const browser = (): StreamEnv => ({
+  Socket: WebSocket as unknown as StreamEnv["Socket"],
+  location: window.location,
+  setTimeout: (run, ms) => window.setTimeout(run, ms),
+  clearTimeout: (timer) => window.clearTimeout(timer as number),
+});
+
+/** Follows the live view at `path`, reconnecting until it's stopped or refused. */
 export function followStream(
-  url: string,
+  path: string,
   handlers: StreamHandlers,
-  env: { Source: new (url: string) => StreamSource; page: EventTarget } = {
-    Source: EventSource as unknown as new (url: string) => StreamSource,
-    page: window,
-  },
+  env: StreamEnv = browser(),
 ): () => void {
-  let source: StreamSource | null = null;
+  const scheme = env.location.protocol === "https:" ? "wss:" : "ws:";
+  const url = `${scheme}//${env.location.host}${path}`;
+  let socket: StreamSocket | null = null;
+  let retry: unknown = null;
+  let delay = FIRST_RETRY_MS;
+  let stopped = false;
 
   const open = () => {
-    const s = new env.Source(url);
-    s.onopen = () => handlers.onConnected?.(true);
-    s.onerror = () => {
-      handlers.onConnected?.(false);
-      if (s.readyState === CLOSED) handlers.onFailed?.();
+    retry = null;
+    const s = new env.Socket(url);
+    s.onopen = () => {
+      delay = FIRST_RETRY_MS;
+      handlers.onConnected?.(true);
     };
     s.onmessage = (e) => {
       handlers.onConnected?.(true);
-      handlers.onView?.(JSON.parse(e.data));
+      handlers.onView?.(JSON.parse(String(e.data)));
     };
-    source = s;
-  };
-  const close = () => {
-    source?.close();
-    source = null;
-  };
-  const onHide = () => close();
-  const onShow = (e: Event) => {
-    if ((e as PageTransitionEvent).persisted && !source) open();
+    s.onclose = (e) => {
+      socket = null;
+      if (stopped) return;
+      handlers.onConnected?.(false);
+      if (isRefusal(e.code)) {
+        handlers.onFailed?.();
+        return;
+      }
+      retry = env.setTimeout(open, delay);
+      delay = Math.min(delay * 2, MAX_RETRY_MS);
+    };
+    socket = s;
   };
 
   open();
-  env.page.addEventListener("pagehide", onHide);
-  env.page.addEventListener("pageshow", onShow);
   return () => {
-    env.page.removeEventListener("pagehide", onHide);
-    env.page.removeEventListener("pageshow", onShow);
-    close();
+    stopped = true;
+    if (retry !== null) env.clearTimeout(retry);
+    socket?.close();
+    socket = null;
   };
 }

@@ -5,7 +5,7 @@ import type { FastifyInstance, FastifyReply } from "fastify";
 import { z } from "zod";
 import { type AdminPlayer, NewPlayerInput, PlayerChangesInput } from "../api.ts";
 import type { ChangeFeed } from "../live/live.ts";
-import { streamView } from "../live/liveRoutes.ts";
+import { liveView } from "../live/liveRoutes.ts";
 import { FileBody, parse, TextIdParams } from "../parse.ts";
 import { MAX_PHOTO_BYTES, PlayerError, type Players } from "./players.ts";
 
@@ -37,9 +37,11 @@ export function registerPlayers(
     players.listAll().map((p) => ({ ...p, rating: ratingOf(p.id) }));
 
   app.get("/api/players", async () => players.list());
-  app.get("/api/players/live", (request, reply) =>
-    streamView(request, reply, feed.subscribe, () => players.list(), { kind: "players" }),
-  );
+  liveView(app, "/api/players/live", () => ({
+    subscribe: feed.subscribe,
+    view: () => players.list(),
+    kind: "players",
+  }));
 
   app.post("/api/players", async (request, reply) => {
     const { name } = parse(NewPlayerInput, request.body);
@@ -47,9 +49,11 @@ export function registerPlayers(
   });
 
   app.get("/api/admin/players", async () => adminList());
-  app.get("/api/admin/players/live", (request, reply) =>
-    streamView(request, reply, feed.subscribe, adminList, { kind: "admin players" }),
-  );
+  liveView(app, "/api/admin/players/live", () => ({
+    subscribe: feed.subscribe,
+    view: adminList,
+    kind: "admin players",
+  }));
 
   app.post("/api/admin/players", async (request, reply) => {
     const { name } = parse(NewPlayerInput, request.body);

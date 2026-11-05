@@ -4,8 +4,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DiagnosticsView, StationView } from "../api.ts";
 import { buildApp } from "../app.ts";
 import { openDb } from "../db.ts";
-import { streamView } from "../live/liveRoutes.ts";
+import { enableLive, liveView } from "../live/liveRoutes.ts";
 import { startStation } from "../stations/stations.ts";
+import { openLive } from "../testing/liveClient.ts";
 import { createDiagnostics, diagnostics as recorder } from "./diagnostics.ts";
 
 let sim: BoardSim | undefined;
@@ -44,25 +45,10 @@ async function setup(adminPin?: string, diagnosticsRefreshMs = 50) {
 
 /** Opens a stream and keeps it open until the test ends; `next()` reads the next view. */
 async function open<T = unknown>(url: string, headers: Record<string, string> = {}) {
-  const res = await fetch(url, { headers });
-  const reader = (res.body as ReadableStream<Uint8Array>).getReader();
-  closers.unshift(() => reader.cancel().catch(() => {}));
-  const decoder = new TextDecoder();
-  let buffer = "";
-  const next = async (): Promise<T> => {
-    while (!buffer.includes("\n\n")) {
-      const { value, done } = await reader.read();
-      if (done) throw new Error("stream ended");
-      buffer += decoder.decode(value);
-    }
-    const end = buffer.indexOf("\n\n");
-    const message = buffer.slice(0, end);
-    buffer = buffer.slice(end + 2);
-    if (message.startsWith(":")) return next();
-    return JSON.parse(message.replace(/^data: /, ""));
-  };
-  const first = await next();
-  return { status: res.status, first, next, close: () => reader.cancel() };
+  const live = openLive<T>(url, headers);
+  closers.unshift(() => live.close());
+  const first = await live.next();
+  return { first, next: live.next, close: live.close };
 }
 
 const busy = (ms: number) => {
@@ -72,9 +58,11 @@ const busy = (ms: number) => {
 
 describe("diagnostics page", () => {
   it("is behind the admin PIN", async () => {
-    const { app } = await setup("1234");
+    const { app, base } = await setup("1234");
     expect((await app.inject("/api/admin/diagnostics")).statusCode).toBe(401);
     expect((await app.inject("/api/admin/diagnostics/live")).statusCode).toBe(401);
+    const live = openLive(`${base}/api/admin/diagnostics/live`);
+    expect((await live.closed).code).toBe(4401);
   });
 
   it("lists the open streams with their client and updates", async () => {
@@ -126,21 +114,20 @@ describe("diagnostics page", () => {
     closers.push(async () => stop());
     const listeners = new Set<() => void>();
     const app = Fastify();
-    app.get("/slow", (request, reply) =>
-      streamView(
-        request,
-        reply,
-        (listener) => {
-          listeners.add(listener);
-          return () => listeners.delete(listener);
-        },
-        () => {
-          busy(30);
-          return { at: performance.now() };
-        },
-        { kind: "match detail", label: "slow" },
-      ),
-    );
+    enableLive(app);
+    await app.after();
+    liveView(app, "/slow", () => ({
+      subscribe: (listener) => {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+      view: () => {
+        busy(30);
+        return { at: performance.now() };
+      },
+      kind: "match detail",
+      label: "slow",
+    }));
     await app.listen({ port: 0, host: "127.0.0.1" });
     closers.push(() => app.close());
     await open(`http://127.0.0.1:${app.addresses()[0]?.port}/slow`);

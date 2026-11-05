@@ -3,6 +3,7 @@
 
 import type { FastifyInstance } from "fastify";
 import { type AdminSession, PinInput, type PublicSession } from "../api.ts";
+import { isLiveRequest, refuseLive } from "../live/liveRoutes.ts";
 import { parse } from "../parse.ts";
 import type { Access } from "./admin.ts";
 
@@ -33,6 +34,7 @@ export function registerAdmin(app: FastifyInstance, access: Access) {
     const path = request.url.split("?")[0] as string;
     if (!path.startsWith("/api/admin/") || OPEN.has(path)) return;
     if (!authenticated(request.headers.cookie)) {
+      if (isLiveRequest(request)) return refuseLive(request, 401, "admin PIN required");
       return reply.code(401).send({ error: "admin PIN required" });
     }
   });

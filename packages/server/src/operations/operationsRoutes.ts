@@ -2,7 +2,7 @@
 
 import type { FastifyInstance } from "fastify";
 import type { BoardDiagnostics } from "../api.ts";
-import { openEventStream } from "../live/liveRoutes.ts";
+import { liveRoute } from "../live/liveRoutes.ts";
 import type { StationDirectory } from "../stations/stations.ts";
 import { diagnostics } from "./diagnostics.ts";
 
@@ -54,13 +54,12 @@ export function registerDiagnostics(
     for (const send of pages) send(view);
   };
 
-  app.get("/api/admin/diagnostics/live", (request, reply) => {
+  liveRoute(app, "/api/admin/diagnostics/live", (socket, request) => {
     const recorder = diagnostics.openStream("diagnostics", null, request);
-    const events = openEventStream(request, reply);
     // `{"request":…,` and then the shared view without its opening brace.
     const own = `{"request":${JSON.stringify(diagnostics.requestInfo(request))},`;
     const send = (view: string) => {
-      events.send(own + view.slice(1));
+      socket.send(own + view.slice(1));
       recorder.sent();
     };
     if (pages.size === 0) {
@@ -70,7 +69,7 @@ export function registerDiagnostics(
     }
     pages.add(send);
     send(last);
-    events.onClose(() => {
+    socket.onClose(() => {
       pages.delete(send);
       recorder.close();
       if (pages.size === 0) {

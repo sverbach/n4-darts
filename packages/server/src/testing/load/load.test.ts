@@ -64,29 +64,14 @@ interface Stream<T> {
 
 /** Opens a live stream and records every message with when it arrived. */
 async function open<T>(url: string): Promise<Stream<T>> {
-  const res = await fetch(url);
-  const reader = (res.body as ReadableStream<Uint8Array>).getReader();
-  closers.unshift(() => reader.cancel().catch(() => {}));
-  const decoder = new TextDecoder();
+  const socket = new WebSocket(url.replace(/^http/, "ws"));
+  closers.unshift(async () => socket.close());
   const messages: { at: number; view: T }[] = [];
   let wake = () => {};
-  void (async () => {
-    let buffer = "";
-    for (;;) {
-      const { value, done } = await reader.read().catch(() => ({ value: undefined, done: true }));
-      if (done) return;
-      buffer += decoder.decode(value);
-      const at = performance.now();
-      let end = buffer.indexOf("\n\n");
-      while (end >= 0) {
-        const message = buffer.slice(0, end);
-        buffer = buffer.slice(end + 2);
-        if (message.startsWith("data: ")) messages.push({ at, view: JSON.parse(message.slice(6)) });
-        end = buffer.indexOf("\n\n");
-      }
-      wake();
-    }
-  })();
+  socket.onmessage = (event) => {
+    messages.push({ at: performance.now(), view: JSON.parse(String(event.data)) });
+    wake();
+  };
   return {
     messages,
     async waitFor(test, from) {

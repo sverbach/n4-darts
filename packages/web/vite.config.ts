@@ -8,6 +8,6 @@ export default defineConfig({
   resolve: { conditions: ["source", ...defaultClientConditions] },
   server: {
     // Same PORT as the server, so `PORT=3100 pnpm dev` works when 3000 is taken.
-    proxy: { "/api": `http://localhost:${process.env.PORT ?? 3000}` },
+    proxy: { "/api": { target: `http://localhost:${process.env.PORT ?? 3000}`, ws: true } },
   },
 });

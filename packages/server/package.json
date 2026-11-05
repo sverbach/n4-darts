@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@fastify/static": "10.1.6",
+    "@fastify/websocket": "11.3.4",
     "@n4/engine": "workspace:*",
     "fastify": "5.12.7",
     "fflate": "0.8.3",
@@ -17,7 +18,8 @@
   },
   "devDependencies": {
     "@n4/board-sim": "workspace:*",
-    "@n4/wled-sim": "workspace:*"
+    "@n4/wled-sim": "workspace:*",
+    "@types/ws": "8.18.2"
   },
   "exports": {
     "./api": {

@@ -14,7 +14,7 @@ import {
   TournamentPlayerInput,
 } from "../api.ts";
 import type { ChangeFeed } from "../live/live.ts";
-import { streamView } from "../live/liveRoutes.ts";
+import { liveView } from "../live/liveRoutes.ts";
 import { IdParams, parse, TextIdParams } from "../parse.ts";
 import { TournamentError, type Tournaments } from "./tournaments.ts";
 
@@ -41,9 +41,11 @@ export function registerTournaments(
   }
 
   app.get("/api/admin/tournament", async () => view());
-  app.get("/api/admin/tournament/live", (request, reply) =>
-    streamView(request, reply, feed.subscribe, view, { kind: "admin tournament" }),
-  );
+  liveView(app, "/api/admin/tournament/live", () => ({
+    subscribe: feed.subscribe,
+    view,
+    kind: "admin tournament",
+  }));
 
   app.post("/api/admin/tournament", async (request, reply) => {
     const input = parse(TournamentInput, request.body);

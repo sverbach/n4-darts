@@ -15,7 +15,7 @@ import { startLightShow } from "./lights/show.ts";
 import { createWledClient, type WledClient } from "./lights/wled.ts";
 import { displayView } from "./live/display.ts";
 import { createChangeFeed } from "./live/live.ts";
-import { registerDisplay } from "./live/liveRoutes.ts";
+import { enableLive, registerDisplay } from "./live/liveRoutes.ts";
 import { createMatches } from "./matches/matches.ts";
 import { registerMatches, registerMatchPage } from "./matches/matchesRoutes.ts";
 import { registerDiagnostics } from "./operations/operationsRoutes.ts";
@@ -70,6 +70,11 @@ function fastify() {
 
 export function buildApp(options: AppOptions = {}) {
   const app = fastify();
+  enableLive(app).after(() => registerRoom(app, options));
+  return app;
+}
+
+function registerRoom(app: FastifyInstance, options: AppOptions) {
   const stations = Array.isArray(options.stations)
     ? fixedDirectory(options.stations)
     : (options.stations ?? fixedDirectory([]));
@@ -123,7 +128,6 @@ export function buildApp(options: AppOptions = {}) {
   registerCallouts(app, createCalloutPacks(options.calloutsDir));
 
   serveWeb(app, options.webDir);
-  return app;
 }
 
 export interface PublicAppOptions {

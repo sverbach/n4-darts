@@ -12,7 +12,8 @@ import type {
 import { buildApp } from "../app.ts";
 import { type Db, openDb } from "../db.ts";
 import { createStation, type Station } from "../stations/station.ts";
-import { streamView } from "./liveRoutes.ts";
+import { openLive } from "../testing/liveClient.ts";
+import { enableLive, liveView } from "./liveRoutes.ts";
 
 let db: Db | undefined;
 const closers: (() => Promise<unknown>)[] = [];
@@ -28,26 +29,11 @@ async function listen(app: ReturnType<typeof Fastify> | ReturnType<typeof buildA
   return `http://127.0.0.1:${app.addresses()[0]?.port}`;
 }
 
-/** Opens a stream; `next()` resolves with the next pushed view. */
-async function open<T>(url: string, headers: Record<string, string> = {}) {
-  const res = await fetch(url, { headers });
-  const reader = (res.body as ReadableStream<Uint8Array>).getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  const next = async (): Promise<T> => {
-    while (!buffer.includes("\n\n")) {
-      const { value, done } = await reader.read();
-      if (done) throw new Error("stream ended");
-      buffer += decoder.decode(value);
-    }
-    const end = buffer.indexOf("\n\n");
-    const message = buffer.slice(0, end);
-    buffer = buffer.slice(end + 2);
-    if (message.startsWith(":")) return next();
-    return JSON.parse(message.replace(/^data: /, ""));
-  };
-  closers.unshift(() => reader.cancel().catch(() => {}));
-  return { status: res.status, next, cancel: () => reader.cancel() };
+/** Opens a stream that's closed when the test ends. */
+function open<T>(url: string, headers: Record<string, string> = {}) {
+  const live = openLive<T>(url, headers);
+  closers.unshift(() => live.close());
+  return live;
 }
 
 function setup(adminPin?: string) {
@@ -70,19 +56,10 @@ const dart = (station: Station, name: string, number: number, multiplier: 0 | 1 
   });
 
 describe("live streams", () => {
-  it("tells proxies not to buffer or compress the stream", async () => {
-    const { app } = setup();
-    const res = await fetch(`${await listen(app)}/api/display/live`);
-    closers.unshift(() => (res.body as ReadableStream).cancel().catch(() => {}));
-    expect(res.headers.get("content-type")).toBe("text/event-stream");
-    expect(res.headers.get("x-accel-buffering")).toBe("no");
-    expect(res.headers.get("cache-control")).toBe("no-cache, no-transform");
-  });
-
   it("pushes the display view when a dart is thrown", async () => {
     const { app, station } = setup();
     const base = await listen(app);
-    const display = await open<DisplayView>(`${base}/api/display/live`);
+    const display = open<DisplayView>(`${base}/api/display/live`);
     expect((await display.next()).stations[0]?.match).toBeNull();
 
     await station.command({ type: "quickMatch", playerIds: ["ann", "bob"] });
@@ -101,7 +78,7 @@ describe("live streams", () => {
   it("pushes the admin tournament view on every change", async () => {
     const { app } = setup();
     const base = await listen(app);
-    const admin = await open<TournamentAdminView>(`${base}/api/admin/tournament/live`);
+    const admin = open<TournamentAdminView>(`${base}/api/admin/tournament/live`);
     expect((await admin.next()).tournament).toBeNull();
 
     await app.inject({
@@ -121,7 +98,7 @@ describe("live streams", () => {
     await station.command({ type: "startMatch" });
     dart(station, "S20", 20, 1);
     const matchId = station.view().match?.id as string;
-    const detail = await open<MatchDetail>(`${base}/api/admin/matches/${matchId}/live`);
+    const detail = open<MatchDetail>(`${base}/api/admin/matches/${matchId}/live`);
     expect((await detail.next()).state.players[0]?.remaining).toBe(281);
 
     const dartId = station.view().match?.state.currentVisit?.darts[0]?.dartId;
@@ -136,7 +113,7 @@ describe("live streams", () => {
   it("pushes the station list when a station changes", async () => {
     const { app, station } = setup();
     const base = await listen(app);
-    const list = await open<StationView[]>(`${base}/api/stations/live`);
+    const list = open<StationView[]>(`${base}/api/stations/live`);
     expect((await list.next())[0]?.match).toBeNull();
 
     await station.command({ type: "quickMatch", playerIds: ["ann", "bob"] });
@@ -146,8 +123,8 @@ describe("live streams", () => {
   it("pushes both player lists when a player is added at a station or renamed in /admin", async () => {
     const { app } = setup();
     const base = await listen(app);
-    const list = await open<Player[]>(`${base}/api/players/live`);
-    const admin = await open<AdminPlayer[]>(`${base}/api/admin/players/live`);
+    const list = open<Player[]>(`${base}/api/players/live`);
+    const admin = open<AdminPlayer[]>(`${base}/api/admin/players/live`);
     expect((await list.next()).map((p) => p.name)).toEqual(["ann", "bob"]);
     expect((await admin.next()).map((p) => p.name)).toEqual(["ann", "bob"]);
 
@@ -167,7 +144,7 @@ describe("live streams", () => {
   it("pushes the match history when a match finishes", async () => {
     const { app, station } = setup();
     const base = await listen(app);
-    const history = await open<MatchSummary[]>(`${base}/api/admin/matches/live`);
+    const history = open<MatchSummary[]>(`${base}/api/admin/matches/live`);
     expect(await history.next()).toEqual([]);
 
     await station.command({ type: "quickMatch", playerIds: ["ann", "bob"] });
@@ -178,38 +155,54 @@ describe("live streams", () => {
     expect(list).toHaveLength(1);
   });
 
-  it("refuses the admin streams without the PIN; the display stream is public", async () => {
+  it("refuses the admin streams without the PIN with 4401; the display stream is public", async () => {
     const { app } = setup("1234");
     const base = await listen(app);
-    expect((await fetch(`${base}/api/admin/tournament/live`)).status).toBe(401);
-    expect((await fetch(`${base}/api/admin/matches/x/live`)).status).toBe(401);
-    expect((await fetch(`${base}/api/admin/players/live`)).status).toBe(401);
-    expect((await fetch(`${base}/api/admin/matches/live`)).status).toBe(401);
-    expect((await open(`${base}/api/players/live`)).status).toBe(200);
-    expect((await open(`${base}/api/display/live`)).status).toBe(200);
+    for (const path of [
+      "/api/admin/tournament/live",
+      "/api/admin/matches/x/live",
+      "/api/admin/players/live",
+      "/api/admin/matches/live",
+    ]) {
+      expect(await open(`${base}${path}`).closed).toEqual({
+        code: 4401,
+        reason: "admin PIN required",
+      });
+    }
+    await open(`${base}/api/players/live`).next();
+    await open(`${base}/api/display/live`).next();
+  });
+
+  it("closes with 4000 + the status when a stream can't be followed", async () => {
+    const { app } = setup();
+    const base = await listen(app);
+    expect(await open(`${base}/api/stations/9/live`).closed).toEqual({
+      code: 4404,
+      reason: "no such station",
+    });
+    expect((await open(`${base}/api/stations/one/live`).closed).code).toBe(4400);
+    expect((await open(`${base}/api/admin/matches/nope/live`).closed).code).toBe(4404);
   });
 
   it("unsubscribes when the client goes away", async () => {
     const listeners = new Set<() => void>();
     const app = Fastify();
-    app.get("/live", (request, reply) =>
-      streamView(
-        request,
-        reply,
-        (listener) => {
-          listeners.add(listener);
-          return () => listeners.delete(listener);
-        },
-        () => ({ n: listeners.size }),
-        { kind: "display" },
-      ),
-    );
+    enableLive(app);
+    await app.after();
+    liveView(app, "/live", () => ({
+      subscribe: (listener) => {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+      view: () => ({ n: listeners.size }),
+      kind: "display",
+    }));
     const base = await listen(app);
-    const stream = await open<{ n: number }>(`${base}/live`);
+    const stream = open<{ n: number }>(`${base}/live`);
     await stream.next();
     expect(listeners.size).toBe(1);
 
-    await stream.cancel();
+    await stream.close();
     for (let i = 0; i < 50 && listeners.size > 0; i++) await new Promise((r) => setTimeout(r, 10));
     expect(listeners.size).toBe(0);
   });

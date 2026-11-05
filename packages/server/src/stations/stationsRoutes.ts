@@ -6,7 +6,7 @@ import type { FastifyInstance, FastifyReply } from "fastify";
 import { z } from "zod";
 import { BoardActionInput, NewStationInput, StationChangesInput, StationCommand } from "../api.ts";
 import type { ChangeFeed } from "../live/live.ts";
-import { streamView } from "../live/liveRoutes.ts";
+import { liveView, Refusal } from "../live/liveRoutes.ts";
 import { IdParams, parse } from "../parse.ts";
 import { CommandError } from "./station.ts";
 import {
@@ -26,11 +26,11 @@ export function registerStations(
 ) {
   app.get("/api/stations", async () => stations.list().map((s) => s.view()));
   if (feed) {
-    app.get("/api/stations/live", (request, reply) =>
-      streamView(request, reply, feed.subscribe, () => stations.list().map((s) => s.view()), {
-        kind: "stations",
-      }),
-    );
+    liveView(app, "/api/stations/live", () => ({
+      subscribe: feed.subscribe,
+      view: () => stations.list().map((s) => s.view()),
+      kind: "stations",
+    }));
   }
 
   app.get("/api/stations/:id", async (request, reply) => {
@@ -64,13 +64,15 @@ export function registerStations(
   });
 
   // Live station state: the full view on connect and after every change.
-  app.get("/api/stations/:id/live", (request, reply) => {
+  liveView(app, "/api/stations/:id/live", (request) => {
     const station = stations.get(parse(IdParams, request.params).id);
-    if (!station) return reply.code(404).send({ error: "no such station" });
-    streamView(request, reply, station.subscribe, station.view, {
+    if (!station) throw new Refusal(404, "no such station");
+    return {
+      subscribe: station.subscribe,
+      view: station.view,
       kind: parse(LiveQuery, request.query).view,
       label: station.view().name,
-    });
+    };
   });
 }
 
@@ -95,9 +97,11 @@ export function registerStationAdmin(
 
   app.get("/api/admin/stations", async () => adminViews());
   if (feed) {
-    app.get("/api/admin/stations/live", (request, reply) =>
-      streamView(request, reply, feed.subscribe, adminViews, { kind: "admin stations" }),
-    );
+    liveView(app, "/api/admin/stations/live", () => ({
+      subscribe: feed.subscribe,
+      view: adminViews,
+      kind: "admin stations",
+    }));
   }
 
   app.post("/api/admin/stations", async (request, reply) => {

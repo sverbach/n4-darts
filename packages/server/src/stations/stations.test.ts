@@ -158,10 +158,19 @@ describe("a station request that doesn't fit", () => {
   });
 
   it("refuses an unknown view of a station's live stream", async () => {
-    const { admin } = await setup();
+    const { app, admin } = await setup();
     await admin("POST", "/api/admin/stations", { boardUrl: sims[0]?.url });
 
-    expect((await admin("GET", "/api/stations/1/live?view=kiosk")).status).toBe(400);
+    const closed = new Promise<number>((resolve) =>
+      app.injectWS(
+        "/api/stations/1/live?view=kiosk",
+        {},
+        {
+          onInit: (socket) => socket.on("close", resolve),
+        },
+      ),
+    );
+    expect(await closed).toBe(4400);
   });
 });
 

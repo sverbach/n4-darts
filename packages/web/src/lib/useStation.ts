@@ -5,7 +5,7 @@ import { useLive } from "./useLive.ts";
 
 export interface StationConnection {
   view: StationView | null;
-  /** False while the live connection to the server is down; EventSource keeps retrying. */
+  /** False while the live connection to the server is down; it reconnects by itself. */
   connected: boolean;
   /** Sends a command; resolves to an error message, or null on success. */
   send(command: StationCommand): Promise<string | null>;

@@ -4,7 +4,7 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
 import { CorrectionInput, NewMatchInput } from "../api.ts";
 import type { ChangeFeed } from "../live/live.ts";
-import { streamView } from "../live/liveRoutes.ts";
+import { liveView, Refusal } from "../live/liveRoutes.ts";
 import { IdParams, parse, TextIdParams } from "../parse.ts";
 import { CommandError } from "../stations/station.ts";
 import type { StationDirectory } from "../stations/stations.ts";
@@ -52,31 +52,26 @@ export function registerMatches(
   if (!matches) return;
 
   app.get("/api/admin/matches", async () => matches.history());
-  app.get("/api/admin/matches/live", (request, reply) => {
-    if (!feed) return reply.code(404).send({ error: "not found" });
-    streamView(request, reply, feed.subscribe, () => matches.history(), {
-      kind: "match history",
-    });
+  liveView(app, "/api/admin/matches/live", () => {
+    if (!feed) throw new Refusal(404, "not found");
+    return { subscribe: feed.subscribe, view: () => matches.history(), kind: "match history" };
   });
 
   app.get("/api/admin/matches/:id", async (request, reply) =>
     attempt(reply, () => matches.detail(parse(TextIdParams, request.params).id)),
   );
 
-  app.get("/api/admin/matches/:id/live", (request, reply) => {
-    if (!feed) return reply.code(404).send({ error: "no such match" });
+  liveView(app, "/api/admin/matches/:id/live", (request) => {
+    if (!feed) throw new Refusal(404, "no such match");
     const { id } = parse(TextIdParams, request.params);
     let view: () => unknown;
     try {
       view = matches.follow(id);
     } catch (error) {
-      if (error instanceof MatchError) return reply.code(404).send({ error: error.message });
+      if (error instanceof MatchError) throw new Refusal(404, error.message);
       throw error;
     }
-    streamView(request, reply, feed.subscribe, view, {
-      kind: "match detail",
-      label: id,
-    });
+    return { subscribe: feed.subscribe, view, kind: "match detail", label: id };
   });
 
   app.post("/api/admin/matches/:id/corrections", async (request, reply) => {

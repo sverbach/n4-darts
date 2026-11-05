@@ -6,6 +6,7 @@ import type { MatchState } from "@n4/engine";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.ts";
 import { type Db, openDb } from "../db.ts";
+import { openLive } from "../testing/liveClient.ts";
 import type { StationCommand, StationView } from "./station.ts";
 import { startStation } from "./stations.ts";
 
@@ -239,13 +240,8 @@ describe("playing a match at a station", () => {
     const server = await startServer(tempDb());
     await server.app.listen({ port: 0, host: "127.0.0.1" });
     const address = server.app.addresses()[0];
-    const res = await fetch(`http://127.0.0.1:${address?.port}/api/stations/1/live`);
-    const reader = (res.body as ReadableStream<Uint8Array>).getReader();
-    const decoder = new TextDecoder();
-    const next = async (): Promise<StationView> => {
-      const { value } = await reader.read();
-      return JSON.parse(decoder.decode(value).replace(/^data: /, ""));
-    };
+    const live = openLive<StationView>(`http://127.0.0.1:${address?.port}/api/stations/1/live`);
+    const next = live.next;
 
     expect((await next()).match).toBeNull();
     await server.command(quick(["ann", "bob"]));
@@ -254,7 +250,7 @@ describe("playing a match at a station", () => {
     await next();
     sim.throwDart("T20");
     expect((await next()).match?.state.players[0]?.remaining).toBe(41);
-    await reader.cancel();
+    await live.close();
   });
 });
 

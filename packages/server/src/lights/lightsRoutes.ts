@@ -8,7 +8,7 @@ import {
   StationLightsInput,
 } from "../api.ts";
 import type { ChangeFeed } from "../live/live.ts";
-import { streamView } from "../live/liveRoutes.ts";
+import { liveView } from "../live/liveRoutes.ts";
 import { IdParams, parse } from "../parse.ts";
 import { type Lights, LightsError } from "./lights.ts";
 
@@ -30,9 +30,11 @@ export function registerLights(app: FastifyInstance, lights: Lights, feed?: Chan
 
   app.get(base, async () => lights.view());
   if (feed) {
-    app.get(`${base}/live`, (request, reply) =>
-      streamView(request, reply, feed.subscribe, () => lights.view(), { kind: "admin lights" }),
-    );
+    liveView(app, `${base}/live`, () => ({
+      subscribe: feed.subscribe,
+      view: () => lights.view(),
+      kind: "admin lights",
+    }));
   }
 
   app.post(`${base}/devices`, async (request, reply) => {

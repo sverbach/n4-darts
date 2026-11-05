@@ -26,7 +26,7 @@ n4-darts runs private, offline darts evenings in one room with automatically sco
 
 - A room with a few stations. Each station is one board plus its screen(s), and the station screens run full-screen in kiosk mode.
 - `/display` stays open full screen on the projector all evening and follows it by itself: live scores and up next, the group tables, then the bracket, then the champion, placings and awards.
-- Every page except stats and home updates live (Server-Sent Events). Nobody refreshes.
+- Every page except stats and home updates live (WebSockets). Nobody refreshes.
 - A visit ends at takeout, when the player pulls the darts (ADR 0003). Players fix misdetections at the board, and the organiser fixes them from match history.
 - Pages and their devices are listed in `docs/ui-pages.md`. Terms follow `GLOSSARY.md` (station, visit, takeout, organiser and so on, never their "avoid" words).
 
