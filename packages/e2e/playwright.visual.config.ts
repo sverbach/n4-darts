@@ -19,6 +19,7 @@ export default defineConfig({
     ...devices["Desktop Chrome"],
     baseURL: BASE_URL,
     locale: "en-GB",
+    reducedMotion: "reduce",
     timezoneId: "Europe/Zurich",
     trace: "retain-on-failure",
   },

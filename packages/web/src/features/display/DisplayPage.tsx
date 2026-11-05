@@ -3,6 +3,7 @@ import { type ReactNode, useCallback, useLayoutEffect, useRef, useState } from "
 import { Link } from "wouter";
 import { Avatar } from "../../components/Avatar.tsx";
 import { Awards } from "../../components/Awards.tsx";
+import { Confetti } from "../../components/Confetti.tsx";
 import { Logo } from "../../components/Logo.tsx";
 import { MatchCard } from "../../components/MatchCard.tsx";
 import { Progress } from "../../components/Progress.tsx";
@@ -139,6 +140,7 @@ function Finished({ view }: { view: DisplayView }) {
             className="avatar-pu-360 flex flex-col items-center justify-center gap-pu-32 border border-border border-solid bg-panel px-pu-40 py-pu-48"
             aria-label="Champion"
           >
+            <Confetti />
             <h2 className="m-0 font-bold text-accent text-pu-72 tracking-pu-8">Champion</h2>
             <span className="avatar-frame text-pu-36">
               <Avatar player={champion} large />

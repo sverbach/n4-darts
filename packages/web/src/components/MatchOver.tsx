@@ -3,6 +3,7 @@ import type { MatchView } from "@n4/server/api";
 import type { ReactNode } from "react";
 import { dartLabel } from "../lib/darts.ts";
 import { Avatar } from "./Avatar.tsx";
+import { Confetti } from "./Confetti.tsx";
 
 /** The game shot's styles on the station (phone and kiosk) and on /watch (`--px` units). */
 const STYLES = {
@@ -58,6 +59,7 @@ export function MatchOver({
 
   return (
     <section className={style.root}>
+      <Confetti />
       <h1 className={style.title}>Game shot</h1>
       <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-6">
         {winnerPlayer && (
