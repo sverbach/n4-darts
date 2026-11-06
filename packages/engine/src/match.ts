@@ -6,14 +6,20 @@ import {
 import type { MatchEvent, PlayerIndex, VisitView } from "./events.ts";
 import { type GolfSettings, type GolfState, golfState } from "./golf.ts";
 import { type HighScoreSettings, type HighScoreState, highScoreState } from "./highScore.ts";
+import { type KillerSettings, type KillerState, killerState } from "./killer.ts";
 import { type X01Settings, type X01State, x01State } from "./x01.ts";
 
-export type MatchSettings = X01Settings | AroundTheClockSettings | HighScoreSettings | GolfSettings;
+export type MatchSettings =
+  | X01Settings
+  | AroundTheClockSettings
+  | HighScoreSettings
+  | GolfSettings
+  | KillerSettings;
 export type Mode = MatchSettings["mode"];
 export type PartyMode = Exclude<Mode, "x01">;
-export type MatchState = X01State | AroundTheClockState | HighScoreState | GolfState;
+export type MatchState = X01State | AroundTheClockState | HighScoreState | GolfState | KillerState;
 
-export const MODES: readonly Mode[] = ["x01", "aroundTheClock", "golf", "highScore"];
+export const MODES: readonly Mode[] = ["x01", "aroundTheClock", "golf", "highScore", "killer"];
 
 export const scoresPoints = (mode: Mode) => mode === "x01" || mode === "highScore";
 
@@ -48,6 +54,8 @@ export function matchState<S extends MatchSettings>(settings: S, events: MatchEv
       return highScoreState(s, events) as StateOf<S>;
     case "golf":
       return golfState(s, events) as StateOf<S>;
+    case "killer":
+      return killerState(s, events) as StateOf<S>;
   }
 }
 

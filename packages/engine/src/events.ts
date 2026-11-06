@@ -26,7 +26,7 @@ export function isSegment(value: unknown): value is Segment {
 }
 
 export type MatchEvent =
-  | { type: "MatchStarted"; playerCount: number }
+  | { type: "MatchStarted"; playerCount: number; numbers?: number[] }
   | { type: "DartThrown"; dartId: string; segment: Segment }
   | { type: "DartCorrected"; dartId: string; segment: Segment }
   | { type: "TakeoutFinished" }
@@ -94,7 +94,9 @@ export function visitsOf(events: MatchEvent[]): RawVisit[] {
   return visits;
 }
 
-export function started(events: MatchEvent[]): { playerCount: number; visits: RawVisit[] } | null {
+export function started(
+  events: MatchEvent[],
+): { playerCount: number; numbers: number[] | undefined; visits: RawVisit[] } | null {
   const startIndex = events.findIndex((e) => e.type === "MatchStarted");
   const start = events[startIndex];
   if (start?.type !== "MatchStarted") return null;
@@ -102,5 +104,9 @@ export function started(events: MatchEvent[]): { playerCount: number; visits: Ra
   if (!Number.isInteger(count) || count < MIN_PLAYERS || count > MAX_PLAYERS) {
     throw new Error(`a match needs ${MIN_PLAYERS}–${MAX_PLAYERS} players, got ${count}`);
   }
-  return { playerCount: count, visits: visitsOf(events.slice(startIndex + 1)) };
+  return {
+    playerCount: count,
+    numbers: start.numbers,
+    visits: visitsOf(events.slice(startIndex + 1)),
+  };
 }

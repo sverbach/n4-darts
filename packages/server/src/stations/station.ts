@@ -8,7 +8,9 @@ import {
   defaultAroundTheClockSettings,
   defaultGolfSettings,
   defaultHighScoreSettings,
+  defaultKillerSettings,
   defaultX01Settings,
+  drawKillerNumbers,
   MAX_PLAYERS,
   type MatchSettings,
   MIN_PLAYERS,
@@ -83,6 +85,8 @@ function settingsFrom(input: MatchSettingsInput | undefined): MatchSettings {
       return { ...defaultHighScoreSettings, ...input };
     case "golf":
       return { ...defaultGolfSettings, ...input };
+    case "killer":
+      return { ...defaultKillerSettings, ...input };
   }
 }
 
@@ -369,7 +373,13 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
           throw new CommandError("the match has already started");
         // Clear the board first, so leftover darts can't count for the new match.
         await resetBoard();
-        append({ type: "MatchStarted", playerCount: match.playerIds.length });
+        append({
+          type: "MatchStarted",
+          playerCount: match.playerIds.length,
+          ...(match.settings.mode === "killer"
+            ? { numbers: drawKillerNumbers(match.playerIds.length) }
+            : {}),
+        });
         break;
       case "correctDart":
         return correct(cmd.dartId, cmd.segment, "station");

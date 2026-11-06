@@ -4,13 +4,14 @@ import {
   GOLF_HOLES,
   type GolfSettings,
   type InRule,
+  MAX_LIVES,
   MAX_ROUNDS,
   MODES,
   type Mode,
   type OutRule,
 } from "@n4/engine";
 import type { MatchSettingsInput } from "@n4/server/api";
-import { legsLabel, MODE_NAMES, roundsLabel } from "../../lib/labels.ts";
+import { legsLabel, livesLabel, MODE_NAMES, roundsLabel } from "../../lib/labels.ts";
 
 type X01Options = Required<Omit<Extract<MatchSettingsInput, { mode: "x01" }>, "mode">>;
 
@@ -19,6 +20,7 @@ export interface SetupSettings {
   x01: X01Options;
   rounds: number;
   holes: GolfSettings["holes"];
+  lives: number;
 }
 
 export const defaultSetupSettings: SetupSettings = {
@@ -26,6 +28,7 @@ export const defaultSetupSettings: SetupSettings = {
   x01: { startScore: 301, inRule: "straight", outRule: "straight", legsToWin: 1 },
   rounds: 7,
   holes: 9,
+  lives: 3,
 };
 
 export function settingsInput(setup: SetupSettings): MatchSettingsInput {
@@ -36,6 +39,8 @@ export function settingsInput(setup: SetupSettings): MatchSettingsInput {
       return { mode: "highScore", rounds: setup.rounds };
     case "golf":
       return { mode: "golf", holes: setup.holes };
+    case "killer":
+      return { mode: "killer", lives: setup.lives };
     default:
       return { mode: setup.mode };
   }
@@ -78,6 +83,21 @@ export function SettingsFields(props: {
             {GOLF_HOLES.map((n) => (
               <option key={n} value={n}>
                 {n} holes
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      {value.mode === "killer" && (
+        <label>
+          Lives
+          <select
+            value={value.lives}
+            onChange={(e) => onChange({ ...value, lives: Number(e.target.value) })}
+          >
+            {Array.from({ length: MAX_LIVES }, (_, i) => i + 1).map((n) => (
+              <option key={n} value={n}>
+                {livesLabel(n)}
               </option>
             ))}
           </select>

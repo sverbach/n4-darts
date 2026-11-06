@@ -153,6 +153,7 @@ const STAMPS: Rule[] = [
 ];
 /** The diagnostics' numbers all change: every digit becomes 0. */
 const DIGITS: Rule[] = [["\\d", "0"]];
+const NUMBERS: Rule[] = [["\\d+", "0"]];
 
 /** Rewrites the page's text by `rules`, just for the screenshot (the next render undoes it). */
 async function freeze(p: Page, rules: Rule[]) {
@@ -168,7 +169,13 @@ async function freeze(p: Page, rules: Rule[]) {
 }
 
 /** Screenshots the page as it is at every size, after fonts and layout have settled. */
-async function shoot(p: Page, name: string, sizes: Sizes, extra: Rule[] = []) {
+async function shoot(
+  p: Page,
+  name: string,
+  sizes: Sizes,
+  extra: Rule[] = [],
+  mask: (p: Page) => Locator[] = () => [],
+) {
   for (const [label, size] of Object.entries(sizes)) {
     await p.setViewportSize(size);
     await p.evaluate(async () => {
@@ -177,7 +184,9 @@ async function shoot(p: Page, name: string, sizes: Sizes, extra: Rule[] = []) {
     });
     await freeze(p, [...STAMPS, ...extra]);
     // Soft: a run reports every screenshot that differs, not just the first.
-    await expect.soft(p).toHaveScreenshot(`${name}-${label}.png`, { fullPage: true });
+    await expect
+      .soft(p)
+      .toHaveScreenshot(`${name}-${label}.png`, { fullPage: true, mask: mask(p) });
   }
 }
 
@@ -387,6 +396,31 @@ test("Golf on station 1, 18 holes", async () => {
   await shoot(page, "station-golf", PAGES);
   await open(watch, "/watch/1", (p) => p.getByRole("img", { name: /Hole 2/ }));
   await shoot(watch, "watch-golf", BIG_SCREENS);
+  await command(1, { type: "abandonMatch" });
+
+  await watch.close();
+});
+
+test("Killer on station 1", async () => {
+  const watch = await loggedIn();
+  await command(1, {
+    type: "quickMatch",
+    playerIds: [ID.Ann, ID.Bob, ID.Cid],
+    settings: { mode: "killer", lives: 3 },
+  });
+  await command(1, { type: "startMatch" });
+  const state = (await station(1)).match?.state;
+  const numbers = state?.mode === "killer" ? state.players.map((p) => p.number) : [];
+  const [ann, bob, cid] = numbers as [number, number, number];
+  await throwDarts(1, [`T${ann}`, `D${bob}`, `S${cid}`]);
+  await takeout(1);
+  await throwDarts(1, [`S${bob}`]);
+
+  const drawn = (p: Page) => [p.getByRole("img", { name: /Charge up|Doubles of/ })];
+  await open(page, "/station/1", (p) => p.getByText(/Charge 1\/3/));
+  await shoot(page, "station-killer", PAGES, NUMBERS, drawn);
+  await open(watch, "/watch/1", (p) => p.getByText(/Charge 1\/3/));
+  await shoot(watch, "watch-killer", BIG_SCREENS, NUMBERS, drawn);
   await command(1, { type: "abandonMatch" });
 
   await watch.close();

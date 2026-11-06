@@ -151,8 +151,30 @@ describe("setting up a party match", () => {
     });
   });
 
+  it("starts Killer with its lives and a distinct number drawn per player", async () => {
+    const ctx = setup();
+    await ctx.command({
+      type: "quickMatch",
+      playerIds: ["ann", "bob"],
+      settings: { mode: "killer", lives: 5 },
+    });
+    await ctx.command({ type: "startMatch" });
+
+    const match = (await ctx.view()).match;
+    expect(match?.settings).toEqual({ mode: "killer", lives: 5, rulesVersion: 1 });
+    const started = db.events(match?.id as string).find((e) => e.type === "MatchStarted");
+    const numbers = started?.type === "MatchStarted" ? started.numbers : undefined;
+    expect(numbers).toHaveLength(2);
+    expect(new Set(numbers).size).toBe(2);
+    expect(match?.state.mode === "killer" && match.state.players.map((p) => p.number)).toEqual(
+      numbers,
+    );
+  });
+
   it.each([
     ["an unknown mode", { mode: "baseball" }],
+    ["no lives", { mode: "killer", lives: 0 }],
+    ["more than 9 lives", { mode: "killer", lives: 10 }],
     ["a golf course that isn't 9 or 18 holes", { mode: "golf", holes: 12 }],
     ["no rounds", { mode: "highScore", rounds: 0 }],
     ["more than 20 rounds", { mode: "highScore", rounds: 21 }],

@@ -11,6 +11,19 @@ export function targetsOf(match: MatchView): { highlight: Highlight[]; label: st
       label: `Hole ${match.state.round}: aim at ${targetLabel(target)}`,
     };
   }
+  if (match.state.mode === "killer") {
+    const players = match.state.players;
+    const thrower = players[match.state.currentPlayer];
+    if (!thrower) return null;
+    if (!thrower.killer) {
+      return { highlight: [{ number: thrower.number }], label: `Charge up on ${thrower.number}` };
+    }
+    const prey = players.filter((p) => p !== thrower && p.lives > 0).map((p) => p.number);
+    return {
+      highlight: prey.map((number) => ({ number, multiplier: 2 as const })),
+      label: `Doubles of ${prey.join(", ")}`,
+    };
+  }
   if (match.state.mode !== "aroundTheClock") return null;
   const target = match.state.players[match.state.currentPlayer]?.target ?? null;
   if (target === null) return { highlight: [], label: "Finished" };
@@ -23,7 +36,11 @@ export function golfOf(match: MatchView): { state: GolfState; holes: number } | 
 }
 
 export function visitTotalLabel(mode: Mode): string {
-  return mode === "golf" ? "Best" : mode === "aroundTheClock" ? "Hits" : "Total";
+  return mode === "golf"
+    ? "Best"
+    : mode === "aroundTheClock" || mode === "killer"
+      ? "Hits"
+      : "Total";
 }
 
 export function visitValue(mode: Mode, darts: readonly { score: number; ignored: boolean }[]) {

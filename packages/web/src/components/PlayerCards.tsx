@@ -1,8 +1,8 @@
-import { checkoutRoute, isX01Match, type PlayerIndex, type Segment } from "@n4/engine";
+import { CHARGED, checkoutRoute, isX01Match, type PlayerIndex, type Segment } from "@n4/engine";
 import type { MatchView, X01MatchView } from "@n4/server/api";
 import { Fragment, type ReactNode } from "react";
 import { dartLabel } from "../lib/darts.ts";
-import { targetLabel } from "../lib/labels.ts";
+import { livesLabel, targetLabel } from "../lib/labels.ts";
 import { Avatar } from "./Avatar.tsx";
 
 /** The route to finish this visit for the thrower, or null when there's none to show. */
@@ -14,11 +14,21 @@ function checkoutHint(match: X01MatchView): Segment[] | null {
   return checkoutRoute(thrower.remaining, 3 - thrown, settings.outRule);
 }
 
-function cardsOf(match: MatchView): { score: string; meta: ReactNode }[] {
+function cardsOf(match: MatchView): { score: string; meta: ReactNode; out?: boolean }[] {
   if (match.state.mode === "aroundTheClock") {
     return match.state.players.map((player) => ({
       score: player.target === null ? "Done" : targetLabel(player.target),
       meta: "Target",
+    }));
+  }
+  if (match.state.mode === "killer") {
+    return match.state.players.map((player) => ({
+      score: String(player.number),
+      meta:
+        player.lives === 0
+          ? "Out"
+          : `${player.killer ? "Killer" : `Charge ${player.charge}/${CHARGED}`} · ${livesLabel(player.lives)}`,
+      out: player.lives === 0,
     }));
   }
   if (match.state.mode === "golf") {
@@ -191,7 +201,7 @@ export function PlayerList({ match, size = "station" }: { match: MatchView; size
         return (
           <li
             key={player?.id ?? p}
-            className={`${style.row} ${active ? `border-accent bg-accent-tint ${style.frame}` : "border border-border bg-panel"}`}
+            className={`${style.row} ${active ? `border-accent bg-accent-tint ${style.frame}` : "border border-border bg-panel"} ${card.out ? "opacity-40" : ""}`}
           >
             {player && <Avatar player={player} />}
             <div className="flex min-w-0 flex-col gap-1">

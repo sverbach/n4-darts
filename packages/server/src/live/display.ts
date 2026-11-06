@@ -25,6 +25,16 @@ function scores(match: MatchView): { legsWon: number; score: string }[] {
       score: String(match.state.players[i]?.remaining ?? match.settings.startScore),
     }));
   }
+  if (match.state.mode === "killer") {
+    const { players } = match.state;
+    return match.players.map((_, i) => {
+      const lives = players[i]?.lives ?? 0;
+      return {
+        legsWon: 0,
+        score: lives > 0 ? `${lives} ${lives === 1 ? "life" : "lives"}` : "Out",
+      };
+    });
+  }
   if (match.state.mode === "highScore" || match.state.mode === "golf") {
     const { players } = match.state;
     return match.players.map((_, i) => ({ legsWon: 0, score: String(players[i]?.total ?? 0) }));

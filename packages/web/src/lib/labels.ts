@@ -2,6 +2,10 @@
 
 import type { MatchSettings, Mode, X01Settings } from "@n4/engine";
 
+export function livesLabel(lives: number) {
+  return `${lives} ${lives === 1 ? "life" : "lives"}`;
+}
+
 export function roundsLabel(rounds: number) {
   return `${rounds} ${rounds === 1 ? "round" : "rounds"}`;
 }
@@ -25,9 +29,11 @@ export const MODE_NAMES: Record<Mode, string> = {
   aroundTheClock: "Around the Clock",
   golf: "Golf",
   highScore: "High Score",
+  killer: "Killer",
 };
 
 export function matchRulesLabel(settings: MatchSettings) {
+  if (settings.mode === "killer") return `${MODE_NAMES.killer} · ${livesLabel(settings.lives)}`;
   if (settings.mode === "golf") return `${MODE_NAMES.golf} · ${settings.holes} holes`;
   if (settings.mode === "highScore")
     return `${MODE_NAMES.highScore} · ${roundsLabel(settings.rounds)}`;
