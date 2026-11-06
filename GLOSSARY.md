@@ -42,12 +42,16 @@ The dart that brings a player's score to exactly zero under the out rule, winnin
 _Avoid_: Finish (as a noun for the winning dart)
 
 **Leg**:
-One game of X01 from the starting score down to zero; the first checkout wins it. Who throws first moves one place along the match's player order from leg to leg.
+One game of X01 from the starting score down to zero; the first checkout wins it. Who throws first moves one place along the match's player order from leg to leg. Party modes have no legs.
 _Avoid_: Game
 
 **Match**:
-Two to eight players, in a fixed throwing order, playing legs until one reaches the number needed to win (first to N legs; with two players often said as best of N). Tournament matches are always two players.
+Two to eight players, in a fixed throwing order, playing legs until one reaches the number needed to win (first to N legs; with two players often said as best of N). Tournament matches are always two players. A party match is a single game, without legs.
 _Avoid_: Game, fixture, pairing
+
+**Mode**:
+What a match is played as: X01 or one of the party modes. Chosen when the match is set up ("Game" on the station).
+_Avoid_: Game type, variant (Cricket's standard or cut-throat is its variant)
 
 **Correction**:
 A player or the organiser changing a dart's recorded segment after a misdetection. The original detection is kept.
@@ -58,7 +62,7 @@ A dart the board didn't detect, entered by hand on the station as the visit's ne
 _Avoid_: Manual dart, missed dart (the miss segment is a dart that hit no number)
 
 **Call**:
-What the caller's voice says after a change at the board: the visit's score on its third dart (again if a dart is corrected, or at takeout for a visit ended early), "No score" on a bust, "Game shot" on a checkout ("Game shot, and the match" when it wins the match). Played by any station screen or /watch with sound on.
+What the caller's voice says after a change at the board: the visit's score on its third dart (again if a dart is corrected, or at takeout for a visit ended early), "No score" on a bust, "Game shot" on a checkout ("Game shot, and the match" when it wins the match). In party modes only the match shot is called, plus the visit scores in High Score. Played by any station screen or /watch with sound on.
 _Avoid_: Announcement, callout (in UI copy)
 
 **Voice pack**:
@@ -66,12 +70,54 @@ The recordings of every call, one file per call key (`0`–`180`, `gameshot`, `m
 _Avoid_: Sound pack, caller (for the files)
 
 **Light event**:
-A moment of a match that can start a light preset at its station: match start, leg won, game shot, 180, bust, high out (a checkout of 100+). Each has its own preset and seconds per station.
+A moment of a match that can start a light preset at its station: match start, leg won, game shot, 180, bust, high out (a checkout of 100+). Each has its own preset and seconds per station. Party modes fire match start and game shot (the win), and High Score also 180.
 _Avoid_: Trigger, effect
 
 **Base preset**:
 The preset a station's lights go back to after a light event: "playing" while a match is on, "idle" otherwise.
 _Avoid_: Default preset, background
+
+## Party modes
+
+**Party mode**:
+A mode played for fun: Around the Clock, Golf, High Score, Killer or Cricket. Never in a tournament and never in the stats; a finished party match isn't listed anywhere.
+_Avoid_: Fun game, mini-game
+
+**Round**:
+One visit by each player still in the game, in the throwing order. Only in party modes; X01 has legs and visits.
+_Avoid_: Turn (that's a visit), leg
+
+**Target**:
+What the thrower has to hit next in a party mode: the next number in Around the Clock, the hole's number in Golf, their own number or opponents' doubles in Killer, the open numbers in Cricket.
+
+**Target board**:
+The drawn dartboard on the station and /watch that lights up the thrower's targets. The main element of the screen in modes that have targets.
+_Avoid_: Virtual board, segment indicator
+
+**Skip-ahead**:
+Around the Clock's option where a double moves the player two targets on and a treble three.
+
+**Hole**:
+One round of Golf, aimed at its own number (hole 1 at 1, …; past 20 the bull, then 1 again). The visit's best dart is the hole's score: treble 1, double 2, single 3, anything else 5.
+
+**Mark**:
+A hit on a Cricket number or Killer's own number: single 1, double 2, treble 3 (outer bull 1, bull 2).
+
+**Closed**:
+A Cricket number a player has three marks on. Marks past three score while an opponent still has it open.
+
+**Charge**:
+The marks a Killer player has on their own number, up to three. At three they're a killer.
+
+**Killer**:
+A Killer player who's fully charged: doubles of other players' numbers now take their lives, and a double of their own takes one of theirs.
+
+**Lives**:
+What a Killer player loses to doubles of their number. At none they're out.
+
+**Sudden death**:
+Extra rounds between tied leaders only, after the last round of High Score, Golf or Cricket, until one is ahead after a round.
+_Avoid_: Tie-break, play-off
 
 ## Tournament
 

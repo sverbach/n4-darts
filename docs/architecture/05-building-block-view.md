@@ -40,7 +40,7 @@ The rules are pure and shared (engine), everything with state or I/O sits in one
 
 | Block                          | What it is                                                                                                                                                                                   | Clusters                                                                             |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| **engine** (`packages/engine`) | Pure functions with no I/O: X01 rules as a fold over a match's events, checkout routes, and per-match dart stats. Used by the server and bundled into the web app (ADR 0006).                | Match play (rules), Stats (calculations)                                             |
+| **engine** (`packages/engine`) | Pure functions with no I/O: the rules of X01 and the party modes as a fold over a match's events, checkout routes, and per-match dart stats. Used by the server and bundled into the web app (ADR 0006).                | Match play (rules), Stats (calculations)                                             |
 | **server** (`packages/server`) | One process that holds everything else: board connections, stations, players, matches, tournaments, scheduling, stats, live views, access and operations. It serves the web app's files too. | All                                                                                  |
 | **web** (`packages/web`)       | The browser app for every page. It talks to the server only over HTTP and WebSockets, and shares types with it through `@n4/server/api`.                                                            | Match play (at the board), Live views, the organiser's side of Organise, Stats pages |
 | **SQLite + backups**           | One database file on the data volume: matches as event logs (ADR 0002), players with photos, tournaments, stations. Daily copies in `backups/`.                                              | Kept by Operations, used by all                                                      |
@@ -75,7 +75,9 @@ Pure, deterministic game rules: `state = fold(rules, events)` (`packages/engine`
 - Input: the match's log: `MatchStarted`, `DartThrown`, `DartCorrected`, `TakeoutFinished`, `VisitUndone`, `VisitEndedManually` and the rest.
 - Output: the current state (scores, whose visit, legs, the winner) and what follows from it (busts, legs won, the match won); checkout routes (`checkout.ts`) and per-match dart stats (`stats.ts`).
 - No I/O, no clock, no database: easy to test, and it runs in the browser too.
-- X01 only so far, versioned (`RULES_VERSION`) so old matches replay under their own rules (PLAY-17).
+- One entry point for every mode: `matchState(settings, events)` dispatches on `settings.mode` (`match.ts`). X01 is `x01.ts`; each party mode has its own file (`aroundTheClock.ts`, `golf.ts`, `highScore.ts`, `killer.ts`, `cricket.ts`), and they share their turn order and sudden death in `party.ts`.
+- `closedVisits`, `allVisits` and `upNext` work for every mode, so calls, lights and the station don't need to know which mode is on.
+- Each mode is versioned (`RULES_VERSION`, `GOLF_RULES`, …) so old matches replay under their own rules (PLAY-17). Settings stored without a mode are X01 (`storedSettings`).
 
 ### Persistence
 
@@ -83,6 +85,7 @@ One SQLite file on the data volume (`packages/server/src/db.ts`):
 
 - **An event log per match**, append-only: every dart, correction and command. A match's state is rebuilt from it, which gives crash recovery, an audit trail, and stats.
 - **Plain tables** for players (with photos), tournaments and their entrants, stations, and per-match caches such as leg durations.
+- **Party matches are stored like X01 ones**, but the queries for finished matches return X01 only (`X01MatchRecord`), so stats never see them (ADR 0012).
 
 ## 5.2 Level 2
 

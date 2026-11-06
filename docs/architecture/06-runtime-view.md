@@ -60,7 +60,7 @@ sequenceDiagram
     P->>S: "New match" on a free station
     S->>N: player list
     N-->>S: players
-    P->>S: pick players (or add one on the spot), choose settings
+    P->>S: pick players (or add one on the spot), the game and its settings
     S->>N: quickMatch (players, settings)
     N->>N: create the match on the station, not started yet
     N-->>S: settle the throwing order
@@ -74,6 +74,7 @@ sequenceDiagram
 - No PIN and no organiser needed: quick matches and new players are open at the station (MATCH-01, PLAYER-04, ADMIN-02).
 - A busy station refuses a new match. During a tournament, the station and the players count as busy, so the scheduler leaves them alone (SCHED-04).
 - The board is reset before the match starts, so darts still on it can't count (BOARD-05).
+- The game is X01 or a party mode (ADR 0012). For Killer, the server draws each player's number as the match starts and stores it with "match started".
 
 ## 6.4 A player restarts dart detection
 

@@ -1,6 +1,6 @@
 # 12. Glossary
 
-The glossary lives in one place, [`GLOSSARY.md`](../../GLOSSARY.md) at the repo root, so code, UI and docs share it. It covers the room (station, board, organiser), play (match, leg, visit, takeout, bust, in and out rules), tournaments (group, seed, rating, knockout, walkover) and stats.
+The glossary lives in one place, [`GLOSSARY.md`](../../GLOSSARY.md) at the repo root, so code, UI and docs share it. It covers the room (station, board, organiser), play (match, leg, visit, takeout, bust, in and out rules), the party modes (mode, round, target, mark, killer, sudden death), tournaments (group, seed, rating, knockout, walkover) and stats.
 
 Abbreviations used in these docs:
 

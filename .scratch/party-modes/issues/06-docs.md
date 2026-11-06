@@ -1,6 +1,6 @@
 # Party modes: docs
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 01
 
@@ -14,3 +14,12 @@ Blocked by: 01
   - The "Leg" and "Match" entries note that a party match is one game, with no legs.
 - `docs/ui-pages.md`: the mode picker, the party scoreboards and the target board.
 - `docs/architecture/05-building-block-view.md` / `06-runtime-view.md`: the mode dispatch in the engine and the X01 filter in stats.
+
+## Comments
+
+2026-11-06: Done.
+- **ADR 0012** "Party modes are persisted, but never counted", listed in `09-architecture-decisions.md`, which also gets a "Party modes" section in the decision log. The old "X01 only for v1" entry now points to it.
+- **`GLOSSARY.md`:** a "Party modes" section (party mode, round, target, target board, skip-ahead, hole, mark, closed, charge, killer, lives, sudden death) and "Mode" under Play. Leg, Match, Call and Light event now say how party modes differ. `12-glossary.md` lists the new area.
+- **`05-building-block-view.md`:** the engine's mode dispatch, its files, the helpers every mode shares, and the X01-only finished-match queries.
+- **`06-runtime-view.md`:** the quick match picks a game, and Killer's numbers are drawn at start.
+- **`docs/ui-pages.md`:** the Game picker with each mode's options, the party screens (board first, each mode's panel, the visit total's name), the game shot, /watch, and the live station card.

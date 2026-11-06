@@ -17,6 +17,7 @@ The decisions that are hard to reverse, each with its context and consequences:
 | [0009](../adr/0009-wled-json-api-fire-and-forget.md) | Lights through WLED's JSON API, fire-and-forget |
 | [0010](../adr/0010-requests-parsed-with-zod-at-the-routes.md) | Requests are parsed with Zod at the routes |
 | [0011](../adr/0011-live-views-over-websockets.md) | Live views over WebSockets |
+| [0012](../adr/0012-party-modes-persisted-never-counted.md) | Party modes are persisted, but never counted |
 
 ## 9.2 Decision log
 
@@ -26,7 +27,7 @@ Settled in discussion (2026-10-18), then per feature. The hard-to-reverse ones a
 
 - **Laptops run nothing of ours**: only Board Manager and a kiosk browser. The server connects to the boards directly.
 - **Stack**: TypeScript end to end, one Docker image.
-- **Game**: X01 only for v1, default 301. Default single in / single out; in and out rules configurable (e.g. double out, bull in). Starting score and legs are settings.
+- **Game**: X01 only for v1, default 301 (party modes came later, see below). Default single in / single out; in and out rules configurable (e.g. double out, bull in). Starting score and legs are settings.
 - **Tournament shape**: always a group phase (default round robin), then single or double elimination (default double).
 - **Visit boundary**: a visit ends when the player takes their darts out (`TakeoutFinished`), not at the 3rd dart, bust or checkout.
 - **Throwing order**: each match has a fixed player order; the leg starter moves one place along it every leg (with two players: alternates).
@@ -111,6 +112,17 @@ Details in `.scratch/live-websockets/spec.md`.
 - **One socket per view**, server to client only, on the same `/live` URLs; changes stay HTTP requests.
 - **Refusals close with 4000 + the HTTP status** (4401 without the admin PIN); the client gives up on those and reconnects after anything else, 500 ms doubling to 5 s.
 - **Proxies must forward WebSockets** (OPS-04).
+
+### Party modes (2026-11-06)
+
+Details in `.scratch/party-modes/spec.md`.
+
+- **Five party modes** beside X01: Around the Clock, Golf, High Score, Killer and Cricket. One game per match, 2–8 players, started from the station's quick match (or `POST /api/admin/matches`).
+- **Persisted, never counted** (ADR 0012): same tables and event log as X01; finished party matches are left out of every stat and list, and never in tournaments.
+- **One engine entry point:** `matchState(settings, events)` folds by `settings.mode`. Party modes share their turn order (`playParty`) and, where they have rounds and a tie-break, `playRounds` (High Score, Golf, Cricket).
+- **Ties go to sudden death** between the tied leaders: one more visit (or hole) each in High Score and Golf, a visit at the bull in Cricket after its 20-round cap.
+- **Calls:** only the match shot, plus visit scores in High Score. **Lights:** match start and game shot, plus 180 in High Score.
+- **Board first:** where a mode has a target (Around the Clock, Golf, Killer, Cricket), the target board is the main element of the station and `/watch`, with the players (or Golf's scorecard, Cricket's marks grid) beside it.
 
 ### Build order (done)
 
