@@ -93,7 +93,7 @@ describe("setting up a party match", () => {
     await ctx.command({ type: "startMatch" });
 
     const match = (await ctx.view()).match;
-    expect(match?.settings).toEqual({ mode: "aroundTheClock", rulesVersion: 1 });
+    expect(match?.settings).toEqual({ mode: "aroundTheClock", skipAhead: false, rulesVersion: 1 });
     expect(match?.state).toMatchObject({ mode: "aroundTheClock", phase: "throwing" });
   });
 
@@ -134,6 +134,17 @@ describe("setting up a party match", () => {
       rounds: 3,
       rulesVersion: 1,
     });
+  });
+
+  it("starts Around the Clock with skip-ahead", async () => {
+    const ctx = setup();
+    await ctx.command({
+      type: "quickMatch",
+      playerIds: ["ann", "bob"],
+      settings: { mode: "aroundTheClock", skipAhead: true },
+    });
+
+    expect((await ctx.view()).match?.settings).toMatchObject({ skipAhead: true });
   });
 
   it("starts Golf with its holes", async () => {
@@ -188,6 +199,7 @@ describe("setting up a party match", () => {
 
   it.each([
     ["an unknown mode", { mode: "baseball" }],
+    ["skip-ahead that isn't true or false", { mode: "aroundTheClock", skipAhead: "yes" }],
     ["an unknown cricket variant", { mode: "cricket", variant: "mickeyMouse" }],
     ["no lives", { mode: "killer", lives: 0 }],
     ["more than 9 lives", { mode: "killer", lives: 10 }],

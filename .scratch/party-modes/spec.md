@@ -61,7 +61,7 @@ Besides X01, a match can be played in one of five party modes: Around the Clock,
 ## Out of scope
 
 - Party modes in tournaments, and any stats for them, even in their own section.
-- Variants we didn't pick: skip-ahead Around the Clock, last-dart Golf, no-score Cricket, Killer with numbers thrown by hand, treble kills.
+- Variants we didn't pick: last-dart Golf, no-score Cricket, Killer with numbers thrown by hand, treble kills.
 - New light events (such as Killer "life lost") and new voice recordings.
 - Players starting party games outside the existing match-creation paths.
 
@@ -74,3 +74,4 @@ Besides X01, a match can be played in one of five party modes: Around the Clock,
 5. `05-cricket.md`
 6. `06-docs.md`: ADR 0012, glossary, architecture and UI-page docs
 7. `07-real-board-check.md`: play every mode on a real board (human)
+8. `08-around-the-clock-skip-ahead.md`: skip-ahead as an option (added 2026-11-06)

@@ -81,7 +81,7 @@ function settingsFrom(input: MatchSettingsInput | undefined): MatchSettings {
     case "x01":
       return { ...defaultX01Settings, ...input, rulesVersion: RULES_VERSION };
     case "aroundTheClock":
-      return defaultAroundTheClockSettings;
+      return { ...defaultAroundTheClockSettings, ...input };
     case "highScore":
       return { ...defaultHighScoreSettings, ...input };
     case "golf":

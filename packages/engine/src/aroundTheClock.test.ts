@@ -134,6 +134,43 @@ describe("Around the Clock", () => {
   });
 });
 
+describe("Around the Clock with skip-ahead", () => {
+  const skip = (events: MatchEvent[]) =>
+    matchState({ ...defaultAroundTheClockSettings, skipAhead: true }, events).players.map(
+      (p) => p.target,
+    );
+
+  it("moves a single 1 target on, a double 2 and a treble 3", () => {
+    expect(skip([start(), dart("S1"), dart("D2"), dart("T4")])).toEqual([7, 1]);
+  });
+
+  it("moves 1 per hit without the option, and when it's missing from stored settings", () => {
+    expect(targets([start(), dart("T1")])).toEqual([2, 1]);
+    const stored = matchState({ mode: "aroundTheClock", rulesVersion: 1 }, [start(), dart("T1")]);
+    expect(stored.players[0]?.target).toBe(2);
+  });
+
+  it("lands on the bull from a jump past 20, and the bull still finishes", () => {
+    const toNineteen = [
+      start(),
+      ...visit("T1", "T4", "T7"),
+      ...visit("M"),
+      ...visit("T10", "T13", "T16"),
+      ...visit("M"),
+    ];
+    expect(skip(toNineteen)).toEqual([19, 1]);
+    expect(skip([...toNineteen, dart("T19")])).toEqual([25, 1]);
+    expect(skip([...toNineteen, dart("S19"), dart("D20")])).toEqual([25, 1]);
+    expect(
+      matchState({ ...defaultAroundTheClockSettings, skipAhead: true }, [
+        ...toNineteen,
+        dart("T19"),
+        dart("25"),
+      ]).winner,
+    ).toBe(0);
+  });
+});
+
 describe("stored settings", () => {
   it("reads settings without a mode as X01", () => {
     expect(storedSettings({ startScore: 501 })).toEqual({ mode: "x01", startScore: 501 });

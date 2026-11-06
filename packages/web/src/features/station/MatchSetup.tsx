@@ -23,6 +23,7 @@ export interface SetupSettings {
   holes: GolfSettings["holes"];
   lives: number;
   variant: CricketVariant;
+  skipAhead: boolean;
 }
 
 export const defaultSetupSettings: SetupSettings = {
@@ -32,6 +33,7 @@ export const defaultSetupSettings: SetupSettings = {
   holes: 9,
   lives: 3,
   variant: "standard",
+  skipAhead: false,
 };
 
 export function settingsInput(setup: SetupSettings): MatchSettingsInput {
@@ -46,6 +48,8 @@ export function settingsInput(setup: SetupSettings): MatchSettingsInput {
       return { mode: "killer", lives: setup.lives };
     case "cricket":
       return { mode: "cricket", variant: setup.variant };
+    case "aroundTheClock":
+      return { mode: "aroundTheClock", skipAhead: setup.skipAhead };
     default:
       return { mode: setup.mode };
   }
@@ -90,6 +94,18 @@ export function SettingsFields(props: {
                 {n} holes
               </option>
             ))}
+          </select>
+        </label>
+      )}
+      {value.mode === "aroundTheClock" && (
+        <label>
+          Doubles & trebles
+          <select
+            value={value.skipAhead ? "skip" : "once"}
+            onChange={(e) => onChange({ ...value, skipAhead: e.target.value === "skip" })}
+          >
+            <option value="once">Count once</option>
+            <option value="skip">Skip ahead</option>
           </select>
         </label>
       )}

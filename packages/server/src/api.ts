@@ -232,7 +232,10 @@ export const MatchSettingsInput = z.preprocess(
   withMode,
   z.discriminatedUnion("mode", [
     X01SettingsInput,
-    z.strictObject({ mode: z.literal("aroundTheClock") }),
+    z.strictObject({
+      mode: z.literal("aroundTheClock"),
+      skipAhead: z.boolean().exactOptional(),
+    }),
     z.strictObject({
       mode: z.literal("cricket"),
       variant: z.enum(CRICKET_VARIANTS).exactOptional(),

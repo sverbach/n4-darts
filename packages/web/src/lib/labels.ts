@@ -34,6 +34,9 @@ export const MODE_NAMES: Record<Mode, string> = {
 };
 
 export function matchRulesLabel(settings: MatchSettings) {
+  if (settings.mode === "aroundTheClock" && settings.skipAhead) {
+    return `${MODE_NAMES.aroundTheClock} · Skip-ahead`;
+  }
   if (settings.mode === "cricket") {
     return settings.variant === "cutThroat" ? "Cut-throat Cricket" : MODE_NAMES.cricket;
   }

@@ -5,11 +5,13 @@ export const AROUND_THE_CLOCK_RULES = 1;
 
 export interface AroundTheClockSettings {
   mode: "aroundTheClock";
+  skipAhead?: boolean;
   rulesVersion: number;
 }
 
 export const defaultAroundTheClockSettings: AroundTheClockSettings = {
   mode: "aroundTheClock",
+  skipAhead: false,
   rulesVersion: AROUND_THE_CLOCK_RULES,
 };
 
@@ -24,7 +26,8 @@ export interface AroundTheClockState extends PartyState {
   players: AroundTheClockPlayer[];
 }
 
-const after = (target: number) => (target === 20 ? BULL : target === BULL ? null : target + 1);
+const after = (target: number, steps: number) =>
+  target === BULL ? null : target + steps > 20 ? BULL : target + steps;
 
 export function aroundTheClockState(
   settings: AroundTheClockSettings,
@@ -50,7 +53,7 @@ export function aroundTheClockState(
         }
         const hit = segment.multiplier > 0 && segment.number === thrower.target;
         if (hit && thrower.target !== null) {
-          thrower.target = after(thrower.target);
+          thrower.target = after(thrower.target, settings.skipAhead ? segment.multiplier : 1);
           if (thrower.target === null) winner = player;
         }
         view.darts.push({ dartId, segment, score: hit ? 1 : 0, ignored: false });
