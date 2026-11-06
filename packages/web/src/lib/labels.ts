@@ -30,9 +30,13 @@ export const MODE_NAMES: Record<Mode, string> = {
   golf: "Golf",
   highScore: "High Score",
   killer: "Killer",
+  cricket: "Cricket",
 };
 
 export function matchRulesLabel(settings: MatchSettings) {
+  if (settings.mode === "cricket") {
+    return settings.variant === "cutThroat" ? "Cut-throat Cricket" : MODE_NAMES.cricket;
+  }
   if (settings.mode === "killer") return `${MODE_NAMES.killer} · ${livesLabel(settings.lives)}`;
   if (settings.mode === "golf") return `${MODE_NAMES.golf} · ${settings.holes} holes`;
   if (settings.mode === "highScore")

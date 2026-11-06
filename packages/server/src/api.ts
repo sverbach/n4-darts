@@ -2,6 +2,7 @@
 // app imports types only; nothing here may pull in Node modules.
 
 import {
+  type CricketVariant,
   type InRule,
   isSegment,
   MAX_LIVES,
@@ -198,6 +199,10 @@ export const SegmentInput = z
 const START_SCORE = "start score must be a whole number of at least 2";
 const LEGS_TO_WIN = "legs to win must be a whole number of at least 1";
 const HOLES = "holes must be 9 or 18";
+const CRICKET_VARIANTS = {
+  standard: "standard",
+  cutThroat: "cutThroat",
+} as const satisfies { [V in CricketVariant]: V };
 const LIVES = `lives must be a whole number from 1 to ${MAX_LIVES}`;
 const ROUNDS = `rounds must be a whole number from 1 to ${MAX_ROUNDS}`;
 
@@ -228,6 +233,10 @@ export const MatchSettingsInput = z.preprocess(
   z.discriminatedUnion("mode", [
     X01SettingsInput,
     z.strictObject({ mode: z.literal("aroundTheClock") }),
+    z.strictObject({
+      mode: z.literal("cricket"),
+      variant: z.enum(CRICKET_VARIANTS).exactOptional(),
+    }),
     z.strictObject({
       mode: z.literal("killer"),
       lives: z

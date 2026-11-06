@@ -171,8 +171,24 @@ describe("setting up a party match", () => {
     );
   });
 
+  it("starts Cricket in cut-throat", async () => {
+    const ctx = setup();
+    await ctx.command({
+      type: "quickMatch",
+      playerIds: ["ann", "bob"],
+      settings: { mode: "cricket", variant: "cutThroat" },
+    });
+
+    expect((await ctx.view()).match?.settings).toEqual({
+      mode: "cricket",
+      variant: "cutThroat",
+      rulesVersion: 1,
+    });
+  });
+
   it.each([
     ["an unknown mode", { mode: "baseball" }],
+    ["an unknown cricket variant", { mode: "cricket", variant: "mickeyMouse" }],
     ["no lives", { mode: "killer", lives: 0 }],
     ["more than 9 lives", { mode: "killer", lives: 10 }],
     ["a golf course that isn't 9 or 18 holes", { mode: "golf", holes: 12 }],

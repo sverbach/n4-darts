@@ -3,6 +3,7 @@ import type { MatchView, StationCommand } from "@n4/server/api";
 import { useState } from "react";
 import { Avatar } from "../../components/Avatar.tsx";
 import { BoardMenu, type MatchAction } from "../../components/BoardMenu.tsx";
+import { CricketGrid } from "../../components/CricketGrid.tsx";
 import { TargetBoard } from "../../components/Dartboard.tsx";
 import { Logo } from "../../components/Logo.tsx";
 import { MatchOver } from "../../components/MatchOver.tsx";
@@ -13,7 +14,14 @@ import { Scorecard } from "../../components/Scorecard.tsx";
 import { SegmentPicker } from "../../components/SegmentPicker.tsx";
 import { SoundPrompt } from "../../components/Sound.tsx";
 import { dartLabel } from "../../lib/darts.ts";
-import { golfOf, liveLabel, targetsOf, visitTotalLabel, visitValue } from "../../lib/modes.ts";
+import {
+  cricketOf,
+  golfOf,
+  liveLabel,
+  targetsOf,
+  visitTotalLabel,
+  visitValue,
+} from "../../lib/modes.ts";
 import { useCallouts } from "../../lib/useCallouts.ts";
 import { useStation } from "../../lib/useStation.ts";
 import {
@@ -333,18 +341,22 @@ export function Scoreboard(props: ScoreboardProps) {
   const targets = targetsOf(props.match);
   if (targets) {
     const golf = golfOf(props.match);
+    const cricket = cricketOf(props.match);
+    const wide = golf || cricket;
     return (
       <>
         <div
-          className={`scoreboard grid min-h-0 gap-3 kiosk:gap-4 ${golf ? "kiosk:grid-cols-[auto_minmax(0,1fr)]" : "kiosk:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}`}
+          className={`scoreboard grid min-h-0 gap-3 kiosk:gap-4 ${wide ? "kiosk:grid-cols-[auto_minmax(0,1fr)]" : "kiosk:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}`}
         >
           <TargetBoard
             highlight={targets.highlight}
             label={targets.label}
-            className={`w-[min(72vw,34vh)] self-center justify-self-center ${golf ? "kiosk:w-[min(520px,calc(100dvh-440px))]" : "kiosk:w-[min(100%,calc(100dvh-440px))]"}`}
+            className={`w-[min(72vw,34vh)] self-center justify-self-center ${wide ? "kiosk:w-[min(520px,calc(100dvh-440px))]" : "kiosk:w-[min(100%,calc(100dvh-440px))]"}`}
           />
           {golf ? (
             <Scorecard state={golf.state} holes={golf.holes} players={props.match.players} />
+          ) : cricket ? (
+            <CricketGrid state={cricket} players={props.match.players} />
           ) : (
             <PlayerList match={props.match} />
           )}

@@ -1,6 +1,7 @@
 // The settings of a new quick match at the station; picking the players is PlayerPicker's.
 
 import {
+  type CricketVariant,
   GOLF_HOLES,
   type GolfSettings,
   type InRule,
@@ -21,6 +22,7 @@ export interface SetupSettings {
   rounds: number;
   holes: GolfSettings["holes"];
   lives: number;
+  variant: CricketVariant;
 }
 
 export const defaultSetupSettings: SetupSettings = {
@@ -29,6 +31,7 @@ export const defaultSetupSettings: SetupSettings = {
   rounds: 7,
   holes: 9,
   lives: 3,
+  variant: "standard",
 };
 
 export function settingsInput(setup: SetupSettings): MatchSettingsInput {
@@ -41,6 +44,8 @@ export function settingsInput(setup: SetupSettings): MatchSettingsInput {
       return { mode: "golf", holes: setup.holes };
     case "killer":
       return { mode: "killer", lives: setup.lives };
+    case "cricket":
+      return { mode: "cricket", variant: setup.variant };
     default:
       return { mode: setup.mode };
   }
@@ -85,6 +90,18 @@ export function SettingsFields(props: {
                 {n} holes
               </option>
             ))}
+          </select>
+        </label>
+      )}
+      {value.mode === "cricket" && (
+        <label>
+          Points
+          <select
+            value={value.variant}
+            onChange={(e) => onChange({ ...value, variant: e.target.value as CricketVariant })}
+          >
+            <option value="standard">Standard: most wins</option>
+            <option value="cutThroat">Cut-throat: fewest wins</option>
           </select>
         </label>
       )}

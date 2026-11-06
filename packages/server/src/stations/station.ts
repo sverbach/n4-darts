@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import { performance } from "node:perf_hooks";
 import {
   defaultAroundTheClockSettings,
+  defaultCricketSettings,
   defaultGolfSettings,
   defaultHighScoreSettings,
   defaultKillerSettings,
@@ -87,6 +88,8 @@ function settingsFrom(input: MatchSettingsInput | undefined): MatchSettings {
       return { ...defaultGolfSettings, ...input };
     case "killer":
       return { ...defaultKillerSettings, ...input };
+    case "cricket":
+      return { ...defaultCricketSettings, ...input };
   }
 }
 

@@ -1,5 +1,6 @@
 import type { MatchView } from "@n4/server/api";
 import { Avatar } from "../../components/Avatar.tsx";
+import { CricketGrid } from "../../components/CricketGrid.tsx";
 import { TargetBoard } from "../../components/Dartboard.tsx";
 import { Logo } from "../../components/Logo.tsx";
 import { MatchOver } from "../../components/MatchOver.tsx";
@@ -8,7 +9,14 @@ import { Scorecard } from "../../components/Scorecard.tsx";
 import { SoundButton, SoundPrompt } from "../../components/Sound.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import { matchRulesLabel } from "../../lib/labels.ts";
-import { golfOf, liveLabel, targetsOf, visitTotalLabel, visitValue } from "../../lib/modes.ts";
+import {
+  cricketOf,
+  golfOf,
+  liveLabel,
+  targetsOf,
+  visitTotalLabel,
+  visitValue,
+} from "../../lib/modes.ts";
 import { useCallouts } from "../../lib/useCallouts.ts";
 import { useStation } from "../../lib/useStation.ts";
 
@@ -76,17 +84,21 @@ function WatchBoard({ match }: { match: MatchView }) {
   const targets = targetsOf(match);
   if (!targets) return <PlayerCards match={match} size="projector" />;
   const golf = golfOf(match);
+  const cricket = cricketOf(match);
+  const wide = golf || cricket;
   return (
     <div
-      className={`grid min-h-0 flex-1 gap-pu-24 ${golf ? "grid-cols-[auto_minmax(0,1fr)]" : "grid-cols-[minmax(0,1fr)_calc(420*var(--px))]"}`}
+      className={`grid min-h-0 flex-1 gap-pu-24 ${wide ? "grid-cols-[auto_minmax(0,1fr)]" : "grid-cols-[minmax(0,1fr)_calc(420*var(--px))]"}`}
     >
       <TargetBoard
         highlight={targets.highlight}
         label={targets.label}
-        className={`justify-self-center ${golf ? "w-[calc(500*var(--px))] self-center" : "h-full max-h-full min-h-0 w-auto"}`}
+        className={`justify-self-center ${wide ? "w-[calc(500*var(--px))] self-center" : "h-full max-h-full min-h-0 w-auto"}`}
       />
       {golf ? (
         <Scorecard state={golf.state} holes={golf.holes} players={match.players} size="projector" />
+      ) : cricket ? (
+        <CricketGrid state={cricket} players={match.players} size="projector" />
       ) : (
         <PlayerList match={match} size="projector" />
       )}

@@ -74,6 +74,14 @@ export function MatchOver({
               </div>
             </dl>
           )}
+          {match.state.mode === "cricket" && (
+            <dl className={`m-0 ${style.stats}`}>
+              <div className="flex flex-col-reverse items-start gap-2">
+                <dt className={style.label}>Points</dt>
+                <dd className={`m-0 ${style.value}`}>{match.state.players[winner]?.points}</dd>
+              </div>
+            </dl>
+          )}
         </div>
       </div>
       {children}

@@ -21,6 +21,9 @@ function cardsOf(match: MatchView): { score: string; meta: ReactNode; out?: bool
       meta: "Target",
     }));
   }
+  if (match.state.mode === "cricket") {
+    return match.state.players.map((player) => ({ score: String(player.points), meta: "Points" }));
+  }
   if (match.state.mode === "killer") {
     return match.state.players.map((player) => ({
       score: String(player.number),

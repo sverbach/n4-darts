@@ -63,6 +63,7 @@ export interface RoundsState {
 export interface RoundsRules {
   visit(raw: RawVisit, player: PlayerIndex, round: number): { view: VisitView; over: boolean };
   leaders(contenders: PlayerIndex[]): PlayerIndex[];
+  winner?(): PlayerIndex | null;
 }
 
 export const roundsNotStarted: RoundsState = { round: 1, suddenDeath: false, contenders: [] };
@@ -78,7 +79,8 @@ export function playRounds(
   let suddenDeath = false;
   let position = 0;
   let finished = false;
-  let winner: PlayerIndex | null = null;
+  let decided: PlayerIndex | null = null;
+  const winner = () => decided ?? rules.winner?.() ?? null;
 
   const endRound = () => {
     position = 0;
@@ -88,7 +90,7 @@ export function playRounds(
     }
     const leaders = rules.leaders(contenders);
     if (leaders.length === 1) {
-      winner = leaders[0] as PlayerIndex;
+      decided = leaders[0] as PlayerIndex;
       return;
     }
     contenders = leaders;
@@ -100,13 +102,13 @@ export function playRounds(
     visit(raw, player) {
       const { view, over } = rules.visit(raw, player, round);
       finished = over || raw.closed;
-      if (finished) {
+      if (finished && winner() === null) {
         position += 1;
         if (position >= contenders.length) endRound();
       }
-      return { view, over: over || winner !== null };
+      return { view, over: over || winner() !== null };
     },
-    winner: () => winner,
+    winner,
     next: () => {
       const after = finished ? position : (position + 1) % contenders.length;
       finished = false;

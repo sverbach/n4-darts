@@ -426,6 +426,34 @@ test("Killer on station 1", async () => {
   await watch.close();
 });
 
+test("Cricket on station 1", async () => {
+  const watch = await loggedIn();
+  await command(1, {
+    type: "quickMatch",
+    playerIds: [ID.Ann, ID.Bob, ID.Cid],
+    settings: { mode: "cricket" },
+  });
+  await command(1, { type: "startMatch" });
+  for (const darts of [
+    ["T20", "T20", "S19"],
+    ["T20", "D18", "M3"],
+    ["S17", "25", "BULL"],
+    ["T19", "S20", "S16"],
+  ]) {
+    await throwDarts(1, darts);
+    await takeout(1);
+  }
+  await throwDarts(1, ["T18"]);
+
+  await open(page, "/station/1", (p) => p.getByRole("table", { name: "Cricket marks" }));
+  await shoot(page, "station-cricket", PAGES);
+  await open(watch, "/watch/1", (p) => p.getByRole("table", { name: "Cricket marks" }));
+  await shoot(watch, "watch-cricket", BIG_SCREENS);
+  await command(1, { type: "abandonMatch" });
+
+  await watch.close();
+});
+
 test("a tournament on station 1, station 2 busy", async () => {
   const display = await loggedIn();
   // A running quick match of two players outside the tournament keeps station 2 out of it.

@@ -1,4 +1,13 @@
-import { type GolfState, holeTarget, isX01Match, type Mode } from "@n4/engine";
+import {
+  CRICKET_ROUNDS,
+  CRICKET_TARGETS,
+  type CricketState,
+  closedBy,
+  type GolfState,
+  holeTarget,
+  isX01Match,
+  type Mode,
+} from "@n4/engine";
 import type { MatchView } from "@n4/server/api";
 import type { Highlight } from "../components/Dartboard.tsx";
 import { MODE_NAMES, matchRulesLabel, targetLabel } from "./labels.ts";
@@ -9,6 +18,16 @@ export function targetsOf(match: MatchView): { highlight: Highlight[]; label: st
     return {
       highlight: [{ number: target }],
       label: `Hole ${match.state.round}: aim at ${targetLabel(target)}`,
+    };
+  }
+  if (match.state.mode === "cricket") {
+    const { players, suddenDeath } = match.state;
+    const open = suddenDeath
+      ? [25]
+      : CRICKET_TARGETS.filter((t) => !players.every((p) => closedBy(p, t)));
+    return {
+      highlight: open.map((number) => ({ number })),
+      label: `Aim at ${open.map(targetLabel).join(", ")}`,
     };
   }
   if (match.state.mode === "killer") {
@@ -30,17 +49,19 @@ export function targetsOf(match: MatchView): { highlight: Highlight[]; label: st
   return { highlight: [{ number: target }], label: `Aim at ${targetLabel(target)}` };
 }
 
+export function cricketOf(match: MatchView): CricketState | null {
+  return match.state.mode === "cricket" ? match.state : null;
+}
+
 export function golfOf(match: MatchView): { state: GolfState; holes: number } | null {
   if (match.state.mode !== "golf" || match.settings.mode !== "golf") return null;
   return { state: match.state, holes: match.settings.holes };
 }
 
 export function visitTotalLabel(mode: Mode): string {
-  return mode === "golf"
-    ? "Best"
-    : mode === "aroundTheClock" || mode === "killer"
-      ? "Hits"
-      : "Total";
+  if (mode === "golf") return "Best";
+  if (mode === "cricket") return "Marks";
+  return mode === "aroundTheClock" || mode === "killer" ? "Hits" : "Total";
 }
 
 export function visitValue(mode: Mode, darts: readonly { score: number; ignored: boolean }[]) {
@@ -59,6 +80,13 @@ export function liveLabel(match: MatchView): string {
     const { round, suddenDeath } = match.state;
     const progress = suddenDeath ? "Sudden death" : `Round ${round} of ${match.settings.rounds}`;
     return `${MODE_NAMES.highScore} · ${progress}`;
+  }
+  if (match.state.mode === "cricket") {
+    const { round, suddenDeath } = match.state;
+    const progress = suddenDeath
+      ? "Sudden death at the bull"
+      : `Round ${round} of ${CRICKET_ROUNDS}`;
+    return `${matchRulesLabel(match.settings)} · ${progress}`;
   }
   if (match.state.mode === "golf" && match.settings.mode === "golf") {
     const { round, suddenDeath } = match.state;
