@@ -1,11 +1,14 @@
+import { isX01Match } from "@n4/engine";
 import type { MatchView } from "@n4/server/api";
 import { Avatar } from "../../components/Avatar.tsx";
+import { TargetBoard } from "../../components/Dartboard.tsx";
 import { Logo } from "../../components/Logo.tsx";
 import { MatchOver } from "../../components/MatchOver.tsx";
 import { PlayerCards } from "../../components/PlayerCards.tsx";
 import { SoundButton, SoundPrompt } from "../../components/Sound.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import { matchRulesLabel } from "../../lib/labels.ts";
+import { targetsOf, visitTotalLabel } from "../../lib/targets.ts";
 import { useCallouts } from "../../lib/useCallouts.ts";
 import { useStation } from "../../lib/useStation.ts";
 
@@ -61,7 +64,7 @@ export function WatchPage({ id }: { id: number }) {
         <MatchOver match={match} size="projector" />
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-pu-16 px-pu-32 pt-pu-20 pb-pu-24">
-          <PlayerCards match={match} size="projector" />
+          <WatchBoard match={match} />
           <WatchVisit match={match} />
         </div>
       )}
@@ -69,15 +72,29 @@ export function WatchPage({ id }: { id: number }) {
   );
 }
 
+function WatchBoard({ match }: { match: MatchView }) {
+  const targets = targetsOf(match);
+  if (!targets) return <PlayerCards match={match} size="projector" />;
+  return (
+    <div className="flex min-h-0 flex-1 gap-pu-16 [&>.scoreboard]:flex-1">
+      <PlayerCards match={match} size="projector" />
+      <TargetBoard
+        highlight={targets.highlight}
+        label={targets.label}
+        className="h-full max-h-[calc(480*var(--px))] flex-none self-center"
+      />
+    </div>
+  );
+}
+
 function MatchLine({ match }: { match: MatchView }) {
-  const { settings, state } = match;
   return (
     <span className={`${SMALL} tracking-pu-1`}>
-      {matchRulesLabel(settings)}
-      {settings.legsToWin > 1 && (
+      {matchRulesLabel(match.settings)}
+      {isX01Match(match) && match.settings.legsToWin > 1 && (
         <>
           {" "}
-          · Leg <span className="text-text">{state.legs.length}</span>
+          · Leg <span className="text-text">{match.state.legs.length}</span>
         </>
       )}
     </span>
@@ -114,6 +131,7 @@ function WatchVisit({ match }: { match: MatchView }) {
   const visit = state.currentVisit;
   const thrower = players[visit?.player ?? state.currentPlayer]?.name ?? "?";
   const total = visit?.bust ? 0 : (visit?.darts.reduce((sum, d) => sum + d.score, 0) ?? 0);
+  const totalLabel = visitTotalLabel(match);
   // The next dart's slot blinks a cursor while the thrower is at the board.
   const next = state.phase === "throwing" ? (visit?.darts.length ?? 0) : -1;
   return (
@@ -139,7 +157,7 @@ function WatchVisit({ match }: { match: MatchView }) {
       </div>
       <div className="flex w-pu-220 flex-col items-end gap-pu-6">
         <span className={`${TOTAL_LABEL} text-muted`}>
-          {visit?.bust || !visit?.darts.length ? "" : "Total"}
+          {visit?.bust || !visit?.darts.length ? "" : totalLabel}
         </span>
         <span
           className={

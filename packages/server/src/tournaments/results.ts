@@ -1,9 +1,9 @@
 import { dartStats, matchState } from "@n4/engine";
-import type { Db, MatchRecord } from "../db.ts";
+import type { Db, X01MatchRecord } from "../db.ts";
 import type { Result } from "./plan/types.ts";
 
 /** A decided tournament match as the pure logic sees it. */
-export function resultOf(match: MatchRecord, events: ReturnType<Db["events"]>): Result | null {
+export function resultOf(match: X01MatchRecord, events: ReturnType<Db["events"]>): Result | null {
   if (!match.closedAt || match.abandoned || !match.winner || !match.slot) return null;
   const [a, b] = match.playerIds as [string, string];
   if (match.walkover) {

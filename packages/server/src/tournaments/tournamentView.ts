@@ -1,14 +1,14 @@
 // What /admin shows of a running or finished tournament: progress, stations, queue, group
 // tables, the bracket and placings.
 
-import { matchState } from "@n4/engine";
+import { isX01Match, matchState } from "@n4/engine";
 import type {
   MatchPlayer,
   TournamentMatchView,
   TournamentProgress,
   TournamentStationView,
 } from "../api.ts";
-import type { Db, MatchRecord, TournamentRecord } from "../db.ts";
+import type { Db, TournamentRecord, X01MatchRecord } from "../db.ts";
 import { matchPlayer } from "../players/players.ts";
 import type { StationDirectory } from "../stations/stations.ts";
 import { legMinutes, matchMinutes } from "./estimate.ts";
@@ -23,9 +23,9 @@ export function progressView(
   const name = (id: string | null) => (id ? (db.getPlayer(id)?.name ?? "?") : null);
   const records = db.tournamentMatches(tournament.id);
   /** The record that counts for a slot: the live one, not an abandoned attempt. */
-  const recordFor = (slot: string): MatchRecord | undefined =>
+  const recordFor = (slot: string): X01MatchRecord | undefined =>
     records.filter((m) => m.slot === slot && !m.abandoned).at(-1);
-  const decided = (m: MatchRecord | undefined) => Boolean(m?.closedAt && m.winner);
+  const decided = (m: X01MatchRecord | undefined) => Boolean(m?.closedAt && m.winner);
 
   function matchView(planned: PlannedMatch): TournamentMatchView {
     const record = recordFor(planned.slot);
@@ -119,11 +119,15 @@ export function progressView(
                 ? "Waiting to start"
                 : match.state.winner !== null
                   ? `${match.players[match.state.winner]?.name ?? "?"} won`
-                  : match.state.players
-                      .map((p, i) => `${match.players[i]?.name ?? "?"} ${p.remaining}`)
-                      .join(" · "),
+                  : isX01Match(match)
+                    ? match.state.players
+                        .map((p, i) => `${match.players[i]?.name ?? "?"} ${p.remaining}`)
+                        .join(" · ")
+                    : "Playing",
             remaining:
-              match.state.phase === "notStarted" || match.state.winner !== null
+              match.state.phase === "notStarted" ||
+              match.state.winner !== null ||
+              !isX01Match(match)
                 ? null
                 : match.state.players.map((p) => p.remaining),
             winner:

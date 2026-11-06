@@ -104,6 +104,7 @@ describe("players", () => {
       id: "m1",
       station: null,
       settings: {
+        mode: "x01",
         startScore: 301,
         inRule: "straight",
         outRule: "straight",

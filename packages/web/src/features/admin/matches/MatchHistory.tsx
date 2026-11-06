@@ -18,11 +18,14 @@ const day = (iso: string | null) =>
 const time = (iso: string | null) =>
   iso ? new Date(iso).toLocaleTimeString(undefined, { timeStyle: "short" }) : "";
 
-function result(match: MatchSummary) {
+function result(match: MatchSummary | MatchDetail) {
   if (match.abandoned) return "Abandoned";
   const winner = match.players.find((p) => p.id === match.winner);
   if (!winner) return match.closedAt ? "No winner (corrected)" : "In progress";
-  const legs = match.settings.legsToWin > 1 ? ` ${legScore(match.legsWon)}` : "";
+  const legs =
+    match.settings.mode === "x01" && match.settings.legsToWin > 1
+      ? ` ${legScore(match.legsWon)}`
+      : "";
   return `${winner.name} won${legs}`;
 }
 

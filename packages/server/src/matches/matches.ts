@@ -3,9 +3,9 @@
 // any match (docs/adr/0002: the correction is appended, the original detection stays in the log).
 // The routes are in matchesRoutes.ts.
 
-import { matchState, type Segment } from "@n4/engine";
+import { isX01Match, type MatchState, matchState, type Segment, x01Only } from "@n4/engine";
 import type { MatchDetail, MatchPage, MatchSummary } from "../api.ts";
-import type { Db, MatchRecord, StoredEvent } from "../db.ts";
+import type { Db, MatchRecord, StoredEvent, X01MatchRecord } from "../db.ts";
 import { matchPlayer } from "../players/players.ts";
 import type { StationDirectory } from "../stations/stations.ts";
 
@@ -28,6 +28,11 @@ export class MatchError extends Error {
     this.reason = reason;
   }
 }
+
+const legsWon = (match: MatchRecord, state: MatchState) =>
+  match.playerIds.map((_, i) =>
+    state.mode === "x01" ? (state.players[i]?.legsWon ?? 0) : state.winner === i ? 1 : 0,
+  );
 
 export function createMatches(db: Db, stations: StationDirectory, guard?: ResultGuard) {
   /** The station currently running this match, if any. */
@@ -58,14 +63,17 @@ export function createMatches(db: Db, stations: StationDirectory, guard?: Result
       winner: match.winner,
       abandoned: match.abandoned,
       closedAt: match.closedAt,
-      legsWon: match.playerIds.map((_, i) => state.players[i]?.legsWon ?? 0),
+      legsWon: legsWon(match, state),
       state,
       originals,
       added,
     };
   }
 
-  const summary = ({ state: _, originals: __, ...rest }: MatchDetail): MatchSummary => rest;
+  const summary = (match: X01MatchRecord): MatchSummary => {
+    const { state: _, originals: __, added: ___, ...rest } = detail(match, db.events(match.id));
+    return { ...rest, settings: match.settings };
+  };
 
   function existing(id: string): MatchRecord {
     const match = db.getMatch(id);
@@ -75,7 +83,7 @@ export function createMatches(db: Db, stations: StationDirectory, guard?: Result
 
   return {
     /** Closed matches, newest first. */
-    history: () => db.closedMatches().map((match) => summary(detail(match, db.events(match.id)))),
+    history: () => db.closedMatches().map(summary),
 
     detail(id: string): MatchDetail {
       const match = existing(id);
@@ -85,11 +93,11 @@ export function createMatches(db: Db, stations: StationDirectory, guard?: Result
     /** A finished match, played to its end: not abandoned, not a walkover. */
     page(id: string): MatchPage {
       const match = db.getMatch(id);
-      if (!match?.closedAt || match.abandoned || match.walkover) {
+      if (!match?.closedAt || match.abandoned || match.walkover || !isX01Match(match)) {
         throw new MatchError("no such match", "missing");
       }
       const { originals: _, added: __, station: ___, ...page } = detail(match, db.events(id));
-      return page;
+      return { ...page, settings: match.settings, state: x01Only(page.state) };
     },
 
     /** The match's detail as it changes; a match removed meanwhile keeps its last state. */

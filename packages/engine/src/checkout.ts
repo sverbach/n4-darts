@@ -1,6 +1,7 @@
 // Checkout hints: the route to finish from a remaining score with the darts left in a visit.
 
-import type { OutRule, Segment } from "./x01.ts";
+import type { Segment } from "./events.ts";
+import type { OutRule } from "./x01.ts";
 
 const BULL: Segment = { number: 25, multiplier: 2 };
 const OUTER_BULL: Segment = { number: 25, multiplier: 1 };

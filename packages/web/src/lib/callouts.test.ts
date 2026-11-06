@@ -1,4 +1,5 @@
 import {
+  defaultAroundTheClockSettings,
   defaultX01Settings,
   type MatchEvent,
   matchState,
@@ -131,5 +132,27 @@ describe("callsFor", () => {
     expect(CALL_KEYS).toHaveLength(184);
     expect(CALL_KEYS).toContain("180");
     expect(CALL_KEYS).toContain("busted");
+  });
+});
+
+describe("callsFor in a party mode", () => {
+  const party = (before: MatchEvent[], added: MatchEvent[]) =>
+    callsFor(
+      matchState(defaultAroundTheClockSettings, before),
+      matchState(defaultAroundTheClockSettings, [...before, ...added]),
+    );
+  const around: MatchEvent[] = [start];
+  for (let n = 1; n <= 20; n += 3) {
+    around.push(...visit(...[n, n + 1, n + 2].filter((t) => t <= 20).map((t) => `S${t}`)));
+    around.push(...visit("M", "M", "M"));
+  }
+
+  it("calls no visit scores", () => {
+    expect(party([start, dart("S1"), dart("S2")], [dart("S3")])).toEqual([]);
+    expect(party([start], visit("M", "M", "M"))).toEqual([]);
+  });
+
+  it("calls the match shot for the winner", () => {
+    expect(party(around, [dart("BULL")])).toEqual(["matchshot"]);
   });
 });

@@ -1,5 +1,6 @@
 // What the projector shows (/display): the tournament with live station scores, or the stations.
 
+import { BULL, isX01Match } from "@n4/engine";
 import type { DisplayView, MatchView, ScoreCard, TournamentAdminView } from "../api.ts";
 import type { Db } from "../db.ts";
 import type { StationDirectory } from "../stations/stations.ts";
@@ -14,19 +15,32 @@ export function upNextLabel(label: string) {
   return label.replace(/^Group match \d+$/, "").replace(/ · match \d+$/, "");
 }
 
+const targetLabel = (target: number | null | undefined) =>
+  target === BULL ? "Bull" : target == null ? "" : String(target);
+
+function scores(match: MatchView): { legsWon: number; score: string }[] {
+  if (isX01Match(match)) {
+    return match.players.map((_, i) => ({
+      legsWon: match.state.players[i]?.legsWon ?? 0,
+      score: String(match.state.players[i]?.remaining ?? match.settings.startScore),
+    }));
+  }
+  return match.players.map((_, i) => ({
+    legsWon: 0,
+    score: targetLabel(match.state.players[i]?.target ?? 1),
+  }));
+}
+
 export function scoreCard(match: MatchView): ScoreCard {
-  const { state, settings } = match;
+  const { state } = match;
   const on = state.phase === "throwing" || state.phase === "awaitingTakeout";
+  const own = scores(match);
   return {
     matchId: match.id,
+    mode: match.settings.mode,
     label: match.label,
-    players: match.players.map((p, i) => ({
-      ...p,
-      legsWon: state.players[i]?.legsWon ?? 0,
-      remaining: state.players[i]?.remaining ?? settings.startScore,
-    })),
-    legsToWin: settings.legsToWin,
-    startScore: settings.startScore,
+    players: match.players.map((p, i) => ({ ...p, ...(own[i] ?? { legsWon: 0, score: "" }) })),
+    legsToWin: isX01Match(match) ? match.settings.legsToWin : 1,
     phase: state.phase,
     throwing: on ? state.currentPlayer : null,
     visit: on

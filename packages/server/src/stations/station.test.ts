@@ -2,7 +2,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { type BoardSim, createBoardSim } from "@n4/board-sim";
-import type { MatchState } from "@n4/engine";
+import { type X01State, x01Only } from "@n4/engine";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.ts";
 import { type Db, openDb } from "../db.ts";
@@ -68,7 +68,7 @@ async function startServer(dbPath: string): Promise<Server> {
   return server;
 }
 
-const state = async (server: Server) => (await server.view()).match?.state as MatchState;
+const state = async (server: Server) => x01Only((await server.view()).match?.state as X01State);
 
 /** Throws a dart on the board and waits until the match has recorded it. */
 async function throwDart(server: Server, name: string) {
@@ -88,7 +88,7 @@ async function takeout(server: Server) {
 }
 
 /** What a finished match looks like, without random dart ids. */
-const summary = (s: MatchState) => ({
+const summary = (s: X01State) => ({
   phase: s.phase,
   winner: s.winner,
   remaining: s.players.map((p) => p.remaining),
@@ -101,7 +101,7 @@ const PLAYERS = ["Ann", "Bob", "Cid", "Dee", "Eve"];
 const quick = (ids: string[], settings = {}): StationCommand => ({
   type: "quickMatch",
   playerIds: ids,
-  settings: { startScore: 101, ...settings },
+  settings: { mode: "x01", startScore: 101, ...settings },
 });
 
 /** Sets up Ann vs Bob (101) as a quick match and starts it. */
@@ -249,7 +249,7 @@ describe("playing a match at a station", () => {
     await server.command({ type: "startMatch" });
     await next();
     sim.throwDart("T20");
-    expect((await next()).match?.state.players[0]?.remaining).toBe(41);
+    expect(x01Only((await next()).match?.state as X01State).players[0]?.remaining).toBe(41);
     await live.close();
   });
 });

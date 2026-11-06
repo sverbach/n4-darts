@@ -35,6 +35,7 @@ describe("database", () => {
       id: "m2",
       station: 1,
       settings: {
+        mode: "x01",
         startScore: 301,
         inRule: "straight",
         outRule: "straight",
@@ -50,6 +51,7 @@ describe("database", () => {
 
 describe("tournament data", () => {
   const settings = {
+    mode: "x01",
     startScore: 301,
     inRule: "straight",
     outRule: "straight",

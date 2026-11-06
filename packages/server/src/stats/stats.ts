@@ -10,7 +10,7 @@ import type {
   StatTotals,
   TournamentAdminView,
 } from "../api.ts";
-import type { Db, MatchRecord, StoredEvent } from "../db.ts";
+import type { Db, StoredEvent, X01MatchRecord } from "../db.ts";
 import { RATING_MATCHES } from "../ratings/ratings.ts";
 
 /** How many matches a profile lists. */
@@ -61,7 +61,7 @@ type Point = { x: number; y: number };
  * Where each player's darts landed (throwing order, oldest first). Only darts the board saw at a
  * real position: no bounce-outs, no darts added by hand, and none the board got wrong (corrected).
  */
-function landedDarts(match: MatchRecord, events: StoredEvent[]): Point[][] {
+function landedDarts(match: X01MatchRecord, events: StoredEvent[]): Point[][] {
   const corrected = new Set(events.flatMap((e) => (e.type === "DartCorrected" ? [e.dartId] : [])));
   const where = new Map<string, Point>();
   for (const e of events) {
@@ -93,7 +93,7 @@ export function createStats(db: Db) {
   let seen = db.dataVersion();
 
   /** Every player's numbers in a match (throwing order), and the day it was played. */
-  function cached(match: MatchRecord) {
+  function cached(match: X01MatchRecord) {
     const version = db.dataVersion();
     if (version !== seen) {
       seen = version;
@@ -112,7 +112,7 @@ export function createStats(db: Db) {
     }
     return entry;
   }
-  const ofMatch = (match: MatchRecord) => cached(match).stats;
+  const ofMatch = (match: X01MatchRecord) => cached(match).stats;
 
   /** The player's own numbers per counted match, newest first. */
   function countedOf(playerId: string) {

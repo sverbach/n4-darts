@@ -1,7 +1,7 @@
 // How long a tournament will take (.scratch/tournaments/spec.md: "Duration estimate").
 
 import { matchState } from "@n4/engine";
-import type { Db, MatchRecord } from "../db.ts";
+import type { Db, X01MatchRecord } from "../db.ts";
 import type { TournamentConfig } from "./plan/types.ts";
 
 /** Minutes per leg before there's history, by start score. */
@@ -19,7 +19,7 @@ export const defaultLegMinutes = (startScore: number) =>
 export const MATCHES_FOR_LEG_MINUTES = 50;
 
 /** How long each leg of a finished match took, in minutes: from the start or the previous checkout. */
-function measureLegs(db: Db, match: MatchRecord): number[] {
+function measureLegs(db: Db, match: X01MatchRecord): number[] {
   const timed = db.timedEvents(match.id);
   const at = new Map<string, number>();
   let started: number | null = null;

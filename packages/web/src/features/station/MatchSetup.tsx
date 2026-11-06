@@ -1,29 +1,63 @@
 // The settings of a new quick match at the station; picking the players is PlayerPicker's.
 
-import type { InRule, OutRule } from "@n4/engine";
+import { type InRule, MODES, type Mode, type OutRule } from "@n4/engine";
 import type { MatchSettingsInput } from "@n4/server/api";
-import { legsLabel } from "../../lib/labels.ts";
+import { legsLabel, MODE_NAMES } from "../../lib/labels.ts";
 
-export type SetupSettings = Required<MatchSettingsInput>;
+type X01Options = Required<Omit<Extract<MatchSettingsInput, { mode: "x01" }>, "mode">>;
+
+export interface SetupSettings {
+  mode: Mode;
+  x01: X01Options;
+}
 
 export const defaultSetupSettings: SetupSettings = {
-  startScore: 301,
-  inRule: "straight",
-  outRule: "straight",
-  legsToWin: 1,
+  mode: "x01",
+  x01: { startScore: 301, inRule: "straight", outRule: "straight", legsToWin: 1 },
 };
+
+export function settingsInput(setup: SetupSettings): MatchSettingsInput {
+  return setup.mode === "x01" ? { mode: "x01", ...setup.x01 } : { mode: setup.mode };
+}
 
 export function SettingsFields(props: {
   value: SetupSettings;
   onChange(value: SetupSettings): void;
   playerCount: number;
 }) {
-  const { value, onChange, playerCount } = props;
-  const set = <K extends keyof SetupSettings>(key: K, v: SetupSettings[K]) =>
-    onChange({ ...value, [key]: v });
+  const { value, onChange } = props;
+  const set = <K extends keyof X01Options>(key: K, v: X01Options[K]) =>
+    onChange({ ...value, x01: { ...value.x01, [key]: v } });
 
   return (
     <div className="settings">
+      <label className="[grid-column:1/-1]">
+        Game
+        <select
+          value={value.mode}
+          onChange={(e) => onChange({ ...value, mode: e.target.value as Mode })}
+        >
+          {MODES.map((mode) => (
+            <option key={mode} value={mode}>
+              {MODE_NAMES[mode]}
+            </option>
+          ))}
+        </select>
+      </label>
+      {value.mode === "x01" && <X01Fields value={value.x01} set={set} />}
+    </div>
+  );
+}
+
+function X01Fields({
+  value,
+  set,
+}: {
+  value: X01Options;
+  set: <K extends keyof X01Options>(key: K, v: X01Options[K]) => void;
+}) {
+  return (
+    <>
       <label>
         Start
         <select
@@ -62,6 +96,6 @@ export function SettingsFields(props: {
           ))}
         </select>
       </label>
-    </div>
+    </>
   );
 }

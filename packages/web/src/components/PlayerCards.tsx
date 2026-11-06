@@ -1,16 +1,46 @@
-import { checkoutRoute, type PlayerIndex, type Segment } from "@n4/engine";
-import type { MatchView } from "@n4/server/api";
-import { Fragment } from "react";
+import { checkoutRoute, isX01Match, type PlayerIndex, type Segment } from "@n4/engine";
+import type { MatchView, X01MatchView } from "@n4/server/api";
+import { Fragment, type ReactNode } from "react";
 import { dartLabel } from "../lib/darts.ts";
+import { targetLabel } from "../lib/labels.ts";
 import { Avatar } from "./Avatar.tsx";
 
 /** The route to finish this visit for the thrower, or null when there's none to show. */
-function checkoutHint(match: MatchView): Segment[] | null {
+function checkoutHint(match: X01MatchView): Segment[] | null {
   const { state, settings } = match;
   const thrower = state.players[state.currentPlayer];
   if (state.phase !== "throwing" || !thrower?.isIn) return null;
   const thrown = state.currentVisit?.darts.filter((d) => !d.ignored).length ?? 0;
   return checkoutRoute(thrower.remaining, 3 - thrown, settings.outRule);
+}
+
+function cardsOf(match: MatchView): { score: string; meta: ReactNode }[] {
+  if (!isX01Match(match)) {
+    return match.state.players.map((player) => ({
+      score: player.target === null ? "Done" : targetLabel(player.target),
+      meta: "Target",
+    }));
+  }
+  const { state, settings } = match;
+  const leg = state.legs.at(-1);
+  const lastVisitOf = (player: PlayerIndex) => {
+    const last = leg?.visits.findLast((v) => v.player === player);
+    if (!last) return null;
+    return last.bust ? "Bust" : String(last.darts.reduce((sum, d) => sum + d.score, 0));
+  };
+  return state.players.map((player, p) => {
+    const last = lastVisitOf(p);
+    return {
+      score: String(player.remaining),
+      meta: !player.isIn ? (
+        <span className="text-warn">Not in</span>
+      ) : (
+        [settings.legsToWin > 1 && `Legs ${player.legsWon}`, last && `Last ${last}`]
+          .filter(Boolean)
+          .join(" · ")
+      ),
+    };
+  });
 }
 
 /** Where the cards are: the station (phone and kiosk), or /watch on a projector (`--px` units). */
@@ -72,34 +102,28 @@ export function PlayerCards({
   hints?: boolean;
   size?: CardsSize;
 }) {
-  const { state, players, settings } = match;
-  const leg = state.legs.at(-1);
+  const { state, players } = match;
   const nameOf = (player: PlayerIndex) => players[player]?.name ?? "?";
-  const route = hints ? checkoutHint(match) : null;
+  const showHints = hints && isX01Match(match);
+  const route = showHints ? checkoutHint(match) : null;
   const many = players.length > 2;
-
-  const lastVisitOf = (player: PlayerIndex) => {
-    const last = leg?.visits.findLast((v) => v.player === player);
-    if (!last) return null;
-    return last.bust ? "Bust" : String(last.darts.reduce((sum, d) => sum + d.score, 0));
-  };
+  const cards = cardsOf(match);
 
   return (
     // `scoreboard`: the station's match layout places it.
     <div className={`scoreboard ${cardStyle(size, many, false).board}`}>
-      {state.players.map((player, p) => {
+      {cards.map((card, p) => {
         const active = state.currentPlayer === p;
-        const last = lastVisitOf(p);
         const style = cardStyle(size, many, active);
         return (
           <div key={players[p]?.id ?? p} className={style.card}>
             {players[p] && <Avatar player={players[p]} large />}
             <div className={style.name}>{nameOf(p)}</div>
             <div className={style.scoreBox}>
-              <span className={style.remaining}>{player.remaining}</span>
+              <span className={style.remaining}>{card.score}</span>
             </div>
             {/* On every card, so the scores stay level whoever has a route. */}
-            {hints && (
+            {showHints && (
               <div className="kiosk:min-h-[1.2em] font-pixel kiosk:text-[24px] text-[20px] text-muted tracking-[1px] kiosk:[grid-area:checkout] max-kiosk:hidden">
                 {(active ? (route ?? []) : []).map((segment, i) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: a route can repeat a field (T20 T20 Bull).
@@ -110,15 +134,7 @@ export function PlayerCards({
                 ))}
               </div>
             )}
-            <div className={style.meta}>
-              {!player.isIn ? (
-                <span className="text-warn">Not in</span>
-              ) : (
-                [settings.legsToWin > 1 && `Legs ${player.legsWon}`, last && `Last ${last}`]
-                  .filter(Boolean)
-                  .join(" · ")
-              )}
-            </div>
+            <div className={style.meta}>{card.meta}</div>
           </div>
         );
       })}

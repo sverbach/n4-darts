@@ -1,3 +1,4 @@
+import { x01Only } from "@n4/engine";
 import Fastify from "fastify";
 import { afterEach, describe, expect, it } from "vitest";
 import type {
@@ -71,7 +72,7 @@ describe("live streams", () => {
     expect((await display.next()).stations[0]?.match?.throwing).toBe(0);
     dart(station, "T20", 20, 3);
     const card = (await display.next()).stations[0]?.match;
-    expect(card?.players[0]?.remaining).toBe(241);
+    expect(card?.players[0]?.score).toBe("241");
     expect(card?.visit.map((d) => d.score)).toEqual([60]);
   });
 
@@ -99,7 +100,7 @@ describe("live streams", () => {
     dart(station, "S20", 20, 1);
     const matchId = station.view().match?.id as string;
     const detail = open<MatchDetail>(`${base}/api/admin/matches/${matchId}/live`);
-    expect((await detail.next()).state.players[0]?.remaining).toBe(281);
+    expect(x01Only((await detail.next()).state).players[0]?.remaining).toBe(281);
 
     const dartId = station.view().match?.state.currentVisit?.darts[0]?.dartId;
     await app.inject({
@@ -107,7 +108,7 @@ describe("live streams", () => {
       url: `/api/admin/matches/${matchId}/corrections`,
       payload: { dartId, segment: { number: 20, multiplier: 3 } },
     });
-    expect((await detail.next()).state.players[0]?.remaining).toBe(241);
+    expect(x01Only((await detail.next()).state).players[0]?.remaining).toBe(241);
   });
 
   it("pushes the station list when a station changes", async () => {

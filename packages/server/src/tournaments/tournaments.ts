@@ -2,9 +2,9 @@
 // it. Running it, matches and the scheduler, builds on this (.scratch/tournaments/spec.md).
 
 import { randomUUID } from "node:crypto";
-import { defaultX01Settings, matchState, RULES_VERSION } from "@n4/engine";
+import { defaultX01Settings, isX01Match, matchState, RULES_VERSION } from "@n4/engine";
 import type { TournamentAdminView, TournamentConfigPatch, TournamentInput } from "../api.ts";
-import type { Db, MatchRecord, StoredEvent, TournamentRecord } from "../db.ts";
+import type { Db, MatchRecord, StoredEvent, TournamentRecord, X01MatchRecord } from "../db.ts";
 import type { ResultGuard } from "../matches/matches.ts";
 import { ratingOf } from "../ratings/ratings.ts";
 import type { StationDirectory } from "../stations/stations.ts";
@@ -76,7 +76,7 @@ export function createTournaments(db: Db, stations: StationDirectory) {
   /** Results of the tournament's decided matches; `instead` swaps in one match's log and record. */
   function results(
     tournament: TournamentRecord,
-    instead?: { match: MatchRecord; events: StoredEvent[] },
+    instead?: { match: X01MatchRecord; events: StoredEvent[] },
   ): Result[] {
     return db.tournamentMatches(tournament.id).flatMap((m) => {
       const own = instead?.match.id === m.id ? instead : null;
@@ -94,7 +94,13 @@ export function createTournaments(db: Db, stations: StationDirectory) {
    */
   function correctionProblem(match: MatchRecord, events: StoredEvent[]): string | null {
     const tournament = match.tournamentId ? db.getTournament(match.tournamentId) : undefined;
-    if (!tournament || tournament.status === "draft" || !match.closedAt || match.abandoned)
+    if (
+      !tournament ||
+      tournament.status === "draft" ||
+      !match.closedAt ||
+      match.abandoned ||
+      !isX01Match(match)
+    )
       return null;
     const winnerIndex = matchState(match.settings, events).winner;
     const winner = winnerIndex === null ? null : (match.playerIds[winnerIndex] ?? null);

@@ -1,10 +1,12 @@
 // Home: where every device starts. Also shown for any path that isn't a page.
 
+import { isX01Match } from "@n4/engine";
 import type { StationView } from "@n4/server/api";
 import { Link } from "wouter";
 import { BoardStatus } from "../../components/BoardMenu.tsx";
 import { SparkleLogo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
+import { matchRulesLabel } from "../../lib/labels.ts";
 import { useLive } from "../../lib/useLive.ts";
 
 const LIST = "flex min-w-0 flex-[1_1_420px] flex-col gap-2";
@@ -20,7 +22,8 @@ function stationState(station: StationView) {
   if (state.phase === "matchWon" && state.winner !== null) {
     return `${players[state.winner]?.name ?? "?"} won`;
   }
-  return `${names} · ${state.players.map((p) => p.remaining).join(" – ")}`;
+  if (!isX01Match(match)) return `${names} · ${matchRulesLabel(match.settings)}`;
+  return `${names} · ${match.state.players.map((p) => p.remaining).join(" – ")}`;
 }
 
 /** The start page: the stations (followed live, so one added in /admin shows up), and the rest. */

@@ -1,3 +1,4 @@
+import { type X01State, x01Only } from "@n4/engine";
 import { afterEach, describe, expect, it } from "vitest";
 import type { MatchDetail, MatchPage, MatchSummary, StationView } from "../api.ts";
 import { buildApp } from "../app.ts";
@@ -185,7 +186,7 @@ describe("match history", () => {
     const id = await playedMatch(ctx);
 
     const match = await detail(ctx.app, id);
-    expect(match.state.legs.map((l) => [l.starter, l.winner])).toEqual([
+    expect(x01Only(match.state).legs.map((l) => [l.starter, l.winner])).toEqual([
       [0, 0],
       [1, 1],
       [0, 0],
@@ -197,7 +198,7 @@ describe("match history", () => {
   it("lets the organiser correct a dart of a finished match; the result follows", async () => {
     const ctx = setup();
     const id = await playedMatch(ctx);
-    const leg3 = (await detail(ctx.app, id)).state.legs[2];
+    const leg3 = x01Only((await detail(ctx.app, id)).state).legs[2];
     const dart = leg3?.visits[0]?.darts[1];
 
     // Ann's second S20 in leg 3 was really an S19: no checkout, so Ann hasn't won.
@@ -222,7 +223,8 @@ describe("match history", () => {
     await ctx.command(2, "startMatch");
     ctx.play(2, "S1 /");
     const id = (await ctx.station(2)).match?.id as string;
-    const dart = (await ctx.station(2)).match?.state.legs[0]?.visits[0]?.darts[0];
+    const dart = x01Only((await ctx.station(2)).match?.state as X01State).legs[0]?.visits[0]
+      ?.darts[0];
 
     await ctx.app.inject({
       method: "POST",
@@ -230,7 +232,9 @@ describe("match history", () => {
       payload: { dartId: dart?.dartId, segment: { number: 20, multiplier: 3 } },
     });
 
-    expect((await ctx.station(2)).match?.state.players[0]?.remaining).toBe(241);
+    expect(x01Only((await ctx.station(2)).match?.state as X01State).players[0]?.remaining).toBe(
+      241,
+    );
   });
 
   it("refuses a correction for a dart that isn't in the match", async () => {

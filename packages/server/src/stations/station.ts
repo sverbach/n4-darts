@@ -5,14 +5,22 @@
 import { randomUUID } from "node:crypto";
 import { performance } from "node:perf_hooks";
 import {
+  defaultAroundTheClockSettings,
   defaultX01Settings,
   MAX_PLAYERS,
+  type MatchSettings,
   MIN_PLAYERS,
   matchState,
   RULES_VERSION,
   type Segment,
 } from "@n4/engine";
-import type { BoardAction, MatchSettingsInput, StationCommand, StationView } from "../api.ts";
+import type {
+  BoardAction,
+  MatchSettingsInput,
+  MatchView,
+  StationCommand,
+  StationView,
+} from "../api.ts";
 import {
   type BoardEvent,
   type BoardThrow,
@@ -62,6 +70,16 @@ export interface Station {
   boardStats(): GatewayStats | null;
 }
 
+function settingsFrom(input: MatchSettingsInput | undefined): MatchSettings {
+  switch (input?.mode) {
+    case undefined:
+    case "x01":
+      return { ...defaultX01Settings, ...input, rulesVersion: RULES_VERSION };
+    case "aroundTheClock":
+      return defaultAroundTheClockSettings;
+  }
+}
+
 export function createStation(options: { id: number; db: Db; board: BoardControl }): Station {
   const { id, db, board } = options;
   const listeners = new Set<(view: StationView) => void>();
@@ -90,13 +108,13 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
       notice: match ? null : notice,
       match:
         match && current
-          ? {
+          ? ({
               id: match.id,
               players: match.playerIds.map((playerId) => matchPlayer(db, playerId)),
               settings: match.settings,
               state: current,
               label: match.label,
-            }
+            } as MatchView)
           : null,
     };
   }
@@ -137,7 +155,7 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
   function assign(input: { playerIds: string[]; settings?: MatchSettingsInput | undefined }) {
     if (match) throw new CommandError("station already has a match; close it first");
     checkPlayers(input.playerIds);
-    const settings = { ...defaultX01Settings, ...input.settings, rulesVersion: RULES_VERSION };
+    const settings = settingsFrom(input.settings);
     const matchId = randomUUID();
     db.createMatch({ id: matchId, station: id, settings, playerIds: [...input.playerIds] });
     match = db.getMatch(matchId) ?? null;

@@ -159,6 +159,7 @@ describe("a tournament request that doesn't fit", () => {
     ["legs that aren't whole", { legs: { final: 2.5 } }, /^config\.legs\.final: /],
     ["an unknown in rule", { x01: { inRule: "banana" } }, /^config\.x01\.inRule: /],
     ["legs to win in the X01 settings", { x01: { legsToWin: 3 } }, /legsToWin/],
+    ["a party mode", { x01: { mode: "aroundTheClock" } }, /mode/],
     ["an unknown section", { cricket: {} }, /cricket/],
   ])("refuses a config with %s, and the draft stays as it was", async (_, config, error) => {
     const { call } = setup();

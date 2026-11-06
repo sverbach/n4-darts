@@ -1,4 +1,4 @@
-import type { MatchState, VisitView } from "@n4/engine";
+import { closedVisits, type MatchState, type VisitView, type X01State } from "@n4/engine";
 
 export type CallKey = string;
 
@@ -9,11 +9,7 @@ export const CALL_KEYS: readonly CallKey[] = [
   "busted",
 ];
 
-function closedVisits(state: MatchState): VisitView[] {
-  return state.legs.flatMap((leg) => leg.visits);
-}
-
-function outcome(visit: VisitView, state: MatchState): CallKey | null {
+function outcome(visit: VisitView, state: X01State): CallKey | null {
   if (visit.bust) return "busted";
   if (visit.checkout) return state.winner === null ? "gameshot" : "matchshot";
   return null;
@@ -23,13 +19,16 @@ function visitScore(visit: VisitView): number {
   return visit.darts.reduce((sum, dart) => sum + (dart.ignored ? 0 : dart.score), 0);
 }
 
-function openCall(visit: VisitView, state: MatchState): CallKey | null {
+function openCall(visit: VisitView, state: X01State): CallKey | null {
   const counted = visit.darts.filter((dart) => !dart.ignored).length;
   return outcome(visit, state) ?? (counted === 3 ? String(visitScore(visit)) : null);
 }
 
 export function callsFor(prev: MatchState | null, next: MatchState): CallKey[] {
   if (!prev || prev.phase === "notStarted") return [];
+  if (prev.mode !== "x01" || next.mode !== "x01") {
+    return prev.winner === null && next.winner !== null ? ["matchshot"] : [];
+  }
   const before = closedVisits(prev);
   const after = closedVisits(next);
   const called = prev.currentVisit ? openCall(prev.currentVisit, prev) : null;

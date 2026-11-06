@@ -1,6 +1,6 @@
 // Labels for a match's settings, shared by the station, /watch and /admin.
 
-import type { X01Settings } from "@n4/engine";
+import type { MatchSettings, Mode, X01Settings } from "@n4/engine";
 
 export function legsLabel(legsToWin: number) {
   return `First to ${legsToWin} ${legsToWin === 1 ? "leg" : "legs"}`;
@@ -16,6 +16,14 @@ export function rulesLabel(settings: X01Settings) {
     .join(" · ");
 }
 
-export function matchRulesLabel(settings: X01Settings) {
+export const MODE_NAMES: Record<Mode, string> = {
+  x01: "X01",
+  aroundTheClock: "Around the Clock",
+};
+
+export function matchRulesLabel(settings: MatchSettings) {
+  if (settings.mode !== "x01") return MODE_NAMES[settings.mode];
   return `${rulesLabel(settings)} · ${legsLabel(settings.legsToWin)}`;
 }
+
+export const targetLabel = (target: number) => (target === 25 ? "Bull" : String(target));

@@ -3,7 +3,7 @@
 // while a match is on, idle otherwise). Runs off the change feed, after a dart has been handled,
 // and never waits for a device: a failure is counted in diagnostics (docs/adr/0009).
 
-import type { MatchState, VisitView } from "@n4/engine";
+import { allVisits, type MatchState, type VisitView } from "@n4/engine";
 import type { LightEvent, StationView } from "../api.ts";
 import type { Db } from "../db.ts";
 import type { ChangeFeed } from "../live/live.ts";
@@ -35,13 +35,12 @@ interface StationShow {
 const total = (visit: VisitView) =>
   visit.darts.reduce((sum, d) => sum + (d.ignored ? 0 : d.score), 0);
 
-const allVisits = (state: MatchState) => [
-  ...state.legs.flatMap((leg) => leg.visits),
-  ...(state.currentVisit ? [state.currentVisit] : []),
-];
+const legsWonIn = (state: MatchState) =>
+  state.mode === "x01" ? state.legs.filter((l) => l.winner !== null).length : 0;
 
 /** The visits' own events in a match: a bust, a high checkout, a 180. */
 function visitEvents(state: MatchState): { key: string; event: LightEvent }[] {
+  if (state.mode !== "x01") return [];
   return allVisits(state).flatMap((visit) => {
     const first = visit.darts[0]?.dartId;
     if (!first) return [];
@@ -59,7 +58,7 @@ function visitEvents(state: MatchState): { key: string; event: LightEvent }[] {
 export const seenOf = (match: StationView["match"]): Seen => ({
   matchId: match?.id ?? null,
   started: match ? match.state.phase !== "notStarted" : false,
-  legsWon: match ? match.state.legs.filter((l) => l.winner !== null).length : 0,
+  legsWon: match ? legsWonIn(match.state) : 0,
   won: match ? match.state.winner !== null : false,
   fired: new Set(match ? visitEvents(match.state).map((v) => v.key) : []),
 });
@@ -73,7 +72,7 @@ export function eventsBetween(before: Seen, match: StationView["match"]): LightE
   if ((!same || !before.started) && state.phase !== "notStarted") events.add("matchStart");
   if (same) {
     if (!before.won && state.winner !== null) events.add("gameShot");
-    const legsWon = state.legs.filter((l) => l.winner !== null).length;
+    const legsWon = legsWonIn(state);
     if (legsWon > before.legsWon && state.winner === null) events.add("legWon");
     for (const { key, event } of visitEvents(state)) {
       if (!before.fired.has(key)) events.add(event);

@@ -1,10 +1,18 @@
 import { type BoardSim, createBoardSim } from "@n4/board-sim";
+import {
+  defaultAroundTheClockSettings,
+  type MatchEvent,
+  matchState,
+  type X01State,
+  x01Only,
+} from "@n4/engine";
 import { createWledSim, type WledSim } from "@n4/wled-sim";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DiagnosticsView, StationView } from "../api.ts";
 import { buildApp } from "../app.ts";
 import { type Db, openDb } from "../db.ts";
 import { type RunningStation, startStation } from "../stations/stations.ts";
+import { eventsBetween, seenOf } from "./show.ts";
 import { createWledClient } from "./wled.ts";
 
 /** Presets on the fake device, in DEFAULT_PRESETS' order. */
@@ -166,6 +174,41 @@ describe("lights follow the match", () => {
       expect(device?.lastError?.message).toMatch(/can't be reached/);
     });
     const station = (await t.call("GET", "/api/stations/1")).json() as StationView;
-    expect(station.match?.state.players[0]?.remaining).toBe(81);
+    expect(x01Only(station.match?.state as X01State).players[0]?.remaining).toBe(81);
+  });
+});
+
+describe("a party match's light events", () => {
+  const settings = defaultAroundTheClockSettings;
+  const match = (events: MatchEvent[]): StationView["match"] =>
+    ({
+      id: "m",
+      players: [],
+      settings,
+      state: matchState(settings, events),
+      label: null,
+    }) as StationView["match"];
+  const start: MatchEvent = { type: "MatchStarted", playerCount: 2 };
+  let id = 0;
+  const dart = (number: number, multiplier: 1 | 2 | 3 = 1): MatchEvent => ({
+    type: "DartThrown",
+    dartId: `d${++id}`,
+    segment: { number, multiplier },
+  });
+  const takeout: MatchEvent = { type: "TakeoutFinished" };
+
+  it("starts with the match and fires the game shot on the win, nothing in between", () => {
+    expect(eventsBetween(seenOf(match([])), match([start]))).toEqual(["matchStart"]);
+
+    const before: MatchEvent[] = [start];
+    for (let n = 1; n <= 20; n += 3) {
+      before.push(...[n, n + 1, n + 2].filter((t) => t <= 20).map((t) => dart(t, 3)), takeout);
+      before.push(dart(5), dart(5), dart(5), takeout);
+    }
+    expect(eventsBetween(seenOf(match([start])), match(before))).toEqual([]);
+
+    expect(eventsBetween(seenOf(match(before)), match([...before, dart(25)]))).toEqual([
+      "gameShot",
+    ]);
   });
 });

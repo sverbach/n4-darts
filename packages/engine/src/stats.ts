@@ -1,12 +1,7 @@
 // Points and darts per player, the raw material for 3-dart averages (ratings, group tables).
 
-import {
-  type MatchEvent,
-  type MatchState,
-  matchState,
-  type Segment,
-  type X01Settings,
-} from "./x01.ts";
+import type { MatchEvent, Segment } from "./events.ts";
+import { type X01Settings, type X01State, x01State } from "./x01.ts";
 
 export interface DartStats {
   points: number;
@@ -18,10 +13,10 @@ export interface DartStats {
  * visit was over don't count; corrections apply.
  */
 export function dartStats(settings: X01Settings, events: MatchEvent[]): DartStats[] {
-  return stateDartStats(matchState(settings, events));
+  return stateDartStats(x01State(settings, events));
 }
 
-export function stateDartStats(state: MatchState): DartStats[] {
+export function stateDartStats(state: X01State): DartStats[] {
   const totals = state.players.map(() => ({ points: 0, darts: 0 }));
   const visits = state.legs.flatMap((leg) => leg.visits);
   if (state.currentVisit) visits.push(state.currentVisit);
@@ -35,7 +30,7 @@ export function stateDartStats(state: MatchState): DartStats[] {
   return totals;
 }
 
-export function winningCheckout(state: MatchState): { segment: Segment; points: number } | null {
+export function winningCheckout(state: X01State): { segment: Segment; points: number } | null {
   if (state.winner === null) return null;
   const visit = state.currentVisit?.checkout
     ? state.currentVisit
@@ -78,7 +73,7 @@ const oneDartFinish = (remaining: number) =>
 
 /** Per player, in throwing order; counted the same way as `dartStats`. */
 export function matchStats(settings: X01Settings, events: MatchEvent[]): PlayerMatchStats[] {
-  const state = matchState(settings, events);
+  const state = x01State(settings, events);
   const stats: PlayerMatchStats[] = state.players.map((_, p) => ({
     points: 0,
     darts: 0,

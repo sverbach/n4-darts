@@ -1,8 +1,9 @@
-import { type DartView, MIN_PLAYERS, type PlayerIndex } from "@n4/engine";
+import { type DartView, isX01Match, MIN_PLAYERS, type PlayerIndex, upNext } from "@n4/engine";
 import type { MatchView, StationCommand } from "@n4/server/api";
 import { useState } from "react";
 import { Avatar } from "../../components/Avatar.tsx";
 import { BoardMenu, type MatchAction } from "../../components/BoardMenu.tsx";
+import { TargetBoard } from "../../components/Dartboard.tsx";
 import { Logo } from "../../components/Logo.tsx";
 import { MatchOver } from "../../components/MatchOver.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
@@ -12,9 +13,15 @@ import { SegmentPicker } from "../../components/SegmentPicker.tsx";
 import { SoundPrompt } from "../../components/Sound.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import { matchRulesLabel } from "../../lib/labels.ts";
+import { targetsOf, visitTotalLabel } from "../../lib/targets.ts";
 import { useCallouts } from "../../lib/useCallouts.ts";
 import { useStation } from "../../lib/useStation.ts";
-import { defaultSetupSettings, SettingsFields, type SetupSettings } from "./MatchSetup.tsx";
+import {
+  defaultSetupSettings,
+  SettingsFields,
+  type SetupSettings,
+  settingsInput,
+} from "./MatchSetup.tsx";
 
 type Send = (command: StationCommand) => Promise<string | null>;
 
@@ -106,8 +113,11 @@ function matchAction(match: MatchView, send: Send): MatchAction | undefined {
 }
 
 function SettingsStrip({ match }: { match: MatchView }) {
-  const { settings, state, label } = match;
-  const leg = settings.legsToWin > 1 && state.legs.length > 0 ? ` · Leg ${state.legs.length}` : "";
+  const { settings, label } = match;
+  const leg =
+    isX01Match(match) && match.settings.legsToWin > 1 && match.state.legs.length > 0
+      ? ` · Leg ${match.state.legs.length}`
+      : "";
   return (
     <div className="label flex flex-wrap justify-between gap-x-4 gap-y-1.5 border-0 border-line-soft border-b border-solid kiosk:px-6 px-4 kiosk:py-2.5 py-2">
       {label && <span className="text-text">{label}</span>}
@@ -141,7 +151,9 @@ function QuickMatch({ send, notice }: { send: Send; notice: string | null }) {
           type="button"
           className="primary cta kiosk:mt-2 max-kiosk:mt-auto"
           disabled={picked.length < MIN_PLAYERS}
-          onClick={() => send({ type: "quickMatch", playerIds: picked, settings })}
+          onClick={() =>
+            send({ type: "quickMatch", playerIds: picked, settings: settingsInput(settings) })
+          }
         >
           Continue <PixelIcon name="arrow" height="0.9em" />
         </button>
@@ -225,14 +237,6 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
   );
 }
 
-/** Who throws after the current visit: the next player, or the next leg's starter after a checkout. */
-function upNext(match: MatchView): PlayerIndex {
-  const { state, players } = match;
-  const leg = state.legs.at(-1);
-  const after = state.currentVisit?.checkout && leg ? leg.starter : state.currentPlayer;
-  return (after + 1) % players.length;
-}
-
 function Match({ match, send, takeout }: { match: MatchView; send: Send; takeout: boolean }) {
   const [correcting, setCorrecting] = useState<DartView | null>(null);
   const [adding, setAdding] = useState(false);
@@ -279,7 +283,7 @@ function Match({ match, send, takeout }: { match: MatchView; send: Send; takeout
             Next player <PixelIcon name="arrow" height="0.9em" />
           </span>
           <span className="font-normal kiosk:text-[16px] text-[12px]">
-            Up: {match.players[upNext(match)]?.name}
+            Up: {match.players[upNext(match.state)]?.name}
           </span>
         </button>
         <button
@@ -334,10 +338,24 @@ interface ScoreboardProps {
 
 /** Scores, the current visit and whose turn it is. */
 export function Scoreboard(props: ScoreboardProps) {
+  const targets = targetsOf(props.match);
   return (
     <>
       <PlayerCards match={props.match} hints={props.hints ?? false} />
-      <VisitPanel {...props} />
+      {targets ? (
+        <div className="flex min-w-0 kiosk:flex-row flex-col gap-3 kiosk:gap-4">
+          <div className="flex min-w-0 flex-1 flex-col [&>section]:flex-1">
+            <VisitPanel {...props} />
+          </div>
+          <TargetBoard
+            highlight={targets.highlight}
+            label={targets.label}
+            className="kiosk:w-[min(240px,24vh)] w-[min(200px,24vh)] flex-none self-center"
+          />
+        </div>
+      ) : (
+        <VisitPanel {...props} />
+      )}
     </>
   );
 }
@@ -348,6 +366,7 @@ function VisitPanel(props: ScoreboardProps) {
   const { state, players } = match;
   const visit = state.currentVisit;
   const visitTotal = visit?.bust ? 0 : (visit?.darts.reduce((sum, d) => sum + d.score, 0) ?? 0);
+  const totalLabel = visitTotalLabel(match);
   const nameOf = (player: PlayerIndex) => players[player]?.name ?? "?";
   // The dart that broke the visit, shown in red.
   const bustDart = visit?.bust ? visit.darts.findLast((d) => !d.ignored) : undefined;
@@ -370,7 +389,7 @@ function VisitPanel(props: ScoreboardProps) {
             className={`[grid-area:1/1] ${!visit?.bust && visit?.darts.length ? "" : "invisible"}`}
             aria-hidden={visit?.bust || !visit?.darts.length}
           >
-            Total{" "}
+            {totalLabel}{" "}
             <span className="align-middle font-text kiosk:text-[48px] text-[36px] text-text">
               {visit?.darts.length ? visitTotal : 0}
             </span>

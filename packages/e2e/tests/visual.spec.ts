@@ -294,6 +294,49 @@ test("a quick match on station 1", async () => {
   await display.close();
 });
 
+test("Around the Clock on station 1", async () => {
+  const watch = await loggedIn();
+  const display = await loggedIn();
+  await command(1, {
+    type: "quickMatch",
+    playerIds: [ID.Ann, ID.Bob, ID.Cid],
+    settings: { mode: "aroundTheClock" },
+  });
+  await command(1, { type: "startMatch" });
+  await throwDarts(1, ["S1", "D2", "M5"]);
+  await takeout(1);
+  await throwDarts(1, ["S1"]);
+
+  await open(page, "/station/1", (p) => p.getByRole("img", { name: "Aim at 2" }));
+  await shoot(page, "station-around-the-clock", PAGES);
+  await open(watch, "/watch/1", (p) => p.getByRole("img", { name: "Aim at 2" }));
+  await shoot(watch, "watch-around-the-clock", BIG_SCREENS);
+  await open(display, "/display", (p) => p.getByText("Bob"));
+  await shoot(display, "display-around-the-clock", SCREENS);
+
+  await takeout(1);
+  await throwDarts(1, ["M1", "M1", "M1"]);
+  await takeout(1);
+  const rest = [...Array.from({ length: 18 }, (_, i) => `S${i + 3}`), "25"];
+  for (let i = 0; i < rest.length; i += 3) {
+    await throwDarts(1, rest.slice(i, i + 3));
+    if (i + 3 >= rest.length) break;
+    await takeout(1);
+    for (let other = 0; other < 2; other++) {
+      await throwDarts(1, ["M1", "M1", "M1"]);
+      await takeout(1);
+    }
+  }
+  await open(page, "/station/1", (p) => p.getByText("Game shot"));
+  await shoot(page, "station-around-the-clock-won", PAGES);
+  await open(watch, "/watch/1", (p) => p.getByText("Game shot"));
+  await shoot(watch, "watch-around-the-clock-won", BIG_SCREENS);
+  await command(1, { type: "closeMatch" });
+
+  await watch.close();
+  await display.close();
+});
+
 test("a tournament on station 1, station 2 busy", async () => {
   const display = await loggedIn();
   // A running quick match of two players outside the tournament keeps station 2 out of it.

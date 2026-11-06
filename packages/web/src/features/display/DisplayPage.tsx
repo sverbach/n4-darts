@@ -416,7 +416,7 @@ function Score({ card, large }: { card: ScoreCard; large: boolean }) {
           <span
             className={`text-right leading-[0.8] ${large ? "text-pu-68" : "text-pu-60"} ${card.throwing === i ? "text-accent" : ""} ${card.winner === i ? "font-bold font-pixel" : ""}`}
           >
-            {card.winner === i ? "Won" : p.remaining}
+            {card.winner === i ? "Won" : p.score}
           </span>
         </div>
       ))}
@@ -436,7 +436,8 @@ function Score({ card, large }: { card: ScoreCard; large: boolean }) {
           })}
           {card.visit.length > 0 && (
             <span className="ml-auto font-pixel text-muted text-pu-20 uppercase">
-              Total <span className="align-middle font-text text-pu-44 text-text">{total}</span>
+              {card.mode === "x01" ? "Total" : "Hits"}{" "}
+              <span className="align-middle font-text text-pu-44 text-text">{total}</span>
             </span>
           )}
         </div>

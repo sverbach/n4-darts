@@ -1,7 +1,7 @@
 // Players, matches and the matches' append-only event logs (docs/adr/0002).
 
 import { DatabaseSync } from "node:sqlite";
-import type { MatchEvent, X01Settings } from "@n4/engine";
+import { type MatchEvent, type MatchSettings, storedSettings, type X01Settings } from "@n4/engine";
 import type { LightDevice, Player, PlayerInput, StationLights } from "./api.ts";
 import { diagnostics } from "./operations/diagnostics.ts";
 import type { Entrant, Placing, TournamentConfig } from "./tournaments/plan/types.ts";
@@ -10,7 +10,7 @@ export interface MatchRecord {
   id: string;
   /** Station the match is played on; a match can exist without one. */
   station: number | null;
-  settings: X01Settings;
+  settings: MatchSettings;
   /** Player ids in throwing order. */
   playerIds: string[];
   /** Id of the player who won; follows the log (an undo can take a win back). */
@@ -36,6 +36,8 @@ export interface MatchRecord {
    */
   legMinutes: number[] | null;
 }
+
+export type X01MatchRecord = MatchRecord & { settings: X01Settings };
 
 export type NewMatch = Pick<MatchRecord, "id" | "station" | "settings" | "playerIds"> &
   Partial<Pick<MatchRecord, "tournamentId" | "slot" | "label">>;
@@ -96,7 +98,7 @@ export interface Db {
   setPinnedStation(id: string, station: number | null): void;
   /** Closes a match as won by walkover. */
   closeAsWalkover(id: string, winner: string): void;
-  tournamentMatches(tournamentId: string): MatchRecord[];
+  tournamentMatches(tournamentId: string): X01MatchRecord[];
   /** Players in an open match that's on a station. */
   busyPlayerIds(): Set<string>;
   /** When each player's most recent match closed. */
@@ -125,10 +127,10 @@ export interface Db {
   closeMatch(id: string, options?: { abandoned?: boolean }): void;
   /** Stores a match's leg durations; a cache, so it isn't announced as a change. */
   setLegMinutes(id: string, minutes: number[]): void;
-  /** The player's completed matches (closed, not abandoned), most recently closed first. */
-  completedMatchesOf(playerId: string, limit: number): MatchRecord[];
-  /** Closed matches (finished or abandoned), most recently closed first. */
-  closedMatches(limit?: number): MatchRecord[];
+  /** The player's completed X01 matches (closed, not abandoned), most recently closed first. */
+  completedMatchesOf(playerId: string, limit: number): X01MatchRecord[];
+  /** Closed X01 matches (finished or abandoned), most recently closed first. */
+  closedMatches(limit?: number): X01MatchRecord[];
   /** Removes a match and its log entirely, e.g. one that was set up but never started. */
   deleteMatch(id: string): void;
   /** Appends to the match's log; `at` defaults to now (tests pass their own). */
@@ -502,10 +504,12 @@ export function openDb(path: string, options: { readOnly?: boolean } = {}): Db {
   const selectCompletedOf = db.prepare(`
     select m.* from matches m join match_players p on p.match_id = m.id
     where p.player_id = ? and m.closed_at is not null and m.abandoned = 0 and m.walkover = 0
+      and coalesce(json_extract(m.settings, '$.mode'), 'x01') = 'x01'
     order by m.closed_at desc, m.rowid desc limit ?
   `);
   const selectClosed = db.prepare(
-    "select * from matches where closed_at is not null order by closed_at desc, rowid desc limit ?",
+    `select * from matches m where closed_at is not null and coalesce(json_extract(m.settings, '$.mode'), 'x01') = 'x01'
+      order by closed_at desc, rowid desc limit ?`,
   );
   const insertEvent = db.prepare(`
     insert into match_events (match_id, seq, event, at)
@@ -536,7 +540,7 @@ export function openDb(path: string, options: { readOnly?: boolean } = {}): Db {
   const toRecord = (row: MatchRow): MatchRecord => ({
     id: row.id,
     station: row.station,
-    settings: JSON.parse(row.settings),
+    settings: storedSettings(JSON.parse(row.settings)),
     playerIds: (selectMatchPlayers.all(row.id) as { player_id: string }[]).map((r) => r.player_id),
     winner: row.winner,
     abandoned: row.abandoned === 1,
@@ -549,6 +553,8 @@ export function openDb(path: string, options: { readOnly?: boolean } = {}): Db {
     pinnedStation: row.pinned_station,
     legMinutes: row.leg_minutes === null ? null : JSON.parse(row.leg_minutes),
   });
+
+  const toX01Record = (row: MatchRow) => toRecord(row) as X01MatchRecord;
 
   const toTournament = (row: TournamentRow): TournamentRecord => ({
     id: row.id,
@@ -658,7 +664,7 @@ export function openDb(path: string, options: { readOnly?: boolean } = {}): Db {
       walkoverStmt.run(winner, id);
     },
     tournamentMatches(tournamentId) {
-      return (selectTournamentMatches.all(tournamentId) as unknown as MatchRow[]).map(toRecord);
+      return (selectTournamentMatches.all(tournamentId) as unknown as MatchRow[]).map(toX01Record);
     },
     busyPlayerIds() {
       return new Set((selectBusy.all() as { player_id: string }[]).map((r) => r.player_id));
@@ -757,10 +763,10 @@ export function openDb(path: string, options: { readOnly?: boolean } = {}): Db {
       closeStmt.run(options.abandoned ? 1 : 0, id);
     },
     completedMatchesOf(playerId, limit) {
-      return (selectCompletedOf.all(playerId, limit) as unknown as MatchRow[]).map(toRecord);
+      return (selectCompletedOf.all(playerId, limit) as unknown as MatchRow[]).map(toX01Record);
     },
     closedMatches(limit = 200) {
-      return (selectClosed.all(limit) as unknown as MatchRow[]).map(toRecord);
+      return (selectClosed.all(limit) as unknown as MatchRow[]).map(toX01Record);
     },
     deleteMatch(id) {
       deleteMatchStmt.run(id);

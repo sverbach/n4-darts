@@ -4,10 +4,14 @@
 import {
   type InRule,
   isSegment,
+  type MatchSettings,
   type MatchState,
+  type Mode,
   type OutRule,
   type Segment,
+  type StateOf,
   type X01Settings,
+  type X01State,
 } from "@n4/engine";
 import { z } from "zod";
 import type { TableRow } from "./tournaments/plan/groups.ts";
@@ -28,17 +32,22 @@ export interface MatchPlayer {
   photo: string | null;
 }
 
-export interface MatchView {
+interface MatchViewOf<S extends MatchSettings> {
   id: string;
   /** In throwing order: index = the engine's `PlayerIndex`. */
   players: MatchPlayer[];
-  settings: X01Settings;
-  state: MatchState;
+  settings: S;
+  state: StateOf<S>;
   /** For tournament matches, e.g. "Group A · match 4". */
   label: string | null;
 }
 
-/** A match as listed in /admin history. */
+export type MatchView = {
+  [M in Mode]: MatchViewOf<Extract<MatchSettings, { mode: M }>>;
+}[Mode];
+export type X01MatchView = MatchViewOf<X01Settings>;
+
+/** A match as listed in /admin history; only X01 matches are listed. */
 export interface MatchSummary {
   id: string;
   station: number | null;
@@ -52,8 +61,9 @@ export interface MatchSummary {
   legsWon: number[];
 }
 
-/** A match with every leg and visit, for /admin. */
-export interface MatchDetail extends MatchSummary {
+/** A match with every visit, for /admin; party matches only while they're live. */
+export interface MatchDetail extends Omit<MatchSummary, "settings"> {
+  settings: MatchSettings;
   state: MatchState;
   /** What the board first detected, for every dart that was corrected since. */
   originals: Record<string, Segment>;
@@ -61,8 +71,14 @@ export interface MatchDetail extends MatchSummary {
   added: string[];
 }
 
-/** A finished match as the stats pages show it: every leg and visit, no corrections. */
-export type MatchPage = Omit<MatchDetail, "originals" | "added" | "station">;
+/** A finished X01 match as the stats pages show it: every leg and visit, no corrections. */
+export type MatchPage = Omit<
+  MatchDetail,
+  "originals" | "added" | "station" | "settings" | "state"
+> & {
+  settings: X01Settings;
+  state: X01State;
+};
 
 export interface StationView {
   id: number;
@@ -180,8 +196,9 @@ export const SegmentInput = z
 const START_SCORE = "start score must be a whole number of at least 2";
 const LEGS_TO_WIN = "legs to win must be a whole number of at least 1";
 
-/** What can be chosen when setting up a match; the rules version is always the current one. */
-export const MatchSettingsInput = z.strictObject({
+/** What can be chosen when setting up an X01 match; the rules version is always the current one. */
+export const X01SettingsInput = z.strictObject({
+  mode: z.literal("x01"),
   startScore: z
     .number({ error: START_SCORE })
     .int({ error: START_SCORE })
@@ -195,6 +212,19 @@ export const MatchSettingsInput = z.strictObject({
     .min(1, { error: LEGS_TO_WIN })
     .exactOptional(),
 });
+
+const withMode = (value: unknown) =>
+  value !== null && typeof value === "object" && !("mode" in value)
+    ? { ...value, mode: "x01" }
+    : value;
+
+export const MatchSettingsInput = z.preprocess(
+  withMode,
+  z.discriminatedUnion("mode", [
+    X01SettingsInput,
+    z.strictObject({ mode: z.literal("aroundTheClock") }),
+  ]),
+);
 export type MatchSettingsInput = z.infer<typeof MatchSettingsInput>;
 
 const playerIds = z.array(z.string()).min(1);
@@ -256,7 +286,7 @@ export const TournamentConfigPatch = z.strictObject({
       final: legsToWin,
     } satisfies { [K in keyof PhaseLegs]: z.ZodType })
     .exactOptional(),
-  x01: MatchSettingsInput.pick({ startScore: true, inRule: true, outRule: true }).exactOptional(),
+  x01: X01SettingsInput.pick({ startScore: true, inRule: true, outRule: true }).exactOptional(),
 } satisfies { [K in keyof TournamentConfig]: z.ZodType });
 export type TournamentConfigPatch = z.infer<typeof TournamentConfigPatch>;
 
@@ -566,11 +596,11 @@ export interface Award {
 /** A station's match in short, for the projector. */
 export interface ScoreCard {
   matchId: string;
+  mode: Mode;
   label: string | null;
   /** In throwing order. */
-  players: (MatchPlayer & { legsWon: number; remaining: number })[];
+  players: (MatchPlayer & { legsWon: number; score: string })[];
   legsToWin: number;
-  startScore: number;
   phase: MatchState["phase"];
   /** Whose visit it is, while the match is on. */
   throwing: number | null;

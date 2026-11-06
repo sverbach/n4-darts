@@ -10,7 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { performance } from "node:perf_hooks";
 import { type BoardSim, createBoardSim } from "@n4/board-sim";
-import { checkoutRoute, type Segment } from "@n4/engine";
+import { checkoutRoute, isX01Match, type Segment } from "@n4/engine";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import type { StationView } from "../../api.ts";
 import { buildApp } from "../../app.ts";
@@ -124,7 +124,7 @@ const PATTERN = ["T20", "S5", "S1"];
 /** The thrower goes for the checkout when there is one, otherwise scores from the pattern. */
 function nextDart(view: StationView) {
   const match = view.match;
-  if (!match) throw new Error("no match");
+  if (!match || !isX01Match(match)) throw new Error("no X01 match");
   const { state, settings } = match;
   const thrower = state.players[state.currentPlayer];
   const thrown = state.currentVisit?.darts.filter((d) => !d.ignored).length ?? 0;
@@ -208,8 +208,9 @@ async function playLongMatch(db: Db, base: string) {
   unsubscribe();
   const messages = [station, ...others].map((s, i) => s.messages.length - (before[i] ?? 0));
   const won = current.match?.state.phase === "matchWon";
-  const legs = current.match?.state.players.map((p) => p.legsWon).join("–");
-  const legsToWin = current.match?.settings.legsToWin;
+  const x01 = current.match && isX01Match(current.match) ? current.match : null;
+  const legs = x01?.state.players.map((p) => p.legsWon).join("–");
+  const legsToWin = x01?.settings.legsToWin;
   return {
     times,
     changes,

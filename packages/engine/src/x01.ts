@@ -1,39 +1,23 @@
 // X01 rules as a pure fold over a match's event log (docs/adr/0002, 0003).
 
-/** A player's place in the match's throwing order; player 0 starts leg 1. */
-export type PlayerIndex = number;
-
-export const MIN_PLAYERS = 2;
-export const MAX_PLAYERS = 8;
+import {
+  type MatchEvent,
+  type Phase,
+  type PlayerIndex,
+  type RawVisit,
+  type Segment,
+  started,
+  type VisitView,
+} from "./events.ts";
 
 /** Bumped whenever the rules change, so old matches replay under the rules they were played with. */
 export const RULES_VERSION = 1;
-
-/**
- * Where a dart landed: the bullseye is `{ number: 25, multiplier: 2 }`. A miss has multiplier 0
- * and the number of the segment it landed next to, or 0 for a bounce-out
- * (docs/board-manager-api.md).
- */
-export interface Segment {
-  number: number;
-  multiplier: 0 | 1 | 2 | 3;
-}
-
-const isWhole = (value: unknown, min: number, max: number): value is number =>
-  typeof value === "number" && Number.isInteger(value) && value >= min && value <= max;
-
-/** Whether a value from outside (a request body) is a segment a dart can land in. */
-export function isSegment(value: unknown): value is Segment {
-  const { number, multiplier } = (value ?? {}) as Partial<Segment>;
-  if (multiplier === 0) return isWhole(number, 0, 20);
-  if (number === 25) return multiplier === 1 || multiplier === 2;
-  return isWhole(number, 1, 20) && isWhole(multiplier, 1, 3);
-}
 
 export type InRule = "straight" | "double" | "master" | "bull";
 export type OutRule = "straight" | "double" | "master";
 
 export interface X01Settings {
+  mode: "x01";
   startScore: number;
   inRule: InRule;
   outRule: OutRule;
@@ -42,6 +26,7 @@ export interface X01Settings {
 }
 
 export const defaultX01Settings: X01Settings = {
+  mode: "x01",
   startScore: 301,
   inRule: "straight",
   outRule: "straight",
@@ -49,38 +34,11 @@ export const defaultX01Settings: X01Settings = {
   rulesVersion: RULES_VERSION,
 };
 
-export type MatchEvent =
-  | { type: "MatchStarted"; playerCount: number }
-  | { type: "DartThrown"; dartId: string; segment: Segment }
-  | { type: "DartCorrected"; dartId: string; segment: Segment }
-  | { type: "TakeoutFinished" }
-  | { type: "VisitEndedManually" }
-  | { type: "VisitUndone" };
-
 export interface PlayerState {
   remaining: number;
   legsWon: number;
   /** Whether the in rule has been met this leg. */
   isIn: boolean;
-}
-
-export type Phase = "notStarted" | "throwing" | "awaitingTakeout" | "matchWon";
-
-export interface DartView {
-  dartId: string;
-  segment: Segment;
-  score: number;
-  /** Thrown after the visit was already over (third dart, bust or checkout); counts for nothing. */
-  ignored: boolean;
-}
-
-export interface VisitView {
-  player: PlayerIndex;
-  darts: DartView[];
-  /** Went below zero (or broke the out rule): the visit scores nothing. */
-  bust: boolean;
-  /** Finished the leg. */
-  checkout: boolean;
 }
 
 export interface LegView {
@@ -90,7 +48,8 @@ export interface LegView {
   winner: PlayerIndex | null;
 }
 
-export interface MatchState {
+export interface X01State {
+  mode: "x01";
   phase: Phase;
   /** One entry per player, in throwing order. */
   players: PlayerState[];
@@ -101,62 +60,20 @@ export interface MatchState {
   winner: PlayerIndex | null;
 }
 
-interface RawVisit {
-  darts: { dartId: string; segment: Segment }[];
-  /** Ended by takeout or manually; only the last visit can be open. */
-  closed: boolean;
-}
-
-/** Groups the event log into visits, independent of scoring. Corrections replace segments in place. */
-function visitsOf(events: MatchEvent[]): RawVisit[] {
-  const corrected = new Map<string, Segment>();
-  for (const event of events) {
-    if (event.type === "DartCorrected") corrected.set(event.dartId, event.segment);
-  }
-
-  const visits: RawVisit[] = [];
-  const open = () => {
-    const last = visits.at(-1);
-    if (last && !last.closed) return last;
-    const visit: RawVisit = { darts: [], closed: false };
-    visits.push(visit);
-    return visit;
-  };
-  for (const event of events) {
-    switch (event.type) {
-      case "DartThrown":
-        open().darts.push({
-          dartId: event.dartId,
-          segment: corrected.get(event.dartId) ?? event.segment,
-        });
-        break;
-      case "TakeoutFinished":
-      case "VisitEndedManually":
-        open().closed = true;
-        break;
-      case "VisitUndone":
-        // Drops the visit in progress if it has darts, otherwise the last finished one.
-        visits.pop();
-        break;
-    }
-  }
-  return visits;
-}
-
-export function matchState(settings: X01Settings, events: MatchEvent[]): MatchState {
+export function x01State(settings: X01Settings, events: MatchEvent[]): X01State {
   if (settings.rulesVersion !== RULES_VERSION) {
     throw new Error(`unknown X01 rules version ${settings.rulesVersion}`);
   }
-  const startIndex = events.findIndex((e) => e.type === "MatchStarted");
-  const started = events[startIndex];
+  const match = started(events);
   const inFromStart = settings.inRule === "straight";
   const player = (): PlayerState => ({
     remaining: settings.startScore,
     legsWon: 0,
     isIn: inFromStart,
   });
-  if (started?.type !== "MatchStarted") {
+  if (!match) {
     return {
+      mode: "x01",
       phase: "notStarted",
       players: [],
       currentPlayer: 0,
@@ -165,10 +82,7 @@ export function matchState(settings: X01Settings, events: MatchEvent[]): MatchSt
       winner: null,
     };
   }
-  const count = started.playerCount;
-  if (!Number.isInteger(count) || count < MIN_PLAYERS || count > MAX_PLAYERS) {
-    throw new Error(`a match needs ${MIN_PLAYERS}–${MAX_PLAYERS} players, got ${count}`);
-  }
+  const count = match.playerCount;
   const players = Array.from({ length: count }, player);
   const next = (p: PlayerIndex): PlayerIndex => (p + 1) % count;
 
@@ -178,7 +92,7 @@ export function matchState(settings: X01Settings, events: MatchEvent[]): MatchSt
   let currentVisit: VisitView | null = null;
   let visitOver = false;
   let winner: PlayerIndex | null = null;
-  for (const raw of visitsOf(events.slice(startIndex + 1))) {
+  for (const raw of match.visits) {
     const thrower = players[currentPlayer] as PlayerState;
     const visit = scoreVisit(raw, currentPlayer, thrower, settings);
     thrower.remaining = visit.remainingAfter;
@@ -212,7 +126,7 @@ export function matchState(settings: X01Settings, events: MatchEvent[]): MatchSt
   }
 
   const phase: Phase = winner !== null ? "matchWon" : visitOver ? "awaitingTakeout" : "throwing";
-  return { phase, players, currentPlayer, currentVisit, legs, winner };
+  return { mode: "x01", phase, players, currentPlayer, currentVisit, legs, winner };
 }
 
 function getsIn(dart: Segment, inRule: InRule): boolean {

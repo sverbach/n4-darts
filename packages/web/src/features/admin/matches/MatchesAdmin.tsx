@@ -1,8 +1,10 @@
+import { isX01Match } from "@n4/engine";
 import type { StationView } from "@n4/server/api";
 import { type ReactNode, useState } from "react";
 import { Link } from "wouter";
 import { BoardStatus } from "../../../components/BoardMenu.tsx";
 import { request } from "../../../lib/api.ts";
+import { matchRulesLabel } from "../../../lib/labels.ts";
 import { useLive } from "../../../lib/useLive.ts";
 import { CARD_NAME, cardActions, cardTitle, RULED, SECTION, STATUS_SMALL } from "../ui.ts";
 import { MatchDetailView, MatchHistory } from "./MatchHistory.tsx";
@@ -98,7 +100,9 @@ function matchSummary(match: NonNullable<StationView["match"]>) {
     return `${players.map((p) => p.name).join(", ")}: waiting to start`;
   }
   if (state.phase === "matchWon" && state.winner !== null) return `${name(state.winner)} won`;
-  return state.players
+  if (!isX01Match(match))
+    return `${players.map((p) => p.name).join(", ")}: ${matchRulesLabel(match.settings)}`;
+  return match.state.players
     .map(
       (p, i) => `${name(i)} ${p.remaining}${match.settings.legsToWin > 1 ? ` (${p.legsWon})` : ""}`,
     )
