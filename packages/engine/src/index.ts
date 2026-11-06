@@ -1,6 +1,7 @@
 export * from "./aroundTheClock.ts";
 export * from "./checkout.ts";
 export * from "./events.ts";
+export * from "./golf.ts";
 export * from "./highScore.ts";
 export * from "./match.ts";
 export * from "./stats.ts";

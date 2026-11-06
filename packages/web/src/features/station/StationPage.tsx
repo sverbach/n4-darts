@@ -9,10 +9,11 @@ import { MatchOver } from "../../components/MatchOver.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
 import { PlayerCards, PlayerList } from "../../components/PlayerCards.tsx";
 import { PlayerPicker } from "../../components/PlayerPicker.tsx";
+import { Scorecard } from "../../components/Scorecard.tsx";
 import { SegmentPicker } from "../../components/SegmentPicker.tsx";
 import { SoundPrompt } from "../../components/Sound.tsx";
 import { dartLabel } from "../../lib/darts.ts";
-import { liveLabel, targetsOf, visitTotalLabel } from "../../lib/modes.ts";
+import { golfOf, liveLabel, targetsOf, visitTotalLabel, visitValue } from "../../lib/modes.ts";
 import { useCallouts } from "../../lib/useCallouts.ts";
 import { useStation } from "../../lib/useStation.ts";
 import {
@@ -331,15 +332,22 @@ interface ScoreboardProps {
 export function Scoreboard(props: ScoreboardProps) {
   const targets = targetsOf(props.match);
   if (targets) {
+    const golf = golfOf(props.match);
     return (
       <>
-        <div className="scoreboard grid min-h-0 kiosk:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] gap-3 kiosk:gap-4">
+        <div
+          className={`scoreboard grid min-h-0 gap-3 kiosk:gap-4 ${golf ? "kiosk:grid-cols-[auto_minmax(0,1fr)]" : "kiosk:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}`}
+        >
           <TargetBoard
             highlight={targets.highlight}
             label={targets.label}
-            className="kiosk:w-[min(100%,calc(100dvh-440px))] w-[min(72vw,34vh)] self-center justify-self-center"
+            className={`w-[min(72vw,34vh)] self-center justify-self-center ${golf ? "kiosk:w-[min(520px,calc(100dvh-440px))]" : "kiosk:w-[min(100%,calc(100dvh-440px))]"}`}
           />
-          <PlayerList match={props.match} />
+          {golf ? (
+            <Scorecard state={golf.state} holes={golf.holes} players={props.match.players} />
+          ) : (
+            <PlayerList match={props.match} />
+          )}
         </div>
         <VisitPanel {...props} />
       </>
@@ -358,8 +366,8 @@ function VisitPanel(props: ScoreboardProps) {
   const { match, onDart, onAdd } = props;
   const { state, players } = match;
   const visit = state.currentVisit;
-  const visitTotal = visit?.bust ? 0 : (visit?.darts.reduce((sum, d) => sum + d.score, 0) ?? 0);
-  const totalLabel = visitTotalLabel(match);
+  const visitTotal = visit?.bust ? 0 : visitValue(match.settings.mode, visit?.darts ?? []);
+  const totalLabel = visitTotalLabel(match.settings.mode);
   const nameOf = (player: PlayerIndex) => players[player]?.name ?? "?";
   // The dart that broke the visit, shown in red.
   const bustDart = visit?.bust ? visit.darts.findLast((d) => !d.ignored) : undefined;

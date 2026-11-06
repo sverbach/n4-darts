@@ -4,10 +4,11 @@ import { TargetBoard } from "../../components/Dartboard.tsx";
 import { Logo } from "../../components/Logo.tsx";
 import { MatchOver } from "../../components/MatchOver.tsx";
 import { PlayerCards, PlayerList } from "../../components/PlayerCards.tsx";
+import { Scorecard } from "../../components/Scorecard.tsx";
 import { SoundButton, SoundPrompt } from "../../components/Sound.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import { matchRulesLabel } from "../../lib/labels.ts";
-import { liveLabel, targetsOf, visitTotalLabel } from "../../lib/modes.ts";
+import { golfOf, liveLabel, targetsOf, visitTotalLabel, visitValue } from "../../lib/modes.ts";
 import { useCallouts } from "../../lib/useCallouts.ts";
 import { useStation } from "../../lib/useStation.ts";
 
@@ -74,14 +75,21 @@ export function WatchPage({ id }: { id: number }) {
 function WatchBoard({ match }: { match: MatchView }) {
   const targets = targetsOf(match);
   if (!targets) return <PlayerCards match={match} size="projector" />;
+  const golf = golfOf(match);
   return (
-    <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_calc(420*var(--px))] gap-pu-24">
+    <div
+      className={`grid min-h-0 flex-1 gap-pu-24 ${golf ? "grid-cols-[auto_minmax(0,1fr)]" : "grid-cols-[minmax(0,1fr)_calc(420*var(--px))]"}`}
+    >
       <TargetBoard
         highlight={targets.highlight}
         label={targets.label}
-        className="h-full max-h-full min-h-0 w-auto justify-self-center"
+        className={`justify-self-center ${golf ? "w-[calc(500*var(--px))] self-center" : "h-full max-h-full min-h-0 w-auto"}`}
       />
-      <PlayerList match={match} size="projector" />
+      {golf ? (
+        <Scorecard state={golf.state} holes={golf.holes} players={match.players} size="projector" />
+      ) : (
+        <PlayerList match={match} size="projector" />
+      )}
     </div>
   );
 }
@@ -119,8 +127,8 @@ function WatchVisit({ match }: { match: MatchView }) {
   const { state, players } = match;
   const visit = state.currentVisit;
   const thrower = players[visit?.player ?? state.currentPlayer]?.name ?? "?";
-  const total = visit?.bust ? 0 : (visit?.darts.reduce((sum, d) => sum + d.score, 0) ?? 0);
-  const totalLabel = visitTotalLabel(match);
+  const total = visit?.bust ? 0 : visitValue(match.settings.mode, visit?.darts ?? []);
+  const totalLabel = visitTotalLabel(match.settings.mode);
   // The next dart's slot blinks a cursor while the thrower is at the board.
   const next = state.phase === "throwing" ? (visit?.darts.length ?? 0) : -1;
   return (

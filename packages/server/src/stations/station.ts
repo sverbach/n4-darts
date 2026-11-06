@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import { performance } from "node:perf_hooks";
 import {
   defaultAroundTheClockSettings,
+  defaultGolfSettings,
   defaultHighScoreSettings,
   defaultX01Settings,
   MAX_PLAYERS,
@@ -80,6 +81,8 @@ function settingsFrom(input: MatchSettingsInput | undefined): MatchSettings {
       return defaultAroundTheClockSettings;
     case "highScore":
       return { ...defaultHighScoreSettings, ...input };
+    case "golf":
+      return { ...defaultGolfSettings, ...input };
   }
 }
 

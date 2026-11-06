@@ -136,8 +136,24 @@ describe("setting up a party match", () => {
     });
   });
 
+  it("starts Golf with its holes", async () => {
+    const ctx = setup();
+    await ctx.command({
+      type: "quickMatch",
+      playerIds: ["ann", "bob"],
+      settings: { mode: "golf", holes: 18 },
+    });
+
+    expect((await ctx.view()).match?.settings).toEqual({
+      mode: "golf",
+      holes: 18,
+      rulesVersion: 1,
+    });
+  });
+
   it.each([
     ["an unknown mode", { mode: "baseball" }],
+    ["a golf course that isn't 9 or 18 holes", { mode: "golf", holes: 12 }],
     ["no rounds", { mode: "highScore", rounds: 0 }],
     ["more than 20 rounds", { mode: "highScore", rounds: 21 }],
     ["X01 options on a party mode", { mode: "aroundTheClock", startScore: 501 }],

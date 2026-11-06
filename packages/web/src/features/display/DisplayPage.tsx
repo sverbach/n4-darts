@@ -9,6 +9,7 @@ import { MatchCard } from "../../components/MatchCard.tsx";
 import { Progress } from "../../components/Progress.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import { average, count, legScore, placing } from "../../lib/format.ts";
+import { visitTotalLabel, visitValue } from "../../lib/modes.ts";
 import { useLive } from "../../lib/useLive.ts";
 
 const PHASES = { groups: "Group phase", knockout: "Knockout", finished: "Finished" };
@@ -396,7 +397,7 @@ function StationCard({ station, large }: { station: DisplayStation; large?: bool
 }
 
 function Score({ card, large }: { card: ScoreCard; large: boolean }) {
-  const total = card.visit.reduce((sum, d) => sum + (d.ignored ? 0 : d.score), 0);
+  const total = visitValue(card.mode, card.visit);
   return (
     <>
       {card.players.map((p, i) => (
@@ -436,7 +437,7 @@ function Score({ card, large }: { card: ScoreCard; large: boolean }) {
           })}
           {card.visit.length > 0 && (
             <span className="ml-auto font-pixel text-muted text-pu-20 uppercase">
-              {card.mode === "x01" ? "Total" : "Hits"}{" "}
+              {visitTotalLabel(card.mode)}{" "}
               <span className="align-middle font-text text-pu-44 text-text">{total}</span>
             </span>
           )}

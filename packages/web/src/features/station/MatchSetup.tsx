@@ -1,6 +1,14 @@
 // The settings of a new quick match at the station; picking the players is PlayerPicker's.
 
-import { type InRule, MAX_ROUNDS, MODES, type Mode, type OutRule } from "@n4/engine";
+import {
+  GOLF_HOLES,
+  type GolfSettings,
+  type InRule,
+  MAX_ROUNDS,
+  MODES,
+  type Mode,
+  type OutRule,
+} from "@n4/engine";
 import type { MatchSettingsInput } from "@n4/server/api";
 import { legsLabel, MODE_NAMES, roundsLabel } from "../../lib/labels.ts";
 
@@ -10,12 +18,14 @@ export interface SetupSettings {
   mode: Mode;
   x01: X01Options;
   rounds: number;
+  holes: GolfSettings["holes"];
 }
 
 export const defaultSetupSettings: SetupSettings = {
   mode: "x01",
   x01: { startScore: 301, inRule: "straight", outRule: "straight", legsToWin: 1 },
   rounds: 7,
+  holes: 9,
 };
 
 export function settingsInput(setup: SetupSettings): MatchSettingsInput {
@@ -24,6 +34,8 @@ export function settingsInput(setup: SetupSettings): MatchSettingsInput {
       return { mode: "x01", ...setup.x01 };
     case "highScore":
       return { mode: "highScore", rounds: setup.rounds };
+    case "golf":
+      return { mode: "golf", holes: setup.holes };
     default:
       return { mode: setup.mode };
   }
@@ -54,6 +66,23 @@ export function SettingsFields(props: {
         </select>
       </label>
       {value.mode === "x01" && <X01Fields value={value.x01} set={set} />}
+      {value.mode === "golf" && (
+        <label>
+          Holes
+          <select
+            value={value.holes}
+            onChange={(e) =>
+              onChange({ ...value, holes: Number(e.target.value) as GolfSettings["holes"] })
+            }
+          >
+            {GOLF_HOLES.map((n) => (
+              <option key={n} value={n}>
+                {n} holes
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       {value.mode === "highScore" && (
         <label>
           Rounds

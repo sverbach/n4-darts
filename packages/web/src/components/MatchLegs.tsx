@@ -1,11 +1,6 @@
-import {
-  allVisits,
-  type DartView,
-  type MatchState,
-  scoresPoints,
-  type VisitView,
-} from "@n4/engine";
+import { allVisits, type DartView, type MatchState, type VisitView } from "@n4/engine";
 import type { ReactNode } from "react";
+import { visitValue } from "../lib/modes.ts";
 import { PixelIcon } from "./PixelIcon.tsx";
 
 interface Props {
@@ -29,7 +24,8 @@ export function MatchLegs(props: Props) {
             visit={visit}
             name={name}
             dart={dart}
-            score={scoresPoints(state.mode)}
+            score={state.mode !== "aroundTheClock"}
+            value={(v) => visitValue(state.mode, v.darts)}
           />
         ))}
       </ol>
@@ -64,8 +60,14 @@ export function MatchLegs(props: Props) {
   ));
 }
 
-function VisitRow(props: Omit<Props, "state"> & { visit: VisitView; score: boolean }) {
-  const { visit, name, dart, score } = props;
+function VisitRow(
+  props: Omit<Props, "state"> & {
+    visit: VisitView;
+    score: boolean;
+    value?: (visit: VisitView) => number;
+  },
+) {
+  const { visit, name, dart, score, value } = props;
   return (
     <li className="grid min-h-[58px] grid-cols-[minmax(0,70px)_minmax(0,1fr)_auto] items-center gap-2 border-0 border-line-soft border-b border-solid">
       <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[13px] uppercase">
@@ -76,7 +78,9 @@ function VisitRow(props: Omit<Props, "state"> & { visit: VisitView; score: boole
       </span>
       {score && (
         <span className={`min-w-[3em] text-right text-[28px] ${visit.bust ? "text-danger" : ""}`}>
-          {visit.bust ? "Bust" : visit.darts.reduce((sum, d) => sum + d.score, 0)}
+          {visit.bust
+            ? "Bust"
+            : (value?.(visit) ?? visit.darts.reduce((sum, d) => sum + d.score, 0))}
           {visit.checkout && (
             <span className="ml-2 align-middle font-pixel text-[11px] text-muted uppercase">
               Out

@@ -23,10 +23,12 @@ export function rulesLabel(settings: X01Settings) {
 export const MODE_NAMES: Record<Mode, string> = {
   x01: "X01",
   aroundTheClock: "Around the Clock",
+  golf: "Golf",
   highScore: "High Score",
 };
 
 export function matchRulesLabel(settings: MatchSettings) {
+  if (settings.mode === "golf") return `${MODE_NAMES.golf} · ${settings.holes} holes`;
   if (settings.mode === "highScore")
     return `${MODE_NAMES.highScore} · ${roundsLabel(settings.rounds)}`;
   if (settings.mode !== "x01") return MODE_NAMES[settings.mode];

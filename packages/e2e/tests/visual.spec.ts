@@ -368,6 +368,30 @@ test("High Score on station 1, into sudden death", async () => {
   await watch.close();
 });
 
+test("Golf on station 1, 18 holes", async () => {
+  const watch = await loggedIn();
+  await command(1, {
+    type: "quickMatch",
+    playerIds: [ID.Ann, ID.Bob, ID.Cid, ID.Dee, ID.Eve, ID.Fay],
+    settings: { mode: "golf", holes: 18 },
+  });
+  await command(1, { type: "startMatch" });
+  const hole1 = [["T1"], ["S1", "D1"], ["M1", "M1", "M1"], ["S1"], ["D1", "T1"], ["S20", "S1"]];
+  for (const darts of hole1) {
+    await throwDarts(1, darts);
+    await takeout(1);
+  }
+  await throwDarts(1, ["S2", "D2"]);
+
+  await open(page, "/station/1", (p) => p.getByRole("img", { name: /Hole 2/ }));
+  await shoot(page, "station-golf", PAGES);
+  await open(watch, "/watch/1", (p) => p.getByRole("img", { name: /Hole 2/ }));
+  await shoot(watch, "watch-golf", BIG_SCREENS);
+  await command(1, { type: "abandonMatch" });
+
+  await watch.close();
+});
+
 test("a tournament on station 1, station 2 busy", async () => {
   const display = await loggedIn();
   // A running quick match of two players outside the tournament keeps station 2 out of it.

@@ -53,3 +53,65 @@ export function playParty(raws: RawVisit[], rules: PartyRules): PartyState {
     winner,
   };
 }
+
+export interface RoundsState {
+  round: number;
+  suddenDeath: boolean;
+  contenders: PlayerIndex[];
+}
+
+export interface RoundsRules {
+  visit(raw: RawVisit, player: PlayerIndex, round: number): { view: VisitView; over: boolean };
+  leaders(contenders: PlayerIndex[]): PlayerIndex[];
+}
+
+export const roundsNotStarted: RoundsState = { round: 1, suddenDeath: false, contenders: [] };
+
+export function playRounds(
+  raws: RawVisit[],
+  playerCount: number,
+  rounds: number,
+  rules: RoundsRules,
+): PartyState & RoundsState {
+  let contenders: PlayerIndex[] = Array.from({ length: playerCount }, (_, i) => i);
+  let round = 1;
+  let suddenDeath = false;
+  let position = 0;
+  let finished = false;
+  let winner: PlayerIndex | null = null;
+
+  const endRound = () => {
+    position = 0;
+    if (round < rounds) {
+      round += 1;
+      return;
+    }
+    const leaders = rules.leaders(contenders);
+    if (leaders.length === 1) {
+      winner = leaders[0] as PlayerIndex;
+      return;
+    }
+    contenders = leaders;
+    suddenDeath = true;
+    round += 1;
+  };
+
+  const party = playParty(raws, {
+    visit(raw, player) {
+      const { view, over } = rules.visit(raw, player, round);
+      finished = over || raw.closed;
+      if (finished) {
+        position += 1;
+        if (position >= contenders.length) endRound();
+      }
+      return { view, over: over || winner !== null };
+    },
+    winner: () => winner,
+    next: () => {
+      const after = finished ? position : (position + 1) % contenders.length;
+      finished = false;
+      return contenders[after] as PlayerIndex;
+    },
+  });
+  return { ...party, round, suddenDeath, contenders };
+}

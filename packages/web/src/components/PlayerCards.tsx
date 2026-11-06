@@ -21,6 +21,13 @@ function cardsOf(match: MatchView): { score: string; meta: ReactNode }[] {
       meta: "Target",
     }));
   }
+  if (match.state.mode === "golf") {
+    const { players, round } = match.state;
+    return players.map((player) => ({
+      score: String(player.total),
+      meta: `Hole ${round}: ${player.holes[round - 1] ?? "–"}`,
+    }));
+  }
   if (match.state.mode === "highScore") {
     const { players, visits, suddenDeath, contenders } = match.state;
     return players.map((player, p) => {

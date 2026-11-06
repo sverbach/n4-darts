@@ -66,7 +66,7 @@ export function MatchOver({
         <div className={style.side}>
           <p className={style.winner}>{winnerPlayer?.name ?? "?"} wins</p>
           {isX01Match(match) && <X01Result match={match} size={size} />}
-          {match.state.mode === "highScore" && (
+          {(match.state.mode === "highScore" || match.state.mode === "golf") && (
             <dl className={`m-0 ${style.stats}`}>
               <div className="flex flex-col-reverse items-start gap-2">
                 <dt className={style.label}>Total</dt>
