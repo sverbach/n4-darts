@@ -60,6 +60,7 @@ test("a match that ends shows in an open match history", async ({ page, n4 }) =>
   await n4.login(page);
   await page.goto("/admin/matches");
   const abandoned = page.getByRole("button").filter({ hasText: "Abandoned" });
+  await expect(page.getByRole("heading", { name: "History" })).toBeVisible();
   await expect(page.getByText(/Loading/)).toHaveCount(0);
   const before = await abandoned.count();
 
