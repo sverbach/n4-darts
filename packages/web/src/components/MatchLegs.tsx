@@ -1,4 +1,10 @@
-import { allVisits, type DartView, type MatchState, type VisitView } from "@n4/engine";
+import {
+  allVisits,
+  type DartView,
+  type MatchState,
+  scoresPoints,
+  type VisitView,
+} from "@n4/engine";
 import type { ReactNode } from "react";
 import { PixelIcon } from "./PixelIcon.tsx";
 
@@ -23,7 +29,7 @@ export function MatchLegs(props: Props) {
             visit={visit}
             name={name}
             dart={dart}
-            score={false}
+            score={scoresPoints(state.mode)}
           />
         ))}
       </ol>

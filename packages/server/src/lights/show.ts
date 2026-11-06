@@ -3,7 +3,7 @@
 // while a match is on, idle otherwise). Runs off the change feed, after a dart has been handled,
 // and never waits for a device: a failure is counted in diagnostics (docs/adr/0009).
 
-import { allVisits, type MatchState, type VisitView } from "@n4/engine";
+import { allVisits, type MatchState, scoresPoints, type VisitView } from "@n4/engine";
 import type { LightEvent, StationView } from "../api.ts";
 import type { Db } from "../db.ts";
 import type { ChangeFeed } from "../live/live.ts";
@@ -40,7 +40,7 @@ const legsWonIn = (state: MatchState) =>
 
 /** The visits' own events in a match: a bust, a high checkout, a 180. */
 function visitEvents(state: MatchState): { key: string; event: LightEvent }[] {
-  if (state.mode !== "x01") return [];
+  if (!scoresPoints(state.mode)) return [];
   return allVisits(state).flatMap((visit) => {
     const first = visit.darts[0]?.dartId;
     if (!first) return [];

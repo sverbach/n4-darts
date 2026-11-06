@@ -1,5 +1,6 @@
 import {
   defaultAroundTheClockSettings,
+  defaultHighScoreSettings,
   defaultX01Settings,
   type MatchEvent,
   matchState,
@@ -154,5 +155,27 @@ describe("callsFor in a party mode", () => {
 
   it("calls the match shot for the winner", () => {
     expect(party(around, [dart("BULL")])).toEqual(["matchshot"]);
+  });
+});
+
+describe("callsFor in High Score", () => {
+  const settings = { ...defaultHighScoreSettings, rounds: 1 };
+  const high = (before: MatchEvent[], added: MatchEvent[]) =>
+    callsFor(matchState(settings, before), matchState(settings, [...before, ...added]));
+
+  it("calls the visit score, one hundred and eighty included", () => {
+    expect(high([start, dart("T20"), dart("T20")], [dart("T20")])).toEqual(["180"]);
+    expect(high([start, dart("S1")], [dart("S1"), dart("S1")])).toEqual(["3"]);
+  });
+
+  it("calls the deciding visit's score, then the match shot", () => {
+    const before = [start, ...visit("T20", "T20", "T20"), dart("S1"), dart("S1")];
+    expect(high(before, [dart("S1")])).toEqual(["3", "matchshot"]);
+    expect(high([...before, dart("S1")], [takeout])).toEqual([]);
+  });
+
+  it("calls the match shot for a last visit taken out early", () => {
+    const before = [start, ...visit("T20", "T20", "T20"), dart("S1")];
+    expect(high(before, [takeout])).toEqual(["1", "matchshot"]);
   });
 });

@@ -1,6 +1,7 @@
 import { type BoardSim, createBoardSim } from "@n4/board-sim";
 import {
   defaultAroundTheClockSettings,
+  defaultHighScoreSettings,
   type MatchEvent,
   matchState,
   type X01State,
@@ -210,5 +211,33 @@ describe("a party match's light events", () => {
     expect(eventsBetween(seenOf(match(before)), match([...before, dart(25)]))).toEqual([
       "gameShot",
     ]);
+  });
+});
+
+describe("a High Score match's light events", () => {
+  const settings = { ...defaultHighScoreSettings, rounds: 1 };
+  const match = (events: MatchEvent[]): StationView["match"] =>
+    ({
+      id: "m",
+      players: [],
+      settings,
+      state: matchState(settings, events),
+      label: null,
+    }) as StationView["match"];
+  let id = 0;
+  const dart = (number: number, multiplier: 1 | 2 | 3 = 1): MatchEvent => ({
+    type: "DartThrown",
+    dartId: `d${++id}`,
+    segment: { number, multiplier },
+  });
+  const start: MatchEvent = { type: "MatchStarted", playerCount: 2 };
+  const takeout: MatchEvent = { type: "TakeoutFinished" };
+
+  it("fires the 180, and the game shot on the deciding dart", () => {
+    const first = [start, dart(20, 3), dart(20, 3)];
+    expect(eventsBetween(seenOf(match(first)), match([...first, dart(20, 3)]))).toEqual(["s180"]);
+
+    const last = [...first, dart(20, 3), takeout, dart(1), dart(1)];
+    expect(eventsBetween(seenOf(match(last)), match([...last, dart(1)]))).toEqual(["gameShot"]);
   });
 });

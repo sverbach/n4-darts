@@ -1,4 +1,4 @@
-import { type DartView, isX01Match, MIN_PLAYERS, type PlayerIndex, upNext } from "@n4/engine";
+import { type DartView, MIN_PLAYERS, type PlayerIndex, upNext } from "@n4/engine";
 import type { MatchView, StationCommand } from "@n4/server/api";
 import { useState } from "react";
 import { Avatar } from "../../components/Avatar.tsx";
@@ -12,8 +12,7 @@ import { PlayerPicker } from "../../components/PlayerPicker.tsx";
 import { SegmentPicker } from "../../components/SegmentPicker.tsx";
 import { SoundPrompt } from "../../components/Sound.tsx";
 import { dartLabel } from "../../lib/darts.ts";
-import { matchRulesLabel } from "../../lib/labels.ts";
-import { targetsOf, visitTotalLabel } from "../../lib/targets.ts";
+import { liveLabel, targetsOf, visitTotalLabel } from "../../lib/modes.ts";
 import { useCallouts } from "../../lib/useCallouts.ts";
 import { useStation } from "../../lib/useStation.ts";
 import {
@@ -113,18 +112,10 @@ function matchAction(match: MatchView, send: Send): MatchAction | undefined {
 }
 
 function SettingsStrip({ match }: { match: MatchView }) {
-  const { settings, label } = match;
-  const leg =
-    isX01Match(match) && match.settings.legsToWin > 1 && match.state.legs.length > 0
-      ? ` · Leg ${match.state.legs.length}`
-      : "";
   return (
     <div className="label flex flex-wrap justify-between gap-x-4 gap-y-1.5 border-0 border-line-soft border-b border-solid kiosk:px-6 px-4 kiosk:py-2.5 py-2">
-      {label && <span className="text-text">{label}</span>}
-      <span>
-        {matchRulesLabel(settings)}
-        {leg}
-      </span>
+      {match.label && <span className="text-text">{match.label}</span>}
+      <span>{liveLabel(match)}</span>
     </div>
   );
 }

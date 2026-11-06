@@ -2,6 +2,10 @@
 
 import type { MatchSettings, Mode, X01Settings } from "@n4/engine";
 
+export function roundsLabel(rounds: number) {
+  return `${rounds} ${rounds === 1 ? "round" : "rounds"}`;
+}
+
 export function legsLabel(legsToWin: number) {
   return `First to ${legsToWin} ${legsToWin === 1 ? "leg" : "legs"}`;
 }
@@ -19,9 +23,12 @@ export function rulesLabel(settings: X01Settings) {
 export const MODE_NAMES: Record<Mode, string> = {
   x01: "X01",
   aroundTheClock: "Around the Clock",
+  highScore: "High Score",
 };
 
 export function matchRulesLabel(settings: MatchSettings) {
+  if (settings.mode === "highScore")
+    return `${MODE_NAMES.highScore} · ${roundsLabel(settings.rounds)}`;
   if (settings.mode !== "x01") return MODE_NAMES[settings.mode];
   return `${rulesLabel(settings)} · ${legsLabel(settings.legsToWin)}`;
 }

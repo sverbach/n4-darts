@@ -1,4 +1,3 @@
-import { isX01Match } from "@n4/engine";
 import type { MatchView } from "@n4/server/api";
 import { Avatar } from "../../components/Avatar.tsx";
 import { TargetBoard } from "../../components/Dartboard.tsx";
@@ -8,7 +7,7 @@ import { PlayerCards } from "../../components/PlayerCards.tsx";
 import { SoundButton, SoundPrompt } from "../../components/Sound.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import { matchRulesLabel } from "../../lib/labels.ts";
-import { targetsOf, visitTotalLabel } from "../../lib/targets.ts";
+import { liveLabel, targetsOf, visitTotalLabel } from "../../lib/modes.ts";
 import { useCallouts } from "../../lib/useCallouts.ts";
 import { useStation } from "../../lib/useStation.ts";
 
@@ -88,17 +87,7 @@ function WatchBoard({ match }: { match: MatchView }) {
 }
 
 function MatchLine({ match }: { match: MatchView }) {
-  return (
-    <span className={`${SMALL} tracking-pu-1`}>
-      {matchRulesLabel(match.settings)}
-      {isX01Match(match) && match.settings.legsToWin > 1 && (
-        <>
-          {" "}
-          · Leg <span className="text-text">{match.state.legs.length}</span>
-        </>
-      )}
-    </span>
-  );
+  return <span className={`${SMALL} tracking-pu-1`}>{liveLabel(match)}</span>;
 }
 
 function NextMatch({ match }: { match: MatchView }) {

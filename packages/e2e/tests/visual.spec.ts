@@ -337,6 +337,37 @@ test("Around the Clock on station 1", async () => {
   await display.close();
 });
 
+test("High Score on station 1, into sudden death", async () => {
+  const watch = await loggedIn();
+  await command(1, {
+    type: "quickMatch",
+    playerIds: [ID.Ann, ID.Bob, ID.Cid],
+    settings: { mode: "highScore", rounds: 1 },
+  });
+  await command(1, { type: "startMatch" });
+  await throwDarts(1, ["T20", "S20", "S5"]);
+  await takeout(1);
+  await throwDarts(1, ["S1", "S1", "M1"]);
+  await takeout(1);
+  await throwDarts(1, ["T20", "S5", "S20"]);
+  await takeout(1);
+  await throwDarts(1, ["T20"]);
+
+  await open(page, "/station/1", (p) => p.getByText(/Sudden death/).first());
+  await shoot(page, "station-high-score-sudden-death", PAGES);
+  await open(watch, "/watch/1", (p) => p.getByText(/Sudden death/).first());
+  await shoot(watch, "watch-high-score-sudden-death", BIG_SCREENS);
+
+  await throwDarts(1, ["S1", "S1"]);
+  await takeout(1);
+  await throwDarts(1, ["S1", "S1", "S1"]);
+  await open(page, "/station/1", (p) => p.getByText("Game shot"));
+  await shoot(page, "station-high-score-won", PAGES);
+  await command(1, { type: "closeMatch" });
+
+  await watch.close();
+});
+
 test("a tournament on station 1, station 2 busy", async () => {
   const display = await loggedIn();
   // A running quick match of two players outside the tournament keeps station 2 out of it.

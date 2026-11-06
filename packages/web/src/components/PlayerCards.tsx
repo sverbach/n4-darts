@@ -15,12 +15,24 @@ function checkoutHint(match: X01MatchView): Segment[] | null {
 }
 
 function cardsOf(match: MatchView): { score: string; meta: ReactNode }[] {
-  if (!isX01Match(match)) {
+  if (match.state.mode === "aroundTheClock") {
     return match.state.players.map((player) => ({
       score: player.target === null ? "Done" : targetLabel(player.target),
       meta: "Target",
     }));
   }
+  if (match.state.mode === "highScore") {
+    const { players, visits, suddenDeath, contenders } = match.state;
+    return players.map((player, p) => {
+      const last = visits.findLast((v) => v.player === p);
+      const scored = last && `Last ${last.darts.reduce((sum, d) => sum + d.score, 0)}`;
+      return {
+        score: String(player.total),
+        meta: suddenDeath ? (contenders.includes(p) ? "Sudden death" : "Out") : scored,
+      };
+    });
+  }
+  if (!isX01Match(match)) return [];
   const { state, settings } = match;
   const leg = state.legs.at(-1);
   const lastVisitOf = (player: PlayerIndex) => {

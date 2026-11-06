@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import { performance } from "node:perf_hooks";
 import {
   defaultAroundTheClockSettings,
+  defaultHighScoreSettings,
   defaultX01Settings,
   MAX_PLAYERS,
   type MatchSettings,
@@ -77,6 +78,8 @@ function settingsFrom(input: MatchSettingsInput | undefined): MatchSettings {
       return { ...defaultX01Settings, ...input, rulesVersion: RULES_VERSION };
     case "aroundTheClock":
       return defaultAroundTheClockSettings;
+    case "highScore":
+      return { ...defaultHighScoreSettings, ...input };
   }
 }
 

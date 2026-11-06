@@ -4,6 +4,7 @@
 import {
   type InRule,
   isSegment,
+  MAX_ROUNDS,
   type MatchSettings,
   type MatchState,
   type Mode,
@@ -195,6 +196,7 @@ export const SegmentInput = z
 
 const START_SCORE = "start score must be a whole number of at least 2";
 const LEGS_TO_WIN = "legs to win must be a whole number of at least 1";
+const ROUNDS = `rounds must be a whole number from 1 to ${MAX_ROUNDS}`;
 
 /** What can be chosen when setting up an X01 match; the rules version is always the current one. */
 export const X01SettingsInput = z.strictObject({
@@ -223,6 +225,15 @@ export const MatchSettingsInput = z.preprocess(
   z.discriminatedUnion("mode", [
     X01SettingsInput,
     z.strictObject({ mode: z.literal("aroundTheClock") }),
+    z.strictObject({
+      mode: z.literal("highScore"),
+      rounds: z
+        .number({ error: ROUNDS })
+        .int({ error: ROUNDS })
+        .min(1, { error: ROUNDS })
+        .max(MAX_ROUNDS, { error: ROUNDS })
+        .exactOptional(),
+    }),
   ]),
 );
 export type MatchSettingsInput = z.infer<typeof MatchSettingsInput>;

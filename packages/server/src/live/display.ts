@@ -25,10 +25,12 @@ function scores(match: MatchView): { legsWon: number; score: string }[] {
       score: String(match.state.players[i]?.remaining ?? match.settings.startScore),
     }));
   }
-  return match.players.map((_, i) => ({
-    legsWon: 0,
-    score: targetLabel(match.state.players[i]?.target ?? 1),
-  }));
+  if (match.state.mode === "highScore") {
+    const { players } = match.state;
+    return match.players.map((_, i) => ({ legsWon: 0, score: String(players[i]?.total ?? 0) }));
+  }
+  const { players } = match.state;
+  return match.players.map((_, i) => ({ legsWon: 0, score: targetLabel(players[i]?.target ?? 1) }));
 }
 
 export function scoreCard(match: MatchView): ScoreCard {

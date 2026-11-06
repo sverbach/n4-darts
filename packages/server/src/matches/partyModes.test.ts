@@ -121,8 +121,25 @@ describe("setting up a party match", () => {
     expect((await ctx.view()).match?.settings).toMatchObject({ mode: "x01", startScore: 501 });
   });
 
+  it("starts High Score with its rounds", async () => {
+    const ctx = setup();
+    await ctx.command({
+      type: "quickMatch",
+      playerIds: ["ann", "bob"],
+      settings: { mode: "highScore", rounds: 3 },
+    });
+
+    expect((await ctx.view()).match?.settings).toEqual({
+      mode: "highScore",
+      rounds: 3,
+      rulesVersion: 1,
+    });
+  });
+
   it.each([
     ["an unknown mode", { mode: "baseball" }],
+    ["no rounds", { mode: "highScore", rounds: 0 }],
+    ["more than 20 rounds", { mode: "highScore", rounds: 21 }],
     ["X01 options on a party mode", { mode: "aroundTheClock", startScore: 501 }],
   ])("refuses %s", async (_, settings) => {
     const ctx = setup();
@@ -154,6 +171,25 @@ describe("a finished party match", () => {
     expect(profile.totals.matches).toBe(0);
     expect(profile.recent).toEqual([]);
     expect(profile.heatmap).toEqual([]);
+  });
+});
+
+describe("a High Score 180", () => {
+  it("counts in no stats", async () => {
+    const ctx = setup();
+    await ctx.command({
+      type: "quickMatch",
+      playerIds: ["ann", "bob"],
+      settings: { mode: "highScore", rounds: 1 },
+    });
+    await ctx.command({ type: "startMatch" });
+    ctx.play("T20 T20 T20 /");
+    ctx.play("S1 S1 S1 /");
+    expect((await ctx.view()).match?.state.winner).toBe(0);
+    await ctx.command({ type: "closeMatch" });
+
+    expect(await ctx.get<LeaderboardRow[]>("/api/players/stats")).toEqual([]);
+    expect((await ctx.get<PlayerProfile>("/api/players/ann/stats")).totals.s180).toBe(0);
   });
 });
 
