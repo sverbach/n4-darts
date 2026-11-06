@@ -1,189 +1,47 @@
 # n4-darts
-offline dart platform using Autodarts scoring capabilities
 
-See [`docs/architecture/`](docs/architecture/README.md) for the architecture (arc42) and `docs/adr/` for the key decisions.
+Dart evenings for a room of Autodarts boards, fully offline. The boards detect the darts; n4-darts runs the games, the tournament, the projector and the stats. It runs on the local network, with no internet and no accounts.
 
-## Layout
+> **Requires Autodarts Board Manager 2.0.2.** Board Manager 2.1.0 changed its API (how a dart looks, the event names) and isn't supported: the board shows as online, but no darts arrive. Check a board with `curl http://<board>:3180/api/version`.
 
-| Path              | What                                                       |
-| ----------------- | ---------------------------------------------------------- |
-| `packages/engine` | Pure game rules (X01), no dependencies, shared with the UI |
-| `packages/server` | Node server: board gateway, matches, tournaments, API      |
-| `packages/web`    | React app: `/station/n`, `/admin`, `/display`              |
-| `tools/board-sim` | Fake Autodarts Board Manager for development and tests     |
+## Features
 
-## Run it locally
-
-Play the whole thing on your laptop with two fake boards instead of real ones.
-
-```sh
-pnpm install
-pnpm dev:sim
-```
-
-This starts five things side by side. Ctrl-C stops all of them.
-
-| Page                               | What it is                                                         |
-| ---------------------------------- | ------------------------------------------------------------------ |
-| <http://localhost:5173/>           | The app, with links to the stations and admin                      |
-| <http://localhost:5173/station/1>  | Station 1: start a match, scoreboard, correct darts                |
-| <http://localhost:5173/station/2>  | Station 2                                                          |
-| <http://localhost:5173/admin>      | Admin: tonight's tournament, players, stations, matches, history   |
-| <http://localhost:5173/display>    | Projector: the tournament with live scores, or the leaderboard     |
-| <http://localhost:5173/watch/1>    | Projector: station 1's scoreboard, nothing to press                |
-| <http://localhost:5173/players>    | Leaderboard; a name opens that player's stats                      |
-| <http://localhost:3180/>           | Fake board for station 1: click the dartboard to throw             |
-| <http://localhost:3181/>           | Fake board for station 2                                           |
-| <http://localhost:3190/>           | Fake WLED light strip: shows the preset that's on                  |
-
-The app runs on the Vite dev server (:5173), which reloads on every code change and forwards `/api` to the n4-darts server (:3000).
-
-**Playing a leg:** open `/station/1` and a fake board side by side. On the station, pick two or more players (add them right there, or in `/admin`), set the order and press **Start**. Click the board three times, then press **Takeout** on the fake board to end the visit, as a player pulling their darts would. On the fake board you can also:
-
-- tap a listed dart, then a spot on the board, to change it (as if Autodarts corrected itself)
-- type a dart like `T20`, `D16`, `BULL` and press enter
-- press **Reset** (as if someone pressed reset on the station laptop), **Stop** / **Start**, or **Go offline** to see how the station copes
-
-**Board menu:** the ⋮ next to the board status on a station page stops or starts detection, calibrates the board and resets it, so players never have to leave the kiosk browser. The status shows "Board stopped" while detection is off. The same menu is on every station in `/admin` → Stations.
-
-**Lights:** in `/admin` → **Lights**, add a WLED device by its address (the fake one: `localhost:3190`) and press **Test connection**: it shows the device's name and how many presets it has. On a station, pick the device, the presets for idle (no match) and playing (a match on), and for each moment (match start, leg won, game shot, 180, bust, high out of 100+) a preset and how many seconds it runs before the playing or idle preset comes back. **Test** starts an event's preset right away. The presets themselves are made in WLED's own app. A device that's offline doesn't hold up play; its failed calls show under Lights in `/admin` → Diagnostics.
-
-**Photos:** in `/admin` → Players, tap a player's avatar to add a photo (camera or gallery on a phone), crop it to the circle and save. Photos show on the station, the projector and the stats pages; players without one get their initials.
-
-**Options**, set in front of the command:
-
-```sh
-ADMIN_PIN=1234 pnpm dev:sim   # lock /admin behind a PIN (open without one)
-PORT=3100 pnpm dev:sim        # server on another port, e.g. when Docker already uses 3000
-```
-
-The dev database is `packages/server/data/n4-darts.db`; `pnpm db:reset` (with the server stopped) clears it to start over.
-
-If pnpm 12 isn't installed, put `npx -y pnpm@12.14.0` in front of every `pnpm` command, e.g. `npx -y pnpm@12.14.0 dev:sim`.
-
-### Without the simulator (real boards)
-
-```sh
-STATIONS=1=http://192.168.1.139:3180 pnpm dev   # dev mode: app on :5173, server on :3000
-pnpm build && pnpm start                        # production mode: everything on :3000
-```
-
-`STATIONS` (number = Board Manager address, comma-separated) only seeds the stations on a fresh database; after that it's ignored and you change board addresses in `/admin` → Stations. `pnpm dev` shares its database with `pnpm dev:sim`, so if you've used the simulator, station 1 still points at `localhost:3180`: change it in `/admin`, or start over with `pnpm db:reset`. `pnpm start` keeps its own database in `data/` at the repo root (`DATA_DIR` to change it).
-
-### With Docker
-
-```sh
-docker build -t n4-darts .
-docker run --rm -p 3000:3000 -v n4-data:/data \
-  -e STATIONS=1=http://192.168.1.139:3180 -e ADMIN_PIN=1234 n4-darts
-```
-
-Then open <http://localhost:3000>. To run the published image instead, use `ghcr.io/sverbach/n4-darts:latest` in place of `n4-darts`.
-
-## Running a tournament
-
-Everything happens in `/admin` → **Tournament**, on the organiser's phone.
-
-1. **Set it up.** Pick tonight's players and press **Create draft**. Choose the format (groups, how many advance, single or double elimination), the legs per phase and the game (start score, in/out). The draft shows the seeds (by recent 3-dart average; new players last in a random order, ↑/↓ to change), the groups, and how long it'll take. Players and format can still change after starting, until the first match is played.
-2. **Start it.** From now on the server runs the evening: it puts the next match on every free station as soon as both players are free (round by round, longest-rested first), builds the knockout when the groups are done, and moves winners (and, in double elimination, losers) on until there's a champion. Players walk up, set who throws first, press **Start** and play. After the checkout, **Done** frees the station; if nobody presses it, that happens by itself after a minute.
-3. **Step in when needed.** The Tournament tab shows the stations, the queue, the group tables and the bracket, and refreshes by itself.
-   - **Pause** a station to keep it out of the tournament (e.g. for casual throws); its current match carries on.
-   - **Hold** a match while a player is away; it's skipped until you release it.
-   - **Send back** a match that's waiting on a station but hasn't started; **Play now on…** puts a chosen match on a station out of order; a match can also be kept for **only** one station.
-   - **Withdraw** a player who leaves: their remaining matches become walkovers. A **late arrival** can still join during the group phase.
-   - Fix a misdetected dart from **Matches → History**. A correction that would change a result a later match already depends on is refused, with that match named.
-4. **The end.** The champion, the final placings and the evening's awards (best match average, highest checkout, most 180s, best leg) stay on the tab until you start the next tournament. **End tournament early** stops everything without a champion.
-
-**On the projector:** open `/display` in the projector's browser (full screen, e.g. F11) and leave it. It follows the evening by itself: live scores of every station and what's up next beside the group tables, then the bracket, then the champion, placings and awards. Without a tournament it shows the stations and the leaderboard. Tap a station card (or open `/watch/1`) to put one station's scoreboard on screen; go back to `/display` when you're done. Both pages fit any screen size without scrolling.
-
-**Sound:** a caller's voice calls each visit's score, "No score" on a bust and "Game shot" on a checkout. It's off by default and switched on per device, which remembers it: on the station kiosk from the board menu (**Turn sound on**), or with the speaker button on `/watch/n`. For the room's speakers, plug a phone or laptop into them, open `/watch/1` and tap the speaker; the screen stays on while sound is on. Browsers only play sound after a tap, so after a reload tap the page once ("Tap to turn sound on"). The built-in voice is a Northern English man made with Piper (see `tools/callouts/` and its licence note). In `/admin` → **Sound** you can upload a voice pack in [darts-caller](https://github.com/lbormann/darts-caller)'s format (a zip of files like `60.mp3`, `gameshot.mp3`, `busted.mp3`) and choose which voice is used; calls a pack lacks fall back to the built-in voice. Those packs carry no licence, so upload only what you may use. darts-caller's own downloads need converting first: `tools/callouts/import.sh <url>` (see `tools/callouts/README.md`).
-
-**Stats:** every finished match counts towards the players' long-term stats (not walkovers or abandoned matches), whatever kind of match it was. `/players` ranks everyone by rating; a profile shows averages, checkout %, 180s, best leg, results, the average per evening, tournaments and recent matches. Both pages are open to everyone in the room, so players can look themselves up on their phones, and from outside on the public site (below). `/tournaments` lists every finished tournament with its placings, awards, groups and bracket, and every finished match has a page with its legs and visits.
-
-**Try it locally:** run `pnpm dev:sim`, add a few players in `/admin`, create and start a tournament, then play the matches that appear on `/station/1` and `/station/2` by clicking the two fake boards (<http://localhost:3180/>, <http://localhost:3181/>). Set every phase to best of 1 for a quick test evening; typing darts on the fake board (`T20`, enter, three times) is faster than clicking.
-
-## Development
-
-Requires Node 22+ and pnpm 12 (`npm i -g pnpm@12`, or prefix the commands with `npx pnpm@12`).
-
-```sh
-pnpm install
-pnpm test        # all tests, run against TypeScript sources
-pnpm lint        # biome
-pnpm typecheck
-pnpm sim         # fake board on :3180 (station 1's default board)
-pnpm dev         # server on :3000 + web dev server (proxies /api to :3000)
-pnpm dev:sim     # the same plus two fake boards on :3180/:3181 wired to stations 1 and 2
-pnpm build && pnpm start   # production build, served on :3000
-pnpm build && pnpm e2e     # browser tests (Playwright, Chromium) against the production build
-pnpm e2e --ui              # the same, in Playwright's UI for debugging
-```
-
-### Browser tests
-
-`packages/e2e` runs the built app on :4300 with two fake boards on :4381/:4382, a fresh database and the admin PIN 4242, so it can run next to `pnpm dev:sim`. The tests cover the station, the board menu, `/display` and `/watch`, and `/admin` (PIN, a small tournament, a correction), at phone width (390 px) and desktop width (1440 px). They also time each dart from the board to the station page over a 300-dart match: it fails when more than 3 darts take over 150 ms (single stalls of a shared CI runner are tolerated) or any takes over 500 ms. Run `pnpm build` first, since the tests use the build, not the sources. The first time, install the browser with `pnpm --filter @n4/e2e exec playwright install chromium`. CI runs them in their own job, and on a failure the report and traces are uploaded as the `playwright-report` artifact.
-
-The **visual suite** (`packages/e2e/tests/visual.spec.ts`) screenshots every page and state at phone and kiosk width, and the projector pages at 1920×1080 and 1280×720, and compares them with the baseline in `tests/visual.spec.ts-snapshots/` at zero tolerance. It's the safety net for style changes, run by hand, not in CI (the baseline is taken on macOS; fonts render differently on Linux). It starts its own server with fixed players, so it can't run next to `pnpm e2e`. After `pnpm build`: `pnpm --filter @n4/e2e visual`, and `pnpm --filter @n4/e2e visual --update-snapshots` to take a new baseline once a change is meant to look different.
-
-### Board simulator
-
-A fake Autodarts Board Manager (same API as the real one, see `docs/board-manager-api.md`). Each fake board serves a control page at its own address, e.g. <http://localhost:3180/>. Click the dartboard to throw, tap a listed dart and then the board to revise it, and use the buttons for takeout, bounce-out, an outside reset (as if pressed on the laptop), stop/start and offline. **Start takeout** begins a takeout and holds it ("Takeout in progress", as when someone takes long to pull the darts) until **Finish takeout** or a reset.
-
-For a full session without a real board, see [Run it locally](#run-it-locally).
-
-### WLED simulator
-
-A fake WLED controller with eight presets named after the events (1 Idle, 2 Playing, 3 Match start, 4 Leg won, 5 Game shot, 6 180, 7 Bust, 8 High checkout). Its page, e.g. <http://localhost:3190/>, shows the preset that's on and the last ones started, and **Go offline** to see how the lights cope.
-
-```sh
-pnpm --filter @n4/wled-sim sim --port 3190 --name "Wall strip"
-curl -s localhost:3190/json/info                               # what n4-darts asks for
-curl -X POST localhost:3190/json/state -d '{"ps":5}'           # start a preset by hand
-```
-
-```sh
-pnpm sim --port 3180                       # one board; --boards 2 for 3180 and 3181. Or by hand:
-curl -X POST localhost:3180/sim/dart -d '{"name":"T20"}'   # S20 SO20 D20 T20 25 BULL M17 BOUNCE
-curl -X POST localhost:3180/sim/takeout
-curl -X POST localhost:3180/sim/takeout-start     # held until /sim/takeout-finish
-pnpm sim --replay prototypes/recordings/2026-10-18-board1.txt --speed 10
-```
+- **Stations** (`/station/n`): one screen per board, on the kiosk laptop or a phone. Pick the players, the game and the throwing order. While playing: a scoreboard, checkout routes, correcting a misdetected dart, adding a missed one, and undo. The board menu (⋮) starts, stops, calibrates and resets the board.
+- **Games:** X01 (301/501/701, in and out rules, first to N legs) and the party games Around the Clock, Golf and High Score. Party games are for fun: never in tournaments, never in the stats.
+- **Tournaments** (`/admin` → Tournament): groups, then single or double elimination, seeded by rating. Once started, the server puts each match on a free station by itself. The organiser can pause a station, hold or move a match, withdraw a player, or take a late arrival.
+- **Projector:** `/display` follows the evening (live scores, groups, bracket, champion and awards, or the leaderboard), and `/watch/n` shows one station's scoreboard.
+- **Stats** (`/players`, `/tournaments`): rating, averages, checkout %, 180s, best leg and a heatmap per player, plus every past tournament and match. X01 matches only.
+- **Caller:** a voice calls the scores, "No score" and "Game shot". It's switched on per device, and voice packs in [darts-caller](https://github.com/lbormann/darts-caller)'s format can be uploaded in `/admin` → Sound.
+- **Lights:** WLED presets for idle, playing and moments like match start, game shot, 180 and bust (`/admin` → Lights).
+- **Public site:** a read-only copy of the stats for players outside the room, behind one group password.
+- **Admin** (`/admin`, optionally behind a PIN): players with photos, stations, matches and corrections, diagnostics. The database is backed up daily.
 
 ## Running on the server
 
-Every push to `main` that passes CI publishes `ghcr.io/sverbach/n4-darts:latest` (and a tag per commit SHA). On the server, next to `docker-compose.yml`:
+Every green push to `main` publishes `ghcr.io/sverbach/n4-darts:latest`. Next to `docker-compose.yml`:
 
 ```sh
-docker compose pull && docker compose up -d   # latest published image
-docker compose up -d --build                  # or build from the checkout instead
+docker compose pull && docker compose up -d
 ```
 
-Serves on port 3000 (override with `N4_PORT=8080`). Data lives in the `n4-data` volume, uploaded voice packs included (`/data/callouts`; they're not in the backups).
-Stations are managed in `/admin` (Stations tab). On the very first start they're seeded from `N4_STATIONS`, e.g. `N4_STATIONS=1=http://192.168.1.139:3180,2=http://192.168.1.140:3180`; after that the variable is ignored. Lock `/admin` with `N4_ADMIN_PIN=1234`.
+Then open `http://<server>:3000/station/1` on each station laptop, `/display` on the projector and `/admin` on the organiser's phone.
 
-Open `http://<server>:3000/station/1` on the station laptop (and on any phone that should control it).
+| Variable          | What it does                                                                                     |
+| ----------------- | ------------------------------------------------------------------------------------------------ |
+| `N4_STATIONS`     | Seeds the boards on the very first start, e.g. `1=http://192.168.1.139:3180,2=http://…`. After that they're managed in `/admin` → Stations. |
+| `N4_ADMIN_PIN`    | Locks `/admin`. Without it, `/admin` is open.                                                    |
+| `N4_PORT`         | Port of the app (default 3000).                                                                  |
+| `N4_PUBLIC_PIN`   | The group password for the public site.                                                          |
+| `N4_PUBLIC_PORT`  | Port of the public site, on `127.0.0.1` only (default 3001).                                     |
+| `COMPOSE_PROFILES`| Set to `public` to also start the public site (same as `--profile public`; use this in Portainer). |
 
-### Behind a reverse proxy
+Data lives in the `n4-data` volume.
 
-The room's server is meant for the local network: apart from the `/admin` PIN there's no login, so don't expose it to the internet (the public site above is the way in from outside). If you still put a proxy in front, it must forward WebSockets: the live updates on `/api/*/live` are WebSockets (ADR 0011). In nginx, set `proxy_http_version 1.1` and pass the `Upgrade` and `Connection` headers on (in nginx UI: the WebSocket toggle). Nothing else needs configuring. Without it, pages show "disconnected" and stop updating.
+**Public site** (ADR 0008): a second container (`n4-public`) from the same image reads the room's database read-only. Start it with `N4_PUBLIC_PIN=… docker compose --profile public up -d`, or set `COMPOSE_PROFILES=public`. It listens on `127.0.0.1` only, for nginx on the same host to serve with TLS (`docs/nginx-public.conf`). It waits for the room's server to create the database first. `/admin` → Players → **Hide from public site** shows a player there as "Player".
 
-### The public site
+**Reverse proxy:** the room's server is meant for the local network only. If a proxy sits in front of it anyway, it must forward WebSockets, because the live views run over them (ADR 0011). In nginx: `proxy_http_version 1.1` plus the `Upgrade` and `Connection` headers.
 
-Players can look up their stats, past tournaments and matches from outside the room on a read-only copy of the stats pages, behind one password for the group (ADR 0008). It's a second container from the same image (`n4-public` in `docker-compose.yml`) that reads the room's database without being able to change anything; the room's server stays on the local network.
-
-```sh
-N4_PUBLIC_PIN=our-group-password docker compose --profile public up -d
-```
-
-It listens on `127.0.0.1:3001` only (`N4_PUBLIC_PORT` to change it), for nginx on the same host to put on the internet with TLS: `docs/nginx-public.conf` is an example (only the public container proxied, rate limits on the login and the API, `noindex`). Start the room's server first: the public one needs the database to exist and exits until it does (Docker restarts it). In `/admin` → Players, **Hide from public site** shows a player there as "Player", without photo or profile.
-
-Without Docker: `N4_PUBLIC=1 N4_PUBLIC_PIN=… PORT=3001 pnpm start`, with the same `DATA_DIR` as the room's server.
-
-### Backups
-
-The server copies its database once a day (at start if the last copy is more than a day old, then whenever a day has passed) to `backups/` next to the database, as `n4-darts-YYYY-MM-DD-HHmm.db` (server time: UTC in Docker unless you set `TZ`), and keeps the newest 30. In Docker that's `/data/backups` in the `n4-data` volume; with `pnpm start` it's `data/backups/`. They're on the same disk as the database, so copy one elsewhere now and then.
-
-To restore one in Docker:
+**Backups:** once a day the database is copied to `/data/backups` in the volume, and the newest 30 are kept. They're on the same disk, so copy one elsewhere now and then. To restore one:
 
 ```sh
 docker compose stop
@@ -192,4 +50,32 @@ docker compose run --rm --no-deps --entrypoint sh n4-darts -c \
 docker compose up -d
 ```
 
-Without Docker: stop the server, copy the backup over `n4-darts.db`, delete `n4-darts.db-wal` and `n4-darts.db-shm`, start it again.
+## Development
+
+Requires Node 22+ and pnpm 12. If pnpm 12 isn't installed, put `npx -y pnpm@12.14.0` in front of every `pnpm` command.
+
+```sh
+pnpm install
+pnpm dev:sim     # the app on :5173 with two fake boards (:3180, :3181) and a fake WLED strip (:3190)
+pnpm dev         # the same without fakes; real boards with STATIONS=1=http://192.168.1.139:3180
+pnpm test        # unit and integration tests
+pnpm lint && pnpm typecheck
+pnpm build && pnpm start   # production build on :3000
+pnpm build && pnpm e2e     # browser tests (Playwright), the same as CI
+pnpm --filter @n4/e2e visual   # screenshot comparison, by hand (macOS baseline); add --update-snapshots
+pnpm db:reset    # clear the dev database (server stopped)
+```
+
+With `pnpm dev:sim`, open <http://localhost:5173/station/1> next to the fake board at <http://localhost:3180/>. Click the board to throw (or type `T20`, `D16`, `BULL`), and press **Takeout** to end the visit. Options go in front of the command, e.g. `ADMIN_PIN=1234 pnpm dev:sim` or `PORT=3100 pnpm dev:sim`.
+
+| Path              | What                                                          |
+| ----------------- | ------------------------------------------------------------- |
+| `packages/engine` | The game rules, X01 and party modes; pure, shared with the UI |
+| `packages/server` | Node server: board gateway, matches, tournaments, stats, API  |
+| `packages/web`    | React app                                                     |
+| `packages/e2e`    | Browser and visual tests                                      |
+| `tools/board-sim` | Fake Board Manager (2.0.2 API, `docs/board-manager-api.md`)   |
+| `tools/wled-sim`  | Fake WLED controller                                          |
+| `tools/callouts`  | The built-in caller voice and the voice-pack importer         |
+
+More: [`docs/architecture/`](docs/architecture/README.md) (arc42), `docs/adr/` (decisions), `GLOSSARY.md`, `docs/ui-pages.md`.
