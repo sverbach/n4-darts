@@ -20,7 +20,7 @@ Besides X01, a match can be played in one of five party modes: Around the Clock,
 - **Calls:** "Game shot, and the match" (`matchshot`) for the winner in every mode. Only High Score calls visit scores (as in X01, including 180). No other mode has score calls, and "No score" never plays.
 - **Lights:** "match start" and "game shot" (the win) fire in every mode, and "180" fires in High Score. "Leg won", "bust" and "high out" never fire. There are no new light events.
 - **Confetti** on the winner, as on an X01 game shot.
-- **Scoreboard per mode** on the station, /watch and /display, plus a **target board**: the dartboard drawing from the profile heatmap, highlighting what the current player should hit.
+- **Scoreboard per mode** on the station, /watch and /display, plus a **target board**: the dartboard drawing from the profile heatmap, highlighting what the current player should hit. Where there is a target board it's the main element, and the players are a compact list beside it (below it on phones) (2026-11-06).
 - **Ties in Golf and High Score** go to sudden death. Only the tied leaders play on, one extra visit (or hole) each, until one is ahead after a round.
 
 ### Around the Clock

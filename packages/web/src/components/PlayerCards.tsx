@@ -153,3 +153,48 @@ export function PlayerCards({
     </div>
   );
 }
+
+const LIST = {
+  station: {
+    list: "m-0 flex min-w-0 list-none flex-col gap-1.5 self-start p-0 kiosk:gap-2",
+    row: "grid min-h-14 min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 border-solid px-3 [--avatar:36px] kiosk:min-h-[76px] kiosk:px-4 kiosk:[--avatar:48px]",
+    name: "overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[13px] uppercase tracking-[1px] kiosk:text-[18px]",
+    meta: "font-pixel text-[11px] text-muted uppercase tracking-[1px] kiosk:text-[12px]",
+    score: "text-[36px] leading-[0.8] kiosk:text-[48px]",
+    frame: "border-2 kiosk:border-[3px]",
+  },
+  projector: {
+    list: "m-0 flex min-w-0 list-none flex-col gap-pu-12 self-start p-0",
+    row: "grid min-h-pu-96 min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-pu-16 border-solid px-pu-20 avatar-pu-56",
+    name: "overflow-hidden text-ellipsis whitespace-nowrap font-bold font-pixel text-pu-26 uppercase tracking-pu-2",
+    meta: "font-pixel text-muted text-pu-18 uppercase tracking-[1px]",
+    score: "text-pu-72 leading-[0.8]",
+    frame: "border-pu-3",
+  },
+};
+
+export function PlayerList({ match, size = "station" }: { match: MatchView; size?: CardsSize }) {
+  const style = LIST[size];
+  const cards = cardsOf(match);
+  return (
+    <ol className={style.list} aria-label="Players">
+      {cards.map((card, p) => {
+        const player = match.players[p];
+        const active = match.state.currentPlayer === p;
+        return (
+          <li
+            key={player?.id ?? p}
+            className={`${style.row} ${active ? `border-accent bg-accent-tint ${style.frame}` : "border border-border bg-panel"}`}
+          >
+            {player && <Avatar player={player} />}
+            <div className="flex min-w-0 flex-col gap-1">
+              <span className={style.name}>{player?.name ?? "?"}</span>
+              <span className={style.meta}>{card.meta}</span>
+            </div>
+            <span className={`${style.score} ${active ? "text-accent" : ""}`}>{card.score}</span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}

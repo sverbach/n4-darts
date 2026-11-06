@@ -7,7 +7,7 @@ import { TargetBoard } from "../../components/Dartboard.tsx";
 import { Logo } from "../../components/Logo.tsx";
 import { MatchOver } from "../../components/MatchOver.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
-import { PlayerCards } from "../../components/PlayerCards.tsx";
+import { PlayerCards, PlayerList } from "../../components/PlayerCards.tsx";
 import { PlayerPicker } from "../../components/PlayerPicker.tsx";
 import { SegmentPicker } from "../../components/SegmentPicker.tsx";
 import { SoundPrompt } from "../../components/Sound.tsx";
@@ -330,23 +330,25 @@ interface ScoreboardProps {
 /** Scores, the current visit and whose turn it is. */
 export function Scoreboard(props: ScoreboardProps) {
   const targets = targetsOf(props.match);
-  return (
-    <>
-      <PlayerCards match={props.match} hints={props.hints ?? false} />
-      {targets ? (
-        <div className="flex min-w-0 kiosk:flex-row flex-col gap-3 kiosk:gap-4">
-          <div className="flex min-w-0 flex-1 flex-col [&>section]:flex-1">
-            <VisitPanel {...props} />
-          </div>
+  if (targets) {
+    return (
+      <>
+        <div className="scoreboard grid min-h-0 kiosk:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] gap-3 kiosk:gap-4">
           <TargetBoard
             highlight={targets.highlight}
             label={targets.label}
-            className="kiosk:w-[min(240px,24vh)] w-[min(200px,24vh)] flex-none self-center"
+            className="kiosk:w-[min(100%,calc(100dvh-440px))] w-[min(72vw,34vh)] self-center justify-self-center"
           />
+          <PlayerList match={props.match} />
         </div>
-      ) : (
         <VisitPanel {...props} />
-      )}
+      </>
+    );
+  }
+  return (
+    <>
+      <PlayerCards match={props.match} hints={props.hints ?? false} />
+      <VisitPanel {...props} />
     </>
   );
 }

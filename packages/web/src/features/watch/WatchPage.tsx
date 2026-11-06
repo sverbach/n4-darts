@@ -3,7 +3,7 @@ import { Avatar } from "../../components/Avatar.tsx";
 import { TargetBoard } from "../../components/Dartboard.tsx";
 import { Logo } from "../../components/Logo.tsx";
 import { MatchOver } from "../../components/MatchOver.tsx";
-import { PlayerCards } from "../../components/PlayerCards.tsx";
+import { PlayerCards, PlayerList } from "../../components/PlayerCards.tsx";
 import { SoundButton, SoundPrompt } from "../../components/Sound.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import { matchRulesLabel } from "../../lib/labels.ts";
@@ -75,13 +75,13 @@ function WatchBoard({ match }: { match: MatchView }) {
   const targets = targetsOf(match);
   if (!targets) return <PlayerCards match={match} size="projector" />;
   return (
-    <div className="flex min-h-0 flex-1 gap-pu-16 [&>.scoreboard]:flex-1">
-      <PlayerCards match={match} size="projector" />
+    <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_calc(420*var(--px))] gap-pu-24">
       <TargetBoard
         highlight={targets.highlight}
         label={targets.label}
-        className="h-full max-h-[calc(480*var(--px))] flex-none self-center"
+        className="h-full max-h-full min-h-0 w-auto justify-self-center"
       />
+      <PlayerList match={match} size="projector" />
     </div>
   );
 }

@@ -40,3 +40,5 @@ The groundwork every party mode needs, proven end to end with the simplest mode.
 - **Tests:** Around the Clock in the engine (`aroundTheClock.test.ts`), the server end to end (`matches/partyModes.test.ts`: setup from the station and /admin, refusals, a finished game in no list or stat, a live correction), party calls, party light events, and a refused tournament config.
 - **Visual suite:** a new "Around the Clock on station 1" test covers the station (phone, kiosk), /watch and /display while playing and at the win. The new-match baselines changed (Game picker). The tournament-groups baselines changed only in queue order (see above).
 - typecheck, lint, 744 unit tests, build, e2e (41) and the visual suite (5) pass.
+
+2026-11-06: Board-first layout (the user's call). In modes with a target board, the board is now the main element. On the kiosk it sits left, sized to the screen (`min(100%, 100dvh - 440px)`), with the players as a compact list (`PlayerList`) on the right, above the buttons. On a phone the board is on top, then the list. On /watch the board is big on the left and the list on the right. X01 and High Score keep their player cards.
