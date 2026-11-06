@@ -1,6 +1,6 @@
 # The public site on the home server, behind nginx
 
-Status: ready-for-human
+Status: done
 Type: task
 Blocked by: 07
 
@@ -33,3 +33,7 @@ The containers were tried on a Mac (OrbStack, 2026-11-03): both start from the `
 ## Acceptance
 
 - Each step above done, or noted here with what went wrong.
+
+## Comments
+
+2026-11-06: Done, checked by the user. The public site runs on the home server behind nginx and is reachable at darts.nvier.ch. In Portainer, the public container only starts with `COMPOSE_PROFILES=public` set in the stack's environment (now in the README).

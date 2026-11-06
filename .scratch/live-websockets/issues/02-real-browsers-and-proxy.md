@@ -1,6 +1,6 @@
 # Live views over WebSockets in real browsers and behind the proxy
 
-Status: ready-for-human
+Status: done
 Type: task
 Blocked by: 01
 
@@ -17,3 +17,7 @@ Things the automated tests can't show: Playwright switches the back/forward cach
 ## Acceptance
 
 All checks pass. Record the results, and anything odd, under Comments.
+
+## Comments
+
+2026-11-06: Done, checked by the user on the real setup: the live views work in real browsers and behind the proxy. Along the way the board had been updated to Board Manager 2.1.0, which changed its API (darts no longer arrived). After downgrading the board to 2.0.2, all live views look good. The README now says 2.0.2 is required.
