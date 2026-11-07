@@ -12,6 +12,18 @@ The voice and licence notes are in the pack's `LICENSE.md`.
 
 The default is Piper's `en_GB-northern_english_male-medium`, a Northern English man. Its base model was trained on research-only recordings, so `LICENSE.md` limits it to running n4 on your own server. `ljspeech` makes a US female voice trained only on public-domain recordings, if you need a voice free of that restriction.
 
+## German pack from Fish Audio
+
+`fish` makes a German pack from a [Fish Audio](https://fish.audio) voice model, one API request per call, and writes it to `tools/callouts/.work/fish/fish-de.zip` for Admin → Sound. It leaves the default pack alone.
+
+```sh
+export FISH_API_KEY=...                        # from fish.audio → API keys
+FISH_KEYS="0 26 100 137 180 gameshot busted" tools/callouts/generate.sh fish   # test listen first
+tools/callouts/generate.sh fish                # then the rest
+```
+
+`FISH_VOICE` overrides the voice model (default `fbb19c617d814cc897adb459290462bb`) and `FISH_MODEL` the TTS model (default `s1`). The words are in `fish.py`, with numbers spelled out ("Hundertsiebenunddreißig") and the English terms German callers use for the special calls ("No Score!", "Game Shot!"). Raw clips are kept in `.work/fish/raw/`, and a call is fetched again only when its words, voice or model change, so reruns and fixes cost nothing. To redo one clip that sounds wrong, delete its `.txt` there and run again. It needs `python3` and `ffmpeg`. Check the voice model's terms on Fish Audio before you share the pack.
+
 ## Packs from darts-caller
 
 darts-caller's downloads (listed in its [`assets/caller_profiles.py`](https://github.com/lbormann/darts-caller/blob/master/assets/caller_profiles.py)) can't be uploaded as they are: each is a zip holding a zip of numbered recordings plus a CSV template that names them, often over 100 MB. `import.sh` turns one into a pack for Admin → Sound:
