@@ -29,7 +29,7 @@ export function Logo({ width, className }: { width?: string; className?: string 
  * The logo hovering slowly with stars sparkling around it, for the home page. A spritesheet of
  * 64 frames of 76 × 39 pixels (the logo plus a 2 px margin), stepped through by the `logo-sparkle`
  * animation (styles/app.css): the strip is 64 frames wide and moves one frame at a time.
- * Its colours are baked in, so it doesn't follow the theme's text colour.
+ * Its colours are baked in; on a light theme it's inverted (`.logo-sheet`, styles/app.css).
  */
 export function SparkleLogo({ className = "" }: { className?: string }) {
   return (
@@ -38,7 +38,7 @@ export function SparkleLogo({ className = "" }: { className?: string }) {
         src={sparkleSheet}
         alt=""
         draggable={false}
-        className="block h-full w-[6400%] max-w-none animate-[logo-sparkle_5.12s_steps(64)_infinite] [image-rendering:pixelated] motion-reduce:animate-none"
+        className="logo-sheet block h-full w-[6400%] max-w-none animate-[logo-sparkle_5.12s_steps(64)_infinite] [image-rendering:pixelated] motion-reduce:animate-none"
       />
     </div>
   );

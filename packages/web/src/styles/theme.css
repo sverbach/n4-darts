@@ -103,6 +103,65 @@
   --accent-line: #4c2f19;
 }
 
+:root[data-theme="daylight"] {
+  --bg: #ede7dc;
+  --panel: #f6f2ea;
+  --surface: #fdfbf6;
+  --line-soft: #e0d9cb;
+  --border: #c4bba8;
+
+  --text: #16140f;
+  --muted: #5d584f;
+  --faint: #a59d8d;
+
+  --accent: #5a3ed0;
+  --accent-text: #fdfbf6;
+  --accent-tint: #e9e3f8;
+  --accent-line: #bfb2ec;
+
+  --scrim: rgb(22 20 15 / 0.45);
+
+  --ok: #0d7542;
+  --ok-tint: #e1f0e6;
+  --ok-line: #9ccdb0;
+  --warn: #8f5400;
+  --warn-tint: #f6ead3;
+  --warn-line: #dcbb80;
+  --danger: #bb2618;
+  --danger-tint: #f7e0dc;
+  --danger-line: #e5a197;
+  --danger-faint: #d49b93;
+
+  --avatar-1: #ccc3f5;
+  --avatar-2: #a3d7cc;
+  --avatar-3: #efbf9f;
+  --avatar-4: #accdf8;
+  --avatar-5: #edb9d4;
+  --avatar-6: #c2d3a0;
+  --avatar-7: #f5b9b6;
+  --avatar-8: #c4cbd5;
+  --avatar-9: #a6d5d5;
+
+  --heat-1: #fbecae;
+  --heat-2: #f4be4f;
+  --heat-3: #ec8904;
+  --heat-4: #d75a07;
+  --heat-5: #bd2703;
+  --heat-6: #901211;
+  --heat-7: #761617;
+
+  --series-1: #6250d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #2a78d6;
+  --series-5: #eda100;
+  --series-6: #e87ba4;
+  --series-7: #008300;
+  --series-8: #e34948;
+
+  color-scheme: light;
+}
+
 /* Silkscreen for labels, names and buttons; Geist Pixel for numbers and running text. As theme
    values they are also the `--font-pixel` / `--font-text` variables plain CSS uses. */
 @theme {
