@@ -30,6 +30,7 @@ const EVENTS: { event: LightEvent; label: string }[] = [
   { event: "legWon", label: "Leg won" },
   { event: "gameShot", label: "Game shot" },
   { event: "s180", label: "180" },
+  { event: "s100", label: "100+ visit" },
   { event: "bust", label: "Bust" },
   { event: "highCheckout", label: "High out (100+)" },
 ];

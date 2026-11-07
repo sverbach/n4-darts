@@ -3,7 +3,7 @@
 // while a match is on, idle otherwise). Runs off the change feed, after a dart has been handled,
 // and never waits for a device: a failure is counted in diagnostics (docs/adr/0009).
 
-import { allVisits, type MatchState, scoresPoints, type VisitView } from "@n4/engine";
+import { closedVisits, type MatchState, scoresPoints, type VisitView } from "@n4/engine";
 import type { LightEvent, StationView } from "../api.ts";
 import type { Db } from "../db.ts";
 import type { ChangeFeed } from "../live/live.ts";
@@ -12,8 +12,17 @@ import type { StationDirectory } from "../stations/stations.ts";
 import type { WledClient } from "./wled.ts";
 
 /** When several happen at once, the first of these that has a preset runs. */
-const PRIORITY: LightEvent[] = ["gameShot", "highCheckout", "legWon", "s180", "bust", "matchStart"];
+const PRIORITY: LightEvent[] = [
+  "gameShot",
+  "highCheckout",
+  "legWon",
+  "s180",
+  "s100",
+  "bust",
+  "matchStart",
+];
 const HIGH_CHECKOUT = 100;
+const HIGH_VISIT = 100;
 
 interface Seen {
   matchId: string | null;
@@ -38,20 +47,23 @@ const total = (visit: VisitView) =>
 const legsWonIn = (state: MatchState) =>
   state.mode === "x01" ? state.legs.filter((l) => l.winner !== null).length : 0;
 
-/** The visits' own events in a match: a bust, a high checkout, a 180. */
 function visitEvents(state: MatchState): { key: string; event: LightEvent }[] {
   if (!scoresPoints(state.mode)) return [];
-  return allVisits(state).flatMap((visit) => {
+  const closed = closedVisits(state);
+  const visits = state.currentVisit ? [...closed, state.currentVisit] : closed;
+  return visits.flatMap((visit) => {
     const first = visit.darts[0]?.dartId;
     if (!first) return [];
-    const event: LightEvent | null = visit.bust
-      ? "bust"
-      : visit.checkout && total(visit) >= HIGH_CHECKOUT
-        ? "highCheckout"
-        : visit.darts.length === 3 && total(visit) === 180
-          ? "s180"
-          : null;
-    return event ? [{ key: `${first}:${event}`, event }] : [];
+    const counted = visit.darts.filter((d) => !d.ignored).length;
+    const over = visit !== state.currentVisit || counted === 3 || visit.checkout;
+    const events: LightEvent[] = [];
+    if (visit.bust) events.push("bust");
+    else {
+      if (visit.checkout && total(visit) >= HIGH_CHECKOUT) events.push("highCheckout");
+      if (counted === 3 && total(visit) === 180) events.push("s180");
+      if (over && total(visit) >= HIGH_VISIT) events.push("s100");
+    }
+    return events.map((event) => ({ key: `${first}:${event}`, event }));
   });
 }
 

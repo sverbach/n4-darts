@@ -70,7 +70,7 @@ The recordings of every call, one file per call key (`0`–`180`, `gameshot`, `m
 _Avoid_: Sound pack, caller (for the files)
 
 **Light event**:
-A moment of a match that can start a light preset at its station: match start, leg won, game shot, 180, bust, high out (a checkout of 100+). Each has its own preset and seconds per station. Party modes fire match start and game shot (the win), and High Score also 180.
+A moment of a match that can start a light preset at its station: match start, leg won, game shot, 180, 100+ visit (any visit of 100 or more), bust, high out (a checkout of 100+). Each has its own preset and seconds per station. Party modes fire match start and game shot (the win), and High Score also 180 and 100+ visit.
 _Avoid_: Trigger, effect
 
 **Base preset**:

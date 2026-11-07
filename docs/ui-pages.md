@@ -301,7 +301,7 @@ There's one tournament at a time, and the tab shows one of three states.
 The WLED light strips, and what each station's do.
 - **Stations:** a card per station:
   - **Device:** "No lights" or one of the devices.
-  - With a device: **Idle** (no match) and **Playing** (a match on) presets, then a row per event: Match start, Leg won, Game shot, 180, Bust, High out (100+), each with a preset ("None" leaves it out), its seconds (5 when first picked) and **Test** (starts it now; the base comes back after its seconds).
+  - With a device: **Idle** (no match) and **Playing** (a match on) presets, then a row per event: Match start, Leg won, Game shot, 180, 100+ visit, Bust, High out (100+), each with a preset ("None" leaves it out), its seconds (5 when first picked) and **Test** (starts it now; the base comes back after its seconds).
   - Presets are picked from the device's own list ("5 · Game shot"); while the device can't be reached, a line says so and their numbers can be typed.
   - Every choice is saved as it's made. On a phone each event's name sits above its preset, seconds and Test.
 - **Devices** (beside the stations on desktop, below on a phone): a card per device with its name, address, a ⋮ menu (Edit, Remove with a confirmation) and **Test connection**: a green pill with the device's name and its number of presets, or the error in red. Below, **Add a device**: name and address.

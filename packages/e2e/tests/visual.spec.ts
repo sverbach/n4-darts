@@ -253,7 +253,7 @@ test("the organiser's area", async () => {
       events: { gameShot: { preset: 5, seconds: 8 }, s180: { preset: 6, seconds: 5 } },
     },
   });
-  await open(page, "/admin/lights", (p) => p.getByText("Test strip · 8 presets"));
+  await open(page, "/admin/lights", (p) => p.getByText("Test strip · 9 presets"));
   await shoot(page, "admin-lights", PAGES);
 
   await open(page, "/admin/diagnostics", (p) => p.getByRole("table").first());

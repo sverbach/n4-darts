@@ -15,7 +15,7 @@ test("Admin → Lights: add a device, test it, map an event, test that", async (
 
   const device = page.getByRole("listitem").filter({ hasText: name });
   await device.getByRole("button", { name: "Test connection" }).click();
-  await expect(device.getByText("Test strip · 8 presets")).toBeVisible();
+  await expect(device.getByText("Test strip · 9 presets")).toBeVisible();
 
   const station = page.getByRole("listitem").filter({ hasText: "Station 1" });
   await station.getByLabel("Device").selectOption({ label: name });

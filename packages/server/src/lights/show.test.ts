@@ -2,6 +2,7 @@ import { type BoardSim, createBoardSim } from "@n4/board-sim";
 import {
   defaultAroundTheClockSettings,
   defaultHighScoreSettings,
+  defaultX01Settings,
   type MatchEvent,
   matchState,
   type X01State,
@@ -235,9 +236,64 @@ describe("a High Score match's light events", () => {
 
   it("fires the 180, and the game shot on the deciding dart", () => {
     const first = [start, dart(20, 3), dart(20, 3)];
-    expect(eventsBetween(seenOf(match(first)), match([...first, dart(20, 3)]))).toEqual(["s180"]);
+    expect(eventsBetween(seenOf(match(first)), match([...first, dart(20, 3)]))).toEqual([
+      "s180",
+      "s100",
+    ]);
 
     const last = [...first, dart(20, 3), takeout, dart(1), dart(1)];
     expect(eventsBetween(seenOf(match(last)), match([...last, dart(1)]))).toEqual(["gameShot"]);
+  });
+});
+
+describe("a 100+ visit's light event", () => {
+  const settings = { ...defaultX01Settings, startScore: 501 };
+  const match = (events: MatchEvent[], rules = settings): StationView["match"] =>
+    ({
+      id: "m",
+      players: [],
+      settings: rules,
+      state: matchState(rules, events),
+      label: null,
+    }) as StationView["match"];
+  let id = 0;
+  const dart = (number: number, multiplier: 1 | 2 | 3 = 1): MatchEvent => ({
+    type: "DartThrown",
+    dartId: `d${++id}`,
+    segment: { number, multiplier },
+  });
+  const start: MatchEvent = { type: "MatchStarted", playerCount: 2 };
+  const takeout: MatchEvent = { type: "TakeoutFinished" };
+  const after = (before: MatchEvent[], added: MatchEvent[]) =>
+    eventsBetween(seenOf(match(before)), match([...before, ...added]));
+
+  it("fires once the visit is over at 100 or more", () => {
+    const two = [start, dart(20, 3), dart(20, 1)];
+    expect(after([start, dart(20, 3)], [dart(20, 1)])).toEqual([]);
+    expect(after(two, [dart(20, 1)])).toEqual(["s100"]);
+    expect(after([start, dart(20, 3), dart(20, 3)], [dart(20, 1)])).toEqual(["s100"]);
+  });
+
+  it("fires for a visit ended early at 100 or more", () => {
+    expect(after([start, dart(20, 3), dart(20, 2)], [takeout])).toEqual(["s100"]);
+  });
+
+  it("doesn't fire at 99 or on a bust", () => {
+    expect(after([start, dart(19, 3), dart(19, 1)], [dart(4, 1)])).toEqual([]);
+    const bust = { ...defaultX01Settings, startScore: 101 };
+    const events = [start, dart(20, 3), dart(20, 2)];
+    expect(eventsBetween(seenOf(match(events, bust)), match([...events, dart(5)], bust))).toEqual([
+      "bust",
+    ]);
+  });
+
+  it("lists the 180 before the 100+, so a 180 preset wins when there is one", () => {
+    expect(after([start, dart(20, 3), dart(20, 3)], [dart(20, 3)])).toEqual(["s180", "s100"]);
+  });
+
+  it("fires again for the next 100+ visit in the same leg", () => {
+    const first = [start, dart(20, 3), dart(20, 1), dart(20, 1), takeout];
+    const second = [...first, dart(1), takeout, dart(20, 3), dart(20, 1)];
+    expect(after(second, [dart(20, 1)])).toEqual(["s100"]);
   });
 });

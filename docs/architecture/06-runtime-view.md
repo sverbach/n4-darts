@@ -186,6 +186,6 @@ sequenceDiagram
 ```
 
 - The screens get the dart first; the lights follow from the change feed, so a slow or offline device never delays a dart (ADR 0009). The load test runs with the show on.
-- When one dart is several moments (a 121 checkout that wins a leg), only the most important one with a preset runs: game shot, high out, leg won, 180, bust, match start.
+- When one dart is several moments (a 121 checkout that wins a leg), only the most important one with a preset runs: game shot, high out, leg won, 180, 100+ visit, bust, match start. A 100+ visit fires once the visit is over (three darts, a checkout, or taken out early), so a bust on the third dart can't follow it.
 - A newer event replaces one that's running; its seconds start again.
 

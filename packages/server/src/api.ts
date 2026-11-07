@@ -127,7 +127,14 @@ export interface AdminPlayer extends Player {
 }
 
 /** Match moments a station's lights react to (wled-lights). */
-export type LightEvent = "matchStart" | "legWon" | "gameShot" | "s180" | "bust" | "highCheckout";
+export type LightEvent =
+  | "matchStart"
+  | "legWon"
+  | "gameShot"
+  | "s180"
+  | "s100"
+  | "bust"
+  | "highCheckout";
 
 /** A WLED controller on the LAN. */
 export interface LightDevice {
@@ -400,6 +407,7 @@ const LIGHT_EVENTS = {
   s180: "s180",
   bust: "bust",
   highCheckout: "highCheckout",
+  s100: "s100",
 } as const satisfies { [E in LightEvent]: E };
 
 export const LightEventInput = z.enum(LIGHT_EVENTS, {
@@ -467,6 +475,7 @@ const eventLights = z
       s180: eventLight("s180"),
       bust: eventLight("bust"),
       highCheckout: eventLight("highCheckout"),
+      s100: eventLight("s100"),
     } satisfies { [E in LightEvent]: z.ZodType },
     {
       error: (issue) =>

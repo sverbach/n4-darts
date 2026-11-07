@@ -14,6 +14,7 @@ export const DEFAULT_PRESETS = [
   "180",
   "Bust",
   "High checkout",
+  "100+",
 ];
 
 export interface WledSimOptions {

@@ -12,7 +12,7 @@ Dart evenings for a room of Autodarts boards, fully offline. The boards detect t
 - **Projector:** `/display` follows the evening (live scores, groups, bracket, champion and awards, or the leaderboard), and `/watch/n` shows one station's scoreboard.
 - **Stats** (`/players`, `/tournaments`): rating, averages, checkout %, 180s, best leg and a heatmap per player, plus every past tournament and match. X01 matches only.
 - **Caller:** a voice calls the scores, "No score" and "Game shot". It's switched on per device, and voice packs in [darts-caller](https://github.com/lbormann/darts-caller)'s format can be uploaded in `/admin` → Sound.
-- **Lights:** WLED presets for idle, playing and moments like match start, game shot, 180 and bust (`/admin` → Lights).
+- **Lights:** WLED presets for idle, playing and moments like match start, game shot, a 100+ visit, 180 and bust (`/admin` → Lights).
 - **Public site:** a read-only copy of the stats for players outside the room, behind one group password.
 - **Admin** (`/admin`, optionally behind a PIN): players with photos, stations, matches and corrections, diagnostics. The database is backed up daily.
 
