@@ -43,21 +43,23 @@ export function HomePage() {
           {stations.map((s) => (
             <div key={s.id} className="flex gap-2">
               <Link href={`/station/${s.id}`} className={TILE}>
-                <span className="flex min-w-0 flex-1 flex-col gap-1.5">
-                  <span>{s.name}</span>
-                  {(s.match || s.notice) && (
-                    <span className="overflow-hidden text-ellipsis whitespace-nowrap font-text kiosk:text-[20px] text-[18px] text-muted uppercase tracking-normal">
-                      {stationState(s)}
-                    </span>
+                <span className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
+                  <span className="whitespace-nowrap">{s.name}</span>
+                  {!s.boardOnline || !s.boardRunning ? (
+                    <BoardStatus
+                      online={s.boardOnline}
+                      running={s.boardRunning}
+                      className={`${BADGE} whitespace-nowrap`}
+                    />
+                  ) : (
+                    (s.match || s.notice) && (
+                      <span className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-text kiosk:text-[20px] text-[18px] text-muted uppercase tracking-normal">
+                        {stationState(s)}
+                      </span>
+                    )
                   )}
                 </span>
                 {!s.match && !s.notice && <span className={`status ${BADGE}`}>Free</span>}
-                <BoardStatus
-                  online={s.boardOnline}
-                  running={s.boardRunning}
-                  quiet
-                  className={`${BADGE} whitespace-nowrap`}
-                />
                 <PixelIcon name="arrow" />
               </Link>
               <Link

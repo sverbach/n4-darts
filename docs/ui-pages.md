@@ -49,7 +49,7 @@ n4-darts runs darts evenings: a few automatic dartboards (stations) play x01, wh
 ## `/`: Home
 
 The animated logo, then two lists of links:
-- **Stations** (live): each station's name and what it's doing ("Free", "Ann vs Bob · 61 – 101", "Ann vs Bob · waiting to start", "Ann won", or its notice), a status pill only when the board needs a look, and a "Watch" link beside it in the same frame.
+- **Stations** (live): each station's name on one line, and under it what it's doing ("Ann vs Bob · 61 – 101", "Ann vs Bob · waiting to start", "Ann won", or its notice). When the board needs a look, a small "Board stopped" or "Board offline" pill takes that line's place. A free station has a small "Free" pill on the right. A "Watch" link sits beside each station in the same frame.
 - **More:** "Players and stats", "Projector", "Admin".
 
 ---
