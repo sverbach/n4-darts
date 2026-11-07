@@ -17,12 +17,12 @@ import { RATING_MATCHES } from "../ratings/ratings.ts";
 const RECENT = 20;
 /** How many darts the profile's heatmap shows. */
 const HEATMAP = 500;
-/** An evening that runs past midnight counts to the day it started. */
-const EVENING_SHIFT_MS = 6 * 60 * 60 * 1000;
+/** A session that runs past midnight counts to the day it started. */
+const DAY_SHIFT_MS = 6 * 60 * 60 * 1000;
 const ALL = Number.MAX_SAFE_INTEGER;
 
 const dayOf = (iso: string) => {
-  const at = new Date(Date.parse(iso) - EVENING_SHIFT_MS);
+  const at = new Date(Date.parse(iso) - DAY_SHIFT_MS);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}`;
 };
@@ -188,7 +188,7 @@ export function createStats(db: Db) {
       rank: rank < 0 ? null : rank + 1,
       since: byDay.keys().next().value ?? null,
       totals: totalsOf(counted.map((c) => c.own)),
-      evenings: [...byDay].map(([day, own]) => ({
+      days: [...byDay].map(([day, own]) => ({
         day,
         average: threeDartAverage(own),
         matches: own.length,

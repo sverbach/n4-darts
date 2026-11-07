@@ -728,8 +728,8 @@ export interface PlayerProfile {
   /** The day (YYYY-MM-DD) of the first counted match. */
   since: string | null;
   totals: StatTotals;
-  /** One entry per day played (an evening past midnight counts to the day it started), oldest first. */
-  evenings: { day: string; average: number | null; matches: number }[];
+  /** One entry per day played (a session past midnight counts to the day it started), oldest first. */
+  days: { day: string; average: number | null; matches: number }[];
   /** Finished tournaments the player was in, newest first. */
   tournaments: { id: string; name: string; date: string; from: number; to: number }[];
   tournamentsWon: number;

@@ -107,9 +107,9 @@ describe("stats", () => {
     expect((await get<PlayerProfile>("/api/players/bob/stats")).body.totals.average).toBe(180);
   });
 
-  it("builds a profile: totals, evenings, tournaments and recent matches", async () => {
+  it("builds a profile: totals, days, tournaments and recent matches", async () => {
     const { get } = setup();
-    // Two evenings; the second one runs past midnight.
+    // Two days; the second one runs past midnight.
     play(["ann", "bob"], [["T20", "S1"], ["S20"], ["D20"]], { at: "2026-10-16T19:00:00.000Z" });
     play(["bob", "ann"], [["S1"], ["T20", "T20", "T20"]], {
       at: "2026-10-17T20:00:00.000Z",
@@ -141,7 +141,7 @@ describe("stats", () => {
       bestLeg: 3,
       checkoutPercent: null, // no double-out matches
     });
-    expect(ann.evenings.map((e) => [e.day, e.matches])).toEqual([
+    expect(ann.days.map((e) => [e.day, e.matches])).toEqual([
       ["2026-10-16", 1],
       ["2026-10-17", 2],
     ]);

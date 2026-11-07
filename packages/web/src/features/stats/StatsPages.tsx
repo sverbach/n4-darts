@@ -1,9 +1,9 @@
 import type { LeaderboardRow, PlayerProfile } from "@n4/server/api";
-import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { Avatar, isHiddenPlayer } from "../../components/Avatar.tsx";
+import { LineChart } from "../../components/charts/LineChart.tsx";
+import { dayDate } from "../../components/charts/scales.ts";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
-import { tickLabelWidth, valueScale } from "../../lib/chartScale.ts";
 import { average, count, legScore, NONE, placing } from "../../lib/format.ts";
 import { usePublicSite } from "../../lib/publicSite.ts";
 import { useFetch } from "../../lib/useFetch.ts";
@@ -130,7 +130,7 @@ export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
   );
 }
 
-/** /players/<id>: one player's numbers, their average per evening, tournaments and matches. */
+/** /players/<id>: one player's numbers, their average per day, tournaments and matches. */
 export function ProfilePage({ id }: { id: string }) {
   const {
     data: profile,
@@ -249,11 +249,11 @@ function Profile({ profile }: { profile: PlayerProfile }) {
       </div>
 
       {t.matches > 0 && (
-        <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-4 kiosk:items-start gap-6 kiosk:gap-4 kiosk:[&>:first-child:not(:only-child)]:col-span-3 kiosk:[&>:only-child]:col-start-4">
-          {profile.evenings.length > 0 && (
+        <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-4 kiosk:items-stretch gap-6 kiosk:gap-4 kiosk:[&>:first-child:not(:only-child)]:col-span-3 kiosk:[&>:only-child]:col-start-4">
+          {profile.days.length > 0 && (
             <section className={SECTION}>
-              <h2 className="label font-normal">Average per evening</h2>
-              <AverageChart evenings={profile.evenings} />
+              <h2 className="label font-normal">Average per day</h2>
+              <AverageChart days={profile.days} />
             </section>
           )}
           <section className={SECTION}>
@@ -358,135 +358,30 @@ const PLAYER_CELL =
   "inline-flex min-h-11 items-center gap-3 kiosk:gap-3 font-pixel kiosk:text-[16px] text-[13px] uppercase tracking-[1px]";
 
 /** True on a wide screen (the desktop layout). */
-function useWide() {
-  const query = "(min-width: 760px)";
-  const [wide, setWide] = useState(() => window.matchMedia(query).matches);
-  useEffect(() => {
-    const media = window.matchMedia(query);
-    const update = () => setWide(media.matches);
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, []);
-  return wide;
-}
 
-/** A line of the 3-dart average per evening, with the dates below, a value scale, the last one labelled. */
-function AverageChart({ evenings }: { evenings: PlayerProfile["evenings"] }) {
-  const wide = useWide();
-  const points = evenings.flatMap((e) => (e.average === null ? [] : [{ ...e, value: e.average }]));
+function AverageChart({ days }: { days: PlayerProfile["days"] }) {
+  const points = days.flatMap((d) =>
+    d.average === null
+      ? []
+      : [
+          {
+            key: d.day,
+            x: dayDate(d.day),
+            y: d.average,
+            axisLabel: shortDay(d.day),
+            tooltip: `${date(`${d.day}T12:00:00`)} · ${d.average.toFixed(1)} avg · ${d.matches} ${d.matches === 1 ? "match" : "matches"}`,
+          },
+        ],
+  );
   if (points.length === 0) return null;
   if (points.length === 1) {
     const only = points[0] as (typeof points)[number];
     return (
-      <p className="m-0 flex items-baseline gap-3 border border-border border-solid bg-panel p-4">
-        <span className="text-[48px] leading-[0.85]">{only.value.toFixed(1)}</span>
-        <span className="label">{shortDay(only.day)}</span>
+      <p className="m-0 flex flex-1 items-center gap-3 border border-border border-solid bg-panel p-4">
+        <span className="text-[48px] leading-[0.85]">{only.y.toFixed(1)}</span>
+        <span className="label">{only.axisLabel}</span>
       </p>
     );
   }
-  // Drawn at about its real size, so the text comes out right: a phone's width or the page's.
-  // On a wide screen it shares the row with the heatmap: about two thirds of the page.
-  const width = wide ? 840 : 358;
-  const height = wide ? 300 : 200;
-  const font = wide ? 20 : 13;
-  const dot = wide ? 10 : 6;
-  const scale = valueScale(points.map((p) => p.value));
-  const { low, high, ticks } = scale;
-  const labelWidth = tickLabelWidth(scale, font);
-  const pad = wide
-    ? { left: Math.max(60, labelWidth + 20), right: 30, top: 48, bottom: 40 }
-    : { left: Math.max(30, labelWidth + 16), right: 16, top: 34, bottom: 26 };
-  const x = (i: number) =>
-    points.length === 1
-      ? (pad.left + width - pad.right) / 2
-      : pad.left + (i / (points.length - 1)) * (width - pad.left - pad.right);
-  const y = (v: number) => pad.top + ((high - v) / (high - low)) * (height - pad.top - pad.bottom);
-  // Every date fits up to about 8 points wide (4 on a phone); beyond that, every n-th one.
-  const labelEvery = Math.ceil(points.length / (wide ? 8 : 4));
-  const last = points.length - 1;
-  const lastPoint = points[last] as (typeof points)[number];
-  const tag = lastPoint.value.toFixed(1);
-  const tagWidth = tag.length * font * 0.5 + font;
-  const tagX = Math.min(width - tagWidth - 4, Math.max(4, x(last) - tagWidth / 2));
-
-  return (
-    <figure className="m-0 border border-border border-solid bg-panel px-0 pt-3 pb-1.5">
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        role="img"
-        aria-label="3-dart average per evening"
-        className="block h-auto w-full font-text"
-        shapeRendering="crispEdges"
-        style={{ fontSize: font }}
-      >
-        {ticks.map((tick) => (
-          <g key={tick}>
-            <line
-              x1={pad.left}
-              x2={width - pad.right}
-              y1={y(tick)}
-              y2={y(tick)}
-              className="stroke-line-soft"
-            />
-            <text
-              x={pad.left - (wide ? 12 : 8)}
-              y={y(tick)}
-              className="fill-muted"
-              textAnchor="end"
-              dy="0.3em"
-            >
-              {tick}
-            </text>
-          </g>
-        ))}
-        <polyline
-          className="fill-none stroke-3 stroke-muted"
-          points={points.map((p, i) => `${x(i)},${y(p.value)}`).join(" ")}
-        />
-        {points.map((p, i) => {
-          const size = i === last ? dot * 1.4 : dot;
-          return (
-            <g key={p.day}>
-              <rect
-                x={x(i) - size / 2}
-                y={y(p.value) - size / 2}
-                width={size}
-                height={size}
-                className="fill-text"
-              >
-                <title>
-                  {shortDay(p.day)}: {p.value.toFixed(1)} ({p.matches} matches)
-                </title>
-              </rect>
-              {((i % labelEvery === 0 && last - i >= labelEvery / 2) || i === last) && (
-                <text
-                  x={x(i)}
-                  y={height - font * 0.6}
-                  className="fill-muted uppercase"
-                  textAnchor={i === 0 ? "start" : i === last ? "end" : "middle"}
-                >
-                  {shortDay(p.day)}
-                </text>
-              )}
-            </g>
-          );
-        })}
-        <rect
-          x={tagX}
-          y={4}
-          width={tagWidth}
-          height={font * 1.5}
-          className="fill-surface stroke-border"
-        />
-        <text
-          x={tagX + tagWidth / 2}
-          y={4 + font * 1.1}
-          className="fill-text uppercase"
-          textAnchor="middle"
-        >
-          {tag}
-        </text>
-      </svg>
-    </figure>
-  );
+  return <LineChart points={points} label="3-dart average per day" format={(v) => v.toFixed(1)} />;
 }
