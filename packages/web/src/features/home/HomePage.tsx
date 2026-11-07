@@ -9,6 +9,7 @@ import { PixelIcon } from "../../components/PixelIcon.tsx";
 import { matchRulesLabel } from "../../lib/labels.ts";
 import { useLive } from "../../lib/useLive.ts";
 
+const BADGE = "min-h-6! px-2! text-[11px]! before:size-1.5!";
 const LIST = "flex min-w-0 flex-[1_1_420px] flex-col gap-2";
 const FRAME = "border border-border border-solid bg-surface no-underline hover:border-accent-line";
 const TILE = `flex min-h-[60px] min-w-0 flex-1 items-center justify-between gap-4 ${FRAME} px-4 font-pixel text-[16px] uppercase tracking-[1px] kiosk:min-h-[72px] kiosk:px-6 kiosk:text-[18px] [&_.pixel-icon]:h-[21px] [&_.pixel-icon]:text-muted`;
@@ -50,10 +51,13 @@ export function HomePage() {
                     </span>
                   )}
                 </span>
-                {!s.match && !s.notice && (
-                  <span className="status min-h-6! px-2! text-[11px]! before:size-1.5!">Free</span>
-                )}
-                <BoardStatus online={s.boardOnline} running={s.boardRunning} quiet />
+                {!s.match && !s.notice && <span className={`status ${BADGE}`}>Free</span>}
+                <BoardStatus
+                  online={s.boardOnline}
+                  running={s.boardRunning}
+                  quiet
+                  className={`${BADGE} whitespace-nowrap`}
+                />
                 <PixelIcon name="arrow" />
               </Link>
               <Link
