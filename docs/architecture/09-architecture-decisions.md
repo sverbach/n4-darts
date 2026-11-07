@@ -18,6 +18,7 @@ The decisions that are hard to reverse, each with its context and consequences:
 | [0010](../adr/0010-requests-parsed-with-zod-at-the-routes.md) | Requests are parsed with Zod at the routes |
 | [0011](../adr/0011-live-views-over-websockets.md) | Live views over WebSockets |
 | [0012](../adr/0012-party-modes-persisted-never-counted.md) | Party modes are persisted, but never counted |
+| [0013](../adr/0013-charts-d3-maths-react-drawing.md) | Charts: d3 for the maths, React for the drawing |
 
 ## 9.2 Decision log
 
@@ -112,6 +113,15 @@ Details in `.scratch/live-websockets/spec.md`.
 - **One socket per view**, server to client only, on the same `/live` URLs; changes stay HTTP requests.
 - **Refusals close with 4000 + the HTTP status** (4401 without the admin PIN); the client gives up on those and reconnects after anything else, 500 ms doubling to 5 s.
 - **Proxies must forward WebSockets** (OPS-04).
+
+### Charts (2026-11-07)
+
+Details in `.scratch/charts/spec.md`.
+
+- **d3's calculating modules, drawn by React** (ADR 0013): no chart library's DOM, our tokens in the SVG, pixel-stable for the visual suite.
+- **The heatmap is a density** (a kernel density estimate, seven contour bands), not dots or fields coloured by hits, over the last 500 board-detected X01 darts.
+- **Magnitude has its own heat ramp** (`--heat-*`, dark red to pale yellow, lightness rising); the status colours keep meaning good, warning and bad.
+- **The average is per day**, on a time axis, with a hover/tap tooltip. A session past midnight still counts to the day it started.
 
 ### Party modes (2026-11-06)
 

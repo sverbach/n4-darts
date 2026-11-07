@@ -174,7 +174,7 @@ Every player with at least one counted match, ranked by rating.
 _Avoid_: Ranking, table (that's a group's)
 
 **Profile**:
-One player's long-term stats page: averages, checkouts, scoring, results, the average per evening, tournaments and recent matches.
+One player's long-term stats page: averages, checkouts, scoring, results, the average per day, where the darts land, tournaments and recent matches.
 
 **Awards**:
 The best of one tournament: best match average, highest checkout, most 180s, best leg.

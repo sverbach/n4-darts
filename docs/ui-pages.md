@@ -182,8 +182,8 @@ The layout must cope with 1–3+ stations and 2–8 players per match.
   - **Scoring:** 180s, 140+, 100+.
   - **Results:** Matches won ("60%"), Legs won ("Of 41"), Tournaments won ("Of 4"). The best placing is in the tournaments list.
   - On a phone a group's cards share a row; on desktop they stack in four columns that end level.
-- **"Average per evening":** a small line chart (an SVG) with dates on the x axis (in capitals), the average on the y axis, a tooltip on each dot, and the last evening's value tagged.
-- **"Where the darts land":** a drawn dartboard with a soft glowing dot for each of the player's last 500 board-detected darts, captioned "Last 500 darts" (or the real number). Misses off the board show outside it. With fewer than 30 darts it says "Not enough darts yet". Next to the average chart on desktop, below it on phones.
+- **"Average per day":** a line chart with a dot per day played, on a time axis (gaps between days show), the average on the y axis, the dates in capitals and thinned so they never overlap, and the last day's value tagged. Hovering anywhere (a mouse) or tapping (a phone) shows a dashed line and a tooltip for the nearest day: "12 Nov 2026 · 48.3 avg · 3 matches". A session past midnight counts to the day it started. With a single day it's just the number and the date.
+- **"Where the darts land":** a heatmap over a dimmed dartboard: the density of the player's last 500 board-detected darts from X01 matches, in seven bands of the heat ramp (dark red where few landed, pale yellow where most did). Below it a stepped legend, "Fewer → More", and the caption "Last 500 darts" (or the real number). With fewer than 30 darts it says "Not enough darts yet". Next to the average chart on desktop, the two cards the same height; below it on phones.
 - **"Tournaments":** a list of the name, date and placing, with 🏆 for a win; each links to the tournament's page.
 - **"Last matches":** a list of "Won" / "Lost" (in words: full colour and grey, not green and red), "2–1 vs Bob", the date and the match average; each links to the match's page.
 - A player with no matches shows the name and "No matches played yet."

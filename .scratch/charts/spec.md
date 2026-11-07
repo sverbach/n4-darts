@@ -1,6 +1,6 @@
 # Charts with d3: a real heatmap, a better average chart
 
-Status: ready-for-agent
+Status: done
 
 The profile's two charts are hand-drawn SVG. The heatmap (500 blurred dots) turns into a blob once a player has thrown a lot, and the average per evening is a hand-built line. A charting library gives both a proper base, and future charts (head-to-head stats) build on the same pieces.
 
