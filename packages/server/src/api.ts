@@ -257,6 +257,10 @@ export const MatchSettingsInput = z.preprocess(
       course: z.enum({ random: "random", inOrder: "inOrder" }).exactOptional(),
     }),
     z.strictObject({
+      mode: z.literal("bermuda"),
+      order: z.enum({ classic: "classic", shuffled: "shuffled" }).exactOptional(),
+    }),
+    z.strictObject({
       mode: z.literal("randomCheckout"),
       difficulty: z.enum(RANDOM_CHECKOUT_DIFFICULTIES, { error: DIFFICULTIES }).exactOptional(),
       rounds: z

@@ -1,4 +1,5 @@
 export * from "./aroundTheClock.ts";
+export * from "./bermuda.ts";
 export * from "./checkout.ts";
 export * from "./cricket.ts";
 export * from "./events.ts";

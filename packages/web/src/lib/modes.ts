@@ -1,4 +1,7 @@
 import {
+  BERMUDA_ROUNDS,
+  type BermudaState,
+  bermudaTarget,
   CRICKET_ROUNDS,
   CRICKET_TARGETS,
   type CricketState,
@@ -15,7 +18,7 @@ import {
 import type { MatchView } from "@n4/server/api";
 import type { Highlight } from "../components/Dartboard.tsx";
 import { dartLabel } from "./darts.ts";
-import { MODE_NAMES, matchRulesLabel, targetLabel } from "./labels.ts";
+import { bermudaTargetLabel, MODE_NAMES, matchRulesLabel, targetLabel } from "./labels.ts";
 
 export function targetsOf(match: MatchView): { highlight: Highlight[]; label: string } | null {
   if (match.state.mode === "golf") {
@@ -24,6 +27,10 @@ export function targetsOf(match: MatchView): { highlight: Highlight[]; label: st
       highlight: [{ number: target }],
       label: `Hole ${match.state.round}: aim at ${targetLabel(target)}`,
     };
+  }
+  if (match.state.mode === "bermuda") {
+    const target = bermudaTarget(match.state.round, match.state.targets);
+    return { highlight: bermudaHighlight(target), label: `Aim at ${bermudaTargetLabel(target)}` };
   }
   const checkout = checkoutOf(match);
   if (checkout) {
@@ -61,6 +68,22 @@ export function targetsOf(match: MatchView): { highlight: Highlight[]; label: st
   const target = match.state.players[match.state.currentPlayer]?.target ?? null;
   if (target === null) return { highlight: [], label: "Finished" };
   return { highlight: [{ number: target }], label: `Aim at ${targetLabel(target)}` };
+}
+
+const NUMBERS = Array.from({ length: 20 }, (_, i) => i + 1);
+
+function bermudaHighlight(target: BermudaState["targets"][number]): Highlight[] {
+  if (target === "double") {
+    return [...NUMBERS, 25].map((number) => ({ number, multiplier: 2 as const }));
+  }
+  if (target === "treble") return NUMBERS.map((number) => ({ number, multiplier: 3 as const }));
+  if (target === 25) return [{ number: 25 }];
+  if (target === 50) return [{ number: 25, multiplier: 2 }];
+  return [{ number: target }];
+}
+
+export function bermudaOf(match: MatchView): BermudaState | null {
+  return match.state.mode === "bermuda" ? match.state : null;
 }
 
 /** A Random Checkout match: its state, and the thrower's route while they're throwing. */
@@ -110,6 +133,13 @@ export function liveLabel(match: MatchView): string {
     const { round, suddenDeath } = match.state;
     const progress = suddenDeath ? "Sudden death" : `Round ${round} of ${match.settings.rounds}`;
     return `${MODE_NAMES.highScore} · ${progress}`;
+  }
+  if (match.state.mode === "bermuda") {
+    const { round, suddenDeath, targets } = match.state;
+    const progress = suddenDeath
+      ? "Sudden death at the bull"
+      : `Round ${round} of ${BERMUDA_ROUNDS}: ${bermudaTargetLabel(bermudaTarget(round, targets))}`;
+    return `${matchRulesLabel(match.settings)} · ${progress}`;
   }
   if (match.state.mode === "randomCheckout" && match.settings.mode === "randomCheckout") {
     const { round, suddenDeath } = match.state;

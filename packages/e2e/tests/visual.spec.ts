@@ -481,6 +481,35 @@ test("Random Checkout on station 1", async () => {
   await watch.close();
 });
 
+test("Bermuda on station 1", async () => {
+  const watch = await loggedIn();
+  await command(1, {
+    type: "quickMatch",
+    playerIds: [ID.Ann, ID.Bob, ID.Cid],
+    settings: { mode: "bermuda" },
+  });
+  await command(1, { type: "startMatch" });
+  for (const darts of [
+    ["T12", "S12", "M5"],
+    ["S12", "M9", "M9"],
+    ["D12", "S5", "S12"],
+    ["S13", "T13", "M6"],
+    ["M3", "M3", "M3"],
+  ]) {
+    await throwDarts(1, darts);
+    await takeout(1);
+  }
+  await throwDarts(1, ["S13"]);
+
+  await open(page, "/station/1", (p) => p.getByText("Halved"));
+  await shoot(page, "station-bermuda", PAGES);
+  await open(watch, "/watch/1", (p) => p.getByText("Halved"));
+  await shoot(watch, "watch-bermuda", BIG_SCREENS);
+  await command(1, { type: "abandonMatch" });
+
+  await watch.close();
+});
+
 test("a tournament on station 1, station 2 busy", async () => {
   const display = await loggedIn();
   // A running quick match of two players outside the tournament keeps station 2 out of it.

@@ -1,6 +1,12 @@
 // Labels for a match's settings, shared by the station, /watch and /admin.
 
-import type { MatchSettings, Mode, RandomCheckoutDifficulty, X01Settings } from "@n4/engine";
+import type {
+  BermudaTarget,
+  MatchSettings,
+  Mode,
+  RandomCheckoutDifficulty,
+  X01Settings,
+} from "@n4/engine";
 
 export function livesLabel(lives: number) {
   return `${lives} ${lives === 1 ? "life" : "lives"}`;
@@ -32,6 +38,7 @@ export const MODE_NAMES: Record<Mode, string> = {
   killer: "Killer",
   cricket: "Cricket",
   randomCheckout: "Random Checkout",
+  bermuda: "Bermuda",
 };
 
 export const DIFFICULTY_NAMES: Record<RandomCheckoutDifficulty, string> = {
@@ -48,6 +55,9 @@ export function matchRulesLabel(settings: MatchSettings) {
   if (settings.mode === "cricket") {
     return settings.variant === "cutThroat" ? "Cut-throat Cricket" : MODE_NAMES.cricket;
   }
+  if (settings.mode === "bermuda") {
+    return settings.order === "shuffled" ? `${MODE_NAMES.bermuda} · Shuffled` : MODE_NAMES.bermuda;
+  }
   if (settings.mode === "randomCheckout") {
     return `${MODE_NAMES.randomCheckout} · ${DIFFICULTY_NAMES[settings.difficulty]}`;
   }
@@ -63,3 +73,19 @@ export function matchRulesLabel(settings: MatchSettings) {
 }
 
 export const targetLabel = (target: number) => (target === 25 ? "Bull" : String(target));
+
+/** "17", "Any double", "Outer bull", "Bull". */
+export function bermudaTargetLabel(target: BermudaTarget) {
+  if (target === "double") return "Any double";
+  if (target === "treble") return "Any treble";
+  if (target === 25) return "Outer bull";
+  if (target === 50) return "Bull";
+  return String(target);
+}
+
+/** The same, short enough for a row of all 13: "17", "D", "T", "25", "Bull". */
+export function bermudaTargetShort(target: BermudaTarget) {
+  if (target === "double") return "D";
+  if (target === "treble") return "T";
+  return target === 50 ? "Bull" : String(target);
+}

@@ -231,8 +231,41 @@ describe("setting up a party match", () => {
     expect(match?.state.mode === "randomCheckout" && match.state.target).toBe(checkouts?.[0]);
   });
 
+  it("draws a shuffled Bermuda order at the start and plays it", async () => {
+    const ctx = setup();
+    await ctx.command({
+      type: "quickMatch",
+      playerIds: ["ann", "bob"],
+      settings: { mode: "bermuda", order: "shuffled" },
+    });
+    await ctx.command({ type: "startMatch" });
+
+    const match = (await ctx.view()).match;
+    expect(match?.settings).toEqual({ mode: "bermuda", order: "shuffled", rulesVersion: 1 });
+    const started = db.events(match?.id as string).find((e) => e.type === "MatchStarted");
+    const targets = started?.type === "MatchStarted" ? started.targets : undefined;
+    expect(new Set(targets).size).toBe(13);
+    expect(match?.state.mode === "bermuda" && match.state.targets).toEqual(targets);
+  });
+
+  it("starts Bermuda in the classic order by default", async () => {
+    const ctx = setup();
+    await ctx.command({
+      type: "quickMatch",
+      playerIds: ["ann", "bob"],
+      settings: { mode: "bermuda" },
+    });
+    await ctx.command({ type: "startMatch" });
+
+    const match = (await ctx.view()).match;
+    const started = db.events(match?.id as string).find((e) => e.type === "MatchStarted");
+    expect(started?.type === "MatchStarted" && started.targets).toBeUndefined();
+    expect(match?.state.mode === "bermuda" && match.state.targets[3]).toBe("double");
+  });
+
   it.each([
     ["an unknown mode", { mode: "baseball" }],
+    ["an unknown Bermuda order", { mode: "bermuda", order: "backwards" }],
     ["an unknown checkout difficulty", { mode: "randomCheckout", difficulty: "insane" }],
     ["more than 20 checkout rounds", { mode: "randomCheckout", rounds: 21 }],
     ["skip-ahead that isn't true or false", { mode: "aroundTheClock", skipAhead: "yes" }],

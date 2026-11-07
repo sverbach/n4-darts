@@ -25,6 +25,9 @@ export function isSegment(value: unknown): value is Segment {
   return isWhole(number, 1, 20) && isWhole(multiplier, 1, 3);
 }
 
+/** A Bermuda round's target: a number, any double, any treble, the outer bull (25) or the bull (50). */
+export type BermudaTarget = number | "double" | "treble";
+
 export type MatchEvent =
   | {
       type: "MatchStarted";
@@ -32,6 +35,7 @@ export type MatchEvent =
       numbers?: number[];
       course?: number[];
       checkouts?: number[];
+      targets?: BermudaTarget[];
     }
   | { type: "DartThrown"; dartId: string; segment: Segment }
   | { type: "DartCorrected"; dartId: string; segment: Segment }
@@ -105,6 +109,7 @@ export function started(events: MatchEvent[]): {
   numbers: number[] | undefined;
   course: number[] | undefined;
   checkouts: number[] | undefined;
+  targets: BermudaTarget[] | undefined;
   visits: RawVisit[];
 } | null {
   const startIndex = events.findIndex((e) => e.type === "MatchStarted");
@@ -119,6 +124,7 @@ export function started(events: MatchEvent[]): {
     numbers: start.numbers,
     course: start.course,
     checkouts: start.checkouts,
+    targets: start.targets,
     visits: visitsOf(events.slice(startIndex + 1)),
   };
 }

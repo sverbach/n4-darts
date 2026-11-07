@@ -1,6 +1,7 @@
 // The settings of a new quick match at the station; picking the players is PlayerPicker's.
 
 import {
+  type BermudaOrder,
   type CricketVariant,
   GOLF_HOLES,
   type GolfCourse,
@@ -36,6 +37,7 @@ export interface SetupSettings {
   course: GolfCourse;
   difficulty: RandomCheckoutDifficulty;
   checkoutRounds: number;
+  bermudaOrder: BermudaOrder;
 }
 
 export const defaultSetupSettings: SetupSettings = {
@@ -49,6 +51,7 @@ export const defaultSetupSettings: SetupSettings = {
   course: "random",
   difficulty: "beginner",
   checkoutRounds: 10,
+  bermudaOrder: "classic",
 };
 
 export function settingsInput(setup: SetupSettings): MatchSettingsInput {
@@ -65,6 +68,8 @@ export function settingsInput(setup: SetupSettings): MatchSettingsInput {
       return { mode: "cricket", variant: setup.variant };
     case "aroundTheClock":
       return { mode: "aroundTheClock", skipAhead: setup.skipAhead };
+    case "bermuda":
+      return { mode: "bermuda", order: setup.bermudaOrder };
     case "randomCheckout":
       return { mode: "randomCheckout", difficulty: setup.difficulty, rounds: setup.checkoutRounds };
     default:
@@ -154,6 +159,18 @@ export function SettingsFields(props: {
           >
             <option value="standard">Standard: most wins</option>
             <option value="cutThroat">Cut-throat: fewest wins</option>
+          </select>
+        </label>
+      )}
+      {value.mode === "bermuda" && (
+        <label>
+          Order
+          <select
+            value={value.bermudaOrder}
+            onChange={(e) => onChange({ ...value, bermudaOrder: e.target.value as BermudaOrder })}
+          >
+            <option value="classic">Classic</option>
+            <option value="shuffled">Shuffled</option>
           </select>
         </label>
       )}

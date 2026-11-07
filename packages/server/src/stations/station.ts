@@ -6,12 +6,14 @@ import { randomUUID } from "node:crypto";
 import { performance } from "node:perf_hooks";
 import {
   defaultAroundTheClockSettings,
+  defaultBermudaSettings,
   defaultCricketSettings,
   defaultGolfSettings,
   defaultHighScoreSettings,
   defaultKillerSettings,
   defaultRandomCheckoutSettings,
   defaultX01Settings,
+  drawBermudaTargets,
   drawCheckouts,
   drawGolfCourse,
   drawKillerNumbers,
@@ -95,6 +97,8 @@ function settingsFrom(input: MatchSettingsInput | undefined): MatchSettings {
       return { ...defaultCricketSettings, ...input };
     case "randomCheckout":
       return { ...defaultRandomCheckoutSettings, ...input };
+    case "bermuda":
+      return { ...defaultBermudaSettings, ...input };
   }
 }
 
@@ -392,6 +396,9 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
             : {}),
           ...(match.settings.mode === "randomCheckout"
             ? { checkouts: drawCheckouts(match.settings.difficulty, match.settings.rounds) }
+            : {}),
+          ...(match.settings.mode === "bermuda" && match.settings.order === "shuffled"
+            ? { targets: drawBermudaTargets() }
             : {}),
         });
         break;

@@ -3,6 +3,7 @@ import {
   type AroundTheClockState,
   aroundTheClockState,
 } from "./aroundTheClock.ts";
+import { type BermudaSettings, type BermudaState, bermudaState } from "./bermuda.ts";
 import { type CricketSettings, type CricketState, cricketState } from "./cricket.ts";
 import type { MatchEvent, PlayerIndex, VisitView } from "./events.ts";
 import { type GolfSettings, type GolfState, golfState } from "./golf.ts";
@@ -22,7 +23,8 @@ export type MatchSettings =
   | GolfSettings
   | KillerSettings
   | CricketSettings
-  | RandomCheckoutSettings;
+  | RandomCheckoutSettings
+  | BermudaSettings;
 export type Mode = MatchSettings["mode"];
 export type PartyMode = Exclude<Mode, "x01">;
 export type MatchState =
@@ -32,7 +34,8 @@ export type MatchState =
   | GolfState
   | KillerState
   | CricketState
-  | RandomCheckoutState;
+  | RandomCheckoutState
+  | BermudaState;
 
 export const MODES: readonly Mode[] = [
   "x01",
@@ -42,6 +45,7 @@ export const MODES: readonly Mode[] = [
   "killer",
   "cricket",
   "randomCheckout",
+  "bermuda",
 ];
 
 export const scoresPoints = (mode: Mode) => mode === "x01" || mode === "highScore";
@@ -83,6 +87,8 @@ export function matchState<S extends MatchSettings>(settings: S, events: MatchEv
       return cricketState(s, events) as StateOf<S>;
     case "randomCheckout":
       return randomCheckoutState(s, events) as StateOf<S>;
+    case "bermuda":
+      return bermudaState(s, events) as StateOf<S>;
   }
 }
 
