@@ -203,8 +203,12 @@ The layout must cope with 1–3+ stations and 2–8 players per match.
 
 ## `/matches/:id`: A finished match
 
-- A back link "← Players", the players as the title ("Ann vs Bob") and one line: "Ann won 2–1 · 501 · Double out · First to 2 legs · 07 Nov 2026".
-- Each leg collapsed but the last ("Leg 2 · Bob starts · Bob won"), with its visits: the player, the three darts and the score (or "Bust", and "Out" on the checkout), as admin's match detail shows them, without correcting. A dart thrown after the visit was over is crossed out.
+A page for reading on a phone, after a match or later. Each player has one mark throughout: a small square in their series colour (by throwing order) next to their full name. Names are never cut off; they wrap.
+- A back link "← Players", the players as the title ("Ann vs Bob"), one line "Ann won · 501 · Double out · First to 2 legs · 07 Nov 2026", and the legs score large ("2–1") when there was more than one leg.
+- **Head-to-head:** a column per player, a row per number: 3-dart avg, first 9, checkout % (double out only), high out, best leg, 180s, 140+, 100+, darts. The best value of each row is bright and the others muted (no colours for good or bad). Three players fit on a phone; four or more scroll sideways with the labels pinned.
+- **Score race:** a line per player, their remaining score after each visit of a leg, from the start score to 0. A bust is a flat step with a hollow square. The names sit at the lines' ends, with a legend below. Hover or tap shows the round: every player's score and what's left. With several legs, "Leg 1 · Leg 2 · …" buttons pick one (the last first). On a kiosk it sits beside the head-to-head, the same height.
+- **Where the darts landed:** each player's density heatmap (as on the profile) with their name and dart count, two per row on a phone, and one "Fewer → More" legend. A player under 9 darts gets "Too few darts"; if nobody has 9, the section is left out.
+- **Every dart:** each leg collapsed but the last ("Leg 2 · Bob starts · Bob won"). With two players it's a scoresheet: a row per round with both players' darts and totals side by side ("Bust" in red, "Out" on the checkout), the names once on top. With more players, each visit row shows the player's name on its own line, then the darts and the score. A dart thrown after the visit was over is crossed out. No corrections here (that's admin's match detail).
 - Abandoned matches, walkovers and unknown ids: "No such match".
 
 ---

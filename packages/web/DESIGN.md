@@ -32,6 +32,21 @@ colors:
   avatar-7: "#6b2e2e"
   avatar-8: "#3a4048"
   avatar-9: "#2e5a5a"
+  heat-1: "#761617"
+  heat-2: "#901211"
+  heat-3: "#bd2703"
+  heat-4: "#d75a07"
+  heat-5: "#ec8904"
+  heat-6: "#f4be4f"
+  heat-7: "#fbecae"
+  series-1: "#9085e9"
+  series-2: "#d95926"
+  series-3: "#199e70"
+  series-4: "#3987e5"
+  series-5: "#c98500"
+  series-6: "#d55181"
+  series-7: "#008300"
+  series-8: "#e66767"
 typography:
   display:
     fontFamily: "Geist Pixel, monospace"
@@ -315,6 +330,12 @@ A command room at night: five greys stepping up from black, warm paper-white tex
 
 ### Avatar Set
 Nine muted grounds (`avatar-1` to `avatar-9`) for initials avatars, chosen from the player id so each player keeps theirs. They are muted on purpose so phosphor text reads on all of them. They're used for nothing else.
+
+### Heat Ramp
+Seven steps (`heat-1` to `heat-7`) for magnitude in charts: how many darts landed where. Dark red through orange to a pale yellow, with lightness rising step by step, so the order reads in greyscale and with colour vision deficiencies. Never the status colours: sync green and alarm red keep meaning good and bad. Always with a legend ("Fewer → More").
+
+### Series Set
+Eight colours (`series-1` to `series-8`) for players in charts, by throwing order: violet, orange, aqua, blue, yellow, magenta, green, red. They're the dataviz reference palette's dark steps, validated against the cockpit panel (worst adjacent CVD ΔE 8.6, all ≥ 3:1; the first three also pass all pairs). Slot 1 is a deeper violet than mecha violet, which is too light for the band. A series colour is always shown next to the player's name (a 10 px square chip, a line, a label), never alone, and a player keeps the same colour across every chart on a page. Initials avatars keep their own colours, so pages with series colours leave the avatars out of the comparison.
 
 ### Named Rules
 **The One Signal Rule.** Mecha Violet is the only accent, and it's for state only: active, selected or primary. If two things on a screen are violet, they must mean the same thing. A station name, a rank, a points column or a label is never violet.

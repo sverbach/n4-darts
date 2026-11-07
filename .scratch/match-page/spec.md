@@ -1,6 +1,6 @@
 # The match page: head-to-head, score race, heatmaps
 
-Status: ready-for-agent
+Status: done
 
 `/matches/:id` only showed the dart log, with every visit row starting with the name cut to 70 px ("SCHWE…" for schwembo and schwendi alike), so you couldn't tell who was who. It also didn't say who played better or how the match went.
 
