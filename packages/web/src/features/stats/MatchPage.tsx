@@ -1,10 +1,15 @@
 import type { MatchPage as Match } from "@n4/server/api";
+import { SeriesChip } from "../../components/charts/SeriesChip.tsx";
 import { MatchLegs } from "../../components/MatchLegs.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import { legScore } from "../../lib/format.ts";
 import { matchRulesLabel } from "../../lib/labels.ts";
 import { useFetch } from "../../lib/useFetch.ts";
-import { date, StatsFrame } from "./frame.tsx";
+import { date, SECTION, StatsFrame } from "./frame.tsx";
+import { HeadToHead } from "./HeadToHead.tsx";
+import { hasHeatmaps, MatchHeatmaps } from "./MatchHeatmaps.tsx";
+import { ScoreRace } from "./ScoreRace.tsx";
+import { Scoresheet } from "./Scoresheet.tsx";
 
 /** /matches/:id: a finished match, leg by leg and dart by dart. */
 export function MatchPage({ id }: { id: string }) {
@@ -26,35 +31,70 @@ export function MatchPage({ id }: { id: string }) {
 
 function MatchView({ match }: { match: Match }) {
   const winner = match.players.find((p) => p.id === match.winner);
-  const legs = match.settings.legsToWin > 1 ? ` ${legScore(match.legsWon)}` : "";
+  const legs = match.settings.legsToWin > 1;
   return (
     <>
-      <div className="flex flex-col gap-2">
+      <header className="flex flex-col gap-2">
         <h1 className="wrap-anywhere kiosk:text-[40px]">
           {match.players.map((p) => p.name).join(" vs ")}
         </h1>
         <p className="hint m-0">
           {[
-            winner ? `${winner.name} won${legs}` : "No winner",
+            winner ? `${winner.name} won` : "No winner",
             matchRulesLabel(match.settings),
             match.closedAt && date(match.closedAt),
           ]
             .filter(Boolean)
             .join(" · ")}
         </p>
-      </div>
-      <MatchLegs
-        state={match.state}
-        name={(i) => match.players[i]?.name ?? "?"}
-        dart={(dart) => (
-          <span
-            key={dart.dartId}
-            className={`inline-flex min-h-[46px] items-center justify-center border border-solid text-[26px] ${dart.ignored ? "border-border border-dashed text-muted line-through" : "border-border bg-surface"}`}
-          >
-            {dartLabel(dart.segment)}
-          </span>
+        {legs && (
+          <p className="m-0 font-text text-[56px] tabular-nums leading-none">
+            <span className="sr-only">Legs won </span>
+            {legScore(match.legsWon)}
+          </p>
         )}
-      />
+      </header>
+      <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-2 kiosk:items-stretch gap-6 kiosk:gap-4">
+        <section className={SECTION}>
+          <h2 className="label font-normal">Head-to-head</h2>
+          <HeadToHead match={match} />
+        </section>
+        <section className={SECTION}>
+          <h2 className="label font-normal">Score race</h2>
+          <ScoreRace match={match} />
+        </section>
+      </div>
+      {hasHeatmaps(match) && (
+        <section className={SECTION}>
+          <h2 className="label font-normal">Where the darts landed</h2>
+          <MatchHeatmaps match={match} />
+        </section>
+      )}
+      <section className={SECTION}>
+        <h2 className="label font-normal">Every dart</h2>
+        {match.players.length === 2 ? (
+          <Scoresheet match={match} />
+        ) : (
+          <MatchLegs
+            state={match.state}
+            name={(i) => match.players[i]?.name ?? "?"}
+            who={(i) => (
+              <span className="flex items-baseline gap-2">
+                <SeriesChip player={i} />
+                <span className="label break-words text-text">{match.players[i]?.name}</span>
+              </span>
+            )}
+            dart={(dart) => (
+              <span
+                key={dart.dartId}
+                className={`inline-flex min-h-[46px] items-center justify-center border border-solid text-[26px] ${dart.ignored ? "border-border border-dashed text-muted line-through" : "border-border bg-surface"}`}
+              >
+                {dartLabel(dart.segment)}
+              </span>
+            )}
+          />
+        )}
+      </section>
     </>
   );
 }

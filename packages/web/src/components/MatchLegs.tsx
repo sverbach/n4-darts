@@ -7,6 +7,7 @@ interface Props {
   state: MatchState;
   name: (player: number) => string;
   dart: (dart: DartView) => ReactNode;
+  who?: ((player: number) => ReactNode) | undefined;
 }
 
 /**
@@ -14,7 +15,7 @@ interface Props {
  * a button to correct it in admin, its value on the stats pages.
  */
 export function MatchLegs(props: Props) {
-  const { state, name, dart } = props;
+  const { state, name, dart, who } = props;
   if (state.mode !== "x01") {
     return (
       <ol className="m-0 max-w-[760px] list-none p-0">
@@ -24,6 +25,7 @@ export function MatchLegs(props: Props) {
             visit={visit}
             name={name}
             dart={dart}
+            who={who}
             score={state.mode !== "aroundTheClock"}
             value={(v) => visitValue(state.mode, v.darts)}
           />
@@ -52,6 +54,7 @@ export function MatchLegs(props: Props) {
             visit={visit}
             name={name}
             dart={dart}
+            who={who}
             score
           />
         ))}
@@ -67,12 +70,18 @@ function VisitRow(
     value?: (visit: VisitView) => number;
   },
 ) {
-  const { visit, name, dart, score, value } = props;
+  const { visit, name, dart, score, value, who } = props;
   return (
-    <li className="grid min-h-[58px] grid-cols-[minmax(0,70px)_minmax(0,1fr)_auto] items-center gap-2 border-0 border-line-soft border-b border-solid">
-      <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[13px] uppercase">
-        {name(visit.player)}
-      </span>
+    <li
+      className={`grid items-center gap-2 border-0 border-line-soft border-b border-solid ${who ? "grid-cols-[minmax(0,1fr)_auto] py-2.5" : "min-h-[58px] grid-cols-[minmax(0,70px)_minmax(0,1fr)_auto]"}`}
+    >
+      {who ? (
+        <span className="col-span-full">{who(visit.player)}</span>
+      ) : (
+        <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[13px] uppercase">
+          {name(visit.player)}
+        </span>
+      )}
       <span className="grid grid-cols-[repeat(3,minmax(0,72px))] gap-2">
         {visit.darts.map(dart)}
       </span>

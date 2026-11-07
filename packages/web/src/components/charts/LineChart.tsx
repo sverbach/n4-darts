@@ -1,6 +1,6 @@
 import { line } from "d3-shape";
-import { type PointerEvent, useRef, useState } from "react";
-import { dayScale, nearestIndex, thinLabels, valueScale } from "./scales.ts";
+import { dayScale, thinLabels, valueScale } from "./scales.ts";
+import { tooltipShift, usePointer } from "./usePointer.ts";
 import { useWide } from "./useWide.ts";
 
 export interface LinePoint {
@@ -21,8 +21,6 @@ export function LineChart(props: {
 }) {
   const { points, label, format } = props;
   const wide = useWide();
-  const svg = useRef<SVGSVGElement>(null);
-  const [active, setActive] = useState<number | null>(null);
 
   const width = wide ? 840 : 358;
   const height = wide ? 300 : 200;
@@ -56,28 +54,20 @@ export function LineChart(props: {
   const tagWidth = tag.length * font * 0.5 + font;
   const tagX = Math.min(width - tagWidth - 4, Math.max(4, (xs[last] ?? 0) - tagWidth / 2));
 
-  const pick = (event: PointerEvent<SVGSVGElement>) => {
-    const box = svg.current?.getBoundingClientRect();
-    if (!box || box.width === 0) return;
-    const at = ((event.clientX - box.left) / box.width) * width;
-    setActive(nearestIndex(xs, at));
-  };
+  const { active, handlers } = usePointer(xs, width);
   const point = active === null ? undefined : points[active];
   const share = active === null ? 0 : (xs[active] ?? 0) / width;
 
   return (
     <figure className="relative m-0 flex flex-1 flex-col justify-center border border-border border-solid bg-panel px-0 pt-3 pb-1.5">
       <svg
-        ref={svg}
+        {...handlers}
         viewBox={`0 0 ${width} ${height}`}
         role="img"
         aria-label={label}
         className="block h-auto w-full touch-pan-y font-text"
         shapeRendering="crispEdges"
         style={{ fontSize: font }}
-        onPointerMove={(e) => e.pointerType === "mouse" && pick(e)}
-        onPointerDown={pick}
-        onPointerLeave={(e) => e.pointerType === "mouse" && setActive(null)}
       >
         {ticks.map((tick) => (
           <g key={tick}>
@@ -154,7 +144,7 @@ export function LineChart(props: {
           className="pointer-events-none absolute top-1 whitespace-nowrap border border-border border-solid bg-surface px-2.5 py-1.5 font-text kiosk:text-[18px] text-[16px] text-text"
           style={{
             left: `${share * 100}%`,
-            transform: `translateX(${share < 0.3 ? "-10%" : share > 0.7 ? "-90%" : "-50%"})`,
+            transform: tooltipShift(share),
           }}
         >
           {point.tooltip}

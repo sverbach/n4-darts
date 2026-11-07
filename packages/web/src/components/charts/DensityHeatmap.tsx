@@ -5,14 +5,22 @@ import { HEAT_FILL } from "./heat.ts";
 
 const SIZE = 1.35;
 
-export function DensityHeatmap({ points, label }: { points: readonly Point[]; label: string }) {
+export function DensityHeatmap({
+  points,
+  label,
+  className = "max-w-[420px]",
+}: {
+  points: readonly Point[];
+  label: string;
+  className?: string;
+}) {
   const bands = useMemo(() => densityBands(points), [points]);
   return (
     <svg
       viewBox={`${-SIZE} ${-SIZE} ${SIZE * 2} ${SIZE * 2}`}
       role="img"
       aria-label={label}
-      className="block h-auto w-full max-w-[420px]"
+      className={`block h-auto w-full ${className}`}
     >
       <BoardFields dim>
         <g className="opacity-85">
