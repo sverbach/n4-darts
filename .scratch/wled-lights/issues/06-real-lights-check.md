@@ -1,6 +1,6 @@
 # The real light strips on a darts evening
 
-Status: ready-for-human
+Status: done
 Type: task
 Blocked by: 05
 
@@ -18,3 +18,7 @@ Everything was tested against the fake WLED (`tools/wled-sim`). What's left need
 ## Acceptance
 
 - Each step done, or noted here with what went wrong.
+
+## Comments
+
+2026-11-07: Done, checked by the user: the room lights behaved exactly as specified. One question came up: a 100+ visit lit up once and not the next time. That was by design, since "High out" only fires for checkouts of 100+. It led to a separate "100+ visit" light (`07-100-plus-visit-light.md`).
