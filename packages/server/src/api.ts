@@ -259,6 +259,7 @@ export const MatchSettingsInput = z.preprocess(
     z.strictObject({
       mode: z.literal("golf"),
       holes: z.union([z.literal(9), z.literal(18)], { error: HOLES }).exactOptional(),
+      course: z.enum({ random: "random", inOrder: "inOrder" }).exactOptional(),
     }),
     z.strictObject({
       mode: z.literal("highScore"),

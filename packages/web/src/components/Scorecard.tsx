@@ -42,7 +42,7 @@ export function Scorecard(props: {
                 key={hole}
                 className={`${style.head} ${on && hole === state.round ? "text-accent" : ""}`}
               >
-                {targetLabel(holeTarget(hole))}
+                {targetLabel(holeTarget(hole, state.course))}
               </th>
             ))}
             <th className={`${style.head} sticky right-0 bg-panel`}>Total</th>

@@ -3,6 +3,7 @@
 import {
   type CricketVariant,
   GOLF_HOLES,
+  type GolfCourse,
   type GolfSettings,
   type InRule,
   MAX_LIVES,
@@ -24,6 +25,7 @@ export interface SetupSettings {
   lives: number;
   variant: CricketVariant;
   skipAhead: boolean;
+  course: GolfCourse;
 }
 
 export const defaultSetupSettings: SetupSettings = {
@@ -34,6 +36,7 @@ export const defaultSetupSettings: SetupSettings = {
   lives: 3,
   variant: "standard",
   skipAhead: false,
+  course: "random",
 };
 
 export function settingsInput(setup: SetupSettings): MatchSettingsInput {
@@ -43,7 +46,7 @@ export function settingsInput(setup: SetupSettings): MatchSettingsInput {
     case "highScore":
       return { mode: "highScore", rounds: setup.rounds };
     case "golf":
-      return { mode: "golf", holes: setup.holes };
+      return { mode: "golf", holes: setup.holes, course: setup.course };
     case "killer":
       return { mode: "killer", lives: setup.lives };
     case "cricket":
@@ -80,6 +83,18 @@ export function SettingsFields(props: {
         </select>
       </label>
       {value.mode === "x01" && <X01Fields value={value.x01} set={set} />}
+      {value.mode === "golf" && (
+        <label>
+          Course
+          <select
+            value={value.course}
+            onChange={(e) => onChange({ ...value, course: e.target.value as GolfCourse })}
+          >
+            <option value="random">Random</option>
+            <option value="inOrder">In order</option>
+          </select>
+        </label>
+      )}
       {value.mode === "golf" && (
         <label>
           Holes

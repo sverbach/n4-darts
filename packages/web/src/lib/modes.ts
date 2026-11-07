@@ -14,7 +14,7 @@ import { MODE_NAMES, matchRulesLabel, targetLabel } from "./labels.ts";
 
 export function targetsOf(match: MatchView): { highlight: Highlight[]; label: string } | null {
   if (match.state.mode === "golf") {
-    const target = holeTarget(match.state.round);
+    const target = holeTarget(match.state.round, match.state.course);
     return {
       highlight: [{ number: target }],
       label: `Hole ${match.state.round}: aim at ${targetLabel(target)}`,

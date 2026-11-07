@@ -11,15 +11,19 @@ export const GOLF_RULES = 1;
 export const GOLF_HOLES = [9, 18] as const;
 export const MISSED_HOLE = 5;
 
+export type GolfCourse = "random" | "inOrder";
+
 export interface GolfSettings {
   mode: "golf";
   holes: (typeof GOLF_HOLES)[number];
+  course?: GolfCourse;
   rulesVersion: number;
 }
 
 export const defaultGolfSettings: GolfSettings = {
   mode: "golf",
   holes: 9,
+  course: "random",
   rulesVersion: GOLF_RULES,
 };
 
@@ -31,11 +35,31 @@ export interface GolfPlayer {
 export interface GolfState extends PartyState, RoundsState {
   mode: "golf";
   players: GolfPlayer[];
+  course: number[];
 }
 
-const COURSE = [...Array.from({ length: 20 }, (_, i) => i + 1), 25];
+export const IN_ORDER: readonly number[] = [...Array.from({ length: 20 }, (_, i) => i + 1), 25];
 
-export const holeTarget = (hole: number) => COURSE[(hole - 1) % COURSE.length] as number;
+export const holeTarget = (hole: number, course: readonly number[] = IN_ORDER) =>
+  course[(hole - 1) % course.length] as number;
+
+export function drawGolfCourse(random = Math.random): number[] {
+  const course = [...IN_ORDER];
+  for (let i = course.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [course[i], course[j]] = [course[j] as number, course[i] as number];
+  }
+  return course;
+}
+
+function checkCourse(course: number[] | undefined): number[] {
+  const valid =
+    course?.length === IN_ORDER.length &&
+    new Set(course).size === course.length &&
+    course.every((t) => IN_ORDER.includes(t));
+  if (!valid) throw new Error("a random Golf course needs each of 1–20 and the bull once");
+  return course;
+}
 
 export function strokes(segment: Segment, target: number): number {
   if (segment.multiplier === 0 || segment.number !== target) return MISSED_HOLE;
@@ -48,7 +72,10 @@ export function golfState(settings: GolfSettings, events: MatchEvent[]): GolfSta
     throw new Error(`unknown Golf rules version ${settings.rulesVersion}`);
   }
   const match = started(events);
-  if (!match) return { mode: "golf", ...notStarted, ...roundsNotStarted, players: [] };
+  if (!match) {
+    return { mode: "golf", ...notStarted, ...roundsNotStarted, players: [], course: [] };
+  }
+  const course = settings.course === "random" ? checkCourse(match.course) : [...IN_ORDER];
 
   const players: GolfPlayer[] = Array.from({ length: match.playerCount }, () => ({
     holes: [],
@@ -57,7 +84,7 @@ export function golfState(settings: GolfSettings, events: MatchEvent[]): GolfSta
   const party = playRounds(match.visits, match.playerCount, settings.holes, {
     visit(raw, player, hole) {
       const golfer = players[player] as GolfPlayer;
-      const target = holeTarget(hole);
+      const target = holeTarget(hole, course);
       const view: VisitView = { player, darts: [], bust: false, checkout: false };
       for (const { dartId, segment } of raw.darts) {
         if (view.darts.length >= 3) {
@@ -78,5 +105,5 @@ export function golfState(settings: GolfSettings, events: MatchEvent[]): GolfSta
       return contenders.filter((p) => players[p]?.total === best);
     },
   });
-  return { mode: "golf", ...party, players };
+  return { mode: "golf", ...party, players, course };
 }

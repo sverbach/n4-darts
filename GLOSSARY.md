@@ -98,7 +98,7 @@ _Avoid_: Virtual board, segment indicator
 Around the Clock's option where a double moves the player two targets on and a treble three.
 
 **Hole**:
-One round of Golf, aimed at its own number (hole 1 at 1, …; past 20 the bull, then 1 again). The visit's best dart is the hole's score: treble 1, double 2, single 3, anything else 5.
+One round of Golf, aimed at one target: on a random course (the default) each hole gets a different number from 1–20 and the bull, drawn when the match starts; in order, hole 1 aims at 1, … and past 20 the bull, then 1 again. The visit's best dart is the hole's score: treble 1, double 2, single 3, anything else 5.
 
 **Mark**:
 A hit on a Cricket number or Killer's own number: single 1, double 2, treble 3 (outer bull 1, bull 2).

@@ -68,7 +68,7 @@ The page body has four states.
 - An optional notice line, e.g. "Match abandoned" or "Waiting for the tournament".
 - The hint "You can change the order next." (the picker counts the picks).
 - The player picker (players can add themselves here).
-- The match settings: first **Game** (X01, Around the Clock, Golf, High Score, Killer, Cricket), then only that game's options. X01: start, in rule, out rule, legs. Around the Clock: skip-ahead on or off. Golf: 9 or 18 holes. High Score: 1–20 rounds. Killer: 1–9 lives. Cricket: standard or cut-throat points. The X01 options are kept while another game is picked.
+- The match settings: first **Game** (X01, Around the Clock, Golf, High Score, Killer, Cricket), then only that game's options. X01: start, in rule, out rule, legs. Around the Clock: skip-ahead on or off. Golf: course random (the default) or in order, 9 or 18 holes. High Score: 1–20 rounds. Killer: 1–9 lives. Cricket: standard or cut-throat points. The X01 options are kept while another game is picked.
 - A primary "Continue" button, enabled once at least 2 players are picked.
 
 ### 2. Lineup (a match is set up, not started)

@@ -382,7 +382,7 @@ test("Golf on station 1, 18 holes", async () => {
   await command(1, {
     type: "quickMatch",
     playerIds: [ID.Ann, ID.Bob, ID.Cid, ID.Dee, ID.Eve, ID.Fay],
-    settings: { mode: "golf", holes: 18 },
+    settings: { mode: "golf", holes: 18, course: "inOrder" },
   });
   await command(1, { type: "startMatch" });
   const hole1 = [["T1"], ["S1", "D1"], ["M1", "M1", "M1"], ["S1"], ["D1", "T1"], ["S20", "S1"]];

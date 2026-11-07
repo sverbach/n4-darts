@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   defaultGolfSettings,
+  drawGolfCourse,
   type GolfSettings,
   holeTarget,
   type MatchEvent,
@@ -31,7 +32,7 @@ const takeout: MatchEvent = { type: "TakeoutFinished" };
 const visit = (...names: string[]) => [...names.map((n) => dart(n)), takeout];
 
 const play = (events: MatchEvent[], settings: Partial<GolfSettings> = {}) =>
-  matchState({ ...defaultGolfSettings, ...settings }, events);
+  matchState({ ...defaultGolfSettings, course: "inOrder", ...settings }, events);
 
 function holes(from: number, to: number, a: (n: number) => string[], b: (n: number) => string[]) {
   const events: MatchEvent[] = [];
@@ -43,6 +44,54 @@ function holes(from: number, to: number, a: (n: number) => string[], b: (n: numb
 }
 const name = (target: number, ring: "S" | "D" | "T") =>
   target === 25 ? (ring === "D" ? "BULL" : "25") : `${ring}${target}`;
+
+describe("Golf on a random course", () => {
+  const course = [7, 25, 3, 20, 1, 2, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+  const randomStart = (playerCount = 2): MatchEvent => ({
+    type: "MatchStarted",
+    playerCount,
+    course,
+  });
+  const random = (events: MatchEvent[], holes: 9 | 18 = 9) =>
+    matchState({ ...defaultGolfSettings, course: "random", holes }, events);
+
+  it("aims each hole at the drawn course", () => {
+    const state = random([randomStart(), ...visit("T7"), ...visit("S7"), ...visit("BULL")]);
+
+    expect(state.course).toEqual(course);
+    expect(state.players.map((p) => p.holes)).toEqual([[1, 1], [3]]);
+  });
+
+  it("goes on through the rest of the draw in sudden death, then round again", () => {
+    expect([9, 10, 21, 22].map((hole) => holeTarget(hole, course))).toEqual([6, 8, 19, 7]);
+    const level: MatchEvent[] = [randomStart()];
+    for (let hole = 1; hole <= 9; hole++) level.push(...visit("M"), ...visit("M"));
+    const state = random(level);
+    expect(state.suddenDeath).toBe(true);
+    expect(holeTarget(state.round, state.course)).toBe(8);
+  });
+
+  it("refuses a random course without a valid draw", () => {
+    expect(() => random([start()])).toThrow();
+    expect(() => random([{ type: "MatchStarted", playerCount: 2, course: [1, 1, 2] }])).toThrow();
+  });
+
+  it("plays in order when the settings don't say", () => {
+    const stored = matchState({ mode: "golf", holes: 9, rulesVersion: 1 }, [
+      start(),
+      ...visit("T1"),
+    ]);
+    expect(stored.players[0]?.holes).toEqual([1]);
+  });
+
+  it("draws each of 1–20 and the bull once", () => {
+    const draw = drawGolfCourse();
+    expect([...draw].sort((a, b) => a - b)).toEqual([
+      ...Array.from({ length: 20 }, (_, i) => i + 1),
+      25,
+    ]);
+  });
+});
 
 describe("Golf", () => {
   it("scores a hole by its best dart: treble 1, double 2, single 3, anything else 5", () => {
@@ -121,7 +170,7 @@ describe("Golf", () => {
   });
 
   it("goes on through 19, 20, the bull and back to 1 after 18 level holes", () => {
-    expect([19, 20, 21, 22].map(holeTarget)).toEqual([19, 20, 25, 1]);
+    expect([19, 20, 21, 22].map((hole) => holeTarget(hole))).toEqual([19, 20, 25, 1]);
 
     const tied = [
       start(),

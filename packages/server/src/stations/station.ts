@@ -11,6 +11,7 @@ import {
   defaultHighScoreSettings,
   defaultKillerSettings,
   defaultX01Settings,
+  drawGolfCourse,
   drawKillerNumbers,
   MAX_PLAYERS,
   type MatchSettings,
@@ -381,6 +382,9 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
           playerCount: match.playerIds.length,
           ...(match.settings.mode === "killer"
             ? { numbers: drawKillerNumbers(match.playerIds.length) }
+            : {}),
+          ...(match.settings.mode === "golf" && match.settings.course === "random"
+            ? { course: drawGolfCourse() }
             : {}),
         });
         break;

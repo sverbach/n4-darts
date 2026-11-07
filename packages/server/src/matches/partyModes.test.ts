@@ -158,6 +158,7 @@ describe("setting up a party match", () => {
     expect((await ctx.view()).match?.settings).toEqual({
       mode: "golf",
       holes: 18,
+      course: "random",
       rulesVersion: 1,
     });
   });
@@ -182,6 +183,22 @@ describe("setting up a party match", () => {
     );
   });
 
+  it("draws a random Golf course at the start and plays it", async () => {
+    const ctx = setup();
+    await ctx.command({
+      type: "quickMatch",
+      playerIds: ["ann", "bob"],
+      settings: { mode: "golf", course: "random" },
+    });
+    await ctx.command({ type: "startMatch" });
+
+    const match = (await ctx.view()).match;
+    const started = db.events(match?.id as string).find((e) => e.type === "MatchStarted");
+    const course = started?.type === "MatchStarted" ? started.course : undefined;
+    expect(new Set(course).size).toBe(21);
+    expect(match?.state.mode === "golf" && match.state.course).toEqual(course);
+  });
+
   it("starts Cricket in cut-throat", async () => {
     const ctx = setup();
     await ctx.command({
@@ -204,6 +221,7 @@ describe("setting up a party match", () => {
     ["no lives", { mode: "killer", lives: 0 }],
     ["more than 9 lives", { mode: "killer", lives: 10 }],
     ["a golf course that isn't 9 or 18 holes", { mode: "golf", holes: 12 }],
+    ["an unknown golf course", { mode: "golf", course: "zigzag" }],
     ["no rounds", { mode: "highScore", rounds: 0 }],
     ["more than 20 rounds", { mode: "highScore", rounds: 21 }],
     ["X01 options on a party mode", { mode: "aroundTheClock", startScore: 501 }],

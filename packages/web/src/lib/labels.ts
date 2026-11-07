@@ -41,7 +41,10 @@ export function matchRulesLabel(settings: MatchSettings) {
     return settings.variant === "cutThroat" ? "Cut-throat Cricket" : MODE_NAMES.cricket;
   }
   if (settings.mode === "killer") return `${MODE_NAMES.killer} · ${livesLabel(settings.lives)}`;
-  if (settings.mode === "golf") return `${MODE_NAMES.golf} · ${settings.holes} holes`;
+  if (settings.mode === "golf") {
+    const course = settings.course === "random" ? " · Random" : "";
+    return `${MODE_NAMES.golf} · ${settings.holes} holes${course}`;
+  }
   if (settings.mode === "highScore")
     return `${MODE_NAMES.highScore} · ${roundsLabel(settings.rounds)}`;
   if (settings.mode !== "x01") return MODE_NAMES[settings.mode];

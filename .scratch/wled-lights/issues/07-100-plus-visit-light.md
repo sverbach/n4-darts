@@ -33,4 +33,4 @@ Asked for after the real lights check (2026-11-07): "High out (100+)" only fires
 - **Also checked (the question that led here):** nothing in the lights is "once per game". Events are remembered per visit (first dart + event), so a second high out in the same match fires again.
 - Docs: glossary (Light event), README, `docs/ui-pages.md` (Lights tab), `06-runtime-view.md` (priority).
 - Tests: 100 and 140 fire it, 99 and a bust don't, a visit taken out early fires it, a 180 lists the 180 first, a second 100+ in the same leg fires again.
-- typecheck, lint, 821 unit tests, build, e2e (41) and the visual suite (9; the Lights page baseline is one row taller) pass.
+- typecheck, lint, 816 unit tests, build, e2e (41) and the visual suite (9; the Lights page baseline is one row taller) pass.

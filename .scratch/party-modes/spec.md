@@ -75,3 +75,4 @@ Besides X01, a match can be played in one of five party modes: Around the Clock,
 6. `06-docs.md`: ADR 0012, glossary, architecture and UI-page docs
 7. `07-real-board-check.md`: play every mode on a real board (human)
 8. `08-around-the-clock-skip-ahead.md`: skip-ahead as an option (added 2026-11-06)
+9. `09-golf-random-course.md`: random holes, the default (added 2026-11-07)
