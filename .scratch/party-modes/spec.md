@@ -56,7 +56,7 @@ Besides X01, a match can be played in one of five party modes: Around the Clock,
 - **Marks:** single 1, double 2, treble 3; outer bull 1, bull 2. Three marks close a number.
 - **Scoring:** marks past three on a number you've closed score its value while at least one opponent hasn't closed it. In standard you score the points. In cut-throat the points go to every opponent who hasn't closed it.
 - **Win:** you've closed everything and you have the most points (fewest in cut-throat), with ties counting for you. You win on the spot.
-- **Cap of 20 rounds.** After that the most points wins (fewest in cut-throat), then the most marks. If players are still level, they play sudden death at the bull: one visit each, and the most bull marks wins.
+- **Cap of 50 rounds.** After that the most points wins (fewest in cut-throat), then the most marks. If players are still level, they play sudden death at the bull: one visit each, and the most bull marks wins.
 
 ## Out of scope
 

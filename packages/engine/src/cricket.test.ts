@@ -115,17 +115,17 @@ describe("Cricket", () => {
     expect(play(events, { variant: "cutThroat" }).winner).toBe(0);
   });
 
-  it("stops after 20 rounds: most points, then most marks", () => {
+  it("stops after 50 rounds: most points, then most marks", () => {
     const rounds = (n: number) => miss(2 * n);
-    const points = [start(), ...visit("T20", "T20"), ...visit("M"), ...rounds(19)];
+    const points = [start(), ...visit("T20", "T20"), ...visit("M"), ...rounds(49)];
     expect(play(points).winner).toBe(0);
 
-    const marks = [start(), ...visit("M"), ...visit("S19"), ...rounds(19)];
+    const marks = [start(), ...visit("M"), ...visit("S19"), ...rounds(49)];
     expect(play(marks).winner).toBe(1);
   });
 
-  it("goes to sudden death at the bull when still level after 20 rounds", () => {
-    const level = [start(3), ...visit("S20"), ...visit("M"), ...visit("S20"), ...miss(3 * 19)];
+  it("goes to sudden death at the bull when still level after 50 rounds", () => {
+    const level = [start(3), ...visit("S20"), ...visit("M"), ...visit("S20"), ...miss(3 * 49)];
     const state = play(level);
     expect(state.suddenDeath).toBe(true);
     expect(state.contenders).toEqual([0, 2]);

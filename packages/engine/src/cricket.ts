@@ -8,7 +8,7 @@ import {
 } from "./party.ts";
 
 export const CRICKET_RULES = 1;
-export const CRICKET_ROUNDS = 20;
+export const CRICKET_ROUNDS = 50;
 export const CRICKET_TARGETS = [20, 19, 18, 17, 16, 15, 25] as const;
 export const CLOSED = 3;
 
