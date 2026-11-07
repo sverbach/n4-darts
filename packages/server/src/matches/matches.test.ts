@@ -297,6 +297,11 @@ describe("a match's page", () => {
     expect(page).toMatchObject({ winner: "ann", legsWon: [1, 0], closedAt: expect.any(String) });
     expect(page.players.map((p) => p.name)).toEqual(["Ann", "Bob"]);
     expect(page.state.legs[0]?.visits[0]?.darts).toHaveLength(2);
+    expect(page.stats.map((s) => [s.points, s.darts, s.won])).toEqual([
+      [40, 2, true],
+      [0, 0, false],
+    ]);
+    expect(page.landed.map((darts) => darts.length)).toEqual([2, 0]);
     expect(Object.keys(page)).not.toContain("originals");
     expect(Object.keys(page)).not.toContain("added");
   });

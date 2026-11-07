@@ -57,6 +57,16 @@
   --heat-6: #f4be4f;
   --heat-7: #fbecae;
 
+  /* Players in charts, by throwing order; always next to the name. */
+  --series-1: #9085e9;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #3987e5;
+  --series-5: #c98500;
+  --series-6: #d55181;
+  --series-7: #008300;
+  --series-8: #e66767;
+
   /* The fonts are below, in Tailwind's theme: --font-pixel and --font-text. */
 
   color-scheme: dark;
@@ -85,6 +95,14 @@
   --color-accent-tint: var(--accent-tint);
   --color-accent-line: var(--accent-line);
   --color-scrim: var(--scrim);
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --color-series-3: var(--series-3);
+  --color-series-4: var(--series-4);
+  --color-series-5: var(--series-5);
+  --color-series-6: var(--series-6);
+  --color-series-7: var(--series-7);
+  --color-series-8: var(--series-8);
   --color-heat-1: var(--heat-1);
   --color-heat-2: var(--heat-2);
   --color-heat-3: var(--heat-3);

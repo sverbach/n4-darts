@@ -3,11 +3,19 @@
 // any match (docs/adr/0002: the correction is appended, the original detection stays in the log).
 // The routes are in matchesRoutes.ts.
 
-import { isX01Match, type MatchState, matchState, type Segment, x01Only } from "@n4/engine";
+import {
+  isX01Match,
+  type MatchState,
+  matchState,
+  matchStats,
+  type Segment,
+  x01Only,
+} from "@n4/engine";
 import type { MatchDetail, MatchPage, MatchSummary } from "../api.ts";
 import type { Db, MatchRecord, StoredEvent, X01MatchRecord } from "../db.ts";
 import { matchPlayer } from "../players/players.ts";
 import type { StationDirectory } from "../stations/stations.ts";
+import { landedDarts } from "../stats/stats.ts";
 
 /**
  * A say over a stored result changing, for whatever builds on results (a tournament: TOUR-14).
@@ -96,8 +104,15 @@ export function createMatches(db: Db, stations: StationDirectory, guard?: Result
       if (!match?.closedAt || match.abandoned || match.walkover || !isX01Match(match)) {
         throw new MatchError("no such match", "missing");
       }
-      const { originals: _, added: __, station: ___, ...page } = detail(match, db.events(id));
-      return { ...page, settings: match.settings, state: x01Only(page.state) };
+      const events = db.events(id);
+      const { originals: _, added: __, station: ___, ...page } = detail(match, events);
+      return {
+        ...page,
+        settings: match.settings,
+        state: x01Only(page.state),
+        stats: matchStats(match.settings, events),
+        landed: landedDarts(match, events),
+      };
     },
 
     /** The match's detail as it changes; a match removed meanwhile keeps its last state. */

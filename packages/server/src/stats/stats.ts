@@ -61,7 +61,7 @@ type Point = { x: number; y: number };
  * Where each player's darts landed (throwing order, oldest first). Only darts the board saw at a
  * real position: no bounce-outs, no darts added by hand, and none the board got wrong (corrected).
  */
-function landedDarts(match: X01MatchRecord, events: StoredEvent[]): Point[][] {
+export function landedDarts(match: X01MatchRecord, events: StoredEvent[]): Point[][] {
   const corrected = new Set(events.flatMap((e) => (e.type === "DartCorrected" ? [e.dartId] : [])));
   const where = new Map<string, Point>();
   for (const e of events) {

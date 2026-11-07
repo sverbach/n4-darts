@@ -11,6 +11,7 @@ import {
   type MatchState,
   type Mode,
   type OutRule,
+  type PlayerMatchStats,
   type Segment,
   type StateOf,
   type X01Settings,
@@ -81,6 +82,10 @@ export type MatchPage = Omit<
 > & {
   settings: X01Settings;
   state: X01State;
+  /** Per player, in throwing order. */
+  stats: PlayerMatchStats[];
+  /** Where each player's board-detected darts landed (as on the profile). */
+  landed: { x: number; y: number }[][];
 };
 
 export interface StationView {
