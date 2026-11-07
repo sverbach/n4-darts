@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Link } from "wouter";
 import { Logo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
+import { ThemeStar } from "../../components/ThemeStar.tsx";
 
 const MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
 const pad2 = (n: number) => String(n).padStart(2, "0");
@@ -38,7 +39,10 @@ export function StatsFrame(props: { back: [string, string] | null; children: Rea
           ) : (
             <span className="min-h-11" />
           )}
-          <Logo width="72px" />
+          <span className="flex items-center gap-2">
+            <ThemeStar />
+            <Logo width="72px" />
+          </span>
         </div>
       </header>
       <main className="mx-auto flex max-w-[1200px] flex-col gap-6 kiosk:gap-6 kiosk:px-6 px-4 kiosk:pt-6 pt-6 kiosk:pb-6 pb-6">

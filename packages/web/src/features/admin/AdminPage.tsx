@@ -3,6 +3,7 @@ import { type FormEvent, useState } from "react";
 import { Link } from "wouter";
 import { Logo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
+import { ThemeStar } from "../../components/ThemeStar.tsx";
 import { call, request } from "../../lib/api.ts";
 import { useFetch } from "../../lib/useFetch.ts";
 import { DiagnosticsAdmin } from "./diagnostics/DiagnosticsAdmin.tsx";
@@ -72,6 +73,7 @@ export function AdminPage({ section }: { section: AdminSection }) {
             <span className="font-pixel kiosk:text-[13px] text-[13px] uppercase tracking-[1px]">
               Admin
             </span>
+            <ThemeStar side="right" />
           </div>
           <nav
             className="scroll-x col-span-full row-start-2 flex min-w-0 kiosk:gap-1.5 border-0 border-border border-t kiosk:border-t-0 border-solid [--fade-bg:var(--bg)] [scrollbar-width:none]"
@@ -170,7 +172,10 @@ function Login({ onDone }: { onDone: () => Promise<void> }) {
         className="m-auto flex w-[calc(100%_-_32px)] max-w-[440px] flex-col gap-3 border border-border border-solid bg-panel px-6 py-6"
         onSubmit={submit}
       >
-        <Logo width="108px" className="mb-3 self-center" />
+        <div className="mb-3 flex items-center justify-center gap-2">
+          <Logo width="108px" />
+          <ThemeStar side="right" />
+        </div>
         <div className="mb-4 flex flex-col items-center gap-3">
           <h1 className="tracking-[5px]">Admin</h1>
         </div>

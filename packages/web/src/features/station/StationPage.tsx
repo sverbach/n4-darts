@@ -13,6 +13,7 @@ import { PlayerPicker } from "../../components/PlayerPicker.tsx";
 import { Scorecard } from "../../components/Scorecard.tsx";
 import { SegmentPicker } from "../../components/SegmentPicker.tsx";
 import { SoundPrompt } from "../../components/Sound.tsx";
+import { ThemeStar } from "../../components/ThemeStar.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import {
   cricketOf,
@@ -68,6 +69,7 @@ export function StationPage({ id }: { id: number }) {
         </div>
         <div className="flex items-center gap-1.5 kiosk:gap-2.5">
           {sound.needsTap && <SoundPrompt />}
+          <ThemeStar className="kiosk:size-14 size-11" star="w-5 kiosk:w-6" />
           <BoardMenu
             stationId={id}
             online={view?.boardOnline ?? false}

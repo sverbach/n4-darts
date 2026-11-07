@@ -7,6 +7,7 @@ import { MatchOver } from "../../components/MatchOver.tsx";
 import { PlayerCards, PlayerList } from "../../components/PlayerCards.tsx";
 import { Scorecard } from "../../components/Scorecard.tsx";
 import { SoundButton, SoundPrompt } from "../../components/Sound.tsx";
+import { ThemeStar } from "../../components/ThemeStar.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import { matchRulesLabel } from "../../lib/labels.ts";
 import {
@@ -52,6 +53,11 @@ export function WatchPage({ id }: { id: number }) {
               <MatchLine match={match} />
             )
           )}
+          <ThemeStar
+            className="size-[max(36px,calc(44*var(--px)))] min-h-0"
+            star="w-pu-24"
+            flash="text-pu-18"
+          />
           {sound.needsTap ? (
             <SoundPrompt className="min-h-[max(30px,calc(36*var(--px)))]! px-pu-14! text-[length:max(11px,calc(20*var(--px)))]!" />
           ) : (

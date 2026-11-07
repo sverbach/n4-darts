@@ -530,6 +530,23 @@
 }
 
 /* The animated logo (SparkleLogo): a strip of 64 frames moved one frame at a time. */
+@keyframes theme-flash {
+  0% {
+    opacity: 0;
+    transform: translate(4px, -50%);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 @keyframes logo-sparkle {
   to {
     transform: translateX(-100%);

@@ -6,7 +6,9 @@ import { Link } from "wouter";
 import { BoardStatus } from "../../components/BoardMenu.tsx";
 import { SparkleLogo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
+import { ThemeStar } from "../../components/ThemeStar.tsx";
 import { matchRulesLabel } from "../../lib/labels.ts";
+import { useTheme } from "../../lib/theme.ts";
 import { useLive } from "../../lib/useLive.ts";
 
 const BADGE = "min-h-6! px-2! text-[11px]! before:size-1.5!";
@@ -29,13 +31,24 @@ function stationState(station: StationView) {
 
 /** The start page: the stations (followed live, so one added in /admin shows up), and the rest. */
 export function HomePage() {
+  const { next } = useTheme();
   const stations = useLive<StationView[]>("/api/stations/live").view ?? [];
 
   return (
     <main className="mx-auto flex min-h-[100dvh] w-full max-w-[1000px] flex-col gap-6 kiosk:gap-6 kiosk:px-6 px-4 kiosk:pt-6 pt-6 kiosk:pb-6 pb-6">
+      <div className="-mb-12 flex justify-end">
+        <ThemeStar />
+      </div>
       <h1 className="flex justify-center pt-2 pb-3">
         {/* 3× the sprite's 76 pixels, so the logo itself stays 216 px wide. */}
-        <SparkleLogo className="kiosk:w-[304px] w-[228px] max-w-[63vw]" />
+        <button
+          type="button"
+          className="ghost min-h-0 border-0 p-0"
+          aria-label="n4-darts: next theme"
+          onClick={next}
+        >
+          <SparkleLogo className="kiosk:w-[304px] w-[228px] max-w-[63vw]" />
+        </button>
       </h1>
       <div className="flex flex-wrap gap-x-6 gap-y-6">
         <nav aria-label="Stations" className={LIST}>

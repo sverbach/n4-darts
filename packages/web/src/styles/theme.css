@@ -72,6 +72,37 @@
   color-scheme: dark;
 }
 
+/* The themes (lib/theme.ts): each dark theme swaps the accent family only. */
+:root[data-theme="cyan"] {
+  --accent: #3fd9ff;
+  --accent-tint: #051318;
+  --accent-line: #0c3e4a;
+}
+
+:root[data-theme="green"] {
+  --accent: #5cffa0;
+  --accent-tint: #09140c;
+  --accent-line: #1e3f2a;
+}
+
+:root[data-theme="magenta"] {
+  --accent: #ff3d9a;
+  --accent-tint: #190d11;
+  --accent-line: #4e2b38;
+}
+
+:root[data-theme="yellow"] {
+  --accent: #f2e640;
+  --accent-tint: #131206;
+  --accent-line: #3b3914;
+}
+
+:root[data-theme="orange"] {
+  --accent: #ff8c1a;
+  --accent-tint: #190e07;
+  --accent-line: #4c2f19;
+}
+
 /* Silkscreen for labels, names and buttons; Geist Pixel for numbers and running text. As theme
    values they are also the `--font-pixel` / `--font-text` variables plain CSS uses. */
 @theme {

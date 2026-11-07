@@ -2,6 +2,7 @@ import type { PublicSession } from "@n4/server/api";
 import { type FormEvent, type ReactNode, useState } from "react";
 import { Logo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
+import { ThemeStar } from "../../components/ThemeStar.tsx";
 import { call } from "../../lib/api.ts";
 import { PublicSite } from "../../lib/publicSite.ts";
 import { useFetch } from "../../lib/useFetch.ts";
@@ -52,7 +53,10 @@ function PublicLogin({ onDone }: { onDone: () => Promise<void> }) {
         className="m-auto flex w-[calc(100%_-_32px)] max-w-[440px] flex-col gap-3 border border-border border-solid bg-panel px-6 py-6"
         onSubmit={submit}
       >
-        <Logo width="108px" className="mb-3 self-center" />
+        <div className="mb-3 flex items-center justify-center gap-2">
+          <Logo width="108px" />
+          <ThemeStar side="right" />
+        </div>
         <div className="mb-4 flex flex-col items-center gap-3">
           <h1 className="tracking-[5px]">Stats</h1>
         </div>

@@ -4,6 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#060708" />
+    <script>
+      const theme = (() => {
+        try {
+          return localStorage.getItem("n4-theme");
+        } catch {
+          return null;
+        }
+      })();
+      if (theme && theme !== "violet") document.documentElement.dataset.theme = theme;
+      if (theme === "daylight")
+        document.querySelector('meta[name="theme-color"]').content = "#f2ede6";
+    </script>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>darts</title>
   </head>
