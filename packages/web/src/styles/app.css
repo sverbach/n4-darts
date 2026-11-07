@@ -7,6 +7,11 @@
  */
 
 @layer base {
+  html {
+    min-height: 100%;
+    background: var(--bg);
+  }
+
   body {
     background: var(--bg);
     color: var(--text);
