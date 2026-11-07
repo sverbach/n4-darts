@@ -1,33 +1,15 @@
-import type { DartView } from "@n4/engine";
-import type { MatchDetail, MatchSummary } from "@n4/server/api";
-import { useState } from "react";
-import { MatchLegs } from "../../../components/MatchLegs.tsx";
+import type { MatchSummary } from "@n4/server/api";
+import type { ReactNode } from "react";
+import { Link } from "wouter";
 import { PixelIcon } from "../../../components/PixelIcon.tsx";
-import { SegmentPicker } from "../../../components/SegmentPicker.tsx";
-import { request } from "../../../lib/api.ts";
-import { dartLabel } from "../../../lib/darts.ts";
 import { legScore } from "../../../lib/format.ts";
-import { matchRulesLabel } from "../../../lib/labels.ts";
 import { useLive } from "../../../lib/useLive.ts";
-import { HEAD, runState, TABLE_PANEL } from "../ui.ts";
+import { TABLE_PANEL } from "../ui.ts";
 
-const when = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "";
 const day = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString(undefined, { dateStyle: "medium" }) : "Not finished";
 const time = (iso: string | null) =>
   iso ? new Date(iso).toLocaleTimeString(undefined, { timeStyle: "short" }) : "";
-
-function result(match: MatchSummary | MatchDetail) {
-  if (match.abandoned) return "Abandoned";
-  const winner = match.players.find((p) => p.id === match.winner);
-  if (!winner) return match.closedAt ? "No winner (corrected)" : "In progress";
-  const legs =
-    match.settings.mode === "x01" && match.settings.legsToWin > 1
-      ? ` ${legScore(match.legsWon)}`
-      : "";
-  return `${winner.name} won${legs}`;
-}
 
 function winnerFirst(match: MatchSummary) {
   const order = match.players.map((_, i) => i);
@@ -37,7 +19,7 @@ function winnerFirst(match: MatchSummary) {
 
 function score(match: MatchSummary) {
   if (match.abandoned) return "Abandoned";
-  if (!match.winner) return match.closedAt ? "No winner (corrected)" : "In progress";
+  if (!match.winner) return match.walkover ? "Walkover" : "No winner";
   return legScore(winnerFirst(match).map((i) => match.legsWon[i] ?? 0));
 }
 
@@ -47,19 +29,18 @@ function byDay(matches: MatchSummary[]) {
   return [...days];
 }
 
-/**
- * A dart in the match detail: corrected (framed, the original crossed out above), added by hand
- * (dashed: the board missed it), or thrown after the visit was over (dashed, crossed out).
- */
-function dartStyle(ignored: boolean, corrected: boolean, added: boolean) {
-  const border = `${ignored || added ? "border-dashed" : ""} ${corrected ? "border-text" : ""}`;
-  const fill = ignored ? "bg-transparent text-muted line-through" : corrected ? "bg-surface" : "";
-  const type = `${corrected ? "text-[24px]" : "text-[26px]"} ${corrected || added ? "leading-[0.9]" : ""}`;
-  return `min-h-[46px] flex-col gap-0 p-0 font-text normal-case tracking-normal ${border} ${fill} ${type}`;
+function Row(props: { href: string | null; className: string; children: ReactNode }) {
+  const { href, className, children } = props;
+  return href ? (
+    <Link href={href} className={`${className} text-text no-underline hover:bg-surface`}>
+      {children}
+    </Link>
+  ) : (
+    <div className={className}>{children}</div>
+  );
 }
 
-export function MatchHistory({ onOpen }: { onOpen(id: string): void }) {
-  // Live: a match that finishes, or a correction that changes a result, shows up by itself.
+export function MatchHistory() {
   const matches = useLive<MatchSummary[]>("/api/admin/matches/live").view;
 
   if (!matches) return <p className="hint">Loading…</p>;
@@ -79,9 +60,8 @@ export function MatchHistory({ onOpen }: { onOpen(id: string): void }) {
           <ul className="m-0 list-none p-0">
             {list.map((m) => (
               <li key={m.id} className="border-0 border-line-soft border-b border-solid">
-                <button
-                  type="button"
-                  onClick={() => onOpen(m.id)}
+                <Row
+                  href={m.abandoned || m.walkover ? null : `/matches/${m.id}`}
                   className="grid min-h-[60px] w-full grid-cols-[minmax(0,1fr)_auto] kiosk:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_120px_24px] items-center gap-x-4 gap-y-1.5 border-0 bg-transparent kiosk:px-6 px-4 kiosk:py-0 py-2.5 text-left font-text normal-case tracking-normal kiosk:[&_.pixel-icon]:block [&_.pixel-icon]:hidden kiosk:[&_.pixel-icon]:h-[14px] kiosk:[&_.pixel-icon]:text-muted"
                 >
                   <span className="font-pixel text-[13px] uppercase tracking-[1px]">
@@ -107,95 +87,13 @@ export function MatchHistory({ onOpen }: { onOpen(id: string): void }) {
                   <span className="text-right font-pixel kiosk:text-[12px] text-[11px] text-muted [grid-column:2] [grid-row:1/span_2] kiosk:[grid-column:auto] kiosk:[grid-row:auto]">
                     {time(m.closedAt)}
                   </span>
-                  <PixelIcon name="arrow" />
-                </button>
+                  {!m.abandoned && !m.walkover && <PixelIcon name="arrow" />}
+                </Row>
               </li>
             ))}
           </ul>
         </section>
       ))}
-    </div>
-  );
-}
-
-export function MatchDetailView({ id, onBack }: { id: string; onBack(): void }) {
-  const live = useLive<MatchDetail>(`/api/admin/matches/${id}/live`);
-  const match = live.view;
-  const [error, setError] = useState<string | null>(null);
-  const [correcting, setCorrecting] = useState<DartView | null>(null);
-
-  const correct = async (dartId: string, segment: DartView["segment"]) => {
-    // Refused e.g. for a tournament result a later match already depends on. The corrected match
-    // arrives through the live stream.
-    setError(await request("POST", `/api/admin/matches/${id}/corrections`, { dartId, segment }));
-  };
-
-  const name = (i: number) => match?.players[i]?.name ?? "?";
-
-  return (
-    <div className="flex flex-col gap-6">
-      <button type="button" className="back self-start" onClick={onBack}>
-        <PixelIcon name="back" height="0.7em" /> Matches
-      </button>
-      {(error ?? live.failed) && (
-        <p className="error" role="alert">
-          {error ?? "Couldn't load the match"}
-        </p>
-      )}
-      {!match ? (
-        <p className="hint">Loading…</p>
-      ) : (
-        <>
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div className={HEAD}>
-              {!match.closedAt && <span className={runState(true)}>Live</span>}
-              <h1>{match.players.map((p) => p.name).join(" vs ")}</h1>
-              <p className="hint">
-                {result(match)} · {matchRulesLabel(match.settings)}
-                {match.station !== null && ` · Station ${match.station}`}
-                {match.closedAt && ` · ${when(match.closedAt)}`}
-              </p>
-            </div>
-            <span className="hint">Tap a dart to correct it.</span>
-          </div>
-          <MatchLegs
-            state={match.state}
-            name={name}
-            dart={(dart) => {
-              const original = match.originals[dart.dartId];
-              const added = match.added.includes(dart.dartId);
-              return (
-                <button
-                  type="button"
-                  key={dart.dartId}
-                  className={dartStyle(dart.ignored, Boolean(original), added)}
-                  onClick={() => setCorrecting(dart)}
-                  aria-label={`Correct ${dartLabel(dart.segment)}`}
-                  title={added ? "Added by hand: the board missed it" : undefined}
-                >
-                  {original && <s className="text-[16px] text-muted">{dartLabel(original)}</s>}
-                  <span>{dartLabel(dart.segment)}</span>
-                  {added && (
-                    <small className="font-pixel text-[11px] text-muted uppercase">added</small>
-                  )}
-                </button>
-              );
-            }}
-          />
-        </>
-      )}
-      {correcting && (
-        <SegmentPicker
-          title="Correct"
-          dart={dartLabel(correcting.segment)}
-          current={correcting.segment}
-          onCancel={() => setCorrecting(null)}
-          onPick={(segment) => {
-            setCorrecting(null);
-            void correct(correcting.dartId, segment);
-          }}
-        />
-      )}
     </div>
   );
 }

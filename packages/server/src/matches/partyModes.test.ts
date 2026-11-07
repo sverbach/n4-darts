@@ -1,12 +1,6 @@
 import type { Segment } from "@n4/engine";
 import { afterEach, describe, expect, it } from "vitest";
-import type {
-  LeaderboardRow,
-  MatchDetail,
-  MatchSummary,
-  PlayerProfile,
-  StationView,
-} from "../api.ts";
+import type { LeaderboardRow, MatchSummary, PlayerProfile, StationView } from "../api.ts";
 import { buildApp } from "../app.ts";
 import { type Db, openDb } from "../db.ts";
 import { createStation, type Station } from "../stations/station.ts";
@@ -274,32 +268,5 @@ describe("a High Score 180", () => {
 
     expect(await ctx.get<LeaderboardRow[]>("/api/players/stats")).toEqual([]);
     expect((await ctx.get<PlayerProfile>("/api/players/ann/stats")).totals.s180).toBe(0);
-  });
-});
-
-describe("a live party match in /admin", () => {
-  it("shows its visits and takes a correction", async () => {
-    const ctx = setup();
-    await ctx.command({
-      type: "quickMatch",
-      playerIds: ["ann", "bob"],
-      settings: { mode: "aroundTheClock" },
-    });
-    await ctx.command({ type: "startMatch" });
-    ctx.play("S1 S5 /");
-    const id = (await ctx.view()).match?.id as string;
-
-    const detail = await ctx.get<MatchDetail>(`/api/admin/matches/${id}`);
-    expect(detail.state.mode).toBe("aroundTheClock");
-    const missed = detail.state.mode === "aroundTheClock" ? detail.state.visits[0]?.darts[1] : null;
-
-    await ctx.app.inject({
-      method: "POST",
-      url: `/api/admin/matches/${id}/corrections`,
-      payload: { dartId: missed?.dartId, segment: { number: 2, multiplier: 1 } },
-    });
-
-    const state = (await ctx.view()).match?.state;
-    expect(state?.mode === "aroundTheClock" && state.players[0]?.target).toBe(3);
   });
 });

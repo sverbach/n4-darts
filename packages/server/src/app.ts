@@ -98,7 +98,7 @@ function registerRoom(app: FastifyInstance, options: AppOptions) {
 
   registerStations(app, stations, feed);
   if (isRegistry(stations)) registerStationAdmin(app, stations, feed);
-  const matches = db ? createMatches(db, stations, tournaments?.resultGuard) : undefined;
+  const matches = db ? createMatches(db) : undefined;
   registerMatches(app, stations, matches, feed);
   if (matches) registerMatchPage(app, matches);
 
@@ -173,7 +173,7 @@ export function buildPublicApp(options: PublicAppOptions) {
   registerStats(app, stats);
   registerPlayerPhoto(app, createPlayers(db));
   registerPastTournaments(app, pastWithAwards(db, stats));
-  registerMatchPage(app, createMatches(db, fixedDirectory([])));
+  registerMatchPage(app, createMatches(db));
 
   serveWeb(app, options.webDir);
   return app;

@@ -292,14 +292,8 @@ There's one tournament at a time, and the tab shows one of three states.
 ### `/admin/matches`
 - **Stations:** a row per station with:
   - The name (a link), the board status only when it isn't fine, and the current match summary: "Ann 141 (1) · Bob 60 (0)", "Ann, Bob: waiting to start" or "Ann won". The station shows "Free" when idle.
-  - Buttons: "Details" (opens the match detail) and "End match" or "Cancel match" (danger).
-- **History** (set off by a rule): finished matches grouped by evening, the date once as a heading. Each row shows the players (the winner first and in full colour, the others grey), the result as legs, the winner's first ("2–1", "Abandoned" or "No winner (corrected)") and the time. Tapping a row opens the match detail.
-- **Match detail** (replaces the page, its heading included; live):
-  - A back button "← Matches".
-  - The title "Ann vs Bob" and the line "Ann won 2–1 · 501 · Double out · First to 2 legs · Station 1 · 20 Oct 2026, 21:14".
-  - The hint "Tap a dart to correct it."
-  - Per leg, the heading "Leg 1 · Ann starts · Ann won" (who won the leg only when there was more than one) and a list of visits. Each visit shows the player name, the dart buttons and the visit score, with "Bust", or "Out" after a checkout.
-  - A corrected dart shows its original struck through, and a dart added by hand on the station is marked "added". Tapping a dart opens the segment picker.
+  - Buttons: "Watch" (opens `/watch/n`) while a match runs, and "End match" or "Cancel match" (danger).
+- **History** (set off by a rule): finished matches grouped by day, the date once as a heading. Each row shows the players (the winner first and in full colour, the others grey), the result as legs, the winner's first ("2–1", "Abandoned", "Walkover" or "No winner") and the time. A row opens the match's page, `/matches/:id`; abandoned matches and walkovers have none, so their rows aren't links. Darts aren't corrected here: that happens at the station during the match.
 
 ### `/admin/lights`
 The WLED light strips, and what each station's do.

@@ -6,7 +6,7 @@ The terms (station, board, visit, takeout, leg, rating, seed, walkover…) are d
 
 ## 8.2 Event log and rules versions
 
-A match is its log (ADR 0002). Darts, corrections, added darts, undo and manual "next player" are all events; the state is folded from them by the engine. Corrections are appended, never written over, so the original detection stays visible (PLAY-09, MATCH-05). Each match records the rules version it was played under, so a rule change never changes an old result (PLAY-17). Stats, ratings and tournament results are derived from the logs and cached per match until the log changes (STATS-07).
+A match is its log (ADR 0002). Darts, corrections, added darts, undo and manual "next player" are all events; the state is folded from them by the engine. Corrections are appended, never written over, so the original detection stays in the log (PLAY-09). Each match records the rules version it was played under, so a rule change never changes an old result (PLAY-17). Stats, ratings and tournament results are derived from the logs and cached per match until the log changes (STATS-07).
 
 ## 8.3 Live updates
 
@@ -48,7 +48,7 @@ Pages and their layouts are described in `docs/ui-pages.md`.
 - **Visual suite:** every page and state as a screenshot, compared at zero tolerance with a committed baseline (`packages/e2e/tests/visual.spec.ts`). Run by hand around style changes, not in CI.
 - **Where tests live:**
   - **Unit and component tests** sit next to the file they test (`players/players.test.ts`), also when they go through the whole app with `buildApp`.
-  - **`packages/server/src/testing/integration/`**: tests of several components working together (the app's wiring, organiser overrides, result changes, withdrawals).
+  - **`packages/server/src/testing/integration/`**: tests of several components working together (the app's wiring, organiser overrides, withdrawals).
   - **`packages/server/src/testing/load/`**: the load test. **`testing/e2e/`**: a whole tournament evening on simulated boards, through a server restart. **`testing/seed.ts`**: a realistic match history for tests that need one.
   - **`packages/e2e/`**: the browser tests.
 - **CI** runs all of it on every push; nothing ships that fails (Q-15).

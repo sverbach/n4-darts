@@ -60,27 +60,15 @@ export interface MatchSummary {
   /** Player id; null while unfinished, when abandoned, or after a correction took the win away. */
   winner: string | null;
   abandoned: boolean;
+  /** Won without being played; it has no page. */
+  walkover: boolean;
   closedAt: string | null;
   /** Legs won per player, in throwing order. */
   legsWon: number[];
 }
 
-/** A match with every visit, for /admin; party matches only while they're live. */
-export interface MatchDetail extends Omit<MatchSummary, "settings"> {
-  settings: MatchSettings;
-  state: MatchState;
-  /** What the board first detected, for every dart that was corrected since. */
-  originals: Record<string, Segment>;
-  /** Darts the board missed that were added by hand on the station. */
-  added: string[];
-}
-
-/** A finished X01 match as the stats pages show it: every leg and visit, no corrections. */
-export type MatchPage = Omit<
-  MatchDetail,
-  "originals" | "added" | "station" | "settings" | "state"
-> & {
-  settings: X01Settings;
+/** A finished X01 match as the stats pages show it: every leg and visit. */
+export type MatchPage = Omit<MatchSummary, "station" | "walkover"> & {
   state: X01State;
   /** Per player, in throwing order. */
   stats: PlayerMatchStats[];
@@ -309,9 +297,6 @@ export const NewMatchInput = z.strictObject({
   playerIds,
   settings: MatchSettingsInput.exactOptional(),
 });
-
-/** The organiser's correction of a dart, in /admin. */
-export const CorrectionInput = z.strictObject({ dartId: z.string(), segment: SegmentInput });
 
 const ELIMINATIONS = {
   single: "single",

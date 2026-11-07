@@ -2,10 +2,9 @@
 // it. Running it, matches and the scheduler, builds on this (.scratch/tournaments/spec.md).
 
 import { randomUUID } from "node:crypto";
-import { defaultX01Settings, isX01Match, matchState, RULES_VERSION } from "@n4/engine";
+import { defaultX01Settings, RULES_VERSION } from "@n4/engine";
 import type { TournamentAdminView, TournamentConfigPatch, TournamentInput } from "../api.ts";
-import type { Db, MatchRecord, StoredEvent, TournamentRecord, X01MatchRecord } from "../db.ts";
-import type { ResultGuard } from "../matches/matches.ts";
+import type { Db, MatchRecord, TournamentRecord } from "../db.ts";
 import { ratingOf } from "../ratings/ratings.ts";
 import type { StationDirectory } from "../stations/stations.ts";
 import { estimateMinutes, legMinutes } from "./estimate.ts";
@@ -73,65 +72,11 @@ export function createTournaments(db: Db, stations: StationDirectory) {
     return db.tournamentMatches(tournament.id).some((m) => !m.walkover && started(m));
   }
 
-  /** Results of the tournament's decided matches; `instead` swaps in one match's log and record. */
-  function results(
-    tournament: TournamentRecord,
-    instead?: { match: X01MatchRecord; events: StoredEvent[] },
-  ): Result[] {
-    return db.tournamentMatches(tournament.id).flatMap((m) => {
-      const own = instead?.match.id === m.id ? instead : null;
-      const result = own
-        ? resultOf(own.match, own.events)
-        : resultOf(m, m.walkover ? [] : db.events(m.id));
-      return result ? [result] : [];
-    });
-  }
-
-  /**
-   * Why a correction to a tournament match can't be made, or null if it can. A finished match
-   * must keep a winner, and nothing that has started or been played may end up with other
-   * players; in a finished tournament the winner can't change at all.
-   */
-  function correctionProblem(match: MatchRecord, events: StoredEvent[]): string | null {
-    const tournament = match.tournamentId ? db.getTournament(match.tournamentId) : undefined;
-    if (
-      !tournament ||
-      tournament.status === "draft" ||
-      !match.closedAt ||
-      match.abandoned ||
-      !isX01Match(match)
-    )
-      return null;
-    const winnerIndex = matchState(match.settings, events).winner;
-    const winner = winnerIndex === null ? null : (match.playerIds[winnerIndex] ?? null);
-    if (winner === null) return "That would leave the match without a winner.";
-    if (tournament.status === "finished" && winner !== match.winner) {
-      return "The tournament is over; a correction can't change who won.";
-    }
-    const after = plan(
-      tournament.config,
-      db.entrants(tournament.id),
-      results(tournament, { match: { ...match, winner }, events }),
-    );
-    const planned = new Map(after.matches.map((m) => [m.slot, m]));
-    const name = (id: string) => db.getPlayer(id)?.name ?? "?";
-    for (const other of db.tournamentMatches(tournament.id)) {
-      if (other.id === match.id || other.abandoned || !started(other)) continue;
-      const wanted = other.slot ? planned.get(other.slot) : undefined;
-      if (wanted?.players && sameSet(wanted.players, other.playerIds)) continue;
-      const who = other.playerIds.map(name).join(" vs ");
-      const what = other.closedAt ? "has already been played" : "has already started";
-      return `It would change ${other.label ?? "a later match"} (${who}), which ${what}.`;
-    }
-    return null;
-  }
-
-  /** After a correction: rebuild whatever depends on the result. */
-  function corrected(match: MatchRecord) {
-    const tournament = match.tournamentId ? db.getTournament(match.tournamentId) : undefined;
-    if (tournament?.status !== "running") return;
-    sync();
-    changed();
+  /** Results of the tournament's decided matches. */
+  function results(tournament: TournamentRecord): Result[] {
+    return db
+      .tournamentMatches(tournament.id)
+      .flatMap((m) => resultOf(m, m.walkover ? [] : db.events(m.id)) ?? []);
   }
 
   const settingsFor = (config: TournamentConfig, phase: MatchPhase) => ({
@@ -567,9 +512,7 @@ export function createTournaments(db: Db, stations: StationDirectory) {
     endEarly,
     withdraw,
     addLate,
-    /** Matches asks this before and after a correction (TOUR-14). */
     shown,
-    resultGuard: { problem: correctionProblem, changed: corrected } satisfies ResultGuard,
     placed,
     avoids,
     subscribe(listener: () => void) {

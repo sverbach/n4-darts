@@ -46,7 +46,6 @@ sequenceDiagram
 
 - The correction is appended; the original detection stays in the log and the dart stays marked as corrected (PLAY-09, ADR 0002).
 - At the station only darts of the current visit can be corrected. A dart the board missed is added the same way (`addDart`, PLAY-10).
-- The organiser can correct any dart of any match from `/admin`. For a finished tournament match, n4-darts first checks whether the result may still change (TOUR-14).
 
 ## 6.3 Players start a quick match
 

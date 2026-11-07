@@ -1,10 +1,8 @@
-import { x01Only } from "@n4/engine";
 import Fastify from "fastify";
 import { afterEach, describe, expect, it } from "vitest";
 import type {
   AdminPlayer,
   DisplayView,
-  MatchDetail,
   MatchSummary,
   Player,
   StationView,
@@ -92,25 +90,6 @@ describe("live streams", () => {
     expect(view.entrants).toHaveLength(2);
   });
 
-  it("pushes a match's detail when it's corrected", async () => {
-    const { app, station } = setup();
-    const base = await listen(app);
-    await station.command({ type: "quickMatch", playerIds: ["ann", "bob"] });
-    await station.command({ type: "startMatch" });
-    dart(station, "S20", 20, 1);
-    const matchId = station.view().match?.id as string;
-    const detail = open<MatchDetail>(`${base}/api/admin/matches/${matchId}/live`);
-    expect(x01Only((await detail.next()).state).players[0]?.remaining).toBe(281);
-
-    const dartId = station.view().match?.state.currentVisit?.darts[0]?.dartId;
-    await app.inject({
-      method: "POST",
-      url: `/api/admin/matches/${matchId}/corrections`,
-      payload: { dartId, segment: { number: 20, multiplier: 3 } },
-    });
-    expect(x01Only((await detail.next()).state).players[0]?.remaining).toBe(241);
-  });
-
   it("pushes the station list when a station changes", async () => {
     const { app, station } = setup();
     const base = await listen(app);
@@ -161,7 +140,6 @@ describe("live streams", () => {
     const base = await listen(app);
     for (const path of [
       "/api/admin/tournament/live",
-      "/api/admin/matches/x/live",
       "/api/admin/players/live",
       "/api/admin/matches/live",
     ]) {
@@ -182,7 +160,6 @@ describe("live streams", () => {
       reason: "no such station",
     });
     expect((await open(`${base}/api/stations/one/live`).closed).code).toBe(4400);
-    expect((await open(`${base}/api/admin/matches/nope/live`).closed).code).toBe(4404);
   });
 
   it("unsubscribes when the client goes away", async () => {

@@ -14,7 +14,7 @@ Dart evenings for a room of Autodarts boards, fully offline. The boards detect t
 - **Caller:** a voice calls the scores, "No score" and "Game shot". It's switched on per device, and voice packs in [darts-caller](https://github.com/lbormann/darts-caller)'s format can be uploaded in `/admin` → Sound.
 - **Lights:** WLED presets for idle, playing and moments like match start, game shot, a 100+ visit, 180 and bust (`/admin` → Lights).
 - **Public site:** a read-only copy of the stats for players outside the room, behind one group password.
-- **Admin** (`/admin`, optionally behind a PIN): players with photos, stations, matches and corrections, diagnostics. The database is backed up daily.
+- **Admin** (`/admin`, optionally behind a PIN): players with photos, stations, matches, diagnostics. The database is backed up daily.
 
 ## Running on the server
 

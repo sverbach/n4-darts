@@ -21,8 +21,8 @@ The clusters fall into five groups:
 | **Match play** | Plays a match by the rules: scores darts, ends visits at takeout, busts, in and out rules, legs and the winner. Lets the players at the board correct and add darts, undo, move to the next player, and shows checkout routes. | PLAY-01 to 17 | Dart detection |
 | **Stations** | The places to play: which stations exist, which board each one uses, and whether each one is free, busy or paused. | ADMIN-03, 04 | – |
 | **Players** | The list of players across evenings: names, archiving, photos, adding someone on the spot. | PLAYER-01 to 07 | – |
-| **Matches** | Every match as a whole: quick matches and single matches put on a free station, ending a match without a result, the record and history of every match, and the organiser's corrections to any dart. | MATCH-01 to 05 | Match play, Stations, Players |
-| **Tournaments** | One evening's competition: draft, format, seeding, groups and their tables, the knockout, placings, withdrawals, late arrivals, result changes, ending early, and the duration estimate. | TOUR-01 to 17 | Matches, Players, Ratings |
+| **Matches** | Every match as a whole: quick matches and single matches put on a free station, ending a match without a result, and the record and history of every match. | MATCH-01 to 05 | Match play, Stations, Players |
+| **Tournaments** | One evening's competition: draft, format, seeding, groups and their tables, the knockout, placings, withdrawals, late arrivals, ending early, and the duration estimate. | TOUR-01 to 17 | Matches, Players, Ratings |
 | **Scheduling** | Runs the evening: gives free stations the next ready match, hands stations over when matches finish, and carries out the organiser's overrides (pause, pin, hold, send back, play now). | SCHED-01 to 08 | Tournaments, Matches, Stations |
 | **Ratings** | Each player's rating: their recent average, from their last completed matches. | RATING-01 | Matches |
 | **Stats** | Long-term numbers per player: profile, chart, heatmap, leaderboard, the awards of a finished tournament, past tournaments and matches, and a read-only public site. | STATS-01 to 10 | Matches, Players, Ratings, Tournaments |
@@ -98,7 +98,7 @@ Access and Operations have no arrows: they apply to every cluster rather than de
 
 - **Match play is the core, and it depends on almost nothing.** Only Dart detection is below it. It's the part that has to be right every dart, and the part that is easiest to keep right in isolation (`docs/adr/0002-match-state-from-event-log.md`).
 - **Live views depend on most clusters, and nothing depends on them.** They only consume, so they can change freely without breaking anything below.
-- **Tournaments builds on Matches, and Matches doesn't know about Tournaments.** A correction to a finished tournament match must first ask whether the result may change (TOUR-14). Matches offers a "may this result change?" check, and Tournaments plugs its rule into it (`ResultGuard` in `packages/server/src/matches/matches.ts`). So the dependency points one way only.
+- **Tournaments builds on Matches, and Matches doesn't know about Tournaments.** The dependency points one way only.
 - **Ratings are their own cluster on purpose, inside Statistics.** Tournaments need a rating for seeding, and Stats shows tournament placings. If rating were part of Stats, Tournaments and Stats would depend on each other. Ratings depend only on Matches, so the loop doesn't arise. Organise reaches into Statistics only for the rating.
 - **Awards sit in Stats, but belong to a tournament.** They're computed from a tournament's matches with the stats calculations, and shown at the end of a tournament. Only Live views needs them: the views add them to the tournament from Stats (`withAwards` in `packages/server/src/stats/stats.ts`), so Stats depending on Tournaments stays one-way.
 - **The duration estimate sits in Tournaments, but learns from Matches.** It uses the leg lengths of past matches (TOUR-16), which is part of Tournaments' dependency on Matches.
@@ -166,7 +166,7 @@ What n4-darts has to do. The quality requirements are in section 10, the constra
 | MATCH-02 | The organiser creates a match (players and settings) and puts it straight on a free station. A busy station is refused. | Org | spec: players-and-matches |
 | MATCH-03 | A match can be ended without a result (at the station or by the organiser). It stays in the history with the legs played so far and never counts for anything. A match that hasn't started is simply removed. | Org, Pla | spec: players-and-matches |
 | MATCH-04 | The organiser sees what's on every station and the history of finished matches, with the result and every visit of every leg. | Org | spec: players-and-matches |
-| MATCH-05 | The organiser can correct any dart of any running or finished match. The result follows the correction. Corrected and added darts stay recognisable. | Org | spec: players-and-matches |
+| MATCH-05 | (Dropped 2026-11-07: the organiser no longer corrects darts after the fact; corrections happen at the station, see `.scratch/one-match-view`.) | | |
 
 #### Tournaments (TOUR)
 
@@ -185,7 +185,7 @@ What n4-darts has to do. The quality requirements are in section 10, the constra
 | TOUR-11 | Winners move on until there is a champion. At the end there are final placings (1, 2, 3, 4, then shared places by the round a player went out). | Org, Pla | spec: tournaments |
 | TOUR-12 | A player who withdraws loses every remaining match by walkover (groups: 2 points, all legs). A match running at that moment is ended. Played results stand. | Org | spec: tournaments |
 | TOUR-13 | A late player can join during the group phase only. They go into the smallest group and their matches are queued. | Org | spec: tournaments |
-| TOUR-14 | A correction to a finished tournament match must leave a winner. What depends on the result (tables, knockout, next matches) is rebuilt while it hasn't started. Otherwise the correction is refused, naming the match in the way. | Org | spec: tournaments |
+| TOUR-14 | (Dropped 2026-11-07 with MATCH-05: there are no corrections to finished matches left to check.) | | |
 | TOUR-15 | The organiser can end a tournament early. Matches not yet played are dropped. | Org | spec: tournaments |
 | TOUR-16 | When creating, the tournament shows its expected duration ("about 2 h 30"); during the evening, the expected end time, updated as matches finish. It is based on the real leg lengths of the last 50 matches at the same start score, with defaults until there are at least 5 legs. | Org | spec: tournaments, ticket: perf-tests |
 | TOUR-17 | Tournament matches are labelled at the station (e.g. "Group A · match 4", "Winners semi-final"). | Pla | spec: tournaments |

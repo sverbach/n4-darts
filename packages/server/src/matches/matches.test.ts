@@ -1,6 +1,5 @@
-import { type X01State, x01Only } from "@n4/engine";
 import { afterEach, describe, expect, it } from "vitest";
-import type { MatchDetail, MatchPage, MatchSummary, StationView } from "../api.ts";
+import type { MatchPage, MatchSummary, StationView } from "../api.ts";
 import { buildApp } from "../app.ts";
 import { type Db, openDb } from "../db.ts";
 import { createStation, type Station } from "../stations/station.ts";
@@ -155,8 +154,6 @@ describe("match history", () => {
 
   const history = async (app: ReturnType<typeof setup>["app"]) =>
     (await app.inject("/api/admin/matches")).json() as MatchSummary[];
-  const detail = async (app: ReturnType<typeof setup>["app"], id: string) =>
-    (await app.inject(`/api/admin/matches/${id}`)).json() as MatchDetail;
 
   it("lists finished and abandoned matches, newest first, with the legs score", async () => {
     const ctx = setup();
@@ -180,109 +177,10 @@ describe("match history", () => {
     });
     expect(list[0]).toMatchObject({ winner: null, abandoned: true, legsWon: [0, 0] });
   });
-
-  it("shows every leg and visit of a match", async () => {
-    const ctx = setup();
-    const id = await playedMatch(ctx);
-
-    const match = await detail(ctx.app, id);
-    expect(x01Only(match.state).legs.map((l) => [l.starter, l.winner])).toEqual([
-      [0, 0],
-      [1, 1],
-      [0, 0],
-    ]);
-    expect(match.closedAt).not.toBeNull();
-    expect((await ctx.app.inject("/api/admin/matches/nope")).statusCode).toBe(404);
-  });
-
-  it("lets the organiser correct a dart of a finished match; the result follows", async () => {
-    const ctx = setup();
-    const id = await playedMatch(ctx);
-    const leg3 = x01Only((await detail(ctx.app, id)).state).legs[2];
-    const dart = leg3?.visits[0]?.darts[1];
-
-    // Ann's second S20 in leg 3 was really an S19: no checkout, so Ann hasn't won.
-    const res = await ctx.app.inject({
-      method: "POST",
-      url: `/api/admin/matches/${id}/corrections`,
-      payload: { dartId: dart?.dartId, segment: { number: 19, multiplier: 1 } },
-    });
-    expect(res.statusCode).toBe(200);
-
-    const match = await detail(ctx.app, id);
-    expect(match.state.winner).toBeNull();
-    expect(match.originals[dart?.dartId as string]).toEqual({ number: 20, multiplier: 1 });
-    expect(match.winner).toBeNull();
-    expect((await history(ctx.app))[0]).toMatchObject({ winner: null, legsWon: [1, 1] });
-    expect(db.events(id).at(-1)).toMatchObject({ type: "DartCorrected", source: "admin" });
-  });
-
-  it("corrects a running match through its station, so the station updates live", async () => {
-    const ctx = setup();
-    await ctx.create({ station: 2, playerIds: ["ann", "bob"] });
-    await ctx.command(2, "startMatch");
-    ctx.play(2, "S1 /");
-    const id = (await ctx.station(2)).match?.id as string;
-    const dart = x01Only((await ctx.station(2)).match?.state as X01State).legs[0]?.visits[0]
-      ?.darts[0];
-
-    await ctx.app.inject({
-      method: "POST",
-      url: `/api/admin/matches/${id}/corrections`,
-      payload: { dartId: dart?.dartId, segment: { number: 20, multiplier: 3 } },
-    });
-
-    expect(x01Only((await ctx.station(2)).match?.state as X01State).players[0]?.remaining).toBe(
-      241,
-    );
-  });
-
-  it("refuses a correction for a dart that isn't in the match", async () => {
-    const ctx = setup();
-    const id = await playedMatch(ctx);
-
-    const res = await ctx.app.inject({
-      method: "POST",
-      url: `/api/admin/matches/${id}/corrections`,
-      payload: { dartId: "nope", segment: { number: 20, multiplier: 3 } },
-    });
-    expect(res.statusCode).toBe(404);
-  });
-});
-
-describe("a correction that doesn't fit", () => {
-  it.each([
-    [
-      "an invalid segment",
-      (dartId: string) => ({ dartId, segment: { number: 21, multiplier: 1 } }),
-    ],
-    ["no segment", (dartId: string) => ({ dartId })],
-    ["no dart", () => ({ segment: { number: 19, multiplier: 1 } })],
-    [
-      "an unknown field",
-      (dartId: string) => ({ dartId, segment: { number: 19, multiplier: 1 }, source: "station" }),
-    ],
-  ])("is refused with %s, and the match doesn't change", async (_, payload) => {
-    const ctx = setup();
-    await ctx.create({ station: 1, playerIds: ["ann", "bob"] });
-    await ctx.command(1, "startMatch");
-    ctx.play(1, "S20");
-    const match = (await ctx.station(1)).match;
-    const dartId = match?.state.currentVisit?.darts[0]?.dartId as string;
-    const before = db.events(match?.id as string);
-
-    const res = await ctx.app.inject({
-      method: "POST",
-      url: `/api/admin/matches/${match?.id}/corrections`,
-      payload: payload(dartId),
-    });
-    expect(res.statusCode).toBe(400);
-    expect(db.events(match?.id as string)).toEqual(before);
-  });
 });
 
 describe("a match's page", () => {
-  it("shows a finished match's legs and visits, without corrections", async () => {
+  it("shows a finished match's legs and visits", async () => {
     const ctx = setup();
     await ctx.create({ station: 1, playerIds: ["ann", "bob"], settings: { startScore: 40 } });
     await ctx.command(1, "startMatch");

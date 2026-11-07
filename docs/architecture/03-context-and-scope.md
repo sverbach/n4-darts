@@ -33,7 +33,7 @@ flowchart LR
 
 | Partner | In | Out |
 |---|---|---|
-| **Organiser** | Tournaments (players, format, seeds), overrides (pause, pin, hold, send back, play now), corrections, players and photos, stations, lights | Queue, tables, bracket, placings, duration estimate, match history, diagnostics |
+| **Organiser** | Tournaments (players, format, seeds), overrides (pause, pin, hold, send back, play now), players and photos, stations, lights | Queue, tables, bracket, placings, duration estimate, match history, diagnostics |
 | **Players** | Match setup (players, settings, order), corrections, added darts, undo, next player, board menu; the public site's password | Live score, checkout routes, game shot, profile and stats, also from outside the room (read-only) |
 | **Spectators** | Nothing (a tap on a station on the projector opens its scoreboard) | The whole evening on `/display`, one station on `/watch/n`, the leaderboard |
 | **Operator** | Image, configuration (stations, PIN), backups to restore | Backups, diagnostics |

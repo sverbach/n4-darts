@@ -71,7 +71,7 @@ Details in `.scratch/tournaments/spec.md`.
 - **Overrides**: pause a station, pin a match to a station, hold a match, send a match back to the queue, play a match now.
 - **Ties** after head-to-head: a mini table of the tied players' mutual matches, then this tournament's group average, then the higher seed.
 - **Knockout**: next power of two with byes for the top seeds; group winners, then runners-up, crossed; standard double elimination; no third-place match.
-- **Result changes** in `/admin` must keep a winner; what depends on a result is rebuilt while it hasn't started, otherwise the correction is refused.
+- **Result changes** in `/admin` must keep a winner; what depends on a result is rebuilt while it hasn't started, otherwise the correction is refused. (Dropped 2026-11-07: corrections only happen at the station now, see "One match view" below.)
 - **Withdrawals** turn every remaining match into a walkover; **late arrivals** may join during the group phase only.
 
 ### Display and stats (2026-10-20)
@@ -113,6 +113,13 @@ Details in `.scratch/live-websockets/spec.md`.
 - **One socket per view**, server to client only, on the same `/live` URLs; changes stay HTTP requests.
 - **Refusals close with 4000 + the HTTP status** (4401 without the admin PIN); the client gives up on those and reconnects after anything else, 500 ms doubling to 5 s.
 - **Proxies must forward WebSockets** (OPS-04).
+
+### One match view (2026-11-07)
+
+Details in `.scratch/one-match-view/`.
+
+- **`/matches/:id` is the only match view.** `/admin/matches` keeps its list (stations, live matches, the history with abandoned matches); a finished match's row opens its page, and a running one's "Watch" opens `/watch/n`.
+- **No corrections after the fact.** In practice darts are always corrected at the station during the match, so admin's correction view, its route and the tournament's result check (`ResultGuard`) are gone.
 
 ### Charts (2026-11-07)
 

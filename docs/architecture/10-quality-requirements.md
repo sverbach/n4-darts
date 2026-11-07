@@ -31,7 +31,7 @@ The quality goals in section 1.2 are the most important of these.
 | # | Goal | Scenario | Expected response | Requirement |
 |---|---|---|---|---|
 | QS-01 | Correct scores | The Board Manager's connection drops mid-visit after the second dart and comes back; meanwhile the third dart lands. | On reconnect the gateway resyncs; the third dart counts exactly once and the first two aren't counted again. | Q-03, BOARD-02 |
-| QS-02 | Correct scores | The organiser corrects a dart in a group match whose result already decided a knockout match that has started. | The correction is refused, naming the match in the way; nothing changes. | TOUR-14, Q-04 |
+| QS-02 | (Dropped 2026-11-07 with TOUR-14.) | | | |
 | QS-03 | Correct scores | A rule changes in a new engine version. | Old matches replay under the rules version they were played with; their results and stats don't move. | PLAY-17 |
 | QS-04 | Reliable evenings | The server is restarted while a player has thrown one dart of a visit. | After the restart the match shows the same visit with one dart, and play carries on. | Q-02 |
 | QS-05 | Reliable evenings | The room's internet line is unplugged before the evening. | A whole tournament evening runs: every page loads with its fonts and icons, nothing waits on the internet. | Q-01 |

@@ -232,12 +232,9 @@ test("the organiser's area", async () => {
   await expect(page.getByRole("menu")).toBeVisible();
   await shoot(page, "admin-stations-menu", PAGES);
 
-  const row = (p: Page) => p.getByRole("button", { name: /^Ann.* vs Bob/ });
+  const row = (p: Page) => p.getByRole("link", { name: /^Ann.* vs Bob/ });
   await open(page, "/admin/matches", row);
   await shoot(page, "admin-matches", PAGES);
-  await row(page).first().click();
-  await expect(page.getByText(/Ann won|Ann wins/).first()).toBeVisible();
-  await shoot(page, "admin-match-detail", PAGES);
 
   await open(page, "/admin/sound", (p) => p.getByRole("list", { name: "Voices" }));
   await shoot(page, "admin-sound", PAGES);

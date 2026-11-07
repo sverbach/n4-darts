@@ -28,7 +28,10 @@ test("a player is hidden from the public site and shown again", async ({ page, n
   await expect(row.getByText("Not public")).toHaveCount(0);
 });
 
-test("a small tournament: create, start, play one match, correct a dart", async ({ page, n4 }) => {
+test("a small tournament: create, start, play one match, open it from the history", async ({
+  page,
+  n4,
+}) => {
   test.setTimeout(60_000);
   await n4.login(page);
 
@@ -78,14 +81,8 @@ test("a small tournament: create, start, play one match, correct a dart", async 
 
   await expect(page.getByRole("img", { name: /1 of \d+ matches played/ }).first()).toBeVisible();
 
-  // Correct one of the loser's misses in the match detail: the result stands.
   await page.goto("/admin/matches");
-  await page.getByRole("button", { name: / vs / }).first().click();
-  const misses = page.getByRole("button", { name: "Correct Miss" });
-  await expect(misses).toHaveCount(3);
-  await misses.first().click();
-  const picker = page.getByRole("dialog", { name: "Correct Miss" });
-  await picker.getByRole("button", { name: "Single" }).click();
-  await picker.getByRole("button", { name: "1", exact: true }).click();
-  await expect(misses).toHaveCount(2);
+  await page.getByRole("link", { name: / vs / }).first().click();
+  await expect(page).toHaveURL(/\/matches\//);
+  await expect(page.getByRole("table", { name: "Head-to-head" })).toBeVisible();
 });

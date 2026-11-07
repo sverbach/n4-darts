@@ -281,10 +281,6 @@ describe("a dart the board missed", () => {
     const s = await state(server);
     expect(s.players.map((p) => p.remaining)).toEqual([1, 101]);
     expect(s.currentPlayer).toBe(1);
-    const detail = (
-      await server.app.inject(`/api/admin/matches/${(await server.view()).match?.id}`)
-    ).json();
-    expect(detail.added).toEqual([s.legs[0]?.visits[0]?.darts[2]?.dartId]);
   });
 
   it("can be all three darts of a visit, a checkout or a bust", async () => {

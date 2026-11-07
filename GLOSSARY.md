@@ -54,7 +54,7 @@ What a match is played as: X01 or one of the party modes. Chosen when the match 
 _Avoid_: Game type, variant (Cricket's standard or cut-throat is its variant)
 
 **Correction**:
-A player or the organiser changing a dart's recorded segment after a misdetection. The original detection is kept.
+A player changing a dart's recorded segment at the station after a misdetection, while the match is on. The original detection is kept.
 _Avoid_: Edit, override
 
 **Added dart**:

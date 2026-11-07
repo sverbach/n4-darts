@@ -1,8 +1,7 @@
-// The organiser's match routes in /admin: put a match on a station, end one, the history, one
-// match's detail (also live), and corrections.
+// The organiser's match routes in /admin: put a match on a station, end one, and the history.
 
 import type { FastifyInstance, FastifyReply } from "fastify";
-import { CorrectionInput, NewMatchInput } from "../api.ts";
+import { NewMatchInput } from "../api.ts";
 import type { ChangeFeed } from "../live/live.ts";
 import { liveView, Refusal } from "../live/liveRoutes.ts";
 import { IdParams, parse, TextIdParams } from "../parse.ts";
@@ -55,29 +54,6 @@ export function registerMatches(
   liveView(app, "/api/admin/matches/live", () => {
     if (!feed) throw new Refusal(404, "not found");
     return { subscribe: feed.subscribe, view: () => matches.history(), kind: "match history" };
-  });
-
-  app.get("/api/admin/matches/:id", async (request, reply) =>
-    attempt(reply, () => matches.detail(parse(TextIdParams, request.params).id)),
-  );
-
-  liveView(app, "/api/admin/matches/:id/live", (request) => {
-    if (!feed) throw new Refusal(404, "no such match");
-    const { id } = parse(TextIdParams, request.params);
-    let view: () => unknown;
-    try {
-      view = matches.follow(id);
-    } catch (error) {
-      if (error instanceof MatchError) throw new Refusal(404, error.message);
-      throw error;
-    }
-    return { subscribe: feed.subscribe, view, kind: "match detail", label: id };
-  });
-
-  app.post("/api/admin/matches/:id/corrections", async (request, reply) => {
-    const { id } = parse(TextIdParams, request.params);
-    const { dartId, segment } = parse(CorrectionInput, request.body);
-    return attempt(reply, () => matches.correct(id, dartId, segment));
   });
 }
 

@@ -7,19 +7,16 @@ import { request } from "../../../lib/api.ts";
 import { matchRulesLabel } from "../../../lib/labels.ts";
 import { useLive } from "../../../lib/useLive.ts";
 import { CARD_NAME, cardActions, cardTitle, RULED, SECTION, STATUS_SMALL } from "../ui.ts";
-import { MatchDetailView, MatchHistory } from "./MatchHistory.tsx";
+import { MatchHistory } from "./MatchHistory.tsx";
 
 export function MatchesAdmin({ head }: { head: ReactNode }) {
   const stations = useLive<StationView[]>("/api/stations/live").view;
   const [error, setError] = useState<string | null>(null);
-  const [openId, setOpenId] = useState<string | null>(null);
 
   const abandon = async (station: StationView) => {
     if (!confirm(`End the match on ${station.name} without a result?`)) return;
     setError(await request("POST", `/api/admin/stations/${station.id}/abandon`));
   };
-
-  if (openId) return <MatchDetailView id={openId} onBack={() => setOpenId(null)} />;
 
   return (
     <div className="flex flex-col gap-6 kiosk:gap-6">
@@ -36,26 +33,21 @@ export function MatchesAdmin({ head }: { head: ReactNode }) {
         ) : (
           <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3 p-0">
             {stations.map((s) => (
-              <StationRow
-                key={s.id}
-                station={s}
-                onAbandon={() => abandon(s)}
-                onOpen={() => s.match && setOpenId(s.match.id)}
-              />
+              <StationRow key={s.id} station={s} onAbandon={() => abandon(s)} />
             ))}
           </ul>
         )}
       </section>
       <section className={RULED}>
         <h2>History</h2>
-        <MatchHistory onOpen={setOpenId} />
+        <MatchHistory />
       </section>
     </div>
   );
 }
 
-function StationRow(props: { station: StationView; onAbandon(): void; onOpen(): void }) {
-  const { station, onAbandon, onOpen } = props;
+function StationRow(props: { station: StationView; onAbandon(): void }) {
+  const { station, onAbandon } = props;
   const { match } = station;
   return (
     <li className="flex flex-col gap-3 border border-border border-solid bg-panel p-4">
@@ -80,9 +72,9 @@ function StationRow(props: { station: StationView; onAbandon(): void; onOpen(): 
       {match && (
         <div className={`${cardActions(true)} mt-auto`}>
           {match.state.phase !== "notStarted" && (
-            <button type="button" onClick={onOpen}>
-              Details
-            </button>
+            <Link className="button" href={`/watch/${station.id}`}>
+              Watch
+            </Link>
           )}
           <button type="button" className="danger" onClick={onAbandon}>
             {match.state.phase === "notStarted" ? "Cancel match" : "End match"}

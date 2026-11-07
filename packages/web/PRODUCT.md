@@ -9,7 +9,7 @@ web
 ## Users
 
 - **Players**: a fixed group of friends who meet regularly for darts evenings. They know each other, and the regulars help newcomers. At the board they use the station screen (a kiosk laptop or tablet next to the board, read from 2–3 m, touch). On their own phones they look up stats.
-- **Organiser**: one of the group. They set up and run the evening from their phone in `/admin`, and step in only when needed (pause, hold, send back, withdraw, corrections).
+- **Organiser**: one of the group. They set up and run the evening from their phone in `/admin`, and step in only when needed (pause, hold, send back, withdraw).
 - **Spectators**: everyone else in the room, watching `/display` or `/watch/n` on a projector or TV from across the room. They have no input.
 - **Operator**: whoever looks after the home server: deploy, backups, diagnostics.
 
@@ -27,7 +27,7 @@ n4-darts runs private, offline darts evenings in one room with automatically sco
 - A room with a few stations. Each station is one board plus its screen(s), and the station screens run full-screen in kiosk mode.
 - `/display` stays open full screen on the projector all evening and follows it by itself: live scores and up next, the group tables, then the bracket, then the champion, placings and awards.
 - Every page except stats and home updates live (WebSockets). Nobody refreshes.
-- A visit ends at takeout, when the player pulls the darts (ADR 0003). Players fix misdetections at the board, and the organiser fixes them from match history.
+- A visit ends at takeout, when the player pulls the darts (ADR 0003). Players fix misdetections at the board, during the match.
 - Pages and their devices are listed in `docs/ui-pages.md`. Terms follow `GLOSSARY.md` (station, visit, takeout, organiser and so on, never their "avoid" words).
 
 ## Capabilities and Constraints
