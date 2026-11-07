@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 /** Clockwise from the top, as on the board. */
 const ORDER = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
 
@@ -54,7 +56,15 @@ const BANDS = [
   { inner: RINGS.doubleInner, outer: RINGS.doubleOuter, multiplier: 2 },
 ] as const;
 
-export function BoardFields({ highlight = [] }: { highlight?: readonly Highlight[] }) {
+export function BoardFields({
+  highlight = [],
+  dim = false,
+  children,
+}: {
+  highlight?: readonly Highlight[];
+  dim?: boolean;
+  children?: ReactNode;
+}) {
   const lit = (number: number, multiplier: number) =>
     highlight.some(
       (h) => h.number === number && (h.multiplier === undefined || h.multiplier === multiplier),
@@ -62,18 +72,21 @@ export function BoardFields({ highlight = [] }: { highlight?: readonly Highlight
   const litNumber = (number: number) => highlight.some((h) => h.number === number);
   return (
     <g>
-      <circle r={RINGS.doubleOuter} className={`fill-bg ${LINE}`} />
-      {ORDER.map((number, i) =>
-        BANDS.map(({ inner, outer, multiplier }) => (
-          <path
-            key={`${number}-${inner}`}
-            d={wedge(i, inner, outer)}
-            className={`${LINE} ${lit(number, multiplier) ? LIT : FILL[multiplier === 1 ? "single" : "ring"][i % 2]}`}
-          />
-        )),
-      )}
-      <circle r={RINGS.outerBull} className={`${lit(25, 1) ? LIT : "fill-border"} ${LINE}`} />
-      <circle r={RINGS.bull} className={`${lit(25, 2) ? LIT : "fill-faint"} ${LINE}`} />
+      <g className={dim ? "opacity-40" : undefined}>
+        <circle r={RINGS.doubleOuter} className={`fill-bg ${LINE}`} />
+        {ORDER.map((number, i) =>
+          BANDS.map(({ inner, outer, multiplier }) => (
+            <path
+              key={`${number}-${inner}`}
+              d={wedge(i, inner, outer)}
+              className={`${LINE} ${lit(number, multiplier) ? LIT : FILL[multiplier === 1 ? "single" : "ring"][i % 2]}`}
+            />
+          )),
+        )}
+        <circle r={RINGS.outerBull} className={`${lit(25, 1) ? LIT : "fill-border"} ${LINE}`} />
+        <circle r={RINGS.bull} className={`${lit(25, 2) ? LIT : "fill-faint"} ${LINE}`} />
+      </g>
+      {children}
       {ORDER.map((number, i) => {
         const [x, y] = at(NUMBERS_AT, 90 - i * 18).split(" ");
         return (

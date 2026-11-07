@@ -48,6 +48,15 @@
   --avatar-8: #3a4048;
   --avatar-9: #2e5a5a;
 
+  /* Heat: how many darts, few to most. Lightness rises step by step; not the status colours. */
+  --heat-1: #761617;
+  --heat-2: #901211;
+  --heat-3: #bd2703;
+  --heat-4: #d75a07;
+  --heat-5: #ec8904;
+  --heat-6: #f4be4f;
+  --heat-7: #fbecae;
+
   /* The fonts are below, in Tailwind's theme: --font-pixel and --font-text. */
 
   color-scheme: dark;
@@ -76,6 +85,13 @@
   --color-accent-tint: var(--accent-tint);
   --color-accent-line: var(--accent-line);
   --color-scrim: var(--scrim);
+  --color-heat-1: var(--heat-1);
+  --color-heat-2: var(--heat-2);
+  --color-heat-3: var(--heat-3);
+  --color-heat-4: var(--heat-4);
+  --color-heat-5: var(--heat-5);
+  --color-heat-6: var(--heat-6);
+  --color-heat-7: var(--heat-7);
   --color-ok: var(--ok);
   --color-ok-tint: var(--ok-tint);
   --color-ok-line: var(--ok-line);
