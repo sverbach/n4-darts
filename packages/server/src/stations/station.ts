@@ -10,7 +10,9 @@ import {
   defaultGolfSettings,
   defaultHighScoreSettings,
   defaultKillerSettings,
+  defaultRandomCheckoutSettings,
   defaultX01Settings,
+  drawCheckouts,
   drawGolfCourse,
   drawKillerNumbers,
   MAX_PLAYERS,
@@ -91,6 +93,8 @@ function settingsFrom(input: MatchSettingsInput | undefined): MatchSettings {
       return { ...defaultKillerSettings, ...input };
     case "cricket":
       return { ...defaultCricketSettings, ...input };
+    case "randomCheckout":
+      return { ...defaultRandomCheckoutSettings, ...input };
   }
 }
 
@@ -385,6 +389,9 @@ export function createStation(options: { id: number; db: Db; board: BoardControl
             : {}),
           ...(match.settings.mode === "golf" && match.settings.course === "random"
             ? { course: drawGolfCourse() }
+            : {}),
+          ...(match.settings.mode === "randomCheckout"
+            ? { checkouts: drawCheckouts(match.settings.difficulty, match.settings.rounds) }
             : {}),
         });
         break;

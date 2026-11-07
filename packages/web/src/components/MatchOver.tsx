@@ -74,7 +74,7 @@ export function MatchOver({
               </div>
             </dl>
           )}
-          {match.state.mode === "cricket" && (
+          {(match.state.mode === "cricket" || match.state.mode === "randomCheckout") && (
             <dl className={`m-0 ${style.stats}`}>
               <div className="flex flex-col-reverse items-start gap-2">
                 <dt className={style.label}>Points</dt>

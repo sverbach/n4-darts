@@ -26,7 +26,13 @@ export function isSegment(value: unknown): value is Segment {
 }
 
 export type MatchEvent =
-  | { type: "MatchStarted"; playerCount: number; numbers?: number[]; course?: number[] }
+  | {
+      type: "MatchStarted";
+      playerCount: number;
+      numbers?: number[];
+      course?: number[];
+      checkouts?: number[];
+    }
   | { type: "DartThrown"; dartId: string; segment: Segment }
   | { type: "DartCorrected"; dartId: string; segment: Segment }
   | { type: "TakeoutFinished" }
@@ -46,9 +52,9 @@ export interface DartView {
 export interface VisitView {
   player: PlayerIndex;
   darts: DartView[];
-  /** X01 only: went below zero (or broke the out rule), so the visit scores nothing. */
+  /** X01 and Random Checkout: went below zero (or broke the out rule), so the visit scores nothing. */
   bust: boolean;
-  /** X01 only: finished the leg. */
+  /** X01: finished the leg. Random Checkout: finished the round's number. */
   checkout: boolean;
 }
 
@@ -98,6 +104,7 @@ export function started(events: MatchEvent[]): {
   playerCount: number;
   numbers: number[] | undefined;
   course: number[] | undefined;
+  checkouts: number[] | undefined;
   visits: RawVisit[];
 } | null {
   const startIndex = events.findIndex((e) => e.type === "MatchStarted");
@@ -111,6 +118,7 @@ export function started(events: MatchEvent[]): {
     playerCount: count,
     numbers: start.numbers,
     course: start.course,
+    checkouts: start.checkouts,
     visits: visitsOf(events.slice(startIndex + 1)),
   };
 }

@@ -451,6 +451,36 @@ test("Cricket on station 1", async () => {
   await watch.close();
 });
 
+test("Random Checkout on station 1", async () => {
+  const watch = await loggedIn();
+  await command(1, {
+    type: "quickMatch",
+    playerIds: [ID.Ann, ID.Bob, ID.Cid],
+    settings: { mode: "randomCheckout", difficulty: "beginner", rounds: 10 },
+  });
+  await command(1, { type: "startMatch" });
+  const state = (await station(1)).match?.state;
+  const target = state?.mode === "randomCheckout" ? state.target : 0;
+  // Beginner is single out, so Ann finishes with singles.
+  await throwDarts(1, target <= 20 ? [`S${target}`] : ["S20", `S${target - 20}`]);
+  await takeout(1);
+  await throwDarts(1, ["M3", "M3", "M3"]);
+  await takeout(1);
+  await throwDarts(1, ["S1"]);
+
+  const drawn = (p: Page) => [
+    p.getByRole("region", { name: "Checkout" }),
+    p.getByRole("img", { name: /Aim at|Check out/ }),
+  ];
+  await open(page, "/station/1", (p) => p.getByText("✓ Checked out"));
+  await shoot(page, "station-random-checkout", PAGES, [], drawn);
+  await open(watch, "/watch/1", (p) => p.getByText("✓ Checked out"));
+  await shoot(watch, "watch-random-checkout", BIG_SCREENS, [], drawn);
+  await command(1, { type: "abandonMatch" });
+
+  await watch.close();
+});
+
 test("a tournament on station 1, station 2 busy", async () => {
   const display = await loggedIn();
   // A running quick match of two players outside the tournament keeps station 2 out of it.

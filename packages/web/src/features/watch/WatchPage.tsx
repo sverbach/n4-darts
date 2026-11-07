@@ -1,5 +1,6 @@
 import type { MatchView } from "@n4/server/api";
 import { Avatar } from "../../components/Avatar.tsx";
+import { CheckoutPanel } from "../../components/CheckoutPanel.tsx";
 import { CricketGrid } from "../../components/CricketGrid.tsx";
 import { TargetBoard } from "../../components/Dartboard.tsx";
 import { Logo } from "../../components/Logo.tsx";
@@ -11,6 +12,7 @@ import { ThemeStar } from "../../components/ThemeStar.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import { matchRulesLabel } from "../../lib/labels.ts";
 import {
+  checkoutOf,
   cricketOf,
   golfOf,
   liveLabel,
@@ -91,16 +93,29 @@ function WatchBoard({ match }: { match: MatchView }) {
   if (!targets) return <PlayerCards match={match} size="projector" />;
   const golf = golfOf(match);
   const cricket = cricketOf(match);
+  const checkout = checkoutOf(match);
   const wide = golf || cricket;
   return (
     <div
       className={`grid min-h-0 flex-1 gap-pu-24 ${wide ? "grid-cols-[auto_minmax(0,1fr)]" : "grid-cols-[minmax(0,1fr)_calc(420*var(--px))]"}`}
     >
-      <TargetBoard
-        highlight={targets.highlight}
-        label={targets.label}
-        className={`justify-self-center ${wide ? "w-[calc(500*var(--px))] self-center" : "h-full max-h-full min-h-0 w-auto"}`}
-      />
+      {checkout ? (
+        // Above the board, so the players keep the whole column beside it.
+        <div className="flex min-h-0 min-w-0 flex-col gap-pu-16">
+          <CheckoutPanel state={checkout.state} route={checkout.route} size="projector" />
+          <TargetBoard
+            highlight={targets.highlight}
+            label={targets.label}
+            className="min-h-0 w-auto flex-1 self-center"
+          />
+        </div>
+      ) : (
+        <TargetBoard
+          highlight={targets.highlight}
+          label={targets.label}
+          className={`justify-self-center ${wide ? "w-[calc(500*var(--px))] self-center" : "h-full max-h-full min-h-0 w-auto"}`}
+        />
+      )}
       {golf ? (
         <Scorecard state={golf.state} holes={golf.holes} players={match.players} size="projector" />
       ) : cricket ? (

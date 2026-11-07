@@ -25,7 +25,7 @@ function scores(match: MatchView): { legsWon: number; score: string }[] {
       score: String(match.state.players[i]?.remaining ?? match.settings.startScore),
     }));
   }
-  if (match.state.mode === "cricket") {
+  if (match.state.mode === "cricket" || match.state.mode === "randomCheckout") {
     const { players } = match.state;
     return match.players.map((_, i) => ({ legsWon: 0, score: String(players[i]?.points ?? 0) }));
   }

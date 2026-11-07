@@ -1,6 +1,6 @@
 // Labels for a match's settings, shared by the station, /watch and /admin.
 
-import type { MatchSettings, Mode, X01Settings } from "@n4/engine";
+import type { MatchSettings, Mode, RandomCheckoutDifficulty, X01Settings } from "@n4/engine";
 
 export function livesLabel(lives: number) {
   return `${lives} ${lives === 1 ? "life" : "lives"}`;
@@ -31,6 +31,14 @@ export const MODE_NAMES: Record<Mode, string> = {
   highScore: "High Score",
   killer: "Killer",
   cricket: "Cricket",
+  randomCheckout: "Random Checkout",
+};
+
+export const DIFFICULTY_NAMES: Record<RandomCheckoutDifficulty, string> = {
+  beginner: "Beginner",
+  medium: "Medium",
+  hard: "Hard",
+  mixed: "Mixed",
 };
 
 export function matchRulesLabel(settings: MatchSettings) {
@@ -39,6 +47,9 @@ export function matchRulesLabel(settings: MatchSettings) {
   }
   if (settings.mode === "cricket") {
     return settings.variant === "cutThroat" ? "Cut-throat Cricket" : MODE_NAMES.cricket;
+  }
+  if (settings.mode === "randomCheckout") {
+    return `${MODE_NAMES.randomCheckout} · ${DIFFICULTY_NAMES[settings.difficulty]}`;
   }
   if (settings.mode === "killer") return `${MODE_NAMES.killer} · ${livesLabel(settings.lives)}`;
   if (settings.mode === "golf") {

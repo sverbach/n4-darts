@@ -3,6 +3,7 @@ import type { MatchView, StationCommand } from "@n4/server/api";
 import { useState } from "react";
 import { Avatar } from "../../components/Avatar.tsx";
 import { BoardMenu, type MatchAction } from "../../components/BoardMenu.tsx";
+import { CheckoutPanel } from "../../components/CheckoutPanel.tsx";
 import { CricketGrid } from "../../components/CricketGrid.tsx";
 import { TargetBoard } from "../../components/Dartboard.tsx";
 import { Logo } from "../../components/Logo.tsx";
@@ -16,6 +17,7 @@ import { SoundPrompt } from "../../components/Sound.tsx";
 import { ThemeStar } from "../../components/ThemeStar.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import {
+  checkoutOf,
   cricketOf,
   golfOf,
   liveLabel,
@@ -344,6 +346,7 @@ export function Scoreboard(props: ScoreboardProps) {
   if (targets) {
     const golf = golfOf(props.match);
     const cricket = cricketOf(props.match);
+    const checkout = checkoutOf(props.match);
     const wide = golf || cricket;
     return (
       <>
@@ -359,6 +362,11 @@ export function Scoreboard(props: ScoreboardProps) {
             <Scorecard state={golf.state} holes={golf.holes} players={props.match.players} />
           ) : cricket ? (
             <CricketGrid state={cricket} players={props.match.players} />
+          ) : checkout ? (
+            <div className="grid min-w-0 content-start gap-1.5 kiosk:gap-2">
+              <CheckoutPanel state={checkout.state} route={checkout.route} />
+              <PlayerList match={props.match} />
+            </div>
           ) : (
             <PlayerList match={props.match} />
           )}

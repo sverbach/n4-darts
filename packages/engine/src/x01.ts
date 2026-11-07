@@ -149,7 +149,7 @@ const finishingMultipliers: Record<OutRule, readonly number[]> = {
   master: [2, 3],
 };
 
-function isBust(remaining: number, lastDart: Segment, outRule: OutRule): boolean {
+export function isBust(remaining: number, lastDart: Segment, outRule: OutRule): boolean {
   if (remaining < 0) return true;
   // With double or master out, 1 can never be finished.
   if (remaining === 1 && outRule !== "straight") return true;

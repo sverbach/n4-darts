@@ -2,14 +2,19 @@ import {
   CRICKET_ROUNDS,
   CRICKET_TARGETS,
   type CricketState,
+  checkoutRoute,
   closedBy,
+  DIFFICULTY,
   type GolfState,
   holeTarget,
   isX01Match,
   type Mode,
+  type RandomCheckoutState,
+  type Segment,
 } from "@n4/engine";
 import type { MatchView } from "@n4/server/api";
 import type { Highlight } from "../components/Dartboard.tsx";
+import { dartLabel } from "./darts.ts";
 import { MODE_NAMES, matchRulesLabel, targetLabel } from "./labels.ts";
 
 export function targetsOf(match: MatchView): { highlight: Highlight[]; label: string } | null {
@@ -19,6 +24,15 @@ export function targetsOf(match: MatchView): { highlight: Highlight[]; label: st
       highlight: [{ number: target }],
       label: `Hole ${match.state.round}: aim at ${targetLabel(target)}`,
     };
+  }
+  const checkout = checkoutOf(match);
+  if (checkout) {
+    const next = checkout.route?.[0];
+    // A route never has a miss in it.
+    const multiplier = next?.multiplier as 1 | 2 | 3;
+    return next
+      ? { highlight: [{ number: next.number, multiplier }], label: `Aim at ${dartLabel(next)}` }
+      : { highlight: [], label: `Check out ${checkout.state.target}` };
   }
   if (match.state.mode === "cricket") {
     const { players, suddenDeath } = match.state;
@@ -47,6 +61,22 @@ export function targetsOf(match: MatchView): { highlight: Highlight[]; label: st
   const target = match.state.players[match.state.currentPlayer]?.target ?? null;
   if (target === null) return { highlight: [], label: "Finished" };
   return { highlight: [{ number: target }], label: `Aim at ${targetLabel(target)}` };
+}
+
+/** A Random Checkout match: its state, and the thrower's route while they're throwing. */
+export function checkoutOf(
+  match: MatchView,
+): { state: RandomCheckoutState; route: Segment[] | null } | null {
+  if (match.state.mode !== "randomCheckout" || match.settings.mode !== "randomCheckout") {
+    return null;
+  }
+  const { state } = match;
+  const thrown = state.currentVisit?.darts.filter((d) => !d.ignored).length ?? 0;
+  const route =
+    state.phase === "throwing"
+      ? checkoutRoute(state.remaining, 3 - thrown, DIFFICULTY[match.settings.difficulty].outRule)
+      : null;
+  return { state, route };
 }
 
 export function cricketOf(match: MatchView): CricketState | null {
@@ -80,6 +110,11 @@ export function liveLabel(match: MatchView): string {
     const { round, suddenDeath } = match.state;
     const progress = suddenDeath ? "Sudden death" : `Round ${round} of ${match.settings.rounds}`;
     return `${MODE_NAMES.highScore} · ${progress}`;
+  }
+  if (match.state.mode === "randomCheckout" && match.settings.mode === "randomCheckout") {
+    const { round, suddenDeath } = match.state;
+    const progress = suddenDeath ? "Sudden death" : `Round ${round} of ${match.settings.rounds}`;
+    return `${matchRulesLabel(match.settings)} · ${progress}`;
   }
   if (match.state.mode === "cricket") {
     const { round, suddenDeath } = match.state;

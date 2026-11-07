@@ -11,9 +11,17 @@ import {
   MODES,
   type Mode,
   type OutRule,
+  RANDOM_CHECKOUT_DIFFICULTIES,
+  type RandomCheckoutDifficulty,
 } from "@n4/engine";
 import type { MatchSettingsInput } from "@n4/server/api";
-import { legsLabel, livesLabel, MODE_NAMES, roundsLabel } from "../../lib/labels.ts";
+import {
+  DIFFICULTY_NAMES,
+  legsLabel,
+  livesLabel,
+  MODE_NAMES,
+  roundsLabel,
+} from "../../lib/labels.ts";
 
 type X01Options = Required<Omit<Extract<MatchSettingsInput, { mode: "x01" }>, "mode">>;
 
@@ -26,6 +34,8 @@ export interface SetupSettings {
   variant: CricketVariant;
   skipAhead: boolean;
   course: GolfCourse;
+  difficulty: RandomCheckoutDifficulty;
+  checkoutRounds: number;
 }
 
 export const defaultSetupSettings: SetupSettings = {
@@ -37,6 +47,8 @@ export const defaultSetupSettings: SetupSettings = {
   variant: "standard",
   skipAhead: false,
   course: "random",
+  difficulty: "beginner",
+  checkoutRounds: 10,
 };
 
 export function settingsInput(setup: SetupSettings): MatchSettingsInput {
@@ -53,10 +65,19 @@ export function settingsInput(setup: SetupSettings): MatchSettingsInput {
       return { mode: "cricket", variant: setup.variant };
     case "aroundTheClock":
       return { mode: "aroundTheClock", skipAhead: setup.skipAhead };
+    case "randomCheckout":
+      return { mode: "randomCheckout", difficulty: setup.difficulty, rounds: setup.checkoutRounds };
     default:
       return { mode: setup.mode };
   }
 }
+
+const DIFFICULTY_LABELS: Record<RandomCheckoutDifficulty, string> = {
+  beginner: `${DIFFICULTY_NAMES.beginner}: 2–40, single out`,
+  medium: `${DIFFICULTY_NAMES.medium}: 41–100`,
+  hard: `${DIFFICULTY_NAMES.hard}: 101–170`,
+  mixed: `${DIFFICULTY_NAMES.mixed}: 2–170`,
+};
 
 export function SettingsFields(props: {
   value: SetupSettings;
@@ -133,6 +154,38 @@ export function SettingsFields(props: {
           >
             <option value="standard">Standard: most wins</option>
             <option value="cutThroat">Cut-throat: fewest wins</option>
+          </select>
+        </label>
+      )}
+      {value.mode === "randomCheckout" && (
+        <label>
+          Difficulty
+          <select
+            value={value.difficulty}
+            onChange={(e) =>
+              onChange({ ...value, difficulty: e.target.value as RandomCheckoutDifficulty })
+            }
+          >
+            {RANDOM_CHECKOUT_DIFFICULTIES.map((d) => (
+              <option key={d} value={d}>
+                {DIFFICULTY_LABELS[d]}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      {value.mode === "randomCheckout" && (
+        <label>
+          Rounds
+          <select
+            value={value.checkoutRounds}
+            onChange={(e) => onChange({ ...value, checkoutRounds: Number(e.target.value) })}
+          >
+            {Array.from({ length: MAX_ROUNDS }, (_, i) => i + 1).map((n) => (
+              <option key={n} value={n}>
+                {roundsLabel(n)}
+              </option>
+            ))}
           </select>
         </label>
       )}

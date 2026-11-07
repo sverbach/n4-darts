@@ -8,6 +8,11 @@ import type { MatchEvent, PlayerIndex, VisitView } from "./events.ts";
 import { type GolfSettings, type GolfState, golfState } from "./golf.ts";
 import { type HighScoreSettings, type HighScoreState, highScoreState } from "./highScore.ts";
 import { type KillerSettings, type KillerState, killerState } from "./killer.ts";
+import {
+  type RandomCheckoutSettings,
+  type RandomCheckoutState,
+  randomCheckoutState,
+} from "./randomCheckout.ts";
 import { type X01Settings, type X01State, x01State } from "./x01.ts";
 
 export type MatchSettings =
@@ -16,7 +21,8 @@ export type MatchSettings =
   | HighScoreSettings
   | GolfSettings
   | KillerSettings
-  | CricketSettings;
+  | CricketSettings
+  | RandomCheckoutSettings;
 export type Mode = MatchSettings["mode"];
 export type PartyMode = Exclude<Mode, "x01">;
 export type MatchState =
@@ -25,7 +31,8 @@ export type MatchState =
   | HighScoreState
   | GolfState
   | KillerState
-  | CricketState;
+  | CricketState
+  | RandomCheckoutState;
 
 export const MODES: readonly Mode[] = [
   "x01",
@@ -34,6 +41,7 @@ export const MODES: readonly Mode[] = [
   "highScore",
   "killer",
   "cricket",
+  "randomCheckout",
 ];
 
 export const scoresPoints = (mode: Mode) => mode === "x01" || mode === "highScore";
@@ -73,6 +81,8 @@ export function matchState<S extends MatchSettings>(settings: S, events: MatchEv
       return killerState(s, events) as StateOf<S>;
     case "cricket":
       return cricketState(s, events) as StateOf<S>;
+    case "randomCheckout":
+      return randomCheckoutState(s, events) as StateOf<S>;
   }
 }
 

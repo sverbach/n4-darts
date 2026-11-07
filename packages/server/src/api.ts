@@ -12,6 +12,7 @@ import {
   type Mode,
   type OutRule,
   type PlayerMatchStats,
+  RANDOM_CHECKOUT_DIFFICULTIES,
   type Segment,
   type StateOf,
   type X01Settings,
@@ -203,6 +204,7 @@ const CRICKET_VARIANTS = {
   standard: "standard",
   cutThroat: "cutThroat",
 } as const satisfies { [V in CricketVariant]: V };
+const DIFFICULTIES = `difficulty must be one of ${RANDOM_CHECKOUT_DIFFICULTIES.join(", ")}`;
 const LIVES = `lives must be a whole number from 1 to ${MAX_LIVES}`;
 const ROUNDS = `rounds must be a whole number from 1 to ${MAX_ROUNDS}`;
 
@@ -253,6 +255,16 @@ export const MatchSettingsInput = z.preprocess(
       mode: z.literal("golf"),
       holes: z.union([z.literal(9), z.literal(18)], { error: HOLES }).exactOptional(),
       course: z.enum({ random: "random", inOrder: "inOrder" }).exactOptional(),
+    }),
+    z.strictObject({
+      mode: z.literal("randomCheckout"),
+      difficulty: z.enum(RANDOM_CHECKOUT_DIFFICULTIES, { error: DIFFICULTIES }).exactOptional(),
+      rounds: z
+        .number({ error: ROUNDS })
+        .int({ error: ROUNDS })
+        .min(1, { error: ROUNDS })
+        .max(MAX_ROUNDS, { error: ROUNDS })
+        .exactOptional(),
     }),
     z.strictObject({
       mode: z.literal("highScore"),

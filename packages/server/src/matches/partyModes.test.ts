@@ -1,4 +1,4 @@
-import type { Segment } from "@n4/engine";
+import { type Segment, SUDDEN_DEATH_DRAWS } from "@n4/engine";
 import { afterEach, describe, expect, it } from "vitest";
 import type { LeaderboardRow, MatchSummary, PlayerProfile, StationView } from "../api.ts";
 import { buildApp } from "../app.ts";
@@ -208,8 +208,33 @@ describe("setting up a party match", () => {
     });
   });
 
+  it("draws a number per round for Random Checkout, plus some for sudden death", async () => {
+    const ctx = setup();
+    await ctx.command({
+      type: "quickMatch",
+      playerIds: ["ann", "bob"],
+      settings: { mode: "randomCheckout", difficulty: "hard", rounds: 5 },
+    });
+    await ctx.command({ type: "startMatch" });
+
+    const match = (await ctx.view()).match;
+    expect(match?.settings).toEqual({
+      mode: "randomCheckout",
+      difficulty: "hard",
+      rounds: 5,
+      rulesVersion: 1,
+    });
+    const started = db.events(match?.id as string).find((e) => e.type === "MatchStarted");
+    const checkouts = started?.type === "MatchStarted" ? started.checkouts : undefined;
+    expect(checkouts).toHaveLength(5 + SUDDEN_DEATH_DRAWS);
+    expect(checkouts?.every((n) => n >= 101 && n <= 170)).toBe(true);
+    expect(match?.state.mode === "randomCheckout" && match.state.target).toBe(checkouts?.[0]);
+  });
+
   it.each([
     ["an unknown mode", { mode: "baseball" }],
+    ["an unknown checkout difficulty", { mode: "randomCheckout", difficulty: "insane" }],
+    ["more than 20 checkout rounds", { mode: "randomCheckout", rounds: 21 }],
     ["skip-ahead that isn't true or false", { mode: "aroundTheClock", skipAhead: "yes" }],
     ["an unknown cricket variant", { mode: "cricket", variant: "mickeyMouse" }],
     ["no lives", { mode: "killer", lives: 0 }],

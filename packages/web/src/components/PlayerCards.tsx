@@ -24,6 +24,24 @@ function cardsOf(match: MatchView): { score: string; meta: ReactNode; out?: bool
   if (match.state.mode === "cricket") {
     return match.state.players.map((player) => ({ score: String(player.points), meta: "Points" }));
   }
+  if (match.state.mode === "randomCheckout") {
+    const { players, round, suddenDeath, contenders } = match.state;
+    return players.map((player, p) => {
+      const result = player.results[round - 1];
+      const out = suddenDeath && !contenders.includes(p);
+      return {
+        score: String(player.points),
+        meta: out
+          ? "Out"
+          : result === true
+            ? "✓ Checked out"
+            : result === false
+              ? "✗ Missed"
+              : "Points",
+        out,
+      };
+    });
+  }
   if (match.state.mode === "killer") {
     return match.state.players.map((player) => ({
       score: String(player.number),
