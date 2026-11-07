@@ -114,6 +114,13 @@ Details in `.scratch/live-websockets/spec.md`.
 - **Refusals close with 4000 + the HTTP status** (4401 without the admin PIN); the client gives up on those and reconnects after anything else, 500 ms doubling to 5 s.
 - **Proxies must forward WebSockets** (OPS-04).
 
+### Themes (2026-11-07)
+
+Details in `.scratch/themes/spec.md`.
+
+- **Seven themes per device** (`localStorage`, applied before the first paint): the mockup's six accents and the light Daylight, picked with the theme star on every page, no PIN, no server.
+- **Dark themes swap only the accent family**; Daylight overrides every token (status, avatars, heat reversed, series light steps).
+
 ### One match view (2026-11-07)
 
 Details in `.scratch/one-match-view/`.

@@ -36,7 +36,7 @@ n4-darts runs private, offline darts evenings in one room with automatically sco
 - Stack: TypeScript end to end (ADR 0006), React web app, no client state library (ADR 0007). Fonts and assets are bundled, and nothing may load from the internet at runtime.
 - Projector pages (`/display`, `/watch`) fit any screen without scrolling.
 - Status indicators use "ok" (green), "warn" (amber: needs a look, e.g. a stopped board) and "danger" (red: broken, e.g. a board or the server offline). Destructive actions ask for confirmation first.
-- Theme: dark only today. Colours are role-named CSS variables, so a theme can be added later.
+- Themes: seven, picked per device with the theme star (six dark accents and the light Daylight). Colours are role-named CSS variables; a theme overrides them under `:root[data-theme]`.
 
 ## Brand Commitments
 

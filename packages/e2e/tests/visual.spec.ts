@@ -507,3 +507,24 @@ test("a tournament on station 1, station 2 busy", async () => {
 
   await display.close();
 });
+
+test("Daylight: the station, /watch and a profile on the light theme", async () => {
+  const watch = await loggedIn();
+  for (const p of [page, watch]) {
+    await p.goto(BASE_URL);
+    await p.evaluate(() => localStorage.setItem("n4-theme", "daylight"));
+  }
+  await quickMatch(1, ["Ann", "Bob"]);
+  await throwDarts(1, ["T20", "S20"]);
+
+  await open(page, "/station/1", (p) => p.getByRole("button", { name: /Correct dart 2/ }));
+  await shoot(page, "daylight-station-visit", PAGES);
+  await open(watch, "/watch/1", (p) => p.getByText("S20").first());
+  await shoot(watch, "daylight-watch-visit", BIG_SCREENS);
+  await open(page, `/players/${ID.Ann}`, (p) => p.getByRole("heading", { name: "Ann" }));
+  await shoot(page, "daylight-profile", PAGES);
+
+  await command(1, { type: "abandonMatch" });
+  await page.evaluate(() => localStorage.removeItem("n4-theme"));
+  await watch.close();
+});
