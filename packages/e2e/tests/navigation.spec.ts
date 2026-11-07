@@ -35,9 +35,9 @@ test("links navigate without reloading, Back returns, old streams close", async 
   await expect(page.getByRole("heading", { name: "Players" })).toBeVisible();
   await page.goBack();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page).toHaveTitle("n4-darts");
+  await expect(page).toHaveTitle("darts");
   await page.goForward();
-  await expect(page).toHaveTitle("Players · n4-darts");
+  await expect(page).toHaveTitle("Players · darts");
 
   expect(documents).toHaveLength(1);
   expect(errors).toEqual([]);

@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { useLocation } from "wouter";
 
-const SUFFIX = "n4-darts";
+const SUFFIX = "darts";
 const ADMIN = {
   tournament: "Tournament",
   players: "Players",
