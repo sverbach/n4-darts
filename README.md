@@ -7,7 +7,7 @@ Dart evenings for a room of Autodarts boards, fully offline. The boards detect t
 ## Features
 
 - **Stations** (`/station/n`): one screen per board, on the kiosk laptop or a phone. Pick the players, the game and the throwing order. While playing: a scoreboard, checkout routes, correcting a misdetected dart, adding a missed one, and undo. The board menu (⋮) starts, stops, calibrates and resets the board.
-- **Games:** X01 (301/501/701, in and out rules, first to N legs) and the party games Around the Clock, Golf and High Score. Party games are for fun: never in tournaments, never in the stats.
+- **Games:** X01 (301/501/701, in and out rules, first to N legs) and the party games Around the Clock, Golf, High Score, Killer, Cricket, Random Checkout and Bermuda. Party games are for fun: never in tournaments, never in the stats.
 - **Tournaments** (`/admin` → Tournament): groups, then single or double elimination, seeded by rating. Once started, the server puts each match on a free station by itself. The organiser can pause a station, hold or move a match, withdraw a player, or take a late arrival.
 - **Projector:** `/display` follows the evening (live scores, groups, bracket, champion and awards, or the leaderboard), and `/watch/n` shows one station's scoreboard.
 - **Stats** (`/players`, `/tournaments`): rating, averages, checkout %, 180s, best leg and a heatmap per player, plus every past tournament and match. X01 matches only.

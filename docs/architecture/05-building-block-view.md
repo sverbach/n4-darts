@@ -75,7 +75,7 @@ Pure, deterministic game rules: `state = fold(rules, events)` (`packages/engine`
 - Input: the match's log: `MatchStarted`, `DartThrown`, `DartCorrected`, `TakeoutFinished`, `VisitUndone`, `VisitEndedManually` and the rest.
 - Output: the current state (scores, whose visit, legs, the winner) and what follows from it (busts, legs won, the match won); checkout routes (`checkout.ts`) and per-match dart stats (`stats.ts`).
 - No I/O, no clock, no database: easy to test, and it runs in the browser too.
-- One entry point for every mode: `matchState(settings, events)` dispatches on `settings.mode` (`match.ts`). X01 is `x01.ts`; each party mode has its own file (`aroundTheClock.ts`, `golf.ts`, `highScore.ts`, `killer.ts`, `cricket.ts`), and they share their turn order and sudden death in `party.ts`.
+- One entry point for every mode: `matchState(settings, events)` dispatches on `settings.mode` (`match.ts`). X01 is `x01.ts`; each party mode has its own file (`aroundTheClock.ts`, `golf.ts`, `highScore.ts`, `killer.ts`, `cricket.ts`, `randomCheckout.ts`, `bermuda.ts`), and they share their turn order and sudden death in `party.ts`.
 - `closedVisits`, `allVisits` and `upNext` work for every mode, so calls, lights and the station don't need to know which mode is on.
 - Each mode is versioned (`RULES_VERSION`, `GOLF_RULES`, …) so old matches replay under their own rules (PLAY-17). Settings stored without a mode are X01 (`storedSettings`).
 

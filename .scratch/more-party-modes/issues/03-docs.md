@@ -1,6 +1,6 @@
 # More party modes: docs
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 01, 02
 

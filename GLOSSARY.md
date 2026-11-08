@@ -80,7 +80,7 @@ _Avoid_: Default preset, background
 ## Party modes
 
 **Party mode**:
-A mode played for fun: Around the Clock, Golf, High Score, Killer or Cricket. Never in a tournament and never in the stats; a finished party match isn't listed anywhere.
+A mode played for fun: Around the Clock, Golf, High Score, Killer, Cricket, Random Checkout or Bermuda. Never in a tournament and never in the stats; a finished party match isn't listed anywhere.
 _Avoid_: Fun game, mini-game
 
 **Round**:
@@ -88,7 +88,7 @@ One visit by each player still in the game, in the throwing order. Only in party
 _Avoid_: Turn (that's a visit), leg
 
 **Target**:
-What the thrower has to hit next in a party mode: the next number in Around the Clock, the hole's number in Golf, their own number or opponents' doubles in Killer, the open numbers in Cricket.
+What the thrower has to hit next in a party mode: the next number in Around the Clock, the hole's number in Golf, their own number or opponents' doubles in Killer, the open numbers in Cricket, the next dart of the checkout hint in Random Checkout, the round's target in Bermuda.
 
 **Target board**:
 The drawn dartboard on the station and /watch that lights up the thrower's targets. The main element of the screen in modes that have targets.
@@ -115,8 +115,20 @@ A Killer player who's fully charged: doubles of other players' numbers now take 
 **Lives**:
 What a Killer player loses to doubles of their number. At none they're out.
 
+**Random Checkout**:
+A party mode where every player gets one visit at a shared number, drawn each round, to finish it under X01 rules. A checkout scores one point; a bust or three darts without finishing scores none. The difficulty sets the range and the out rule: Beginner 2–40 with a single out, Medium 41–100, Hard 101–170 and Mixed 2–170 with a double out. Only numbers that can be finished in three darts are drawn.
+
+**Checkout hint**:
+The route to finish from what's left, e.g. "T20 · T10 · D20", updated after each dart. Shown in X01 and Random Checkout, under the match's out rule; the other party modes have none.
+
+**Bermuda**:
+A party mode (also called Bermuda Triangle) of 13 rounds, each aimed at one target: 12, 13, 14, any double, 15, 16, 17, any treble, 18, 19, 20, the outer bull (25 or 50 count) and the bull (only 50). In the classic order, or shuffled when the match starts. A hit scores its full value.
+
+**Halved**:
+What happens to a Bermuda player's score after a visit with no hit on the round's target, rounded down. A visit taken out early without darts halves too.
+
 **Sudden death**:
-Extra rounds between tied leaders only, after the last round of High Score, Golf or Cricket, until one is ahead after a round.
+Extra rounds between tied leaders only, after the last round of High Score, Golf, Cricket, Random Checkout or Bermuda, until one is ahead after a round. Cricket and Bermuda play it at the bull; Random Checkout draws a new number each round.
 _Avoid_: Tie-break, play-off
 
 ## Tournament

@@ -73,7 +73,7 @@ sequenceDiagram
 - No PIN and no organiser needed: quick matches and new players are open at the station (MATCH-01, PLAYER-04, ADMIN-02).
 - A busy station refuses a new match. During a tournament, the station and the players count as busy, so the scheduler leaves them alone (SCHED-04).
 - The board is reset before the match starts, so darts still on it can't count (BOARD-05).
-- The game is X01 or a party mode (ADR 0012). For Killer, the server draws each player's number as the match starts and stores it with "match started".
+- The game is X01 or a party mode (ADR 0012). Where a mode draws something (Killer's numbers, Golf's random course, Random Checkout's numbers, Bermuda's shuffled order), the server draws it as the match starts and stores it with "match started".
 
 ## 6.4 A player restarts dart detection
 

@@ -69,7 +69,7 @@ The page body has four states.
 - An optional notice line, e.g. "Match abandoned" or "Waiting for the tournament".
 - The hint "You can change the order next." (the picker counts the picks).
 - The player picker (players can add themselves here).
-- The match settings: first **Game** (X01, Around the Clock, Golf, High Score, Killer, Cricket), then only that game's options. X01: start, in rule, out rule, legs. Around the Clock: skip-ahead on or off. Golf: course random (the default) or in order, 9 or 18 holes. High Score: 1–20 rounds. Killer: 1–9 lives. Cricket: standard or cut-throat points. The X01 options are kept while another game is picked.
+- The match settings: first **Game** (X01, Around the Clock, Golf, High Score, Killer, Cricket, Random Checkout, Bermuda), then only that game's options. X01: start, in rule, out rule, legs. Around the Clock: skip-ahead on or off. Golf: course random (the default) or in order, 9 or 18 holes. High Score: 1–20 rounds. Killer: 1–9 lives. Cricket: standard or cut-throat points. Random Checkout: difficulty ("Beginner: 2–40, single out" (the default), "Medium: 41–100", "Hard: 101–170", "Mixed: 2–170") and 1–20 rounds (default 10). Bermuda: order classic (the default) or shuffled. The X01 options are kept while another game is picked.
 - A primary "Continue" button, enabled once at least 2 players are picked.
 
 ### 2. Lineup (a match is set up, not started)
@@ -99,18 +99,21 @@ This is the central screen.
 
 **Party modes** use the same screen, with these differences:
 - **High Score** keeps the player cards: the total, "Last 45", and in sudden death "Sudden death" or "Out".
-- **Modes with a target** (Around the Clock, Golf, Killer, Cricket) lead with the **target board**: a drawn dartboard with the thrower's targets lit in violet. On a kiosk it takes the left of the screen, sized to fit; on a phone it sits on top. Beside it (below it on a phone) is the mode's panel:
+- **Modes with a target** (Around the Clock, Golf, Killer, Cricket, Random Checkout, Bermuda) lead with the **target board**: a drawn dartboard with the thrower's targets lit in violet. On a kiosk it takes the left of the screen, sized to fit; on a phone it sits on top. Beside it (below it on a phone) is the mode's panel:
   - Around the Clock and Killer: a compact player list, the thrower framed. Around the Clock shows each player's target ("7", "Bull"); Killer shows their number big, with "Charge 1/3 · 3 lives", "Killer · 2 lives" or "Out" (dimmed). The board lights the target (Around the Clock), the thrower's own number while charging, or the opponents' double rings once they're a killer.
   - Golf: a scorecard, holes across and players down, with the total pinned on the right; the current hole in violet, a hole in one in green. On a phone it scrolls sideways. The board lights the hole's number.
   - Cricket: the marks grid, targets 20–15 and Bull down and players across, marks drawn /, X and ⊗ (green once closed), points at the bottom, numbers closed by everyone dimmed. The board lights every number still open, only the bull in sudden death.
-- **The visit total** is named for the mode: "Total" (High Score), "Hits" (Around the Clock, Killer: darts that did something), "Best" (Golf: the best dart so far), "Marks" (Cricket).
-- **No checkout route and no bust.**
+  - Random Checkout: a "Check out" panel above the player list, with the number big in violet (what's left of it after the first dart, "Check out · from 32"; ✓ once finished, red on a bust) and the checkout hint beside it, the next dart brighter. The players show their points and "✓ Checked out" or "✗ Missed" for this round. The board lights the hint's next dart.
+  - Bermuda: a panel above the player list with "Round 2 of 13", the round's target big ("13", "Any double", "Outer bull") and the 13 targets in a row (done dimmed, current in violet, to come). The players show their score and this round's "+26" or "Halved". The board lights the target: the number, every double ring, every treble ring, or the bull.
+  - In sudden death, the settings strip says so ("Random Checkout · Beginner · Sudden death", "Bermuda · Sudden death at the bull"), as does Bermuda's panel, and the players no longer in it show "Out" (dimmed).
+- **The visit total** is named for the mode: "Total" (High Score, Random Checkout, Bermuda), "Hits" (Around the Clock, Killer: darts that did something), "Best" (Golf: the best dart so far), "Marks" (Cricket).
+- **No checkout route and no bust,** except in Random Checkout, where the hint is in its panel and a bust shows as in X01.
 
 ### 4. Match won
 - "Game shot", the winner's avatar in violet brackets and "Ann wins".
 - The legs result, winner's first ("3 – 1"), when legs > 1 (with more than two players: "3 legs").
 - How it was won: the checkout ("40", "Checkout · D20") and the winner's match 3-dart average.
-- In a party mode only the winner, plus their total (High Score, Golf) or points (Cricket).
+- In a party mode only the winner, plus their total (High Score, Golf, Bermuda) or points (Cricket, Random Checkout).
 - The settings strip is hidden: the result takes its place.
 - Buttons: "Undo" and a primary "Done", which closes the match and returns to New match.
 
@@ -126,7 +129,7 @@ The same scoreboard as the station, for a projector or TV. Big screens only: the
   - "Next: Ann vs Bob" (not started).
   - The scoreboard plus the current visit (turn shown by the framed card and violet score only).
   - Game shot, as on the station but larger: winner, "ANN 1 – 0 BOB" (the opponent and the legs), checkout and average.
-- **Party modes:** as on the station, with the target board big on the left and the mode's panel on the right. Golf's scorecard shows the nine holes being played (front or back) plus the total, so 18 holes fit.
+- **Party modes:** as on the station, with the target board big on the left and the mode's panel on the right. Golf's scorecard shows the nine holes being played (front or back) plus the total, so 18 holes fit. Random Checkout's and Bermuda's panel sits above the board, so the player list keeps the whole right column.
 
 It needs to fit a 720p screen without scrolling.
 
@@ -160,7 +163,7 @@ A room-wide overview for 16:9. Everything scales to fit, with no scrolling. "Ser
 **Live station card** (used in Idle and Running): a station name, a match label if any, then one of:
 - "Free", "Paused" or "Board offline".
 - "Next: Ann vs Bob".
-- A live score: a row per player (avatar, name, legs, remaining score, or "Won"), with the thrower highlighted, and below it the current visit's 3 darts and the total. In a party mode the score is the mode's: the target (Around the Clock), the total (High Score, Golf), the lives (Killer) or the points (Cricket), and the visit's total is named as on the station.
+- A live score: a row per player (avatar, name, legs, remaining score, or "Won"), with the thrower highlighted, and below it the current visit's 3 darts and the total. In a party mode the score is the mode's: the target (Around the Clock), the total (High Score, Golf, Bermuda), the lives (Killer) or the points (Cricket, Random Checkout), and the visit's total is named as on the station.
 
 The layout must cope with 1–3+ stations and 2–8 players per match.
 

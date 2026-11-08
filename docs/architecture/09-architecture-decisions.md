@@ -141,12 +141,12 @@ Details in `.scratch/charts/spec.md`.
 
 Details in `.scratch/party-modes/spec.md`.
 
-- **Five party modes** beside X01: Around the Clock, Golf, High Score, Killer and Cricket. One game per match, 2–8 players, started from the station's quick match (or `POST /api/admin/matches`).
+- **Seven party modes** beside X01: Around the Clock, Golf, High Score, Killer and Cricket, then Random Checkout and Bermuda (2026-11-07, `.scratch/more-party-modes/spec.md`). One game per match, 2–8 players, started from the station's quick match (or `POST /api/admin/matches`).
 - **Persisted, never counted** (ADR 0012): same tables and event log as X01; finished party matches are left out of every stat and list, and never in tournaments.
-- **One engine entry point:** `matchState(settings, events)` folds by `settings.mode`. Party modes share their turn order (`playParty`) and, where they have rounds and a tie-break, `playRounds` (High Score, Golf, Cricket).
-- **Ties go to sudden death** between the tied leaders: one more visit (or hole) each in High Score and Golf, a visit at the bull in Cricket after its 20-round cap.
-- **Calls:** only the match shot, plus visit scores in High Score. **Lights:** match start and game shot, plus 180 in High Score.
-- **Board first:** where a mode has a target (Around the Clock, Golf, Killer, Cricket), the target board is the main element of the station and `/watch`, with the players (or Golf's scorecard, Cricket's marks grid) beside it.
+- **One engine entry point:** `matchState(settings, events)` folds by `settings.mode`. Party modes share their turn order (`playParty`) and, where they have rounds and a tie-break, `playRounds` (High Score, Golf, Cricket, Random Checkout, Bermuda).
+- **Ties go to sudden death** between the tied leaders: one more visit (or hole) each in High Score and Golf, a visit at the bull in Cricket after its 50-round cap and in Bermuda, a new drawn number in Random Checkout.
+- **Calls:** only the match shot, plus visit scores in High Score. **Lights:** match start and game shot, plus 180 and 100+ visit in High Score. **Checkout hint:** only Random Checkout among the party modes.
+- **Board first:** where a mode has a target (every party mode but High Score), the target board is the main element of the station and `/watch`, with the players (or Golf's scorecard, Cricket's marks grid) beside it. Random Checkout and Bermuda add a panel (the number and hint, or the 13 targets) above the players.
 
 ### Build order (done)
 
