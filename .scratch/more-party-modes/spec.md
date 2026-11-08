@@ -1,6 +1,6 @@
 # More party modes: Random Checkout and Bermuda
 
-Status: ready-for-agent
+Status: done
 
 Two more party modes next to the five we have. Everything under "For every party mode" in `.scratch/party-modes/spec.md` applies to them as well: never in tournaments or stats, 2–8 players, persisted with their own rules version, shown only while live, corrections like in X01, a scoreboard and target board per mode, the match shot and confetti for the winner. The one exception is that Random Checkout shows a checkout hint.
 

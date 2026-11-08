@@ -1,6 +1,6 @@
 # More party modes: real board check
 
-Status: ready-for-human
+Status: done
 Type: task
 Blocked by: 01, 02
 
@@ -11,3 +11,7 @@ Play a full game of each mode on a real board through Autodarts: Random Checkout
 ## Acceptance
 
 - Detected darts, takeouts and corrections behave as specified, and the station and /watch read well from the oche.
+
+## Comments
+
+2026-11-08: Checked by the user on the real board: Random Checkout and Bermuda look good.
