@@ -9,7 +9,7 @@
     "dev": "node --watch --conditions=source --experimental-strip-types src/main.ts"
   },
   "dependencies": {
-    "@fastify/static": "10.1.6",
+    "@fastify/static": "10.1.10",
     "@fastify/websocket": "11.3.4",
     "@n4/engine": "workspace:*",
     "fastify": "5.12.7",
