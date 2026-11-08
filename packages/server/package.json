@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@fastify/static": "10.1.6",
-    "@fastify/websocket": "11.3.4",
+    "@fastify/websocket": "11.3.7",
     "@n4/engine": "workspace:*",
     "fastify": "5.12.7",
     "fflate": "0.8.3",
