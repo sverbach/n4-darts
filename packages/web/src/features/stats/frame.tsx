@@ -30,7 +30,7 @@ export const ROW_VALUE = "min-w-12 text-right text-[28px] kiosk:w-[60px] kiosk:t
 export function StatsFrame(props: { back: [string, string] | null; children: ReactNode }) {
   return (
     <div className="min-h-[100dvh]">
-      <header className="border-0 border-border border-b border-solid">
+      <header>
         <div className="mx-auto flex max-w-[1200px] items-center justify-between kiosk:px-6 px-4 kiosk:py-3 py-2">
           {props.back ? (
             <Link className="back" href={props.back[0]}>

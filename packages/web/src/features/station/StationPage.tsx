@@ -61,7 +61,7 @@ export function StationPage({ id }: { id: number }) {
   const sound = useCallouts(match);
   return (
     <main className="flex min-h-[100dvh] flex-col">
-      <header className="flex items-center justify-between gap-2 kiosk:gap-4 border-0 border-border border-b border-solid kiosk:px-6 px-4 kiosk:py-3 py-2.5">
+      <header className="flex items-center justify-between gap-2 kiosk:gap-4 kiosk:px-6 px-4 kiosk:py-3 py-2.5">
         <div className="flex min-w-0 items-center gap-4">
           <Logo width="86px" className="max-kiosk:hidden" />
           <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel kiosk:text-[20px] text-[13px] text-text uppercase kiosk:tracking-[2px] tracking-[1px]">
@@ -125,7 +125,7 @@ function matchAction(match: MatchView, send: Send): MatchAction | undefined {
 
 function SettingsStrip({ match }: { match: MatchView }) {
   return (
-    <div className="label flex flex-wrap justify-between gap-x-4 gap-y-1.5 border-0 border-line-soft border-b border-solid kiosk:px-6 px-4 kiosk:py-2.5 py-2">
+    <div className="label flex flex-wrap justify-between gap-x-4 gap-y-1.5 kiosk:px-6 px-4 kiosk:py-2.5 py-2">
       {match.label && <span className="text-text">{match.label}</span>}
       <span>{liveLabel(match)}</span>
     </div>

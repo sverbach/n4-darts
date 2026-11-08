@@ -61,7 +61,7 @@ export function DisplayPage() {
 function Header(props: { title: string; detail: string; played?: number; total?: number }) {
   const { title, detail, played, total } = props;
   return (
-    <header className="flex items-center gap-pu-32 border-0 border-border border-b border-solid pb-pu-24">
+    <header className="flex items-center gap-pu-32 pb-pu-24">
       <Logo width="4.8em" className="flex-none" />
       <div className="flex-1">
         <h1 className="text-pu-40 tracking-pu-4">{title}</h1>

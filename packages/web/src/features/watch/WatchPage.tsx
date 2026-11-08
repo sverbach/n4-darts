@@ -35,7 +35,7 @@ export function WatchPage({ id }: { id: number }) {
 
   return (
     <main className="flex h-screen flex-col overflow-hidden text-pu-24 [--px:calc(min(100vw,177.78vh)/1280)]">
-      <header className="flex min-h-pu-64 flex-none items-center justify-between gap-pu-20 border-0 border-border border-b border-solid px-pu-32">
+      <header className="flex min-h-pu-64 flex-none items-center justify-between gap-pu-20 px-pu-32">
         <div className="flex min-w-0 items-center gap-pu-20">
           <Logo width="3em" />
           <span className="whitespace-nowrap font-pixel text-pu-20 text-text uppercase tracking-pu-2">
