@@ -144,19 +144,21 @@ pnpm build && pnpm start   # production build on :3000
 pnpm build && pnpm e2e     # browser tests (Playwright), the same as CI
 pnpm --filter @n4/e2e visual   # screenshot comparison, by hand (macOS baseline); add --update-snapshots
 pnpm db:reset    # clear the dev database (server stopped)
+tools/readme-shots/shots.sh   # the README's screenshots, cut from the visual baselines
 ```
 
 ### Code structure
 
-| Path              | What                                                          |
-| ----------------- | ------------------------------------------------------------- |
-| `packages/engine` | The game rules, X01 and party modes; pure, shared with the UI |
-| `packages/server` | Node server: board gateway, matches, tournaments, stats, API  |
-| `packages/web`    | React app                                                     |
-| `packages/e2e`    | Browser and visual tests                                      |
-| `tools/board-sim` | Fake Board Manager (2.0.2 API, `docs/board-manager-api.md`)   |
-| `tools/wled-sim`  | Fake WLED controller                                          |
-| `tools/callouts`  | The built-in caller voice and the voice-pack importer         |
+| Path                 | What                                                          |
+| -------------------- | ------------------------------------------------------------- |
+| `packages/engine`    | The game rules, X01 and party modes; pure, shared with the UI |
+| `packages/server`    | Node server: board gateway, matches, tournaments, stats, API  |
+| `packages/web`       | React app                                                     |
+| `packages/e2e`       | Browser and visual tests                                      |
+| `tools/board-sim`    | Fake Board Manager (2.0.2 API, `docs/board-manager-api.md`)   |
+| `tools/wled-sim`     | Fake WLED controller                                          |
+| `tools/callouts`     | The built-in caller voice and the voice-pack importer         |
+| `tools/readme-shots` | The README's screenshots, from the visual suite               |
 
 More: [`docs/architecture/`](docs/architecture/README.md) (arc42), [`docs/adr/`](docs/adr/) (decisions), [`GLOSSARY.md`](GLOSSARY.md), [`docs/ui-pages.md`](docs/ui-pages.md).
 
