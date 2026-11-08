@@ -33,13 +33,13 @@ export function WatchPage({ id }: { id: number }) {
   const sound = useCallouts(match ?? null, { wakeLock: true });
 
   return (
-    <main className="flex h-screen flex-col overflow-hidden text-pu-24 [--px:calc(min(100vw,177.78vh)/1280)]">
+    <main className="text-pu-24 flex h-screen flex-col overflow-hidden [--px:calc(min(100vw,177.78vh)/1280)]">
       <TopBar
         size="projector"
-        className="flex min-h-pu-64 flex-none flex-col justify-center px-pu-32"
+        className="min-h-pu-64 px-pu-32 flex flex-none flex-col justify-center"
         start={
           <>
-            <span className="whitespace-nowrap font-pixel text-pu-20 text-text uppercase tracking-pu-2">
+            <span className="font-pixel text-pu-20 text-text tracking-pu-2 whitespace-nowrap uppercase">
               {view?.name ?? `Station ${id}`}
             </span>
             {match?.label && <span className={`${SMALL} tracking-pu-2`}>· {match.label}</span>}
@@ -59,11 +59,11 @@ export function WatchPage({ id }: { id: number }) {
         }
         menu={
           sound.needsTap ? (
-            <SoundPrompt className="min-h-[max(30px,calc(36*var(--px)))]! px-pu-14! text-[length:max(11px,calc(20*var(--px)))]!" />
+            <SoundPrompt className="px-pu-14! min-h-[max(30px,calc(36*var(--px)))]! text-[length:max(11px,calc(20*var(--px)))]!" />
           ) : (
             <SoundButton
               sound={sound}
-              className="size-[max(36px,calc(44*var(--px)))] min-h-0 flex-none text-pu-24"
+              className="text-pu-24 size-[max(36px,calc(44*var(--px)))] min-h-0 flex-none"
             />
           )
         }
@@ -77,7 +77,7 @@ export function WatchPage({ id }: { id: number }) {
       ) : match.state.phase === "matchWon" ? (
         <MatchOver match={match} size="projector" />
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col gap-pu-16 px-pu-32 pt-pu-20 pb-pu-24">
+        <div className="gap-pu-16 px-pu-32 pt-pu-20 pb-pu-24 flex min-h-0 flex-1 flex-col">
           <WatchBoard match={match} />
           <WatchVisit match={match} />
         </div>
@@ -94,11 +94,11 @@ function WatchBoard({ match }: { match: MatchView }) {
   const wide = golf || cricket;
   return (
     <div
-      className={`grid min-h-0 flex-1 gap-pu-24 ${wide ? "grid-cols-[auto_minmax(0,1fr)]" : "grid-cols-[minmax(0,1fr)_calc(420*var(--px))]"}`}
+      className={`gap-pu-24 grid min-h-0 flex-1 ${wide ? "grid-cols-[auto_minmax(0,1fr)]" : "grid-cols-[minmax(0,1fr)_calc(420*var(--px))]"}`}
     >
       {hasModePanel(match) ? (
         // Above the board, so the players keep the whole column beside it.
-        <div className="flex min-h-0 min-w-0 flex-col gap-pu-16">
+        <div className="gap-pu-16 flex min-h-0 min-w-0 flex-col">
           <ModePanel match={match} size="projector" />
           <TargetBoard
             highlight={targets.highlight}
@@ -130,22 +130,22 @@ function MatchLine({ match }: { match: MatchView }) {
 
 function NextMatch({ match }: { match: MatchView }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-pu-40 p-pu-32">
-      <span className="font-pixel text-muted text-pu-22 uppercase tracking-pu-6">Next</span>
-      <div className="avatar-pu-160 flex flex-wrap items-center justify-center gap-pu-32">
+    <div className="gap-pu-40 p-pu-32 flex flex-1 flex-col items-center justify-center">
+      <span className="font-pixel text-muted text-pu-22 tracking-pu-6 uppercase">Next</span>
+      <div className="avatar-pu-160 gap-pu-32 flex flex-wrap items-center justify-center">
         {match.players.map((p, i) => (
-          <div key={p.id} className="flex items-center gap-pu-56">
+          <div key={p.id} className="gap-pu-56 flex items-center">
             {i > 0 && (
-              <span className="font-pixel text-muted text-pu-28 uppercase tracking-pu-4">vs</span>
+              <span className="font-pixel text-muted text-pu-28 tracking-pu-4 uppercase">vs</span>
             )}
-            <div className="flex flex-col items-center gap-pu-18 font-bold font-pixel text-pu-40 uppercase tracking-pu-4">
+            <div className="gap-pu-18 font-pixel text-pu-40 tracking-pu-4 flex flex-col items-center font-bold uppercase">
               <Avatar player={p} large />
               <span>{p.name}</span>
             </div>
           </div>
         ))}
       </div>
-      <span className="font-pixel text-muted text-pu-20 uppercase tracking-pu-2">
+      <span className="font-pixel text-muted text-pu-20 tracking-pu-2 uppercase">
         {matchRulesLabel(match.settings)} · Waiting to start
       </span>
     </div>
@@ -163,33 +163,33 @@ function WatchVisit({ match }: { match: MatchView }) {
   const next = state.phase === "throwing" ? (visit?.darts.length ?? 0) : -1;
   return (
     <section
-      className={`flex h-pu-132 items-center gap-pu-16 border-solid px-pu-20 ${visit?.bust ? "border-danger border-pu-3 bg-danger-tint" : "border border-border bg-panel"}`}
+      className={`h-pu-132 gap-pu-16 px-pu-20 flex items-center border-solid ${visit?.bust ? "border-danger border-pu-3 bg-danger-tint" : "border-border bg-panel border"}`}
       aria-label="Current visit"
     >
-      <span className="w-pu-120 font-pixel text-muted text-pu-20 uppercase leading-[1.6] tracking-[1px]">
+      <span className="w-pu-120 font-pixel text-muted text-pu-20 leading-[1.6] tracking-[1px] uppercase">
         Visit
       </span>
-      <div className="grid flex-1 grid-cols-3 gap-pu-12">
+      <div className="gap-pu-12 grid flex-1 grid-cols-3">
         {[0, 1, 2].map((i) => {
           const dart = visit?.darts[i];
           return (
             <span
               key={dart?.dartId ?? `slot-${i}`}
-              className={`flex h-pu-92 items-center justify-center border text-pu-72 ${dart ? (dart.ignored ? "border-faint border-dashed bg-transparent text-muted line-through" : "border-border border-solid bg-surface") : i === next ? "border-accent border-dashed bg-transparent text-accent" : "border-line-soft border-dashed bg-transparent"}`}
+              className={`h-pu-92 text-pu-72 flex items-center justify-center border ${dart ? (dart.ignored ? "border-faint text-muted border-dashed bg-transparent line-through" : "border-border bg-surface border-solid") : i === next ? "border-accent text-accent border-dashed bg-transparent" : "border-line-soft border-dashed bg-transparent"}`}
             >
               {dart ? dartLabel(dart.segment) : i === next ? "_" : ""}
             </span>
           );
         })}
       </div>
-      <div className="flex w-pu-220 flex-col items-end gap-pu-6">
+      <div className="w-pu-220 gap-pu-6 flex flex-col items-end">
         <span className={`${TOTAL_LABEL} text-muted`}>
           {visit?.bust || !visit?.darts.length ? "" : totalLabel}
         </span>
         <span
           className={
             visit?.bust
-              ? "font-bold font-pixel text-danger text-pu-32 uppercase tracking-pu-3"
+              ? "font-pixel text-danger text-pu-32 tracking-pu-3 font-bold uppercase"
               : "text-pu-64 leading-[0.8]"
           }
         >

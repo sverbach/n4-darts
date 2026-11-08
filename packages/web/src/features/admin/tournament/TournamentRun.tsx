@@ -139,8 +139,8 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
       )}
 
       {live && (
-        <div className="grid kiosk:grid-cols-2 items-start gap-6 kiosk:[grid-template-areas:'stations_queue'_'groups_queue']">
-          <div className="flex min-w-0 flex-col gap-6 kiosk:[grid-area:stations]">
+        <div className="kiosk:grid-cols-2 kiosk:[grid-template-areas:'stations_queue'_'groups_queue'] grid items-start gap-6">
+          <div className="kiosk:[grid-area:stations] flex min-w-0 flex-col gap-6">
             <section className={SECTION}>
               <h2>Stations</h2>
               <p className="hint m-0">
@@ -154,7 +154,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
               </ul>
             </section>
           </div>
-          <div className="kiosk:row-span-2 flex min-w-0 flex-col gap-6 kiosk:[grid-area:queue]">
+          <div className="kiosk:row-span-2 kiosk:[grid-area:queue] flex min-w-0 flex-col gap-6">
             <section className={SECTION}>
               <h2>
                 Queue <span className={COUNT}>({progress.queue.length})</span>
@@ -187,7 +187,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
               )}
             </section>
           </div>
-          <div className="min-w-0 kiosk:[grid-area:groups]">
+          <div className="kiosk:[grid-area:groups] min-w-0">
             {progress.bracket.length > 0 ? bracketSection : groupsSection}
           </div>
         </div>
@@ -198,7 +198,7 @@ export function TournamentRun(props: { view: TournamentAdminView; send: Send; on
       {(!live || progress.bracket.length > 0) && groupsSection}
 
       {live && (
-        <div className="border-0 border-border border-t border-solid pt-6">
+        <div className="border-border border-0 border-t border-solid pt-6">
           <button
             type="button"
             className="danger min-h-[52px] px-6"
@@ -323,14 +323,14 @@ function QueueRow(props: {
     open.find((s) => s.id === entry.pinnedStation) ??
     (entry.pinnedStation === null ? open[0] : undefined);
   return (
-    <li className="flex flex-col gap-3 border border-border border-solid bg-panel p-4">
+    <li className="border-border bg-panel flex flex-col gap-3 border border-solid p-4">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         {entry.label && <span className="match-label">{entry.label}</span>}
-        <span className="font-pixel text-[16px] uppercase tracking-[1px]">
+        <span className="font-pixel text-[16px] tracking-[1px] uppercase">
           {entry.players.map((p) => p.name).join(" vs ")}
         </span>
       </div>
-      <div className="grid grid-cols-2 kiosk:grid-cols-[auto_minmax(0,1fr)_auto] gap-2">
+      <div className="kiosk:grid-cols-[auto_minmax(0,1fr)_auto] grid grid-cols-2 gap-2">
         <button
           type="button"
           className="min-h-11 text-[11px]"
@@ -340,7 +340,7 @@ function QueueRow(props: {
         </button>
         <select
           aria-label={`Station for ${entry.label || entry.players.map((p) => p.name).join(" vs ")}`}
-          className="kiosk:order-none order-first col-span-full kiosk:col-auto min-h-11 text-[20px]"
+          className="kiosk:order-none kiosk:col-auto order-first col-span-full min-h-11 text-[20px]"
           value={entry.pinnedStation ?? ""}
           onChange={(e) =>
             send("POST", `${url}/pin`, {

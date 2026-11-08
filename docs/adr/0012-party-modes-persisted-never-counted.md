@@ -15,8 +15,8 @@ Not storing party matches at all would have been the other way. That needs a sec
 - **Party matches still count as "recently played" for the scheduler:** a player just back from a Killer game rests a little longer before their tournament match. That's accepted.
 - **Some numbers are drawn:** Killer's numbers, Golf's random course, Random Checkout's numbers (one per round, plus spares for sudden death) and Bermuda's shuffled order are random, so the station draws them when the match starts and stores them on the `MatchStarted` event. A replay gives the same numbers, and the engine stays deterministic.
 - **Random Checkout is the one party mode with a checkout hint.** It's practice for finishing, so the route is shown at every difficulty, under that difficulty's out rule. The other party modes have no checkout, so no hint.
+- **The finished-match queries are where this is enforced.** A new list or stat of finished matches has to read from one of them, or filter to X01 itself.
 
 ## Addendum (2026-11-08): Random Checkout and Bermuda
 
 Two modes joined the five, under the same rules: stored, never counted, never in tournaments, their own rules version. Neither needed anything new in this decision beyond the drawn numbers and the checkout hint above. The finished-match queries already keep to X01, so their matches were kept out of the stats without any change there.
-- **The finished-match queries are where this is enforced.** A new list or stat of finished matches has to read from one of them, or filter to X01 itself.

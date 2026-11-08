@@ -116,7 +116,7 @@ export function BoardMenu(props: {
   };
 
   return (
-    <div className="relative flex items-center gap-1.5 kiosk:gap-2.5" ref={root}>
+    <div className="kiosk:gap-2.5 relative flex items-center gap-1.5" ref={root}>
       {message ? (
         <span
           className={`status ${message.error ? "status-danger" : busy ? "status-accent" : "status-ok"}`}
@@ -186,7 +186,7 @@ export function BoardMenu(props: {
           </button>
           {sound && (
             <>
-              <span className={`label ${MENU_LABEL} border-0 border-border border-t border-solid`}>
+              <span className={`label ${MENU_LABEL} border-border border-0 border-t border-solid`}>
                 Sound
               </span>
               <button
@@ -204,7 +204,7 @@ export function BoardMenu(props: {
           )}
           {matchAction && (
             <>
-              <span className={`label ${MENU_LABEL} border-0 border-border border-t border-solid`}>
+              <span className={`label ${MENU_LABEL} border-border border-0 border-t border-solid`}>
                 Match
               </span>
               <button
@@ -219,7 +219,7 @@ export function BoardMenu(props: {
                 {matchAction.label}
               </button>
               {matchAction.note && (
-                <span className="label kiosk:px-4 px-3 kiosk:pb-3 pb-2.5 kiosk:text-[11px] text-[11px]">
+                <span className="label kiosk:px-4 kiosk:pb-3 kiosk:text-[11px] px-3 pb-2.5 text-[11px]">
                   {matchAction.note}
                 </span>
               )}

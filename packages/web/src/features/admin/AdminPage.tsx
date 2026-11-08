@@ -67,16 +67,16 @@ export function AdminPage({ section }: { section: AdminSection }) {
   return (
     <div>
       <header>
-        <div className="mx-auto kiosk:flex grid max-w-[1200px] grid-cols-[minmax(0,1fr)_auto] items-center kiosk:gap-x-6 kiosk:gap-y-0 kiosk:px-6">
-          <div className="flex kiosk:min-h-16 items-center gap-3 kiosk:gap-3 kiosk:p-0 px-4 py-2">
+        <div className="kiosk:flex kiosk:gap-x-6 kiosk:gap-y-0 kiosk:px-6 mx-auto grid max-w-[1200px] grid-cols-[minmax(0,1fr)_auto] items-center">
+          <div className="kiosk:min-h-16 kiosk:gap-3 kiosk:p-0 flex items-center gap-3 px-4 py-2">
             <Logo width="72px" />
-            <span className="font-pixel kiosk:text-[13px] text-[13px] uppercase tracking-[1px]">
+            <span className="font-pixel kiosk:text-[13px] text-[13px] tracking-[1px] uppercase">
               Admin
             </span>
             <ThemeStar side="right" />
           </div>
           <nav
-            className="scroll-x col-span-full row-start-2 flex min-w-0 kiosk:gap-1.5 border-0 border-border border-t kiosk:border-t-0 border-solid [--fade-bg:var(--bg)] [scrollbar-width:none]"
+            className="scroll-x kiosk:gap-1.5 border-border kiosk:border-t-0 col-span-full row-start-2 flex min-w-0 [scrollbar-width:none] border-0 border-t border-solid [--fade-bg:var(--bg)]"
             aria-label="Admin sections"
           >
             {Object.entries(sections).map(([key, { title }]) => (
@@ -84,7 +84,7 @@ export function AdminPage({ section }: { section: AdminSection }) {
                 key={key}
                 href={`/admin/${key}`}
                 aria-current={key === section ? "page" : undefined}
-                className="flex kiosk:min-h-16 min-h-[46px] flex-[1_0_auto] kiosk:flex-none items-center justify-center border-0 border-transparent border-b-2 border-solid kiosk:px-4 px-3 font-pixel kiosk:text-[12px] text-[11px] text-muted uppercase tracking-[1px] no-underline aria-[current=page]:border-accent aria-[current=page]:text-accent"
+                className="kiosk:min-h-16 kiosk:flex-none kiosk:px-4 font-pixel kiosk:text-[12px] text-muted aria-[current=page]:border-accent aria-[current=page]:text-accent flex min-h-[46px] flex-[1_0_auto] items-center justify-center border-0 border-b-2 border-solid border-transparent px-3 text-[11px] tracking-[1px] uppercase no-underline"
                 // On a phone the row scrolls: keep the current tab in sight.
                 ref={
                   key === section
@@ -99,7 +99,7 @@ export function AdminPage({ section }: { section: AdminSection }) {
           {session.pinRequired && (
             <button
               type="button"
-              className="kiosk:my-0 kiosk:mr-0 mr-4 kiosk:ml-auto border-0 bg-transparent p-0 kiosk:text-[12px] text-[11px] text-muted underline underline-offset-4"
+              className="kiosk:my-0 kiosk:mr-0 kiosk:ml-auto kiosk:text-[12px] text-muted mr-4 border-0 bg-transparent p-0 text-[11px] underline underline-offset-4"
               onClick={logout}
             >
               Log out
@@ -107,7 +107,7 @@ export function AdminPage({ section }: { section: AdminSection }) {
           )}
         </div>
       </header>
-      <main className="mx-auto flex max-w-[1200px] flex-col gap-6 kiosk:gap-6 kiosk:px-6 px-4 kiosk:pt-6 pt-6 kiosk:pb-6 pb-6">
+      <main className="kiosk:gap-6 kiosk:px-6 kiosk:pt-6 kiosk:pb-6 mx-auto flex max-w-[1200px] flex-col gap-6 px-4 pt-6 pb-6">
         {error && (
           <p className="error" role="alert">
             {error}
@@ -169,7 +169,7 @@ function Login({ onDone }: { onDone: () => Promise<void> }) {
         </p>
       )}
       <form
-        className="m-auto flex w-[calc(100%_-_32px)] max-w-[440px] flex-col gap-3 border border-border border-solid bg-panel px-6 py-6"
+        className="border-border bg-panel m-auto flex w-[calc(100%_-_32px)] max-w-[440px] flex-col gap-3 border border-solid px-6 py-6"
         onSubmit={submit}
       >
         <div className="mb-3 flex items-center justify-center gap-2">
@@ -192,7 +192,7 @@ function Login({ onDone }: { onDone: () => Promise<void> }) {
           required
           aria-invalid={error ? true : undefined}
           onChange={(e) => setPin(e.target.value)}
-          className="min-h-[76px] border-2 bg-bg text-center text-[48px] tracking-[20px] aria-invalid:border-danger"
+          className="bg-bg aria-invalid:border-danger min-h-[76px] border-2 text-center text-[48px] tracking-[20px]"
         />
         <button type="submit" className="primary cta min-h-16! text-[16px]!">
           Unlock <PixelIcon name="arrow" height="0.9em" />

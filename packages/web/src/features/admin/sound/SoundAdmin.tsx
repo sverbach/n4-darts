@@ -71,7 +71,7 @@ export function SoundAdmin() {
         </p>
       </div>
       {data?.uploads && (
-        <section className={`${ASIDE} gap-3! border border-border border-solid bg-panel p-6`}>
+        <section className={`${ASIDE} border-border bg-panel gap-3! border border-solid p-6`}>
           <h2>Upload a pack</h2>
           <Upload
             onUpload={(file) =>
@@ -111,7 +111,7 @@ function Voice(props: {
           <span className={CARD_NAME}>{props.name}</span>
           {props.active && <span className={badge("ok")}>In use</span>}
         </span>
-        <span className="text-[20px] text-muted">{props.detail}</span>
+        <span className="text-muted text-[20px]">{props.detail}</span>
       </div>
       <div className={cardActions()}>
         {!props.active && (
@@ -160,7 +160,7 @@ function Upload(props: { onUpload(file: File): Promise<boolean>; onTooBig(): voi
         aria-label="Voice pack (zip)"
         required
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        className="min-h-0 border-0 bg-transparent p-0 text-[18px] text-muted file:mr-3 file:min-h-10 file:cursor-pointer file:border file:border-border file:border-solid file:bg-surface file:px-3 file:font-pixel file:text-[11px] file:text-text file:uppercase file:tracking-[1px]"
+        className="text-muted file:border-border file:bg-surface file:font-pixel file:text-text min-h-0 border-0 bg-transparent p-0 text-[18px] file:mr-3 file:min-h-10 file:cursor-pointer file:border file:border-solid file:px-3 file:text-[11px] file:tracking-[1px] file:uppercase"
       />
       <p className="hint m-0 text-[20px]">
         Packs from other projects aren't ours to share: upload only what you may use.

@@ -114,7 +114,7 @@ export function LightsAdmin() {
             ))}
           </ul>
         )}
-        <div className="flex flex-col gap-3 border border-border border-solid bg-panel p-6">
+        <div className="border-border bg-panel flex flex-col gap-3 border border-solid p-6">
           <h3>Add a device</h3>
           <DeviceForm
             submitLabel="Add device"
@@ -174,7 +174,7 @@ function DeviceCard(props: {
             ]}
           />
         </div>
-        <code className="wrap-anywhere font-text text-[22px] text-muted">{device.url}</code>
+        <code className="font-text text-muted text-[22px] wrap-anywhere">{device.url}</code>
         {test && "result" in test && (
           <span className={`status status-ok ${STATUS_SMALL} self-start`}>
             {test.result.name} · {test.result.presets.length} presets
@@ -311,9 +311,9 @@ function StationLightsCard(props: {
                 <li
                   key={event}
                   aria-label={label}
-                  className="grid grid-cols-[minmax(0,1fr)_96px_auto] kiosk:grid-cols-[150px_minmax(0,1fr)_96px_auto] items-center gap-x-2 gap-y-1.5 border-0 border-line-soft border-b border-solid py-2"
+                  className="kiosk:grid-cols-[150px_minmax(0,1fr)_96px_auto] border-line-soft grid grid-cols-[minmax(0,1fr)_96px_auto] items-center gap-x-2 gap-y-1.5 border-0 border-b border-solid py-2"
                 >
-                  <span className="col-span-full kiosk:col-span-1 font-pixel text-[13px] uppercase">
+                  <span className="kiosk:col-span-1 font-pixel col-span-full text-[13px] uppercase">
                     {label}
                   </span>
                   <PresetSelect
@@ -381,7 +381,7 @@ function PresetSelect(props: {
         type="number"
         min={1}
         max={250}
-        className="min-h-12 w-full bg-bg text-[24px]"
+        className="bg-bg min-h-12 w-full text-[24px]"
         defaultValue={value ?? ""}
         onBlur={(e) => {
           const next = e.target.value ? Number(e.target.value) : null;
@@ -418,7 +418,7 @@ function SecondsInput(props: { label: string; value: number | null; onChange(s: 
         min={1}
         max={600}
         disabled={value === null}
-        className="min-h-12 w-full min-w-0 bg-bg text-[24px]"
+        className="bg-bg min-h-12 w-full min-w-0 text-[24px]"
         key={value ?? "none"}
         defaultValue={value ?? ""}
         onBlur={(e) => {

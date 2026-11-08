@@ -9,7 +9,7 @@ const total = (visit: VisitView) =>
 
 function Darts({ darts }: { darts: DartView[] }) {
   return (
-    <span className="flex min-w-0 flex-wrap gap-x-1.5 kiosk:gap-x-2 gap-y-0.5 font-text kiosk:text-[20px] text-[16px]">
+    <span className="kiosk:gap-x-2 font-text kiosk:text-[20px] flex min-w-0 flex-wrap gap-x-1.5 gap-y-0.5 text-[16px]">
       {darts.map((d) => (
         <span key={d.dartId} className={d.ignored ? "text-muted line-through" : "text-text"}>
           {dartLabel(d.segment)}
@@ -26,11 +26,11 @@ function Cell({ visit }: { visit: VisitView | undefined }) {
       <span className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-2">
         <Darts darts={visit.darts} />
         <span
-          className={`whitespace-nowrap text-right font-text kiosk:text-[26px] text-[20px] tabular-nums ${visit.bust ? "text-danger" : "text-text"}`}
+          className={`font-text kiosk:text-[26px] text-right text-[20px] whitespace-nowrap tabular-nums ${visit.bust ? "text-danger" : "text-text"}`}
         >
           {visit.bust ? "Bust" : total(visit)}
           {visit.checkout && (
-            <span className="ml-1.5 align-middle font-pixel text-[11px] text-muted uppercase">
+            <span className="font-pixel text-muted ml-1.5 align-middle text-[11px] uppercase">
               Out
             </span>
           )}
@@ -60,10 +60,10 @@ export function Scoresheet({ match }: { match: MatchPage }) {
     return (
       <details
         key={leg.visits[0]?.darts[0]?.dartId ?? `leg-${l}`}
-        className="border border-border border-solid bg-panel"
+        className="border-border bg-panel border border-solid"
         open={l === state.legs.length - 1}
       >
-        <summary className="label flex min-h-11 cursor-pointer items-center gap-2 kiosk:px-4 px-3 text-text">
+        <summary className="label kiosk:px-4 text-text flex min-h-11 cursor-pointer items-center gap-2 px-3">
           <PixelIcon name="caret" /> Leg {l + 1} · {starter} starts
           {winner && state.legs.length > 1 && ` · ${winner} won`}
         </summary>
@@ -75,13 +75,13 @@ export function Scoresheet({ match }: { match: MatchPage }) {
             ))}
           </colgroup>
           <thead>
-            <tr className="border-0 border-border border-t border-b border-solid">
+            <tr className="border-border border-0 border-t border-b border-solid">
               <th className="label kiosk:px-4 px-2 py-2 text-left font-normal">#</th>
               {players.map((p, i) => (
                 <th key={p.id} scope="col" className="kiosk:px-4 px-2 py-2 text-left font-normal">
                   <span className="flex items-baseline gap-2">
                     <SeriesChip player={i} />
-                    <span className="label break-words text-text">{p.name}</span>
+                    <span className="label text-text break-words">{p.name}</span>
                   </span>
                 </th>
               ))}
@@ -92,7 +92,7 @@ export function Scoresheet({ match }: { match: MatchPage }) {
               <tr
                 // biome-ignore lint/suspicious/noArrayIndexKey: rounds are positions in the leg.
                 key={r}
-                className="border-0 border-line-soft border-b border-solid last:border-b-0"
+                className="border-line-soft border-0 border-b border-solid last:border-b-0"
               >
                 <th
                   scope="row"

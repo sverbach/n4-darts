@@ -35,7 +35,7 @@ export function HomePage() {
   const stations = useLive<StationView[]>("/api/stations/live").view ?? [];
 
   return (
-    <main className="mx-auto flex min-h-[100dvh] w-full max-w-[1000px] flex-col gap-6 kiosk:gap-6 kiosk:px-6 px-4 kiosk:pt-6 pt-6 kiosk:pb-6 pb-6">
+    <main className="kiosk:gap-6 kiosk:px-6 kiosk:pt-6 kiosk:pb-6 mx-auto flex min-h-[100dvh] w-full max-w-[1000px] flex-col gap-6 px-4 pt-6 pb-6">
       <div className="-mb-12 flex justify-end">
         <ThemeStar />
       </div>
@@ -66,7 +66,7 @@ export function HomePage() {
                     />
                   ) : (
                     (s.match || s.notice) && (
-                      <span className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-text kiosk:text-[20px] text-[18px] text-muted uppercase tracking-normal">
+                      <span className="font-text kiosk:text-[20px] text-muted max-w-full overflow-hidden text-[18px] tracking-normal text-ellipsis whitespace-nowrap uppercase">
                         {stationState(s)}
                       </span>
                     )
@@ -77,7 +77,7 @@ export function HomePage() {
               </Link>
               <Link
                 href={`/watch/${s.id}`}
-                className={`flex kiosk:w-[110px] w-[88px] items-center justify-center ${FRAME} font-pixel kiosk:text-[12px] text-[11px] text-text uppercase tracking-[1px] hover:text-accent`}
+                className={`kiosk:w-[110px] flex w-[88px] items-center justify-center ${FRAME} font-pixel kiosk:text-[12px] text-text hover:text-accent text-[11px] tracking-[1px] uppercase`}
               >
                 Watch
               </Link>

@@ -66,8 +66,8 @@ export function LeaderboardPage() {
 
 export function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
   return (
-    <div className="scroll-x border border-border border-solid">
-      <table className="w-full kiosk:min-w-[860px] border-collapse [--avatar:32px] kiosk:[--avatar:40px]">
+    <div className="scroll-x border-border border border-solid">
+      <table className="kiosk:min-w-[860px] kiosk:[--avatar:40px] w-full border-collapse [--avatar:32px]">
         <thead>
           <tr>
             <th className={th()}>#</th>
@@ -157,12 +157,12 @@ function Profile({ profile }: { profile: PlayerProfile }) {
   const percent = (part: number, whole: number) =>
     whole === 0 ? "" : `${Math.round((part / whole) * 100)}%`;
   const hero = (
-    <section className="flex items-center gap-4 kiosk:gap-6">
-      <span className="flex-none [--avatar:96px] kiosk:[--avatar:138px] [&_.avatar]:flex">
+    <section className="kiosk:gap-6 flex items-center gap-4">
+      <span className="kiosk:[--avatar:138px] flex-none [--avatar:96px] [&_.avatar]:flex">
         <Avatar player={{ id: profile.playerId, name: profile.name, photo: profile.photo }} large />
       </span>
       <div className="flex min-w-0 flex-col gap-2">
-        <h1 className="wrap-anywhere kiosk:text-[56px] text-[32px] kiosk:tracking-[5px] tracking-[3px]">
+        <h1 className="kiosk:text-[56px] kiosk:tracking-[5px] text-[32px] tracking-[3px] wrap-anywhere">
           {profile.name}
         </h1>
         {(profile.rank !== null || profile.since) && (
@@ -190,7 +190,7 @@ function Profile({ profile }: { profile: PlayerProfile }) {
   return (
     <>
       {hero}
-      <div className="flex kiosk:grid kiosk:grid-cols-4 flex-col gap-6 kiosk:gap-4">
+      <div className="kiosk:grid kiosk:grid-cols-4 kiosk:gap-4 flex flex-col gap-6">
         <StatGroup
           title="Average"
           items={[
@@ -249,7 +249,7 @@ function Profile({ profile }: { profile: PlayerProfile }) {
       </div>
 
       {t.matches > 0 && (
-        <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-4 kiosk:items-stretch gap-6 kiosk:gap-4 kiosk:[&>:first-child:not(:only-child)]:col-span-3 kiosk:[&>:only-child]:col-start-4">
+        <div className="kiosk:grid-cols-4 kiosk:items-stretch kiosk:gap-4 kiosk:[&>:first-child:not(:only-child)]:col-span-3 kiosk:[&>:only-child]:col-start-4 grid grid-cols-[minmax(0,1fr)] gap-6">
           {profile.days.length > 0 && (
             <section className={SECTION}>
               <h2 className="label font-normal">Average per day</h2>
@@ -263,11 +263,11 @@ function Profile({ profile }: { profile: PlayerProfile }) {
         </div>
       )}
 
-      <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-4 gap-6 kiosk:gap-4 kiosk:[&>*]:col-span-2 kiosk:[&>:only-child]:col-span-4">
+      <div className="kiosk:grid-cols-4 kiosk:gap-4 kiosk:[&>*]:col-span-2 kiosk:[&>:only-child]:col-span-4 grid grid-cols-[minmax(0,1fr)] gap-6">
         {profile.tournaments.length > 0 && (
           <section className={SECTION}>
             <h2 className="label font-normal">Tournaments</h2>
-            <ul className="m-0 list-none border-0 border-border border-t border-solid p-0">
+            <ul className="border-border m-0 list-none border-0 border-t border-solid p-0">
               {profile.tournaments.map((tournament) => (
                 <li key={tournament.id}>
                   <Link href={`/tournaments/${tournament.id}`} className={`${ROW} no-underline`}>
@@ -287,12 +287,12 @@ function Profile({ profile }: { profile: PlayerProfile }) {
         {profile.recent.length > 0 && (
           <section className={SECTION}>
             <h2 className="label font-normal">Last matches</h2>
-            <ul className="m-0 list-none border-0 border-border border-t border-solid p-0">
+            <ul className="border-border m-0 list-none border-0 border-t border-solid p-0">
               {profile.recent.map((m) => (
                 <li key={m.matchId}>
                   <Link href={`/matches/${m.matchId}`} className={`${ROW} no-underline`}>
                     <span
-                      className={`kiosk:w-[52px] w-11 font-pixel kiosk:text-[12px] text-[11px] uppercase ${m.won ? "text-text" : "text-muted"}`}
+                      className={`kiosk:w-[52px] font-pixel kiosk:text-[12px] w-11 text-[11px] uppercase ${m.won ? "text-text" : "text-muted"}`}
                     >
                       {m.won ? "Won" : "Lost"}
                     </span>
@@ -332,19 +332,19 @@ function StatGroup({ title, items }: { title: string; items: Stat[] }) {
           // sub-label on the left, the number on the right.
           <div
             key={item.label}
-            className="flex kiosk:min-h-0 min-h-[92px] kiosk:flex-1 kiosk:flex-row flex-col kiosk:items-stretch kiosk:justify-between gap-2 border border-border border-solid bg-panel kiosk:px-4 px-3 kiosk:py-3 py-2"
+            className="kiosk:min-h-0 kiosk:flex-1 kiosk:flex-row kiosk:items-stretch kiosk:justify-between border-border bg-panel kiosk:px-4 kiosk:py-3 flex min-h-[92px] flex-col gap-2 border border-solid px-3 py-2"
           >
-            <dt className="kiosk:flex contents kiosk:flex-col kiosk:justify-between kiosk:gap-1.5">
-              <span className="font-pixel kiosk:text-[12px] text-[11px] text-muted uppercase">
+            <dt className="kiosk:flex kiosk:flex-col kiosk:justify-between kiosk:gap-1.5 contents">
+              <span className="font-pixel kiosk:text-[12px] text-muted text-[11px] uppercase">
                 {item.label}
               </span>
               {item.sub && (
-                <span className="order-3 kiosk:mt-0 mt-auto font-pixel text-[11px] text-muted uppercase">
+                <span className="kiosk:mt-0 font-pixel text-muted order-3 mt-auto text-[11px] uppercase">
                   {item.sub}
                 </span>
               )}
             </dt>
-            <dd className="order-2 m-0 kiosk:self-end kiosk:text-[48px] text-[32px] kiosk:leading-[0.8] leading-[0.85]">
+            <dd className="kiosk:self-end kiosk:text-[48px] kiosk:leading-[0.8] order-2 m-0 text-[32px] leading-[0.85]">
               {item.value}
             </dd>
           </div>
@@ -377,7 +377,7 @@ function AverageChart({ days }: { days: PlayerProfile["days"] }) {
   if (points.length === 1) {
     const only = points[0] as (typeof points)[number];
     return (
-      <p className="m-0 flex flex-1 items-center gap-3 border border-border border-solid bg-panel p-4">
+      <p className="border-border bg-panel m-0 flex flex-1 items-center gap-3 border border-solid p-4">
         <span className="text-[48px] leading-[0.85]">{only.y.toFixed(1)}</span>
         <span className="label">{only.axisLabel}</span>
       </p>

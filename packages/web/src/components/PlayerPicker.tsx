@@ -51,7 +51,7 @@ export function PlayerPicker(props: {
       {!players ? (
         <p className="hint">Loading players…</p>
       ) : (
-        <div className="flex flex-wrap gap-2 kiosk:gap-2.5">
+        <div className="kiosk:gap-2.5 flex flex-wrap gap-2">
           {players.length === 0 && <p className="hint left">No players yet: add the first one.</p>}
           {players.map((p) => {
             const position = picked.indexOf(p.id);
@@ -62,12 +62,12 @@ export function PlayerPicker(props: {
                 aria-pressed={position >= 0}
                 onClick={() => toggle(p.id)}
                 disabled={position < 0 && picked.length >= max}
-                className="kiosk:min-h-[60px] gap-2 kiosk:gap-3 kiosk:pr-4 pr-3 kiosk:pl-2 pl-1.5 kiosk:text-[16px] text-[12px] [--avatar:28px] kiosk:[--avatar:40px] aria-pressed:pr-2.5 kiosk:aria-pressed:pr-3"
+                className="kiosk:min-h-[60px] kiosk:gap-3 kiosk:pr-4 kiosk:pl-2 kiosk:text-[16px] kiosk:[--avatar:40px] kiosk:aria-pressed:pr-3 gap-2 pr-3 pl-1.5 text-[12px] [--avatar:28px] aria-pressed:pr-2.5"
               >
                 <Avatar player={p} />
                 <span>{p.name}</span>
                 {numbered && position >= 0 && (
-                  <span className="inline-grid h-5 kiosk:h-[26px] kiosk:min-w-[26px] min-w-5 place-items-center bg-accent font-bold kiosk:text-[13px] text-[11px] text-accent-text">
+                  <span className="kiosk:h-[26px] kiosk:min-w-[26px] bg-accent kiosk:text-[13px] text-accent-text inline-grid h-5 min-w-5 place-items-center text-[11px] font-bold">
                     {position + 1}
                   </span>
                 )}

@@ -39,7 +39,7 @@ export function StatsFrame(props: { back: [string, string] | null; children: Rea
           )
         }
       />
-      <main className="mx-auto flex max-w-[1200px] flex-col gap-6 kiosk:gap-6 kiosk:px-6 px-4 kiosk:pt-6 pt-6 kiosk:pb-6 pb-6">
+      <main className="kiosk:gap-6 kiosk:px-6 kiosk:pt-6 kiosk:pb-6 mx-auto flex max-w-[1200px] flex-col gap-6 px-4 pt-6 pb-6">
         {props.children}
       </main>
     </div>

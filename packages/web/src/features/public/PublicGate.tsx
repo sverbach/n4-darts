@@ -50,7 +50,7 @@ function PublicLogin({ onDone }: { onDone: () => Promise<void> }) {
         </p>
       )}
       <form
-        className="m-auto flex w-[calc(100%_-_32px)] max-w-[440px] flex-col gap-3 border border-border border-solid bg-panel px-6 py-6"
+        className="border-border bg-panel m-auto flex w-[calc(100%_-_32px)] max-w-[440px] flex-col gap-3 border border-solid px-6 py-6"
         onSubmit={submit}
       >
         <div className="mb-3 flex items-center justify-center gap-2">
@@ -72,7 +72,7 @@ function PublicLogin({ onDone }: { onDone: () => Promise<void> }) {
           required
           aria-invalid={error ? true : undefined}
           onChange={(e) => setPin(e.target.value)}
-          className="min-h-[76px] border-2 bg-bg text-center text-[48px] tracking-[20px] aria-invalid:border-danger"
+          className="bg-bg aria-invalid:border-danger min-h-[76px] border-2 text-center text-[48px] tracking-[20px]"
         />
         <button type="submit" className="primary cta min-h-16! text-[16px]!">
           Open <PixelIcon name="arrow" height="0.9em" />

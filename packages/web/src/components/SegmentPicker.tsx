@@ -34,17 +34,17 @@ export function SegmentPicker({ title, dart, context, current, onPick, onCancel 
 
   return (
     <div
-      className="fixed inset-0 z-20 flex items-center justify-center overflow-y-auto border-[3px] border-accent border-solid bg-bg kiosk:p-6 p-4"
+      className="border-accent bg-bg kiosk:p-6 fixed inset-0 z-20 flex items-center justify-center overflow-y-auto border-[3px] border-solid p-4"
       role="dialog"
       aria-label={name}
     >
-      <div className="flex max-h-full w-full max-w-[1180px] flex-col gap-4 kiosk:gap-6">
-        <div className="flex items-end justify-between gap-4 border-0 border-border border-b border-solid pb-3">
+      <div className="kiosk:gap-6 flex max-h-full w-full max-w-[1180px] flex-col gap-4">
+        <div className="border-border flex items-end justify-between gap-4 border-0 border-b border-solid pb-3">
           <div className="flex flex-col gap-1.5">
-            <h2 className="kiosk:text-[48px] text-[26px] kiosk:tracking-[3px] tracking-[2px]">
+            <h2 className="kiosk:text-[48px] kiosk:tracking-[3px] text-[26px] tracking-[2px]">
               {title}
               {dart && (
-                <span className="ml-[0.4em] font-text normal-case tracking-normal">{dart}</span>
+                <span className="font-text ml-[0.4em] tracking-normal normal-case">{dart}</span>
               )}
             </h2>
             {context && <span className="label kiosk:text-[13px]">{context}</span>}
@@ -57,35 +57,35 @@ export function SegmentPicker({ title, dart, context, current, onPick, onCancel 
             Cancel
           </button>
         </div>
-        <div className="grid grid-cols-[repeat(3,1fr)] gap-2 kiosk:gap-3">
+        <div className="kiosk:gap-3 grid grid-cols-[repeat(3,1fr)] gap-2">
           {MULTIPLIERS.map((m) => (
             <button
               type="button"
               key={m.value}
               aria-pressed={multiplier === m.value}
               onClick={() => setMultiplier(m.value)}
-              className="kiosk:min-h-20 min-h-14 kiosk:text-[20px] text-[13px] kiosk:tracking-[2px] aria-pressed:font-bold aria-pressed:text-accent"
+              className="kiosk:min-h-20 kiosk:text-[20px] kiosk:tracking-[2px] aria-pressed:text-accent min-h-14 text-[13px] aria-pressed:font-bold"
             >
               {m.label}
             </button>
           ))}
         </div>
-        <div className="grid grid-cols-[repeat(4,1fr)] kiosk:grid-cols-[repeat(10,1fr)] gap-2 kiosk:gap-2.5">
+        <div className="kiosk:grid-cols-[repeat(10,1fr)] kiosk:gap-2.5 grid grid-cols-[repeat(4,1fr)] gap-2">
           {NUMBERS.map((n) => (
             <button
               type="button"
               key={n}
-              className={`kiosk:min-h-[104px] min-h-16 p-0 font-text kiosk:text-[56px] text-[36px] tracking-normal ${isCurrent({ number: n, multiplier }) ? CURRENT : ""}`}
+              className={`kiosk:min-h-[104px] font-text kiosk:text-[56px] min-h-16 p-0 text-[36px] tracking-normal ${isCurrent({ number: n, multiplier }) ? CURRENT : ""}`}
               onClick={() => onPick({ number: n, multiplier })}
             >
               {n}
             </button>
           ))}
         </div>
-        <div className="grid grid-cols-[repeat(3,1fr)] gap-2 kiosk:gap-2.5">
+        <div className="kiosk:gap-2.5 grid grid-cols-[repeat(3,1fr)] gap-2">
           <button
             type="button"
-            className={`kiosk:min-h-24 min-h-16 p-0 font-text kiosk:text-[56px] text-[36px] tracking-normal ${isCurrent({ number: 25, multiplier: 1 }) ? CURRENT : ""}`}
+            className={`kiosk:min-h-24 font-text kiosk:text-[56px] min-h-16 p-0 text-[36px] tracking-normal ${isCurrent({ number: 25, multiplier: 1 }) ? CURRENT : ""}`}
             onClick={() => onPick({ number: 25, multiplier: 1 })}
           >
             25

@@ -12,7 +12,7 @@ export function Logo({ width, className }: { width?: string; className?: string 
   return (
     <Link href={usePublicSite() ? "/players" : "/"}>
       <svg
-        className={`block h-auto text-text ${className ?? ""}`}
+        className={`text-text block h-auto ${className ?? ""}`}
         viewBox="0 0 72 33"
         shapeRendering="crispEdges"
         style={width ? { width } : undefined}

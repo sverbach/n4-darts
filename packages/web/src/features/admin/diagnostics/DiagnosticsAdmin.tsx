@@ -31,7 +31,7 @@ function Level({ value, warn, danger }: { value: number | null; warn: number; da
   return (
     <span className={tone}>
       {ms(value)}
-      {word && <span className="ml-2 font-pixel text-[11px] uppercase">{word}</span>}
+      {word && <span className="font-pixel ml-2 text-[11px] uppercase">{word}</span>}
     </span>
   );
 }
@@ -200,7 +200,7 @@ export function DiagnosticsAdmin() {
                 <td className="text-muted">{duration(s.openSeconds)}</td>
                 <td>{s.updates}</td>
                 <td
-                  className="max-w-[260px] overflow-hidden text-ellipsis text-muted"
+                  className="text-muted max-w-[260px] overflow-hidden text-ellipsis"
                   title={s.userAgent}
                 >
                   {s.userAgent}
@@ -280,13 +280,13 @@ export function DiagnosticsAdmin() {
 function Table({ head, children }: { head: string[]; children: ReactNode }) {
   return (
     <div className="scroll-x [--fade-bg:var(--bg)]">
-      <table className="w-full border-collapse text-[16px] [&_td]:whitespace-nowrap [&_td]:border-0 [&_td]:border-line-soft [&_td]:border-t [&_td]:border-solid [&_td]:py-2 [&_td]:pr-3 [&_td]:pl-0">
+      <table className="[&_td]:border-line-soft w-full border-collapse text-[16px] [&_td]:border-0 [&_td]:border-t [&_td]:border-solid [&_td]:py-2 [&_td]:pr-3 [&_td]:pl-0 [&_td]:whitespace-nowrap">
         <thead>
           <tr>
             {head.map((h) => (
               <th
                 key={h}
-                className="label whitespace-nowrap pt-0 pr-3 pb-2 pl-0 text-left font-normal"
+                className="label pt-0 pr-3 pb-2 pl-0 text-left font-normal whitespace-nowrap"
               >
                 {h}
               </th>

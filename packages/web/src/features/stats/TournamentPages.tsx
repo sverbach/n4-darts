@@ -25,7 +25,7 @@ export function TournamentsPage() {
       ) : list.length === 0 ? (
         <p className="hint">No finished tournaments yet.</p>
       ) : (
-        <ul className="m-0 list-none border-0 border-border border-t border-solid p-0">
+        <ul className="border-border m-0 list-none border-0 border-t border-solid p-0">
           {list.map((t) => (
             <li key={t.id}>
               <Link href={`/tournaments/${t.id}`} className={`${ROW} no-underline [--avatar:36px]`}>
@@ -34,7 +34,7 @@ export function TournamentsPage() {
                   <span className={ROW_DATE}>{date(t.date)}</span>
                 </div>
                 {t.champion ? (
-                  <span className="flex min-w-0 items-center gap-2.5 font-pixel kiosk:text-[16px] text-[13px] uppercase tracking-[1px]">
+                  <span className="font-pixel kiosk:text-[16px] flex min-w-0 items-center gap-2.5 text-[13px] tracking-[1px] uppercase">
                     <PixelIcon name="trophy" label="Champion" />
                     <Avatar player={t.champion} />
                     <span className="max-w-[40vw] overflow-hidden text-ellipsis whitespace-nowrap">
@@ -80,7 +80,7 @@ function Tournament({ tournament: t }: { tournament: PastTournament }) {
   return (
     <>
       <div className="flex flex-col gap-2">
-        <h1 className="wrap-anywhere kiosk:text-[40px]">{t.name}</h1>
+        <h1 className="kiosk:text-[40px] wrap-anywhere">{t.name}</h1>
         <span className="label">
           {date(t.date)}
           {t.endedEarly && " · Ended early"}
