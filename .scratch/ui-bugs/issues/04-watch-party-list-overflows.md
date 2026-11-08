@@ -1,6 +1,6 @@
 # /watch: a party game with five or more players runs off the screen
 
-Status: needs-triage
+Status: done
 Type: bug
 
 In the party modes with a plain player list beside the target board (Around the Clock, Killer, Random Checkout), /watch lays the list out in a column next to the board (`WatchBoard` in `features/watch/WatchPage.tsx`). Each row is at least `min-h-pu-96` with `gap-pu-12`, so five rows (about 530 units) are already taller than the space between the header and the visit bar (about 480 units of the 720). From the fifth player on, the list runs under the visit bar and off the bottom, and the board grows with the row. Matches allow up to 8 players.
@@ -18,3 +18,13 @@ Found while building Random Checkout (`.scratch/more-party-modes/issues/01-rando
 - Three players look as they do now.
 - The visual suite passes, with any retaken screenshots listed in the comments.
 - All checks pass.
+
+## Comments
+
+2026-11-08: Fixed with compact rows on /watch from five players on (`projectorMany` in `PlayerList`): rows of 50 units with an 8-unit gap, a 36-unit avatar and smaller name, meta and score. Eight rows take 456 of the 464 units between the header and the visit bar at 720p. Up to four players nothing changed, and the board stays at the same size. The station's own list (`size="station"`) wasn't touched; the station page can scroll.
+
+New visual test "eight players in a party game fit beside the board on /watch": Around the Clock, Killer and Random Checkout with 8 players at kiosk, 1080p and 720p. It checks that the list ends above the visit bar and takes `watch-{around-the-clock,killer,random-checkout}-eight-*`. The suite seeds Gus and Hal for it (p-gus, p-hal), so these screenshots were retaken with two more players in the list and nothing else changed:
+
+- admin-players-{phone,kiosk}, admin-players-photo-{phone,kiosk}
+- admin-tournament-draft-{phone,kiosk}
+- station-new-match-{phone,kiosk}, station-new-match-picked-{phone,kiosk}

@@ -32,7 +32,16 @@ const SCREENS = { ...PAGES, "1080p": PROJECTOR, "720p": SMALL_PROJECTOR };
 const BIG_SCREENS = { kiosk: KIOSK, "1080p": PROJECTOR, "720p": SMALL_PROJECTOR };
 
 /** The seeded players (playwright.visual.config.ts). */
-const ID = { Ann: "p-ann", Bob: "p-bob", Cid: "p-cid", Dee: "p-dee", Eve: "p-eve", Fay: "p-fay" };
+const ID = {
+  Ann: "p-ann",
+  Bob: "p-bob",
+  Cid: "p-cid",
+  Dee: "p-dee",
+  Eve: "p-eve",
+  Fay: "p-fay",
+  Gus: "p-gus",
+  Hal: "p-hal",
+};
 /** A Saturday evening; only the browser's clock, the server keeps the real time. */
 const NOW = new Date("2026-11-07T19:30:00+01:00");
 
@@ -585,5 +594,49 @@ test("Daylight: the station, /watch and a profile on the light theme", async () 
 
   await command(1, { type: "abandonMatch" });
   await page.evaluate(() => localStorage.removeItem("n4-theme"));
+  await watch.close();
+});
+
+test("eight players in a party game fit beside the board on /watch", async () => {
+  const watch = await loggedIn();
+  const everyone = Object.values(ID);
+  const games = [
+    { name: "around-the-clock", settings: { mode: "aroundTheClock" }, rules: [], drawn: () => [] },
+    {
+      name: "killer",
+      settings: { mode: "killer", lives: 3 },
+      rules: NUMBERS,
+      drawn: (p: Page) => [p.getByRole("img", { name: /Charge up|Doubles of/ })],
+    },
+    {
+      name: "random-checkout",
+      settings: { mode: "randomCheckout", difficulty: "beginner", rounds: 10 },
+      rules: [],
+      drawn: (p: Page) => [
+        p.getByRole("region", { name: "Checkout" }),
+        p.getByRole("img", { name: /Aim at|Check out/ }),
+      ],
+    },
+  ];
+  for (const game of games) {
+    await command(1, { type: "quickMatch", playerIds: everyone, settings: game.settings });
+    await command(1, { type: "startMatch" });
+    await throwDarts(1, ["M1", "M1", "M1"]);
+    await takeout(1);
+    await throwDarts(1, ["M1"]);
+
+    await open(watch, "/watch/1", (p) => p.getByRole("list", { name: "Players" }));
+    for (const size of Object.values(BIG_SCREENS)) {
+      await watch.setViewportSize(size);
+      const list = await watch.getByRole("list", { name: "Players" }).boundingBox();
+      const visit = await watch.getByRole("region", { name: "Current visit" }).boundingBox();
+      expect
+        .soft(list && visit && list.y + list.height <= visit.y, `${game.name} at ${size.width}`)
+        .toBe(true);
+    }
+    await shoot(watch, `watch-${game.name}-eight`, BIG_SCREENS, game.rules, game.drawn);
+    await command(1, { type: "abandonMatch" });
+  }
+
   await watch.close();
 });

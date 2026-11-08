@@ -221,11 +221,19 @@ const LIST = {
     score: "text-pu-72 leading-[0.8]",
     frame: "border-pu-3",
   },
+  projectorMany: {
+    list: "m-0 flex min-w-0 list-none flex-col gap-pu-8 self-start p-0",
+    row: "grid min-h-pu-50 min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-pu-12 border-solid px-pu-16 avatar-pu-36",
+    name: "overflow-hidden text-ellipsis whitespace-nowrap font-bold font-pixel text-pu-20 uppercase tracking-pu-2",
+    meta: "overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-muted text-pu-14 uppercase tracking-[1px]",
+    score: "text-pu-44 leading-[0.8]",
+    frame: "border-pu-3",
+  },
 };
 
 export function PlayerList({ match, size = "station" }: { match: MatchView; size?: CardsSize }) {
-  const style = LIST[size];
   const cards = cardsOf(match);
+  const style = LIST[size === "projector" && cards.length > 4 ? "projectorMany" : size];
   return (
     <ol className={style.list} aria-label="Players">
       {cards.map((card, p) => {

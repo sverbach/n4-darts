@@ -26,7 +26,7 @@ export default defineConfig({
   projects: [{ name: "visual" }],
   webServer: {
     command: "node --experimental-strip-types src/start.ts",
-    env: { N4_E2E_PLAYERS: "Ann,Bob,Cid,Dee,Eve,Fay" },
+    env: { N4_E2E_PLAYERS: "Ann,Bob,Cid,Dee,Eve,Fay,Gus,Hal" },
     url: `${BASE_URL}/api/health`,
     reuseExistingServer: false,
     timeout: 30_000,
