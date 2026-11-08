@@ -1,6 +1,6 @@
 # Design system
 
-Status: ready-for-agent
+Status: done
 
 ## Goal
 

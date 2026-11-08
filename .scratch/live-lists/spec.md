@@ -1,5 +1,7 @@
 # Every list follows the server live, one pattern everywhere
 
+Status: done
+
 Follow-up to `.scratch/state-library/analysis.md`. Decided with the user (2026-10-31): **no state library**. Instead, the screens that still fetch once are made live like the rest, so the web app has one way to read server data.
 
 ## The pattern

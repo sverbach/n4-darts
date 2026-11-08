@@ -1,6 +1,6 @@
 # Board menu and player photos
 
-Status: ready-for-agent
+Status: done
 
 ## Goal
 

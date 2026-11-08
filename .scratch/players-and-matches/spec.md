@@ -1,6 +1,6 @@
 # Players and matches: run real matches from /admin
 
-Status: ready-for-agent
+Status: done
 
 ## Goal
 

@@ -1,6 +1,6 @@
 # Confetti on the game shot
 
-Status: ready-for-agent
+Status: done
 
 A burst of confetti over the big moments: the game-shot screen (`MatchOver`, on the station and on `/watch/n`) and the champion on `/display` at the end of a tournament.
 

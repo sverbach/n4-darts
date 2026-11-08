@@ -1,6 +1,6 @@
 # Party modes
 
-Status: ready-for-agent
+Status: done
 
 Besides X01, a match can be played in one of five party modes: Around the Clock, Golf, High Score, Killer and Cricket. They're for fun on the evening: never in tournaments, and never in any stats.
 

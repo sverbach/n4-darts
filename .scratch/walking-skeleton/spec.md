@@ -1,6 +1,6 @@
 # Walking skeleton: one 301 leg on a real board
 
-Status: ready-for-agent
+Status: done
 
 ## Goal
 

@@ -1,6 +1,6 @@
 # Live views over WebSockets
 
-Status: ready-for-agent
+Status: done
 
 Every live view (`/api/*/live`) moves from Server-Sent Events to a WebSocket. Only the transport changes. The server still pushes the whole view on connect and again whenever it changes, the change feed and every route's `subscribe`/`view` pair stay as they are, and every `useLive` call site stays the same. Changes still go out as HTTP requests.
 

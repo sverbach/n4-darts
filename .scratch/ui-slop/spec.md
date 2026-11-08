@@ -1,6 +1,6 @@
 # Say everything once, on the system's rhythm
 
-Status: ready-for-agent
+Status: done
 
 Follow-up to the Impeccable critique of 2026-10-31 (`packages/web/.impeccable/critique/2026-10-31T16-20-39Z__packages-web-src.md`, score 27/40). The UI's look is its own (`packages/web/DESIGN.md`), but screens say the same fact 3–5 times, spacing has drifted off its scale, and the accent and status colours are used outside their roles. Decided with the user (2026-10-31): fix **everything** the critique listed, **repeated information first**, and **game shot shows the result**.
 

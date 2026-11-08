@@ -1,6 +1,6 @@
 # Display and stats
 
-Status: ready-for-agent
+Status: done
 
 ## Goal
 

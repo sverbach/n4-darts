@@ -1,6 +1,6 @@
 # Tournaments and the scheduler
 
-Status: ready-for-agent
+Status: done
 
 ## Goal
 
