@@ -4,10 +4,9 @@ import { Link } from "wouter";
 import { Avatar } from "../../components/Avatar.tsx";
 import { Awards } from "../../components/Awards.tsx";
 import { Confetti } from "../../components/Confetti.tsx";
-import { Logo } from "../../components/Logo.tsx";
 import { MatchCard } from "../../components/MatchCard.tsx";
 import { Progress } from "../../components/Progress.tsx";
-import { ThemeStar } from "../../components/ThemeStar.tsx";
+import { TopBar } from "../../components/TopBar.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import { average, count, legScore, placing } from "../../lib/format.ts";
 import { visitTotalLabel, visitValue } from "../../lib/modes.ts";
@@ -61,19 +60,23 @@ export function DisplayPage() {
 function Header(props: { title: string; detail: string; played?: number; total?: number }) {
   const { title, detail, played, total } = props;
   return (
-    <header className="flex items-center gap-pu-32 pb-pu-24">
-      <Logo width="4.8em" className="flex-none" />
-      <div className="flex-1">
-        <h1 className="text-pu-40 tracking-pu-4">{title}</h1>
-        <p className="mt-pu-6 mb-0 font-pixel text-muted text-pu-20 uppercase tracking-pu-2">
-          {detail}
-        </p>
-      </div>
-      {total !== undefined && played !== undefined && total > 0 && (
-        <Progress played={played} total={total} />
-      )}
-      <ThemeStar className="h-pu-44 min-h-0 w-pu-44" star="w-pu-20" flash="text-pu-18" />
-    </header>
+    <TopBar
+      size="projector"
+      className="pb-pu-24"
+      start={
+        <div>
+          <h1 className="text-pu-40 tracking-pu-4">{title}</h1>
+          <p className="mt-pu-6 mb-0 font-pixel text-muted text-pu-20 uppercase tracking-pu-2">
+            {detail}
+          </p>
+        </div>
+      }
+      end={
+        total !== undefined &&
+        played !== undefined &&
+        total > 0 && <Progress played={played} total={total} />
+      }
+    />
   );
 }
 
@@ -187,15 +190,14 @@ function Idle({ view }: { view: DisplayView }) {
   const cards = view.stations.map((s) => <StationCard key={s.id} station={s} large />);
   return (
     <>
-      <header className="flex items-center justify-between gap-pu-32">
-        <Logo width="7.2em" className="flex-none" />
-        <span className="flex items-center gap-pu-16">
+      <TopBar
+        size="projector"
+        end={
           <span className="font-pixel text-muted text-pu-20 uppercase tracking-pu-3">
             Darts evening · {today()}
           </span>
-          <ThemeStar className="h-pu-44 min-h-0 w-pu-44" star="w-pu-20" flash="text-pu-18" />
-        </span>
-      </header>
+        }
+      />
       {view.leaderboard.length === 0 ? (
         <Fit className="flex-1">
           <section className="grid grid-cols-[repeat(auto-fill,minmax(calc(560*var(--px)),1fr))] gap-pu-14">

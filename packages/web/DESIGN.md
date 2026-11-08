@@ -431,6 +431,7 @@ Hard-edged and tactile: square, bordered, never smaller than a thumb.
 - **Range:** the native control with a violet accent colour.
 
 ### Navigation
+- **Top bar** (`components/TopBar.tsx`, on the station, the stats pages, /watch and /display): the logo first on the left, the theme star last on the right, the page's own content between, and no rule underneath. In px on the station and stats pages (logo 72px; centred at 1200px on stats; no logo on a phone station), and on projector pages sized from the viewport in 1280ths, so /watch and /display match. Only a ⋮ menu (the station's board menu) or /watch's sound button come after the star. Admin keeps its own header for its tab row.
 - **Back link:** "← PLAYERS". A pixel back-arrow and a Silkscreen 12px label in Readout Grey, 44px high, no underline.
 - **Links:** underlined Phosphor Paper that turns Mecha Violet on hover.
 - **Collapsible sections:** a Silkscreen summary row with a pixel caret that turns 90° when open (0.1s).

@@ -2,13 +2,12 @@ import type { MatchView } from "@n4/server/api";
 import { Avatar } from "../../components/Avatar.tsx";
 import { CricketGrid } from "../../components/CricketGrid.tsx";
 import { TargetBoard } from "../../components/Dartboard.tsx";
-import { Logo } from "../../components/Logo.tsx";
 import { MatchOver } from "../../components/MatchOver.tsx";
 import { hasModePanel, ModePanel } from "../../components/ModePanel.tsx";
 import { PlayerCards, PlayerList } from "../../components/PlayerCards.tsx";
 import { Scorecard } from "../../components/Scorecard.tsx";
 import { SoundButton, SoundPrompt } from "../../components/Sound.tsx";
-import { ThemeStar } from "../../components/ThemeStar.tsx";
+import { TopBar } from "../../components/TopBar.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import { matchRulesLabel } from "../../lib/labels.ts";
 import {
@@ -35,16 +34,19 @@ export function WatchPage({ id }: { id: number }) {
 
   return (
     <main className="flex h-screen flex-col overflow-hidden text-pu-24 [--px:calc(min(100vw,177.78vh)/1280)]">
-      <header className="flex min-h-pu-64 flex-none items-center justify-between gap-pu-20 px-pu-32">
-        <div className="flex min-w-0 items-center gap-pu-20">
-          <Logo width="3em" />
-          <span className="whitespace-nowrap font-pixel text-pu-20 text-text uppercase tracking-pu-2">
-            {view?.name ?? `Station ${id}`}
-          </span>
-          {match?.label && <span className={`${SMALL} tracking-pu-2`}>· {match.label}</span>}
-        </div>
-        <div className="flex min-w-0 items-center gap-pu-20">
-          {!connected ? (
+      <TopBar
+        size="projector"
+        className="flex min-h-pu-64 flex-none flex-col justify-center px-pu-32"
+        start={
+          <>
+            <span className="whitespace-nowrap font-pixel text-pu-20 text-text uppercase tracking-pu-2">
+              {view?.name ?? `Station ${id}`}
+            </span>
+            {match?.label && <span className={`${SMALL} tracking-pu-2`}>· {match.label}</span>}
+          </>
+        }
+        end={
+          !connected ? (
             <span className="status status-danger min-h-pu-36! px-pu-14! text-pu-20!">
               Server offline
             </span>
@@ -53,22 +55,19 @@ export function WatchPage({ id }: { id: number }) {
             (match.state.phase === "throwing" || match.state.phase === "awaitingTakeout") && (
               <MatchLine match={match} />
             )
-          )}
-          <ThemeStar
-            className="size-[max(36px,calc(44*var(--px)))] min-h-0"
-            star="w-pu-20"
-            flash="text-pu-18"
-          />
-          {sound.needsTap ? (
+          )
+        }
+        menu={
+          sound.needsTap ? (
             <SoundPrompt className="min-h-[max(30px,calc(36*var(--px)))]! px-pu-14! text-[length:max(11px,calc(20*var(--px)))]!" />
           ) : (
             <SoundButton
               sound={sound}
               className="size-[max(36px,calc(44*var(--px)))] min-h-0 flex-none text-pu-24"
             />
-          )}
-        </div>
-      </header>
+          )
+        }
+      />
       {!view ? (
         <p className={NOTE}>Connecting…</p>
       ) : !match ? (

@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "wouter";
-import { Logo } from "../../components/Logo.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
-import { ThemeStar } from "../../components/ThemeStar.tsx";
+import { TopBar } from "../../components/TopBar.tsx";
 
 const MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
 const pad2 = (n: number) => String(n).padStart(2, "0");
@@ -30,21 +29,16 @@ export const ROW_VALUE = "min-w-12 text-right text-[28px] kiosk:w-[60px] kiosk:t
 export function StatsFrame(props: { back: [string, string] | null; children: ReactNode }) {
   return (
     <div className="min-h-[100dvh]">
-      <header>
-        <div className="mx-auto flex max-w-[1200px] items-center justify-between kiosk:px-6 px-4 kiosk:py-3 py-2">
-          {props.back ? (
+      <TopBar
+        contained
+        start={
+          props.back && (
             <Link className="back" href={props.back[0]}>
               <PixelIcon name="back" height="0.7em" /> {props.back[1]}
             </Link>
-          ) : (
-            <span className="min-h-11" />
-          )}
-          <span className="flex items-center gap-2">
-            <ThemeStar />
-            <Logo width="72px" />
-          </span>
-        </div>
-      </header>
+          )
+        }
+      />
       <main className="mx-auto flex max-w-[1200px] flex-col gap-6 kiosk:gap-6 kiosk:px-6 px-4 kiosk:pt-6 pt-6 kiosk:pb-6 pb-6">
         {props.children}
       </main>

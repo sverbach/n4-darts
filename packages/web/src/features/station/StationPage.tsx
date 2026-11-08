@@ -5,7 +5,6 @@ import { Avatar } from "../../components/Avatar.tsx";
 import { BoardMenu, type MatchAction } from "../../components/BoardMenu.tsx";
 import { CricketGrid } from "../../components/CricketGrid.tsx";
 import { TargetBoard } from "../../components/Dartboard.tsx";
-import { Logo } from "../../components/Logo.tsx";
 import { MatchOver } from "../../components/MatchOver.tsx";
 import { hasModePanel, ModePanel } from "../../components/ModePanel.tsx";
 import { PixelIcon } from "../../components/PixelIcon.tsx";
@@ -14,7 +13,7 @@ import { PlayerPicker } from "../../components/PlayerPicker.tsx";
 import { Scorecard } from "../../components/Scorecard.tsx";
 import { SegmentPicker } from "../../components/SegmentPicker.tsx";
 import { SoundPrompt } from "../../components/Sound.tsx";
-import { ThemeStar } from "../../components/ThemeStar.tsx";
+import { TopBar } from "../../components/TopBar.tsx";
 import { dartLabel } from "../../lib/darts.ts";
 import {
   cricketOf,
@@ -61,16 +60,15 @@ export function StationPage({ id }: { id: number }) {
   const sound = useCallouts(match);
   return (
     <main className="flex min-h-[100dvh] flex-col">
-      <header className="flex items-center justify-between gap-2 kiosk:gap-4 kiosk:px-6 px-4 kiosk:py-3 py-2.5">
-        <div className="flex min-w-0 items-center gap-4">
-          <Logo width="86px" className="max-kiosk:hidden" />
+      <TopBar
+        hideLogoOnPhone
+        start={
           <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel kiosk:text-[20px] text-[13px] text-text uppercase kiosk:tracking-[2px] tracking-[1px]">
             {view?.name ?? `Station ${id}`}
           </span>
-        </div>
-        <div className="flex items-center gap-1.5 kiosk:gap-2.5">
-          {sound.needsTap && <SoundPrompt />}
-          <ThemeStar className="kiosk:size-14 size-11" />
+        }
+        end={sound.needsTap && <SoundPrompt />}
+        menu={
           <BoardMenu
             stationId={id}
             online={view?.boardOnline ?? false}
@@ -80,8 +78,8 @@ export function StationPage({ id }: { id: number }) {
             matchAction={match ? matchAction(match, run) : undefined}
             sound={sound}
           />
-        </div>
-      </header>
+        }
+      />
       {match && match.state.phase !== "matchWon" && <SettingsStrip match={match} />}
       <div className="flex flex-1 flex-col gap-4 kiosk:gap-4 p-4 kiosk:px-6 kiosk:pt-6 kiosk:pb-6">
         {error && (

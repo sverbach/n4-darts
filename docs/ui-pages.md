@@ -22,7 +22,8 @@ n4-darts runs darts evenings: a few automatic dartboards (stations) play x01, wh
 - **Confirmations:** destructive actions ask first, with the browser's confirm dialog.
 
 **Shared building blocks:**
-- **Theme star:** two little pixel sparkles in the text colour (violet on hover or focus), like the favicon, next to the logo in every page's top bar (on home at the top right; on the station beside the board menu). A tap moves this device to the next theme (Unit violet, Terminal cyan, Phosphor green, Synth magenta, Caution yellow, Mecha orange, Daylight) and flashes its name for 1.5 s. The choice is remembered per device. Home's sparkle logo does the same when tapped.
+- **Top bar:** on the station, the stats pages, /watch and /display, the logo first on the left and the theme star last on the right, with the page's own content between (on the station the board menu, and on /watch the sound button, come after the star). Admin has its own header with the section tabs.
+- **Theme star:** two little pixel sparkles in the text colour (violet on hover or focus), like the favicon, at the right end of the top bar (in admin beside the logo, on home at the top right). A tap moves this device to the next theme (Unit violet, Terminal cyan, Phosphor green, Synth magenta, Caution yellow, Mecha orange, Daylight) and flashes its name for 1.5 s. The choice is remembered per device. Home's sparkle logo does the same when tapped.
 - **Avatar:** a round player photo. A player without a photo gets their initials on a colour derived from them. It comes in two sizes, small (inline with names) and large (scoreboard, champion, profile).
 - **Board status plus menu:** a status pill reading "Board online", "Board stopped", "Board offline" or "Server offline", with a ⋮ button beside it. On the station page, while the board is taking out (it waits to see the board empty) the pill reads "Takeout…"; after 10 seconds it turns amber, "Takeout stuck", with a "Reset board" button beside it. The button opens a small menu: Stop/Start detection, Calibrate, Reset board, and on the station page "Turn sound on/off" (see Sound). While an action runs, the pill shows its progress or result for a few seconds ("Calibrating…", "Calibrated", "Board reset", or an error).
 - **Sound (station and /watch):** a caller's voice calls the visit's score on its third dart (again with the new score if a dart is corrected, or at takeout for a visit ended early), "No score" on a bust, "Game shot" on a checkout and "Game shot, and the match" when it wins the match. It's off by default, switched per device (the station's board menu, the speaker button on /watch) and remembered by that device. Browsers allow sound only after a tap, so a page that loads with sound on shows a violet "Tap to turn sound on" pill; any tap on the page turns it on. If several devices have sound on, they all play. With sound on, /watch keeps the screen awake.
@@ -171,7 +172,7 @@ The layout must cope with 1–3+ stations and 2–8 players per match.
 
 ## `/players`: Leaderboard (stats)
 
-- A back link "← Home" (the logo is at the top right), the title "Players" and a link "Tournaments ▶" beside it.
+- The logo, then a back link "← Home" (the theme star at the top right), the title "Players" and a link "Tournaments ▶" beside it.
 - A table of everyone who has played a counted match, sorted by rating:
   - Columns: #, Player (avatar plus name, linking to the profile; a player hidden from the public site shows there as "Player" on a grey avatar, without a link), Rating (3-dart average over the last 10 matches), Avg (all time), M (matches), W (wins), 180s, High out (highest checkout).
   - On a phone only #, Player, Rating, M and High out show; the rest from the kiosk width.
