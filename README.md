@@ -1,58 +1,138 @@
-# n4-darts
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="logo.svg">
+    <img alt="n4-darts" src="docs/images/logo-ink.svg" width="280">
+  </picture>
+</p>
 
-Dart evenings for a room of Autodarts boards, fully offline. The boards detect the darts; n4-darts runs the games, the tournament, the projector and the stats. It runs on the local network, with no internet and no accounts.
+<p align="center">
+  <b>Create dart matches &amp; organize tournaments, fully offline and open source.</b><br>
+  Depends on Autodarts Board Manager for automatic dart detection.
+</p>
 
-> **Requires Autodarts Board Manager 2.0.2.** Board Manager 2.1.0 changed its API (how a dart looks, the event names) and isn't supported: the board shows as online, but no darts arrive. Check a board with `curl http://<board>:3180/api/version`.
+<p align="center">
+  <img alt="Autodarts Board Manager v2.0.* supported" src="https://img.shields.io/badge/Autodarts%20Board%20Manager%20v2.0.*-supported-2ea043?style=flat-square">
+  <img alt="Autodarts Board Manager v2.1.* not yet supported" src="https://img.shields.io/badge/Autodarts%20Board%20Manager%20v2.1.*-not%20yet%20supported-d1242f?style=flat-square">
+  <br>
+  <a href="https://github.com/sverbach/n4-darts/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/sverbach/n4-darts/ci.yml?branch=main&style=flat-square&label=CI"></a>
+  <a href="https://github.com/sverbach/n4-darts/pkgs/container/n4-darts"><img alt="Docker image on ghcr.io" src="https://img.shields.io/badge/ghcr.io-sverbach%2Fn4--darts-8b6cf6?style=flat-square&logo=docker&logoColor=white"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-3a3a3a?style=flat-square"></a>
+</p>
+
+<p align="center">
+  <a href="#features">Features</a> ·
+  <a href="#running-on-the-server">Running on the server</a> ·
+  <a href="#development">Development</a> ·
+  <a href="docs/architecture/README.md">Architecture</a>
+</p>
+
+<br>
+
+<p align="center">
+  <img src="docs/images/station.png" alt="The station screen during an X01 match: Ann on 61 in violet, Bob on 101, and the current visit of S20, S20 below" width="100%">
+  <br>
+  <sub>The station screen next to the board, mid-visit in a 101.</sub>
+</p>
+
+<br>
 
 ## Features
 
-- **Stations** (`/station/n`): one screen per board, on the kiosk laptop or a phone. Pick the players, the game and the throwing order. While playing: a scoreboard, checkout routes, correcting a misdetected dart, adding a missed one, and undo. The board menu (⋮) starts, stops, calibrates and resets the board.
-- **Games:** X01 (301/501/701, in and out rules, first to N legs) and the party games Around the Clock, Golf, High Score, Killer, Cricket, Random Checkout and Bermuda. Party games are for fun: never in tournaments, never in the stats.
-- **Tournaments** (`/admin` → Tournament): groups, then single or double elimination, seeded by rating. Once started, the server puts each match on a free station by itself. The organiser can pause a station, hold or move a match, withdraw a player, or take a late arrival.
-- **Projector:** `/display` follows the evening (live scores, groups, bracket, champion and awards, or the leaderboard), and `/watch/n` shows one station's scoreboard.
-- **Stats** (`/players`, `/tournaments`): rating, averages, checkout %, 180s, best leg and a heatmap per player, plus every past tournament and match. X01 matches only.
-- **Caller:** a voice calls the scores, "No score" and "Game shot". It's switched on per device, and voice packs in [darts-caller](https://github.com/lbormann/darts-caller)'s format can be uploaded in `/admin` → Sound.
-- **Lights:** WLED presets for idle, playing and moments like match start, game shot, a 100+ visit, 180 and bust (`/admin` → Lights).
-- **Public site:** a read-only copy of the stats for players outside the room, behind one group password.
-- **Admin** (`/admin`, optionally behind a PIN): players with photos, stations, matches, diagnostics. The database is backed up daily.
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/images/games.png" alt="A game of Cricket on the station: a dartboard with the open numbers lit, and the marks grid for Ann, Bob and Cid" width="100%">
+      <h3>Games</h3>
+      X01 (301/501/701, in and out rules, first to N legs) and various party games like Around the Clock, Golf, Killer, Cricket and more!
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/images/tournament.png" alt="A finished tournament: the champion, the final placings, awards, the knockout bracket and the group table" width="100%">
+      <h3>Tournaments</h3>
+      Create single or double elimination tournaments, including group phases &amp; seeding.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/images/stats.png" alt="A match page: head-to-head stats for Ann and Cid, a score race chart and every dart of the leg" width="100%">
+      <h3>Stats</h3>
+      Tracks ratings, averages, checkout %, 180s, best leg and more.
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/images/correcting.png" alt="Correcting a dart on the station: single, double or triple, and the numbers 1 to 20, 25, bull and miss" width="100%">
+      <h3>Stations</h3>
+      Connect any station in your dart room to the system. Requires each station to have the Autodarts Board Manager running (manual counting also possible).
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/images/caller.png" alt="Game shot on the watch screen: Ann wins 1–0 with a 41 checkout on D20" width="100%">
+      <h3>Caller</h3>
+      Integrated voice caller with the option to upload your custom voice packs.
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/images/lights.png" alt="The Lights page in admin: a WLED strip per station, with presets for idle, playing, game shot and 180" width="100%">
+      <h3>Lights</h3>
+      Integrated WLED to run presets at certain match states.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/images/public-profile.png" alt="A player profile: rating, checkouts, scoring, results, the average per day and the last matches" width="100%">
+      <h3>Public site</h3>
+      A read-only version of the application to host publicly.
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/images/projector.png" alt="The projector view of a tournament evening: now playing on both stations, up next, and the group table" width="100%">
+      <h3>Projector</h3>
+      A live view of tournaments for big screens &amp; projectors.
+    </td>
+  </tr>
+</table>
+
+<br>
 
 ## Running on the server
 
-Every green push to `main` publishes `ghcr.io/sverbach/n4-darts:latest`. Next to `docker-compose.yml`:
+Images are published to the public `ghcr.io/sverbach/n4-darts:latest`, so the easiest way to run it is by pulling the image:
 
 ```sh
 docker compose pull && docker compose up -d
 ```
 
-Then open `http://<server>:3000/station/1` on each station laptop, `/display` on the projector and `/admin` on the organiser's phone.
+Then open `http://<server>:3000/`.
 
-| Variable          | What it does                                                                                     |
-| ----------------- | ------------------------------------------------------------------------------------------------ |
-| `N4_STATIONS`     | Seeds the boards on the very first start, e.g. `1=http://192.168.1.139:3180,2=http://…`. After that they're managed in `/admin` → Stations. |
-| `N4_ADMIN_PIN`    | Locks `/admin`. Without it, `/admin` is open.                                                    |
-| `N4_PORT`         | Port of the app (default 3000).                                                                  |
-| `N4_PUBLIC_PIN`   | The group password for the public site.                                                          |
-| `N4_PUBLIC_PORT`  | Port of the public site, on `127.0.0.1` only (default 3001).                                     |
-| `COMPOSE_PROFILES`| Set to `public` to also start the public site (same as `--profile public`; use this in Portainer). |
+### Environment variables
 
-Data lives in the `n4-data` volume.
+| Variable           | Description                                                                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `N4_STATIONS`      | Seeds the boards on the very first start, e.g. `1=http://192.168.1.139:3180,2=http://…`. After that they're managed in `/admin` → Stations. |
+| `N4_ADMIN_PIN`     | Locks `/admin`. Without it, `/admin` is open.                                                                                               |
+| `N4_PORT`          | Port of the app (default 3000).                                                                                                             |
+| `N4_PUBLIC_PIN`    | The group password for the public site.                                                                                                     |
+| `N4_PUBLIC_PORT`   | Port of the public site, on `127.0.0.1` only (default 3001).                                                                                |
+| `COMPOSE_PROFILES` | Set to `public` to also start the public site (same as `--profile public`; use this in Portainer).                                          |
 
-**Public site** (ADR 0008): a second container (`n4-public`) from the same image reads the room's database read-only. Start it with `N4_PUBLIC_PIN=… docker compose --profile public up -d`, or set `COMPOSE_PROFILES=public`. It listens on `127.0.0.1` only, for nginx on the same host to serve with TLS (`docs/nginx-public.conf`). It waits for the room's server to create the database first. `/admin` → Players → **Hide from public site** shows a player there as "Player".
+### Data
 
-**Reverse proxy:** the room's server is meant for the local network only. If a proxy sits in front of it anyway, it must forward WebSockets, because the live views run over them (ADR 0011). In nginx: `proxy_http_version 1.1` plus the `Upgrade` and `Connection` headers.
+Data is stored in the `n4-data` volume (SQLite).
 
-**Backups:** once a day the database is copied to `/data/backups` in the volume, and the newest 30 are kept. They're on the same disk, so copy one elsewhere now and then. To restore one:
+> [!TIP]
+> **Backups:** once a day the database is copied to `/data/backups` in the volume, and the newest 30 are kept. They're on the same disk, so copy one elsewhere now and then.
+
+To restore a backup:
 
 ```sh
 docker compose stop
 docker compose run --rm --no-deps --entrypoint sh n4-darts -c \
-  'cd /data && rm -f n4-darts.db-wal n4-darts.db-shm && cp backups/n4-darts-2026-10-20-2315.db n4-darts.db'
+  'cd /data && rm -f n4-darts.db-wal n4-darts.db-shm && cp backups/n4-darts-{yyyy}-{mm}-{dd}-{HHMM}.db n4-darts.db'
 docker compose up -d
 ```
 
+<br>
+
 ## Development
 
-Requires Node 22+ and pnpm 12. If pnpm 12 isn't installed, put `npx -y pnpm@12.14.0` in front of every `pnpm` command.
+Requires Node 22+ and pnpm 12.
 
 ```sh
 pnpm install
@@ -66,7 +146,7 @@ pnpm --filter @n4/e2e visual   # screenshot comparison, by hand (macOS baseline)
 pnpm db:reset    # clear the dev database (server stopped)
 ```
 
-With `pnpm dev:sim`, open <http://localhost:5173/station/1> next to the fake board at <http://localhost:3180/>. Click the board to throw (or type `T20`, `D16`, `BULL`), and press **Takeout** to end the visit. Options go in front of the command, e.g. `ADMIN_PIN=1234 pnpm dev:sim` or `PORT=3100 pnpm dev:sim`.
+### Code structure
 
 | Path              | What                                                          |
 | ----------------- | ------------------------------------------------------------- |
@@ -78,4 +158,10 @@ With `pnpm dev:sim`, open <http://localhost:5173/station/1> next to the fake boa
 | `tools/wled-sim`  | Fake WLED controller                                          |
 | `tools/callouts`  | The built-in caller voice and the voice-pack importer         |
 
-More: [`docs/architecture/`](docs/architecture/README.md) (arc42), `docs/adr/` (decisions), `GLOSSARY.md`, `docs/ui-pages.md`.
+More: [`docs/architecture/`](docs/architecture/README.md) (arc42), [`docs/adr/`](docs/adr/) (decisions), [`GLOSSARY.md`](GLOSSARY.md), [`docs/ui-pages.md`](docs/ui-pages.md).
+
+<br>
+
+<p align="center">
+  <sub>MIT licensed · Made for dart friends <3</sub>
+</p>
