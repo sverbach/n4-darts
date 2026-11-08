@@ -70,7 +70,7 @@ export function StationPage({ id }: { id: number }) {
         </div>
         <div className="flex items-center gap-1.5 kiosk:gap-2.5">
           {sound.needsTap && <SoundPrompt />}
-          <ThemeStar className="kiosk:size-14 size-11" star="w-5 kiosk:w-6" />
+          <ThemeStar className="kiosk:size-14 size-11" />
           <BoardMenu
             stationId={id}
             online={view?.boardOnline ?? false}

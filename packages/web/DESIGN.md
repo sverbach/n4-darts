@@ -290,7 +290,7 @@ components:
 
 ## Themes
 
-Seven themes, chosen per device with the theme star (`components/ThemeStar.tsx`, `lib/theme.ts`): Unit violet (the default), Terminal cyan #3fd9ff, Phosphor green #5cffa0, Synth magenta #ff3d9a, Caution yellow #f2e640 and Mecha orange #ff8c1a from the original mockup, each swapping only the accent family (tint and line at violet's OKLCH lightness), and **Daylight**: paper grounds, ink text, a deep violet accent #5a3ed0, darker status colours, pastel avatar grounds, the heat ramp reversed and the series palette's light steps. Phosphor green equals the status green and Caution yellow is near the status amber; status pills always carry a label.
+Seven themes, chosen per device with the theme star (`components/ThemeStar.tsx`, `lib/theme.ts`; two little sparkles in Phosphor Paper, never violet at rest, so it doesn't read as the CTA): Unit violet (the default), Terminal cyan #3fd9ff, Phosphor green #5cffa0, Synth magenta #ff3d9a, Caution yellow #f2e640 and Mecha orange #ff8c1a from the original mockup, each swapping only the accent family (tint and line at violet's OKLCH lightness), and **Daylight**: paper grounds, ink text, a deep violet accent #5a3ed0, darker status colours, pastel avatar grounds, the heat ramp reversed and the series palette's light steps. Phosphor green equals the status green and Caution yellow is near the status amber; status pills always carry a label.
 
 ## Overview
 

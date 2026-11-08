@@ -56,7 +56,7 @@ export function WatchPage({ id }: { id: number }) {
           )}
           <ThemeStar
             className="size-[max(36px,calc(44*var(--px)))] min-h-0"
-            star="w-pu-24"
+            star="w-pu-20"
             flash="text-pu-18"
           />
           {sound.needsTap ? (

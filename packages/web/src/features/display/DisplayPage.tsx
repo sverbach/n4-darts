@@ -72,7 +72,7 @@ function Header(props: { title: string; detail: string; played?: number; total?:
       {total !== undefined && played !== undefined && total > 0 && (
         <Progress played={played} total={total} />
       )}
-      <ThemeStar className="h-pu-44 min-h-0 w-pu-44" star="w-pu-24" flash="text-pu-18" />
+      <ThemeStar className="h-pu-44 min-h-0 w-pu-44" star="w-pu-20" flash="text-pu-18" />
     </header>
   );
 }
@@ -193,7 +193,7 @@ function Idle({ view }: { view: DisplayView }) {
           <span className="font-pixel text-muted text-pu-20 uppercase tracking-pu-3">
             Darts evening · {today()}
           </span>
-          <ThemeStar className="h-pu-44 min-h-0 w-pu-44" star="w-pu-24" flash="text-pu-18" />
+          <ThemeStar className="h-pu-44 min-h-0 w-pu-44" star="w-pu-20" flash="text-pu-18" />
         </span>
       </header>
       {view.leaderboard.length === 0 ? (
