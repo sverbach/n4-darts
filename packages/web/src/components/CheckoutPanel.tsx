@@ -40,7 +40,7 @@ export function CheckoutPanel(props: {
         {(route ?? []).map((segment, i) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: a route can repeat a field (T20 T20 Bull).
           <Fragment key={i}>
-            {i > 0 && <span className="mx-[0.5em] text-faint">·</span>}
+            {i > 0 && <span className="text-faint mx-[0.5em]">·</span>}
             <span className={i === 0 ? "text-text" : "text-muted"}>{dartLabel(segment)}</span>
           </Fragment>
         ))}

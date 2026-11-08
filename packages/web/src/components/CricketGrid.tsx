@@ -49,11 +49,11 @@ export function CricketGrid(props: {
   const on = state.phase === "throwing" || state.phase === "awaitingTakeout";
   const activeCol = (p: number) => (on && state.currentPlayer === p ? "bg-accent-tint" : "");
   return (
-    <div className="min-w-0 self-start overflow-x-auto border border-border border-solid bg-panel">
+    <div className="border-border bg-panel min-w-0 self-start overflow-x-auto border border-solid">
       <table className="w-full border-collapse text-center" aria-label="Cricket marks">
         <thead>
-          <tr className="border-0 border-border border-b border-solid">
-            <th className={`${style.head} sticky left-0 bg-panel`} />
+          <tr className="border-border border-0 border-b border-solid">
+            <th className={`${style.head} bg-panel sticky left-0`} />
             {state.players.map((_, p) => (
               <th
                 key={players[p]?.id ?? p}
@@ -72,9 +72,9 @@ export function CricketGrid(props: {
             return (
               <tr
                 key={target}
-                className={`border-0 border-line-soft border-b border-solid ${dead ? "opacity-35" : ""}`}
+                className={`border-line-soft border-0 border-b border-solid ${dead ? "opacity-35" : ""}`}
               >
-                <th scope="row" className={`${style.target} sticky left-0 bg-panel font-normal`}>
+                <th scope="row" className={`${style.target} bg-panel sticky left-0 font-normal`}>
                   {targetLabel(target)}
                 </th>
                 {state.players.map((player, p) => (
@@ -89,7 +89,7 @@ export function CricketGrid(props: {
             );
           })}
           <tr>
-            <th scope="row" className={`${style.head} sticky left-0 bg-panel text-left text-muted`}>
+            <th scope="row" className={`${style.head} bg-panel text-muted sticky left-0 text-left`}>
               Points
             </th>
             {state.players.map((player, p) => (

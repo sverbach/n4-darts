@@ -58,7 +58,7 @@ export function PlayersAdmin() {
             ))}
           </ul>
           {archived.length > 0 && (
-            <details className="border border-border border-solid bg-panel">
+            <details className="border-border bg-panel border border-solid">
               <summary className="min-h-[52px] px-4">
                 <PixelIcon name="caret" /> Archived ({archived.length})
               </summary>
@@ -121,7 +121,7 @@ function PlayerRow(props: { player: AdminPlayer; change: Change }) {
       <li className={ROW}>
         <Avatar player={player} />
         <form
-          className="inline-form max-w-[560px] flex-[1_1_280px] flex-wrap [&_input]:flex-[1_1_200px] [&_input]:border-2 [&_input]:border-accent"
+          className="inline-form [&_input]:border-accent max-w-[560px] flex-[1_1_280px] flex-wrap [&_input]:flex-[1_1_200px] [&_input]:border-2"
           onSubmit={submit}
         >
           <input
@@ -159,8 +159,8 @@ function PlayerRow(props: { player: AdminPlayer; change: Change }) {
         <Avatar player={player} />
       </button>
       {editingPhoto && <PhotoEditor player={player} onClose={() => setEditingPhoto(false)} />}
-      <span className="flex min-w-0 flex-1 kiosk:flex-row flex-col items-start kiosk:items-center gap-1 kiosk:gap-2">
-        <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[16px] uppercase tracking-[1px]">
+      <span className="kiosk:flex-row kiosk:items-center kiosk:gap-2 flex min-w-0 flex-1 flex-col items-start gap-1">
+        <span className="font-pixel min-w-0 overflow-hidden text-[16px] tracking-[1px] text-ellipsis whitespace-nowrap uppercase">
           {player.name}
         </span>
         {!player.public && <span className={`status ${STATUS_SMALL} flex-none`}>Not public</span>}

@@ -19,7 +19,7 @@ export function MatchesAdmin({ head }: { head: ReactNode }) {
   };
 
   return (
-    <div className="flex flex-col gap-6 kiosk:gap-6">
+    <div className="kiosk:gap-6 flex flex-col gap-6">
       {head}
       {error && (
         <p className="error" role="alert">
@@ -50,7 +50,7 @@ function StationRow(props: { station: StationView; onAbandon(): void }) {
   const { station, onAbandon } = props;
   const { match } = station;
   return (
-    <li className="flex flex-col gap-3 border border-border border-solid bg-panel p-4">
+    <li className="border-border bg-panel flex flex-col gap-3 border border-solid p-4">
       <div className={cardTitle(true)}>
         <Link className={CARD_NAME} href={`/station/${station.id}`}>
           {station.name}
@@ -62,7 +62,7 @@ function StationRow(props: { station: StationView; onAbandon(): void }) {
           className={STATUS_SMALL}
         />
       </div>
-      <span className={`wrap-anywhere text-[26px] ${match ? "" : "hint"}`}>
+      <span className={`text-[26px] wrap-anywhere ${match ? "" : "hint"}`}>
         {match ? (
           <span className="uppercase">{matchSummary(match)}</span>
         ) : (

@@ -35,8 +35,8 @@ export function Scorecard(props: {
     <div className={`min-w-0 self-start overflow-x-auto ${style.frame}`}>
       <table className="w-full border-collapse text-center" aria-label="Scorecard">
         <thead>
-          <tr className="border-0 border-border border-b border-solid">
-            <th className={`${style.head} sticky left-0 bg-panel text-left`}>Hole</th>
+          <tr className="border-border border-0 border-b border-solid">
+            <th className={`${style.head} bg-panel sticky left-0 text-left`}>Hole</th>
             {columns.map((hole) => (
               <th
                 key={hole}
@@ -45,7 +45,7 @@ export function Scorecard(props: {
                 {targetLabel(holeTarget(hole, state.course))}
               </th>
             ))}
-            <th className={`${style.head} sticky right-0 bg-panel`}>Total</th>
+            <th className={`${style.head} bg-panel sticky right-0`}>Total</th>
           </tr>
         </thead>
         <tbody>
@@ -54,7 +54,7 @@ export function Scorecard(props: {
             return (
               <tr
                 key={players[p]?.id ?? p}
-                className={`border-0 border-line-soft border-b border-solid last:border-b-0 ${active ? "bg-accent-tint" : ""}`}
+                className={`border-line-soft border-0 border-b border-solid last:border-b-0 ${active ? "bg-accent-tint" : ""}`}
               >
                 <th
                   scope="row"

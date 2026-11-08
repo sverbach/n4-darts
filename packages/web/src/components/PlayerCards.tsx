@@ -186,11 +186,11 @@ export function PlayerCards({
             </div>
             {/* On every card, so the scores stay level whoever has a route. */}
             {showHints && (
-              <div className="kiosk:min-h-[1.2em] font-pixel kiosk:text-[24px] text-[20px] text-muted tracking-[1px] kiosk:[grid-area:checkout] max-kiosk:hidden">
+              <div className="kiosk:min-h-[1.2em] font-pixel kiosk:text-[24px] text-muted kiosk:[grid-area:checkout] max-kiosk:hidden text-[20px] tracking-[1px]">
                 {(active ? (route ?? []) : []).map((segment, i) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: a route can repeat a field (T20 T20 Bull).
                   <Fragment key={i}>
-                    {i > 0 && <span className="mx-[0.5em] text-faint">·</span>}
+                    {i > 0 && <span className="text-faint mx-[0.5em]">·</span>}
                     <span className={i === 0 ? "text-text" : undefined}>{dartLabel(segment)}</span>
                   </Fragment>
                 ))}
@@ -242,7 +242,7 @@ export function PlayerList({ match, size = "station" }: { match: MatchView; size
         return (
           <li
             key={player?.id ?? p}
-            className={`${style.row} ${active ? `border-accent bg-accent-tint ${style.frame}` : "border border-border bg-panel"} ${card.out ? "opacity-40" : ""}`}
+            className={`${style.row} ${active ? `border-accent bg-accent-tint ${style.frame}` : "border-border bg-panel border"} ${card.out ? "opacity-40" : ""}`}
           >
             {player && <Avatar player={player} />}
             <div className="flex min-w-0 flex-col gap-1">

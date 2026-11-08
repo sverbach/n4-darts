@@ -40,7 +40,7 @@ export function MatchLegs(props: Props) {
       className="max-w-[760px]"
       open={legIndex === state.legs.length - 1}
     >
-      <summary className="bg-surface px-3 text-text">
+      <summary className="bg-surface text-text px-3">
         <PixelIcon name="caret" /> Leg {legIndex + 1} · {name(leg.starter)} starts
         {leg.winner !== null && state.legs.length > 1 && ` · ${name(leg.winner)} won`}
       </summary>
@@ -73,12 +73,12 @@ function VisitRow(
   const { visit, name, dart, score, value, who } = props;
   return (
     <li
-      className={`grid items-center gap-2 border-0 border-line-soft border-b border-solid ${who ? "grid-cols-[minmax(0,1fr)_auto] py-2.5" : "min-h-[58px] grid-cols-[minmax(0,70px)_minmax(0,1fr)_auto]"}`}
+      className={`border-line-soft grid items-center gap-2 border-0 border-b border-solid ${who ? "grid-cols-[minmax(0,1fr)_auto] py-2.5" : "min-h-[58px] grid-cols-[minmax(0,70px)_minmax(0,1fr)_auto]"}`}
     >
       {who ? (
         <span className="col-span-full">{who(visit.player)}</span>
       ) : (
-        <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[13px] uppercase">
+        <span className="font-pixel overflow-hidden text-[13px] text-ellipsis whitespace-nowrap uppercase">
           {name(visit.player)}
         </span>
       )}
@@ -91,7 +91,7 @@ function VisitRow(
             ? "Bust"
             : (value?.(visit) ?? visit.darts.reduce((sum, d) => sum + d.score, 0))}
           {visit.checkout && (
-            <span className="ml-2 align-middle font-pixel text-[11px] text-muted uppercase">
+            <span className="font-pixel text-muted ml-2 align-middle text-[11px] uppercase">
               Out
             </span>
           )}

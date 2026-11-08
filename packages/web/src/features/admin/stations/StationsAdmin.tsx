@@ -48,7 +48,7 @@ export function StationsAdmin() {
           </ul>
         )}
       </div>
-      <section className="flex min-w-0 flex-[1_1_340px] flex-col gap-3 border border-border border-solid bg-panel p-6">
+      <section className="border-border bg-panel flex min-w-0 flex-[1_1_340px] flex-col gap-3 border border-solid p-6">
         <h2>Add a station</h2>
         <StationForm
           submitLabel="Add station"
@@ -109,7 +109,7 @@ function StationRow({ station, change }: { station: StationAdminView; change: Ch
         <Link className={CARD_NAME} href={`/station/${station.id}`}>
           {station.name}
         </Link>
-        <code className="wrap-anywhere font-text text-[22px] text-muted">{station.boardUrl}</code>
+        <code className="font-text text-muted text-[22px] wrap-anywhere">{station.boardUrl}</code>
       </div>
       {menu}
       <div className={cardActions()}>

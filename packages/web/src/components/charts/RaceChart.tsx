@@ -64,13 +64,13 @@ export function RaceChart(props: {
   const share = active === null ? 0 : x(active) / width;
 
   return (
-    <figure className="relative m-0 flex flex-1 flex-col justify-center border border-border border-solid bg-panel px-0 pt-3 pb-1.5">
+    <figure className="border-border bg-panel relative m-0 flex flex-1 flex-col justify-center border border-solid px-0 pt-3 pb-1.5">
       <svg
         {...handlers}
         viewBox={`0 0 ${width} ${height}`}
         role="img"
         aria-label={label}
-        className="block h-auto w-full touch-pan-y font-text"
+        className="font-text block h-auto w-full touch-pan-y"
         style={{ fontSize: font }}
       >
         {ticks.map((tick) => (
@@ -156,7 +156,7 @@ export function RaceChart(props: {
       {active !== null && active > 0 && (
         <div
           role="status"
-          className="pointer-events-none absolute top-1 flex flex-col gap-1 whitespace-nowrap border border-border border-solid bg-surface px-2.5 py-1.5 font-text kiosk:text-[18px] text-[16px] text-text"
+          className="border-border bg-surface font-text kiosk:text-[18px] text-text pointer-events-none absolute top-1 flex flex-col gap-1 border border-solid px-2.5 py-1.5 text-[16px] whitespace-nowrap"
           style={{ left: `${share * 100}%`, transform: tooltipShift(share) }}
         >
           {tooltip(active)}

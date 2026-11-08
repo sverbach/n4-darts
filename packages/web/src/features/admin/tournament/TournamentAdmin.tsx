@@ -122,10 +122,10 @@ function CreateTournament({ send }: { send: Send }) {
             max={Number.POSITIVE_INFINITY}
           />
         </div>
-        <aside className="flex min-w-0 flex-[1_1_340px] flex-col gap-4 border border-border border-solid bg-panel p-6">
+        <aside className="border-border bg-panel flex min-w-0 flex-[1_1_340px] flex-col gap-4 border border-solid p-6">
           <span className="label">New tournament</span>
           <div className="flex items-baseline gap-3">
-            <span className="text-[72px] text-text leading-[0.8]">{picked.length}</span>
+            <span className="text-text text-[72px] leading-[0.8]">{picked.length}</span>
             <span className="label">Players picked</span>
           </div>
           <p className="hint m-0">
@@ -170,7 +170,7 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
           <span className={runState(false)}>Draft</span>
           {save !== "idle" && (
             <span
-              className={`inline-flex items-center gap-1.5 font-pixel kiosk:text-[12px] text-[11px] uppercase ${save === "saved" ? "text-ok before:size-[7px] before:bg-current before:content-['']" : "text-muted"}`}
+              className={`font-pixel kiosk:text-[12px] inline-flex items-center gap-1.5 text-[11px] uppercase ${save === "saved" ? "text-ok before:size-[7px] before:bg-current before:content-['']" : "text-muted"}`}
             >
               {save === "saving" ? "Saving…" : "Saved"}
             </span>
@@ -347,16 +347,16 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
               {view.entrants.map((e, i) => (
                 <li
                   key={e.playerId}
-                  className="flex min-h-14 items-center gap-3 border border-border border-solid bg-surface pr-1.5 pl-3 [--avatar:28px]"
+                  className="border-border bg-surface flex min-h-14 items-center gap-3 border border-solid pr-1.5 pl-3 [--avatar:28px]"
                 >
-                  <span className="w-6 font-pixel text-[13px] text-muted">
+                  <span className="font-pixel text-muted w-6 text-[13px]">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <Avatar player={{ id: e.playerId, name: e.name, photo: e.photo }} />
-                  <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-pixel text-[13px] uppercase tracking-[1px]">
+                  <span className="font-pixel min-w-0 flex-1 overflow-hidden text-[13px] tracking-[1px] text-ellipsis whitespace-nowrap uppercase">
                     {e.name}
                   </span>
-                  <span className="text-[24px] text-muted">{average(e.rating)}</span>
+                  <span className="text-muted text-[24px]">{average(e.rating)}</span>
                   <button
                     type="button"
                     aria-label={`Move ${e.name} up`}
@@ -386,7 +386,7 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
               {view.groups.map((group, g) => (
                 <p
                   key={group.join()}
-                  className="m-0 border border-line-soft border-solid bg-panel px-3 py-3"
+                  className="border-line-soft bg-panel m-0 border border-solid px-3 py-3"
                 >
                   <span className="match-label">Group {groupName(g)}</span>{" "}
                   {group.map(nameOf).join(", ")}
@@ -397,7 +397,7 @@ function DraftEditor(props: { view: TournamentAdminView; send: Send; save: SaveS
 
           {view.problems.length > 0 ? (
             <ul
-              className="m-0 flex list-none flex-col gap-1.5 border border-warn-line border-solid bg-warn-tint p-4 text-warn"
+              className="border-warn-line bg-warn-tint text-warn m-0 flex list-none flex-col gap-1.5 border border-solid p-4"
               aria-label="Problems"
             >
               {view.problems.map((p) => (

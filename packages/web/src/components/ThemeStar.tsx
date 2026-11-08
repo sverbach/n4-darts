@@ -28,7 +28,7 @@ export function ThemeStar({
     <span className="relative inline-flex flex-none">
       <button
         type="button"
-        className={`ghost flex-none border-0 p-0 text-text hover:text-accent focus-visible:text-accent ${className}`}
+        className={`ghost text-text hover:text-accent focus-visible:text-accent flex-none border-0 p-0 ${className}`}
         aria-label={`Theme: ${theme.name}. Next theme`}
         onClick={() => {
           next();
@@ -51,7 +51,7 @@ export function ThemeStar({
         <span
           key={shown}
           aria-hidden="true"
-          className={`pointer-events-none absolute top-1/2 z-40 -translate-y-1/2 ${side === "left" ? "right-full mr-1" : "left-full ml-1"} whitespace-nowrap border border-accent-line border-solid bg-accent-tint px-2 py-1 font-pixel text-accent uppercase tracking-[1px] motion-safe:animate-[theme-flash_1.5s_ease-out_forwards] ${flash}`}
+          className={`pointer-events-none absolute top-1/2 z-40 -translate-y-1/2 ${side === "left" ? "right-full mr-1" : "left-full ml-1"} border-accent-line bg-accent-tint font-pixel text-accent border border-solid px-2 py-1 tracking-[1px] whitespace-nowrap uppercase motion-safe:animate-[theme-flash_1.5s_ease-out_forwards] ${flash}`}
         >
           {theme.name}
         </span>

@@ -63,11 +63,11 @@ export function HeadToHead({ match }: { match: MatchPage }) {
   const many = match.players.length > 2;
   const label = many ? "px-2" : "px-3";
   return (
-    <div className="overflow-x-auto border border-border border-solid bg-panel">
+    <div className="border-border bg-panel overflow-x-auto border border-solid">
       <table className="w-full border-collapse" aria-label="Head-to-head">
         <thead>
-          <tr className="border-0 border-border border-b border-solid">
-            <th className="sticky left-0 bg-panel" />
+          <tr className="border-border border-0 border-b border-solid">
+            <th className="bg-panel sticky left-0" />
             {match.players.map((p, i) => (
               <th
                 key={p.id}
@@ -76,7 +76,7 @@ export function HeadToHead({ match }: { match: MatchPage }) {
               >
                 <span className="inline-flex items-baseline gap-2">
                   <SeriesChip player={i} />
-                  <span className="break-words font-pixel kiosk:text-[16px] text-[12px] uppercase tracking-[1px]">
+                  <span className="font-pixel kiosk:text-[16px] text-[12px] tracking-[1px] break-words uppercase">
                     {p.name}
                   </span>
                 </span>
@@ -90,18 +90,18 @@ export function HeadToHead({ match }: { match: MatchPage }) {
             return (
               <tr
                 key={row.label}
-                className="border-0 border-line-soft border-b border-solid last:border-b-0"
+                className="border-line-soft border-0 border-b border-solid last:border-b-0"
               >
                 <th
                   scope="row"
-                  className={`label sticky left-0 bg-panel kiosk:px-5 ${label} py-2.5 text-left font-normal ${many ? "kiosk:max-w-none max-w-[64px] kiosk:whitespace-nowrap" : "whitespace-nowrap"}`}
+                  className={`label bg-panel kiosk:px-5 sticky left-0 ${label} py-2.5 text-left font-normal ${many ? "kiosk:max-w-none kiosk:whitespace-nowrap max-w-[64px]" : "whitespace-nowrap"}`}
                 >
                   {row.label}
                 </th>
                 {row.values.map((value, i) => (
                   <td
                     key={match.players[i]?.id ?? i}
-                    className={`kiosk:px-5 py-2.5 text-right font-text kiosk:text-[36px] tabular-nums leading-none ${many ? "px-2 text-[22px]" : "px-3 text-[28px]"} ${value === null ? "text-faint" : best === null || value === best ? "text-text" : "text-muted"}`}
+                    className={`kiosk:px-5 font-text kiosk:text-[36px] py-2.5 text-right leading-none tabular-nums ${many ? "px-2 text-[22px]" : "px-3 text-[28px]"} ${value === null ? "text-faint" : best === null || value === best ? "text-text" : "text-muted"}`}
                   >
                     {value === null ? NONE : row.show(value)}
                   </td>

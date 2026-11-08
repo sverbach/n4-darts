@@ -5,6 +5,9 @@
     "clientKind": "git",
     "useIgnoreFile": true
   },
+  "markdown": {
+    "formatter": { "enabled": false }
+  },
   "files": {
     "includes": ["**", "!**/dist", "!.scratch", "!prototypes", "!.claude"]
   },
@@ -24,7 +27,7 @@
         }
       },
       "nursery": {
-        "useSortedClasses": {
+        "useTailwindSortedClasses": {
           "level": "error",
           "fix": "safe"
         }

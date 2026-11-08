@@ -44,7 +44,7 @@ export function Awards({ awards, projector = false }: { awards: Award[]; project
           <span className={p.value}>
             {AWARDS[award.kind].format(award.value)}
             {AWARDS[award.kind].unit && (
-              <span className="ml-[0.3em] font-pixel text-[0.25em] text-muted uppercase tracking-[1px]">
+              <span className="font-pixel text-muted ml-[0.3em] text-[0.25em] tracking-[1px] uppercase">
                 {AWARDS[award.kind].unit?.(award.value)}
               </span>
             )}

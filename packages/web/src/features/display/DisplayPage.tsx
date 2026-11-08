@@ -40,9 +40,9 @@ export function DisplayPage() {
   const { view, connected } = useLive<DisplayView>("/api/display/live");
 
   return (
-    <main className="flex h-screen flex-col gap-pu-30 overflow-hidden px-pu-56 pt-pu-36 pb-pu-44 text-pu-30 [--px:calc(min(100vw,177.78vh)/1920)]">
+    <main className="gap-pu-30 px-pu-56 pt-pu-36 pb-pu-44 text-pu-30 flex h-screen flex-col overflow-hidden [--px:calc(min(100vw,177.78vh)/1920)]">
       {!view ? (
-        <p className="m-auto text-muted text-pu-40">{connected ? "Loading…" : "Connecting…"}</p>
+        <p className="text-muted text-pu-40 m-auto">{connected ? "Loading…" : "Connecting…"}</p>
       ) : view.tournament?.phase === "finished" ? (
         <Finished view={view} />
       ) : view.tournament ? (
@@ -51,7 +51,7 @@ export function DisplayPage() {
         <Idle view={view} />
       )}
       {view && !connected && (
-        <p className="status status-danger fixed right-pu-24 bottom-pu-16 m-0">Server offline</p>
+        <p className="status status-danger right-pu-24 bottom-pu-16 fixed m-0">Server offline</p>
       )}
     </main>
   );
@@ -66,7 +66,7 @@ function Header(props: { title: string; detail: string; played?: number; total?:
       start={
         <div>
           <h1 className="text-pu-40 tracking-pu-4">{title}</h1>
-          <p className="mt-pu-6 mb-0 font-pixel text-muted text-pu-20 uppercase tracking-pu-2">
+          <p className="mt-pu-6 font-pixel text-muted text-pu-20 tracking-pu-2 mb-0 uppercase">
             {detail}
           </p>
         </div>
@@ -86,7 +86,7 @@ function Running({ view }: { view: DisplayView }) {
   return (
     <>
       <Header title={t.name} detail={PHASES[t.phase]} played={t.played} total={t.total} />
-      <div className={`grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-pu-40`}>
+      <div className={`gap-pu-40 grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]`}>
         <Fit>
           <section className={SECTION}>
             <h2 className={H2}>Now playing</h2>
@@ -100,15 +100,15 @@ function Running({ view }: { view: DisplayView }) {
               {view.upNext.map((m) => (
                 <div
                   key={`${m.label}-${m.players.map((p) => p.id).join()}`}
-                  className="avatar-pu-40 flex items-center gap-pu-16 border border-line-soft border-solid px-pu-22 py-pu-14 font-pixel text-pu-20 uppercase tracking-pu-2"
+                  className="avatar-pu-40 gap-pu-16 border-line-soft px-pu-22 py-pu-14 font-pixel text-pu-20 tracking-pu-2 flex items-center border border-solid uppercase"
                 >
                   {m.label && (
-                    <span className="w-pu-220 whitespace-nowrap text-muted text-pu-20 tracking-pu-1">
+                    <span className="w-pu-220 text-muted text-pu-20 tracking-pu-1 whitespace-nowrap">
                       {m.label}
                     </span>
                   )}
                   {m.players.map((p, i) => (
-                    <span key={p.id} className="inline-flex items-center gap-pu-16">
+                    <span key={p.id} className="gap-pu-16 inline-flex items-center">
                       {i > 0 && <span className="text-muted text-pu-20">vs</span>}
                       <Avatar player={p} />
                       <span>{p.name}</span>
@@ -143,15 +143,15 @@ function Finished({ view }: { view: DisplayView }) {
       >
         {champion && (
           <section
-            className="avatar-pu-360 flex flex-col items-center justify-center gap-pu-32 border border-border border-solid bg-panel px-pu-40 py-pu-48"
+            className="avatar-pu-360 gap-pu-32 border-border bg-panel px-pu-40 py-pu-48 flex flex-col items-center justify-center border border-solid"
             aria-label="Champion"
           >
             <Confetti />
-            <h2 className="m-0 font-bold text-accent text-pu-72 tracking-pu-8">Champion</h2>
+            <h2 className="text-accent text-pu-72 tracking-pu-8 m-0 font-bold">Champion</h2>
             <span className="avatar-frame text-pu-36">
               <Avatar player={champion} large />
             </span>
-            <p className="m-0 text-center font-bold font-pixel text-pu-96 uppercase tracking-pu-8">
+            <p className="font-pixel text-pu-96 tracking-pu-8 m-0 text-center font-bold uppercase">
               {champion.name}
             </p>
           </section>
@@ -159,17 +159,17 @@ function Finished({ view }: { view: DisplayView }) {
         {rest.length > 0 && (
           <section className={SECTION}>
             <h2 className={H2}>Final placings</h2>
-            <ol className="avatar-pu-56 m-0 list-none border-0 border-border border-t border-solid p-0">
+            <ol className="avatar-pu-56 border-border m-0 list-none border-0 border-t border-solid p-0">
               {rest.map((p) => (
                 <li
                   key={p.id}
-                  className="flex h-pu-96 items-center gap-pu-22 border-0 border-line-soft border-b border-solid"
+                  className="h-pu-96 gap-pu-22 border-line-soft flex items-center border-0 border-b border-solid"
                 >
-                  <span className="w-pu-160 whitespace-nowrap text-muted text-pu-56">
+                  <span className="w-pu-160 text-muted text-pu-56 whitespace-nowrap">
                     {placing(p.from, p.to)}
                   </span>
                   <Avatar player={p} />
-                  <span className="font-pixel text-pu-28 uppercase tracking-pu-3">{p.name}</span>
+                  <span className="font-pixel text-pu-28 tracking-pu-3 uppercase">{p.name}</span>
                 </li>
               ))}
             </ol>
@@ -193,20 +193,20 @@ function Idle({ view }: { view: DisplayView }) {
       <TopBar
         size="projector"
         end={
-          <span className="font-pixel text-muted text-pu-20 uppercase tracking-pu-3">
+          <span className="font-pixel text-muted text-pu-20 tracking-pu-3 uppercase">
             Darts evening · {today()}
           </span>
         }
       />
       {view.leaderboard.length === 0 ? (
         <Fit className="flex-1">
-          <section className="grid grid-cols-[repeat(auto-fill,minmax(calc(560*var(--px)),1fr))] gap-pu-14">
+          <section className="gap-pu-14 grid grid-cols-[repeat(auto-fill,minmax(calc(560*var(--px)),1fr))]">
             <h2 className={`${H2} col-span-full`}>Stations</h2>
             {cards}
           </section>
         </Fit>
       ) : (
-        <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] gap-pu-40">
+        <div className="gap-pu-40 grid min-h-0 flex-1 grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
           <Fit>
             <section className={SECTION}>
               <h2 className={H2}>Stations</h2>
@@ -261,7 +261,7 @@ function Leaderboard({ rows }: { rows: LeaderboardRow[] }) {
 
 function Groups({ view }: { view: DisplayView }) {
   return (
-    <div className="flex flex-col gap-pu-28">
+    <div className="gap-pu-28 flex flex-col">
       {view.groups.map((group) => (
         <section key={group.name} className={SECTION}>
           <h2 className={H2}>{group.name}</h2>
@@ -319,18 +319,18 @@ function Bracket({ view }: { view: DisplayView }) {
     { title: "Losers bracket", columns: losers },
   ].filter((row) => row.columns.length > 0);
   return (
-    <div className="flex flex-col gap-pu-26">
+    <div className="gap-pu-26 flex flex-col">
       {rows.map((row) => (
         <section key={row.title || "bracket"} className={SECTION}>
           {row.title && <h2 className={H2}>{row.title}</h2>}
-          <div className="flex gap-pu-28">
+          <div className="gap-pu-28 flex">
             {row.columns.map((column) => (
               <div
                 key={`${column.section}-${column.name}`}
-                className="flex w-pu-330 min-w-0 flex-col gap-pu-14"
+                className="w-pu-330 gap-pu-14 flex min-w-0 flex-col"
               >
                 <h3 className="text-muted text-pu-20 tracking-pu-2">{column.name}</h3>
-                <div className="flex flex-1 flex-col justify-around gap-pu-14">
+                <div className="gap-pu-14 flex flex-1 flex-col justify-around">
                   {column.matches.map((m) => (
                     <MatchCard key={m.slot} match={m} round={column.name} projector />
                   ))}
@@ -364,12 +364,12 @@ function StationCard({ station, large }: { station: DisplayStation; large?: bool
   if (match?.phase === "notStarted" || !match) {
     return (
       <Link
-        className={`${card} flex-row items-center justify-between gap-pu-16 ${large ? "px-pu-24 py-pu-22" : "px-pu-22 py-pu-16"}`}
+        className={`${card} gap-pu-16 flex-row items-center justify-between ${large ? "px-pu-24 py-pu-22" : "px-pu-22 py-pu-16"}`}
         href={`/watch/${station.id}`}
       >
         <span className={name}>{station.name}</span>
         {match ? (
-          <span className="font-pixel text-pu-20 uppercase tracking-pu-2">
+          <span className="font-pixel text-pu-20 tracking-pu-2 uppercase">
             <span className="text-muted text-pu-20">Next · </span>
             {match.players.map((p, i) => (
               <span key={p.id}>
@@ -390,10 +390,10 @@ function StationCard({ station, large }: { station: DisplayStation; large?: bool
   }
   return (
     <Link className={`${card} flex-col`} href={`/watch/${station.id}`}>
-      <div className="flex items-center justify-between gap-pu-16 border-0 border-line-soft border-b border-solid px-pu-22 py-pu-12">
+      <div className="gap-pu-16 border-line-soft px-pu-22 py-pu-12 flex items-center justify-between border-0 border-b border-solid">
         <span className={name}>{station.name}</span>
         {match.label && (
-          <span className="font-pixel text-muted text-pu-20 uppercase tracking-pu-2">
+          <span className="font-pixel text-muted text-pu-20 tracking-pu-2 uppercase">
             {match.label}
           </span>
         )}
@@ -410,42 +410,42 @@ function Score({ card, large }: { card: ScoreCard; large: boolean }) {
       {card.players.map((p, i) => (
         <div
           key={p.id}
-          className={`grid items-center gap-pu-16 border-0 border-line-soft border-b border-solid ${large ? "avatar-pu-52 h-pu-76 grid-cols-[calc(56*var(--px))_minmax(0,1fr)_calc(120*var(--px))_calc(140*var(--px))] px-pu-24" : "avatar-pu-46 h-pu-68 grid-cols-[calc(48*var(--px))_minmax(0,1fr)_calc(100*var(--px))_calc(120*var(--px))] px-pu-22"} ${card.throwing === i ? "bg-accent-tint" : ""}`}
+          className={`gap-pu-16 border-line-soft grid items-center border-0 border-b border-solid ${large ? "avatar-pu-52 h-pu-76 px-pu-24 grid-cols-[calc(56*var(--px))_minmax(0,1fr)_calc(120*var(--px))_calc(140*var(--px))]" : "avatar-pu-46 h-pu-68 px-pu-22 grid-cols-[calc(48*var(--px))_minmax(0,1fr)_calc(100*var(--px))_calc(120*var(--px))]"} ${card.throwing === i ? "bg-accent-tint" : ""}`}
         >
           <Avatar player={p} />
           <span
-            className={`overflow-hidden text-ellipsis whitespace-nowrap font-pixel uppercase tracking-pu-2 ${large ? "text-pu-24" : "text-pu-22"}`}
+            className={`font-pixel tracking-pu-2 overflow-hidden text-ellipsis whitespace-nowrap uppercase ${large ? "text-pu-24" : "text-pu-22"}`}
           >
             {p.name}
           </span>
-          <span className="text-right font-pixel text-muted text-pu-20 uppercase">
+          <span className="font-pixel text-muted text-pu-20 text-right uppercase">
             {card.legsToWin > 1 ? `Legs ${p.legsWon}` : ""}
           </span>
           <span
-            className={`text-right leading-[0.8] ${large ? "text-pu-68" : "text-pu-60"} ${card.throwing === i ? "text-accent" : ""} ${card.winner === i ? "font-bold font-pixel" : ""}`}
+            className={`text-right leading-[0.8] ${large ? "text-pu-68" : "text-pu-60"} ${card.throwing === i ? "text-accent" : ""} ${card.winner === i ? "font-pixel font-bold" : ""}`}
           >
             {card.winner === i ? "Won" : p.score}
           </span>
         </div>
       ))}
       {card.throwing !== null && (
-        <div className="flex items-center gap-pu-10 px-pu-22 py-pu-12">
+        <div className="gap-pu-10 px-pu-22 py-pu-12 flex items-center">
           <span className="mr-pu-6 font-pixel text-muted text-pu-20 uppercase">Visit</span>
           {[0, 1, 2].map((i) => {
             const dart = card.visit[i];
             return (
               <span
                 key={`dart-${i}`}
-                className={`inline-flex h-pu-46 min-w-pu-88 items-center justify-center border text-pu-34 ${dart ? `border-border border-solid bg-surface ${dart.ignored ? "text-muted line-through" : ""}` : "border-faint border-dashed bg-transparent text-faint"}`}
+                className={`h-pu-46 min-w-pu-88 text-pu-34 inline-flex items-center justify-center border ${dart ? `border-border bg-surface border-solid ${dart.ignored ? "text-muted line-through" : ""}` : "border-faint text-faint border-dashed bg-transparent"}`}
               >
                 {dart ? dartLabel(dart.segment) : ""}
               </span>
             );
           })}
           {card.visit.length > 0 && (
-            <span className="ml-auto font-pixel text-muted text-pu-20 uppercase">
+            <span className="font-pixel text-muted text-pu-20 ml-auto uppercase">
               {visitTotalLabel(card.mode)}{" "}
-              <span className="align-middle font-text text-pu-44 text-text">{total}</span>
+              <span className="font-text text-pu-44 text-text align-middle">{total}</span>
             </span>
           )}
         </div>

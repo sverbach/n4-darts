@@ -15,33 +15,33 @@ export function Placings({ placings }: { placings: NonNullable<TournamentProgres
   return (
     <>
       {champion && (
-        <div className="flex items-center gap-4 border border-border border-solid bg-panel px-6 kiosk:py-6 py-4 [--avatar:64px] kiosk:[--avatar:88px]">
+        <div className="border-border bg-panel kiosk:py-6 kiosk:[--avatar:88px] flex items-center gap-4 border border-solid px-6 py-4 [--avatar:64px]">
           <span className="avatar-frame kiosk:text-[10px] text-[8px]">
             <Avatar player={champion} large />
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-            <span className="font-bold font-pixel text-[16px] text-accent uppercase tracking-[2px]">
+            <span className="font-pixel text-accent text-[16px] font-bold tracking-[2px] uppercase">
               Champion
             </span>
-            <span className="wrap-anywhere font-bold font-pixel kiosk:text-[28px] text-[22px] uppercase tracking-[3px]">
+            <span className="font-pixel kiosk:text-[28px] text-[22px] font-bold tracking-[3px] wrap-anywhere uppercase">
               {champion.name}
             </span>
           </div>
         </div>
       )}
-      <ol className="m-0 list-none border-0 border-border border-t border-solid p-0">
+      <ol className="border-border m-0 list-none border-0 border-t border-solid p-0">
         {placings
           .filter((p) => p !== champion)
           .map((p) => (
             <li
               key={p.id}
-              className="flex min-h-[60px] items-center gap-4 border-0 border-line-soft border-b border-solid [--avatar:36px]"
+              className="border-line-soft flex min-h-[60px] items-center gap-4 border-0 border-b border-solid [--avatar:36px]"
             >
-              <span className="min-w-14 whitespace-nowrap text-[32px] text-muted">
+              <span className="text-muted min-w-14 text-[32px] whitespace-nowrap">
                 {placing(p.from, p.to)}
               </span>
               <Avatar player={p} />
-              <span className="font-pixel text-[16px] uppercase tracking-[1px]">{p.name}</span>
+              <span className="font-pixel text-[16px] tracking-[1px] uppercase">{p.name}</span>
             </li>
           ))}
       </ol>
@@ -66,8 +66,8 @@ export function GroupTables(props: {
       {groups.map((group) => (
         <div key={group.name} className="flex min-w-0 flex-col gap-2">
           {groups.length > 1 && <span className="match-label">{group.name}</span>}
-          <div className="scroll-x border border-border border-solid">
-            <table className="group-table [--avatar:30px] [&_td:first-child]:pl-3 [&_td:first-child]:text-left [&_td:last-child]:pr-3 [&_td]:h-[52px] [&_td]:text-[24px] [&_th:first-child]:pl-3 [&_th:first-child]:text-left [&_th:last-child]:pr-3">
+          <div className="scroll-x border-border border border-solid">
+            <table className="group-table [--avatar:30px] [&_td]:h-[52px] [&_td]:text-[24px] [&_td:first-child]:pl-3 [&_td:first-child]:text-left [&_td:last-child]:pr-3 [&_th:first-child]:pl-3 [&_th:first-child]:text-left [&_th:last-child]:pr-3">
               <thead>
                 <tr>
                   <th>#</th>
@@ -89,7 +89,7 @@ export function GroupTables(props: {
               <tbody>
                 {group.table.map((row, i) => (
                   <tr key={row.playerId}>
-                    <td className="font-pixel text-[12px]! text-muted">{i + 1}</td>
+                    <td className="font-pixel text-muted text-[12px]!">{i + 1}</td>
                     <td
                       className={`name ${withdrawn?.(row.playerId) ? "text-muted line-through" : ""}`}
                     >
@@ -116,7 +116,7 @@ export function GroupTables(props: {
             </table>
           </div>
           {played(group.fixtures).length > 0 && (
-            <details className="border border-line-soft border-solid">
+            <details className="border-line-soft border border-solid">
               <summary className="px-3">
                 <PixelIcon name="caret" /> Results ({played(group.fixtures).length})
               </summary>
@@ -129,7 +129,7 @@ export function GroupTables(props: {
                       </span>
                       <span
                         className={
-                          f.legs ? "text-[24px]" : "font-pixel text-[11px] text-muted uppercase"
+                          f.legs ? "text-[24px]" : "font-pixel text-muted text-[11px] uppercase"
                         }
                       >
                         {fixtureResult(f)}
@@ -140,7 +140,7 @@ export function GroupTables(props: {
                   return (
                     <li key={f.slot}>
                       {href ? (
-                        <Link href={href} className="contents text-text no-underline">
+                        <Link href={href} className="text-text contents no-underline">
                           {result}
                         </Link>
                       ) : (
@@ -176,11 +176,11 @@ export function BracketRows(props: {
       {rows.map((row) => (
         <div key={row.title} className="flex flex-col gap-2.5">
           {row.title && <span className="match-label">{row.title}</span>}
-          <div className="kiosk:scroll-x flex kiosk:flex-row flex-col gap-6 kiosk:pb-2 kiosk:[--fade-bg:var(--bg)]">
+          <div className="kiosk:scroll-x kiosk:flex-row kiosk:pb-2 kiosk:[--fade-bg:var(--bg)] flex flex-col gap-6">
             {row.columns.map((column) => (
               <div
                 key={`${column.section}-${column.name}`}
-                className="flex kiosk:min-w-[260px] kiosk:flex-1 flex-col gap-3"
+                className="kiosk:min-w-[260px] kiosk:flex-1 flex flex-col gap-3"
               >
                 <h3 className="text-[11px]">{column.name}</h3>
                 <div className="flex flex-1 flex-col justify-around gap-3">

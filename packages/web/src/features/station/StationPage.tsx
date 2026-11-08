@@ -63,7 +63,7 @@ export function StationPage({ id }: { id: number }) {
       <TopBar
         hideLogoOnPhone
         start={
-          <span className="overflow-hidden text-ellipsis whitespace-nowrap font-pixel kiosk:text-[20px] text-[13px] text-text uppercase kiosk:tracking-[2px] tracking-[1px]">
+          <span className="font-pixel kiosk:text-[20px] text-text kiosk:tracking-[2px] overflow-hidden text-[13px] tracking-[1px] text-ellipsis whitespace-nowrap uppercase">
             {view?.name ?? `Station ${id}`}
           </span>
         }
@@ -81,7 +81,7 @@ export function StationPage({ id }: { id: number }) {
         }
       />
       {match && match.state.phase !== "matchWon" && <SettingsStrip match={match} />}
-      <div className="flex flex-1 flex-col gap-4 kiosk:gap-4 p-4 kiosk:px-6 kiosk:pt-6 kiosk:pb-6">
+      <div className="kiosk:gap-4 kiosk:px-6 kiosk:pt-6 kiosk:pb-6 flex flex-1 flex-col gap-4 p-4">
         {error && (
           <p className="error" role="alert">
             {error}
@@ -123,7 +123,7 @@ function matchAction(match: MatchView, send: Send): MatchAction | undefined {
 
 function SettingsStrip({ match }: { match: MatchView }) {
   return (
-    <div className="label flex flex-wrap justify-between gap-x-4 gap-y-1.5 kiosk:px-6 px-4 kiosk:py-2.5 py-2">
+    <div className="label kiosk:px-6 kiosk:py-2.5 flex flex-wrap justify-between gap-x-4 gap-y-1.5 px-4 py-2">
       {match.label && <span className="text-text">{match.label}</span>}
       <span>{liveLabel(match)}</span>
     </div>
@@ -136,16 +136,16 @@ function QuickMatch({ send, notice }: { send: Send; notice: string | null }) {
   const [settings, setSettings] = useState<SetupSettings>(defaultSetupSettings);
 
   return (
-    <div className="flex flex-1 kiosk:flex-row flex-col kiosk:flex-wrap kiosk:items-stretch gap-4 kiosk:gap-x-6 kiosk:gap-y-6">
+    <div className="kiosk:flex-row kiosk:flex-wrap kiosk:items-stretch kiosk:gap-x-6 kiosk:gap-y-6 flex flex-1 flex-col gap-4">
       {notice && <p className="notice kiosk:basis-full">{notice}</p>}
-      <section className="flex kiosk:min-w-0 kiosk:flex-[999_1_560px] flex-col gap-4 kiosk:gap-4">
+      <section className="kiosk:min-w-0 kiosk:flex-[999_1_560px] kiosk:gap-4 flex flex-col gap-4">
         <div>
           <h1 className="kiosk:text-[40px]">New match</h1>
           <p className="hint m-0 mt-1.5">You can change the order next.</p>
         </div>
         <PlayerPicker title="Players" picked={picked} onChange={setPicked} />
       </section>
-      <section className="flex flex-1 kiosk:flex-[1_1_380px] flex-col gap-2.5 kiosk:gap-4 kiosk:self-start kiosk:border border-0 border-border border-t border-solid kiosk:bg-panel kiosk:p-6 pt-4 [&_.settings]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] kiosk:[&_.settings]:grid-cols-[1fr] kiosk:[&_.settings]:gap-4 kiosk:[&_.settings_label]:text-[12px] kiosk:[&_select]:min-h-14 [&_select]:min-w-0 kiosk:[&_select]:text-[28px]">
+      <section className="kiosk:flex-[1_1_380px] kiosk:gap-4 kiosk:self-start kiosk:border border-border kiosk:bg-panel kiosk:p-6 kiosk:[&_.settings]:grid-cols-[1fr] kiosk:[&_.settings]:gap-4 kiosk:[&_.settings_label]:text-[12px] kiosk:[&_select]:min-h-14 kiosk:[&_select]:text-[28px] flex flex-1 flex-col gap-2.5 border-0 border-t border-solid pt-4 [&_.settings]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] [&_select]:min-w-0">
         <span className="label">Match settings</span>
         <SettingsFields value={settings} onChange={setSettings} playerCount={picked.length} />
         <button
@@ -182,23 +182,23 @@ function Lineup({ match, send }: { match: MatchView; send: Send }) {
     void setOrder(next);
   };
   return (
-    <div className="mx-auto flex w-full max-w-[760px] flex-1 flex-col gap-4 kiosk:gap-6 kiosk:pt-6">
+    <div className="kiosk:gap-6 kiosk:pt-6 mx-auto flex w-full max-w-[760px] flex-1 flex-col gap-4">
       <div className="flex flex-col gap-2">
         {match.label && <span className="match-label kiosk:text-[13px]">{match.label}</span>}
         <h1 className="kiosk:text-[48px]">Throwing order</h1>
         <p className="hint m-0">Top of the list throws first.</p>
       </div>
-      <ol className="m-0 flex list-none flex-col gap-2 kiosk:gap-2.5 p-0">
+      <ol className="kiosk:gap-2.5 m-0 flex list-none flex-col gap-2 p-0">
         {match.players.map((p, i) => (
           <li
             key={p.id}
-            className="flex kiosk:min-h-24 min-h-[72px] items-center gap-3 kiosk:gap-4 border border-border border-solid bg-surface kiosk:pr-3 pr-2.5 kiosk:pl-6 pl-3 [--avatar:48px] kiosk:[--avatar:64px]"
+            className="kiosk:min-h-24 kiosk:gap-4 border-border bg-surface kiosk:pr-3 kiosk:pl-6 kiosk:[--avatar:64px] flex min-h-[72px] items-center gap-3 border border-solid pr-2.5 pl-3 [--avatar:48px]"
           >
-            <span className="kiosk:w-10 w-7 font-pixel kiosk:text-[20px] text-[13px] text-muted">
+            <span className="kiosk:w-10 font-pixel kiosk:text-[20px] text-muted w-7 text-[13px]">
               {String(i + 1).padStart(2, "0")}
             </span>
             <Avatar player={p} />
-            <span className="wrap-anywhere min-w-0 flex-1 font-pixel kiosk:text-[26px] text-[16px] uppercase kiosk:tracking-[2px] tracking-[1px]">
+            <span className="font-pixel kiosk:text-[26px] kiosk:tracking-[2px] min-w-0 flex-1 text-[16px] tracking-[1px] wrap-anywhere uppercase">
               {p.name}
             </span>
             <button
@@ -265,7 +265,7 @@ function Match({ match, send, takeout }: { match: MatchView; send: Send; takeout
   const dartIndex = correcting ? (visit?.darts.indexOf(correcting) ?? -1) : -1;
   const thrower = match.players[visit?.player ?? match.state.currentPlayer];
   return (
-    <section className="flex kiosk:grid flex-1 kiosk:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] kiosk:grid-rows-[1fr_auto] flex-col gap-4 kiosk:gap-x-4 kiosk:gap-y-4 kiosk:[&>.scoreboard]:col-span-full">
+    <section className="kiosk:grid kiosk:grid-cols-[minmax(0,1fr)_minmax(280px,340px)] kiosk:grid-rows-[1fr_auto] kiosk:gap-x-4 kiosk:gap-y-4 kiosk:[&>.scoreboard]:col-span-full flex flex-1 flex-col gap-4">
       <Scoreboard
         match={match}
         onDart={setCorrecting}
@@ -274,22 +274,22 @@ function Match({ match, send, takeout }: { match: MatchView; send: Send; takeout
         takeout={takeout}
       />
 
-      <div className="kiosk:m-0 mt-auto kiosk:flex grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] kiosk:flex-col gap-2 kiosk:gap-3">
+      <div className="kiosk:m-0 kiosk:flex kiosk:flex-col kiosk:gap-3 mt-auto grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-2">
         <button
           type="button"
-          className="kiosk:min-h-[72px] min-h-[60px] kiosk:flex-1 flex-col items-start gap-1.5 kiosk:gap-1.5 px-6 font-bold kiosk:text-[20px] text-[16px] kiosk:tracking-[2px]"
+          className="kiosk:min-h-[72px] kiosk:flex-1 kiosk:gap-1.5 kiosk:text-[20px] kiosk:tracking-[2px] min-h-[60px] flex-col items-start gap-1.5 px-6 text-[16px] font-bold"
           onClick={() => send({ type: "nextPlayer" })}
         >
           <span className="kiosk:text-[22px]">
             Next player <PixelIcon name="arrow" height="0.9em" />
           </span>
-          <span className="font-normal kiosk:text-[16px] text-[12px]">
+          <span className="kiosk:text-[16px] text-[12px] font-normal">
             Up: {match.players[upNext(match.state)]?.name}
           </span>
         </button>
         <button
           type="button"
-          className="-order-1 kiosk:order-none kiosk:min-h-16 min-h-[60px] kiosk:text-[16px] kiosk:tracking-[2px]"
+          className="kiosk:order-none kiosk:min-h-16 kiosk:text-[16px] kiosk:tracking-[2px] -order-1 min-h-[60px]"
           onClick={() => send({ type: "undo" })}
         >
           Undo
@@ -347,7 +347,7 @@ export function Scoreboard(props: ScoreboardProps) {
     return (
       <>
         <div
-          className={`scoreboard grid min-h-0 gap-3 kiosk:gap-4 ${wide ? "kiosk:grid-cols-[auto_minmax(0,1fr)]" : "kiosk:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}`}
+          className={`scoreboard kiosk:gap-4 grid min-h-0 gap-3 ${wide ? "kiosk:grid-cols-[auto_minmax(0,1fr)]" : "kiosk:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]"}`}
         >
           <TargetBoard
             highlight={targets.highlight}
@@ -359,7 +359,7 @@ export function Scoreboard(props: ScoreboardProps) {
           ) : cricket ? (
             <CricketGrid state={cricket} players={props.match.players} />
           ) : hasModePanel(props.match) ? (
-            <div className="grid min-w-0 content-start gap-1.5 kiosk:gap-2">
+            <div className="kiosk:gap-2 grid min-w-0 content-start gap-1.5">
               <ModePanel match={props.match} />
               <PlayerList match={props.match} />
             </div>
@@ -392,14 +392,14 @@ function VisitPanel(props: ScoreboardProps) {
 
   return (
     <section
-      className={`flex min-w-0 flex-col gap-2 kiosk:gap-3 border-solid p-3 kiosk:px-6 kiosk:py-4 ${visit?.bust ? "border border-danger bg-danger-tint outline-2 outline-danger outline-solid -outline-offset-3" : "border border-border bg-panel"}`}
+      className={`kiosk:gap-3 kiosk:px-6 kiosk:py-4 flex min-w-0 flex-col gap-2 border-solid p-3 ${visit?.bust ? "border-danger bg-danger-tint outline-danger border outline-2 -outline-offset-3 outline-solid" : "border-border bg-panel border"}`}
       aria-label="Current visit"
     >
       <div className="label flex items-center justify-between gap-3">
         <span>Visit</span>
         <span className="grid items-center justify-items-end">
           <span
-            className={`font-bold kiosk:text-[28px] text-[20px] text-danger tracking-[3px] [grid-area:1/1] ${visit?.bust ? "" : "invisible"}`}
+            className={`kiosk:text-[28px] text-danger text-[20px] font-bold tracking-[3px] [grid-area:1/1] ${visit?.bust ? "" : "invisible"}`}
             aria-hidden={!visit?.bust}
           >
             Bust
@@ -409,13 +409,13 @@ function VisitPanel(props: ScoreboardProps) {
             aria-hidden={visit?.bust || !visit?.darts.length}
           >
             {totalLabel}{" "}
-            <span className="align-middle font-text kiosk:text-[48px] text-[36px] text-text">
+            <span className="font-text kiosk:text-[48px] text-text align-middle text-[36px]">
               {visit?.darts.length ? visitTotal : 0}
             </span>
           </span>
         </span>
       </div>
-      <div className="grid grid-cols-3 gap-2 kiosk:gap-3">
+      <div className="kiosk:gap-3 grid grid-cols-3 gap-2">
         {[0, 1, 2].map((i) => {
           const dart = visit?.darts[i];
           if (!dart && onAdd && state.phase === "throwing" && i === (visit?.darts.length ?? 0)) {
@@ -423,12 +423,12 @@ function VisitPanel(props: ScoreboardProps) {
               <button
                 type="button"
                 key={`add-${i}`}
-                className={`${DART} border-dashed ${visit?.bust ? "border-danger-line" : "border-border"} bg-transparent text-faint hover:border-accent-line hover:text-accent focus-visible:border-accent-line focus-visible:text-accent`}
+                className={`${DART} border-dashed ${visit?.bust ? "border-danger-line" : "border-border"} text-faint hover:border-accent-line hover:text-accent focus-visible:border-accent-line focus-visible:text-accent bg-transparent`}
                 onClick={onAdd}
                 aria-label={`Add dart ${i + 1}`}
               >
                 <span className="label kiosk:self-start">Dart {i + 1}</span>
-                <span className="self-end font-pixel text-[13px] text-muted uppercase tracking-[1px]">
+                <span className="font-pixel text-muted self-end text-[13px] tracking-[1px] uppercase">
                   + Add
                 </span>
               </button>
@@ -453,7 +453,7 @@ function VisitPanel(props: ScoreboardProps) {
                 {dart.ignored ? "Ignored" : `Dart ${i + 1}`}
               </span>
               <span
-                className={`font-text kiosk:text-[72px] text-[36px] kiosk:leading-[0.8] leading-[0.85] tracking-normal ${dart.ignored ? "line-through" : ""}`}
+                className={`font-text kiosk:text-[72px] kiosk:leading-[0.8] text-[36px] leading-[0.85] tracking-normal ${dart.ignored ? "line-through" : ""}`}
               >
                 {dartLabel(dart.segment)}
               </span>
@@ -478,21 +478,21 @@ function VisitPanel(props: ScoreboardProps) {
       </div>
       {props.takeout ? (
         <p
-          className={`${VISIT_STATUS} font-normal text-muted before:bg-line-soft after:bg-line-soft`}
+          className={`${VISIT_STATUS} text-muted before:bg-line-soft after:bg-line-soft font-normal`}
           role="status"
         >
           Taking out…
         </p>
       ) : state.phase === "awaitingTakeout" ? (
         <p
-          className={`${VISIT_STATUS} font-bold text-accent before:bg-accent-line after:bg-accent-line`}
+          className={`${VISIT_STATUS} text-accent before:bg-accent-line after:bg-accent-line font-bold`}
           role="status"
         >
           Remove darts
         </p>
       ) : (
         <p
-          className={`${VISIT_STATUS} font-normal text-muted before:bg-line-soft after:bg-line-soft`}
+          className={`${VISIT_STATUS} text-muted before:bg-line-soft after:bg-line-soft font-normal`}
         >
           {!visit?.darts.length
             ? `${nameOf(state.currentPlayer)} to throw`

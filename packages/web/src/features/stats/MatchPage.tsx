@@ -35,7 +35,7 @@ function MatchView({ match }: { match: Match }) {
   return (
     <>
       <header className="flex flex-col gap-2">
-        <h1 className="wrap-anywhere kiosk:text-[40px]">
+        <h1 className="kiosk:text-[40px] wrap-anywhere">
           {match.players.map((p) => p.name).join(" vs ")}
         </h1>
         <p className="hint m-0">
@@ -48,13 +48,13 @@ function MatchView({ match }: { match: Match }) {
             .join(" · ")}
         </p>
         {legs && (
-          <p className="m-0 font-text text-[56px] tabular-nums leading-none">
+          <p className="font-text m-0 text-[56px] leading-none tabular-nums">
             <span className="sr-only">Legs won </span>
             {legScore(match.legsWon)}
           </p>
         )}
       </header>
-      <div className="grid grid-cols-[minmax(0,1fr)] kiosk:grid-cols-2 kiosk:items-stretch gap-6 kiosk:gap-4">
+      <div className="kiosk:grid-cols-2 kiosk:items-stretch kiosk:gap-4 grid grid-cols-[minmax(0,1fr)] gap-6">
         <section className={SECTION}>
           <h2 className="label font-normal">Head-to-head</h2>
           <HeadToHead match={match} />
@@ -81,13 +81,13 @@ function MatchView({ match }: { match: Match }) {
             who={(i) => (
               <span className="flex items-baseline gap-2">
                 <SeriesChip player={i} />
-                <span className="label break-words text-text">{match.players[i]?.name}</span>
+                <span className="label text-text break-words">{match.players[i]?.name}</span>
               </span>
             )}
             dart={(dart) => (
               <span
                 key={dart.dartId}
-                className={`inline-flex min-h-[46px] items-center justify-center border border-solid text-[26px] ${dart.ignored ? "border-border border-dashed text-muted line-through" : "border-border bg-surface"}`}
+                className={`inline-flex min-h-[46px] items-center justify-center border border-solid text-[26px] ${dart.ignored ? "border-border text-muted border-dashed line-through" : "border-border bg-surface"}`}
               >
                 {dartLabel(dart.segment)}
               </span>

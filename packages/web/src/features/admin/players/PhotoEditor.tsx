@@ -128,13 +128,13 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-20 flex items-center justify-center overflow-y-auto bg-scrim p-4">
+    <div className="bg-scrim fixed inset-0 z-20 flex items-center justify-center overflow-y-auto p-4">
       <div
-        className="flex max-h-full w-full max-w-[560px] flex-col gap-4 overflow-y-auto border-2 border-accent border-solid bg-panel p-6"
+        className="border-accent bg-panel flex max-h-full w-full max-w-[560px] flex-col gap-4 overflow-y-auto border-2 border-solid p-6"
         role="dialog"
         aria-label={`Photo of ${player.name}`}
       >
-        <div className="flex items-center justify-between gap-3 border-0 border-border border-b border-solid pb-4">
+        <div className="border-border flex items-center justify-between gap-3 border-0 border-b border-solid pb-4">
           <div>
             <span className="match-label">Photo</span>
             <h2 className="mt-1.5 text-[22px] tracking-[3px]">{player.name}</h2>
@@ -159,7 +159,7 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void }) {
         {image ? (
           <>
             <div
-              className="relative max-w-full cursor-grab touch-none self-center overflow-hidden bg-bg [clip-path:polygon(12.5%_0,87.5%_0,100%_12.5%,100%_87.5%,87.5%_100%,12.5%_100%,0_87.5%,0_12.5%)]"
+              className="bg-bg relative max-w-full cursor-grab touch-none self-center overflow-hidden [clip-path:polygon(12.5%_0,87.5%_0,100%_12.5%,100%_87.5%,87.5%_100%,12.5%_100%,0_87.5%,0_12.5%)]"
               role="img"
               aria-label="Crop area: drag to move"
               style={{ width: VIEW, height: VIEW }}
@@ -188,14 +188,14 @@ export function PhotoEditor(props: { player: AdminPlayer; onClose(): void }) {
               >
                 <polygon
                   points="12.5,0.5 87.5,0.5 99.5,12.5 99.5,87.5 87.5,99.5 12.5,99.5 0.5,87.5 0.5,12.5"
-                  className="fill-none stroke-accent [stroke-dasharray:3_2] [stroke-width:1]"
+                  className="stroke-accent fill-none [stroke-width:1] [stroke-dasharray:3_2]"
                 />
               </svg>
             </div>
             <p className="hint m-0 text-center">
               Drag to move, pinch, scroll or use the slider to zoom.
             </p>
-            <label className="label flex items-center gap-3 [&_input]:h-11 [&_input]:flex-1 [&_span]:font-text [&_span]:text-[26px]">
+            <label className="label [&_span]:font-text flex items-center gap-3 [&_input]:h-11 [&_input]:flex-1 [&_span]:text-[26px]">
               Zoom
               <span aria-hidden="true">−</span>
               <input

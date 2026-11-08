@@ -4,9 +4,9 @@
 export function Progress(props: { played: number; total: number; className?: string }) {
   const { played, total, className = "" } = props;
   return (
-    <div className={`ml-auto flex items-center gap-pu-16 ${className}`}>
+    <div className={`gap-pu-16 ml-auto flex items-center ${className}`}>
       <div
-        className="grid w-pu-360 gap-pu-6"
+        className="w-pu-360 gap-pu-6 grid"
         style={{ gridTemplateColumns: `repeat(${total}, minmax(0, 1fr))` }}
         role="img"
         aria-label={`${played} of ${total} matches played`}
@@ -16,7 +16,7 @@ export function Progress(props: { played: number; total: number; className?: str
           <span key={i} className={`h-pu-14 ${i < played ? "bg-accent" : "bg-border"}`} />
         ))}
       </div>
-      <span className="whitespace-nowrap text-muted text-pu-24" aria-hidden>
+      <span className="text-muted text-pu-24 whitespace-nowrap" aria-hidden>
         {played} / {total}
       </span>
     </div>
