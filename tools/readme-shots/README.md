@@ -1,10 +1,13 @@
 # README screenshots
 
-`shots.sh` cuts the README's screenshots in `docs/images/` from the visual suite's baselines, so take those first:
+`shots.sh` makes the README's screenshots in `docs/images/`. Build first:
 
 ```sh
-pnpm --filter @n4/e2e visual -- --update-snapshots
+pnpm build
 tools/readme-shots/shots.sh
 ```
 
-Every image comes out 16:10, so the feature grid's rows line up: kiosk shots (1440 wide) are cropped to their top 1440 × 900, and projector shots (1920 × 1080) are padded to 1920 × 1200 in the page background. Needs `ffmpeg`. To show a different screen, change its line at the bottom of the script.
+- **From a showcase evening** (`packages/e2e/tests/showcase.spec.ts`): station, stats, caller, tournament, public-profile and projector. It plays three earlier evenings of 501s (moved one, two and three weeks back in the database), then tonight's 501 and an 8-player tournament on both stations, with simulated players who aim at treble 20 or the checkout route and scatter by skill. The darts are random, so every run looks a little different.
+- **From the visual suite's baselines:** games, correcting and lights, cropped to 1440 × 900. Take those first with `pnpm --filter @n4/e2e visual -- --update-snapshots` when the UI changed.
+
+Every image is 16:10 (kiosk 1440 × 900, projector 1920 × 1200), so the feature grid's rows line up. Needs `ffmpeg`.

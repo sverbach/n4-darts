@@ -192,6 +192,9 @@ importers:
       '@n4/board-sim':
         specifier: workspace:*
         version: link:../../tools/board-sim
+      '@n4/engine':
+        specifier: workspace:*
+        version: link:../engine
       '@n4/server':
         specifier: workspace:*
         version: link:../server

@@ -5,7 +5,7 @@ import { BASE_URL } from "./src/ports.ts";
 export default defineConfig({
   testDir: "tests",
   // The visual suite has its own config (playwright.visual.config.ts) and only runs on demand.
-  testIgnore: /visual\.spec\.ts/,
+  testIgnore: /(visual|showcase)\.spec\.ts/,
   fullyParallel: false,
   workers: 1,
   retries: 0,

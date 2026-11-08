@@ -2,7 +2,7 @@
 // `pnpm dev:sim` but from the production build. Ports are fixed so the tests can reach the boards.
 
 import { spawn } from "node:child_process";
-import { mkdtempSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,7 +12,11 @@ import { BOARD_PORTS, PIN, PUBLIC_PIN, PUBLIC_PORT, SERVER_PORT, WLED_PORT } fro
 
 const sims = await Promise.all(BOARD_PORTS.map((port) => createBoardSim({ port })));
 const wled = await createWledSim({ port: WLED_PORT, name: "Test strip" });
-const dataDir = mkdtempSync(join(tmpdir(), "n4-e2e-"));
+const dataDir = process.env.N4_E2E_DATA_DIR ?? mkdtempSync(join(tmpdir(), "n4-e2e-"));
+if (process.env.N4_E2E_DATA_DIR) {
+  rmSync(dataDir, { recursive: true, force: true });
+  mkdirSync(dataDir, { recursive: true });
+}
 const main = fileURLToPath(new URL("../../server/dist/main.js", import.meta.url));
 
 // The visual suite needs the same players with the same ids every run (an avatar's colour comes

@@ -29,9 +29,9 @@
 <br>
 
 <p align="center">
-  <img src="docs/images/station.png" alt="The station screen during an X01 match: Ann on 61 in violet, Bob on 101, and the current visit of S20, S20 below" width="100%">
+  <img src="docs/images/station.png" alt="The station screen during a 501: both players' scores, the thrower's checkout route, and the current visit below" width="100%">
   <br>
-  <sub>The station screen next to the board, mid-visit in a 101.</sub>
+  <sub>The station screen next to the board, mid-visit in a 501.</sub>
 </p>
 
 <br>
@@ -53,7 +53,7 @@
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/images/stats.png" alt="A match page: head-to-head stats for Ann and Cid, a score race chart and every dart of the leg" width="100%">
+      <img src="docs/images/stats.png" alt="A match page: head-to-head stats for both players and a score race chart" width="100%">
       <h3>Stats</h3>
       Tracks ratings, averages, checkout %, 180s, best leg and more.
     </td>
@@ -65,7 +65,7 @@
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/images/caller.png" alt="Game shot on the watch screen: Ann wins 1–0 with a 41 checkout on D20" width="100%">
+      <img src="docs/images/caller.png" alt="Game shot on the watch screen: the winner, the result, the checkout and the 3-dart average" width="100%">
       <h3>Caller</h3>
       Integrated voice caller with the option to upload your custom voice packs.
     </td>
@@ -77,12 +77,12 @@
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/images/public-profile.png" alt="A player profile: rating, checkouts, scoring, results, the average per day and the last matches" width="100%">
+      <img src="docs/images/public-profile.png" alt="A player profile: rating, checkouts, scoring, results, the average per day and where the darts land" width="100%">
       <h3>Public site</h3>
       A read-only version of the application to host publicly.
     </td>
     <td width="50%" valign="top">
-      <img src="docs/images/projector.png" alt="The projector view of a tournament evening: now playing on both stations, up next, and the group table" width="100%">
+      <img src="docs/images/projector.png" alt="The projector view of a tournament evening: both stations live, up next, and the group tables" width="100%">
       <h3>Projector</h3>
       A live view of tournaments for big screens &amp; projectors.
     </td>
@@ -144,7 +144,7 @@ pnpm build && pnpm start   # production build on :3000
 pnpm build && pnpm e2e     # browser tests (Playwright), the same as CI
 pnpm --filter @n4/e2e visual   # screenshot comparison, by hand (macOS baseline); add --update-snapshots
 pnpm db:reset    # clear the dev database (server stopped)
-tools/readme-shots/shots.sh   # the README's screenshots, cut from the visual baselines
+tools/readme-shots/shots.sh   # the README's screenshots, from a showcase evening (after pnpm build)
 ```
 
 ### Code structure
@@ -158,7 +158,7 @@ tools/readme-shots/shots.sh   # the README's screenshots, cut from the visual ba
 | `tools/board-sim`    | Fake Board Manager (2.0.2 API, `docs/board-manager-api.md`)   |
 | `tools/wled-sim`     | Fake WLED controller                                          |
 | `tools/callouts`     | The built-in caller voice and the voice-pack importer         |
-| `tools/readme-shots` | The README's screenshots, from the visual suite               |
+| `tools/readme-shots` | The README's screenshots, from a showcase evening             |
 
 More: [`docs/architecture/`](docs/architecture/README.md) (arc42), [`docs/adr/`](docs/adr/) (decisions), [`GLOSSARY.md`](GLOSSARY.md), [`docs/ui-pages.md`](docs/ui-pages.md).
 
