@@ -256,8 +256,8 @@ importers:
         specifier: 3.2.5
         version: 3.2.5
       d3-contour:
-        specifier: 4.0.2
-        version: 4.0.2
+        specifier: 4.0.3
+        version: 4.0.3
       d3-scale:
         specifier: 4.0.3
         version: 4.0.3
@@ -913,8 +913,8 @@ packages:
     resolution: {integrity: sha512-zg/chbXyeBtMQ1LbD/WSoW2DpC3I0mpmPdW+ynRTj/x2DAWYrIY7qeZIHidozwV24m4iavr15lNwIwLxRmOxhA==}
     engines: {node: '>=12'}
 
-  d3-contour@4.0.2:
-    resolution: {integrity: sha512-4EzFTRIikzs47RGmdxbeUvLWtGedDUNkTcmzoeyg4sP/dvCexO47AaQL7VKy/gul85TOxw+IBgA8US2xwbToNA==}
+  d3-contour@4.0.3:
+    resolution: {integrity: sha512-5DYURc8KwXPOhSUBblU0P9rVcArsSPxPOxsfO0Eud0s28oU0sB2e80aRHRL9AZW3usT8ikFKyIHpHHLNWLdRVA==}
     engines: {node: '>=12'}
 
   d3-format@3.1.2:
@@ -1907,7 +1907,7 @@ snapshots:
 
   d3-color@3.1.0: {}
 
-  d3-contour@4.0.2:
+  d3-contour@4.0.3:
     dependencies:
       d3-array: 3.2.5
 
