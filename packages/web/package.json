@@ -13,7 +13,7 @@
     "@fontsource/silkscreen": "5.3.0",
     "@n4/engine": "workspace:*",
     "d3-array": "3.2.5",
-    "d3-contour": "4.0.2",
+    "d3-contour": "4.0.3",
     "d3-scale": "4.0.3",
     "d3-shape": "3.2.1",
     "nprogress": "0.2.0",
